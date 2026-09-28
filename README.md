@@ -19,6 +19,8 @@ The continued development is tracked in [the active goal](docs/GOAL_STATUS.md).
 See [dynamic MHD verification](docs/MHD_VERIFICATION.md),
 [curved closed-flux equilibrium checks](docs/EQUILIBRIUM_VERIFICATION.md), and the
 [equations and boundary contract](docs/MHD_NUMERICS.md).
+The [low-pressure verification](docs/POSITIVITY_VERIFICATION.md) distinguishes
+positive reconstruction and conserved budgets from adequate flow resolution.
 
 ## Use the existing environment
 
@@ -31,6 +33,7 @@ See [dynamic MHD verification](docs/MHD_VERIFICATION.md),
 .venv/bin/python -m pytest -q
 .venv/bin/python -m examples.verify_mhd
 .venv/bin/python -m examples.verify_equilibrium
+.venv/bin/python -m examples.verify_positivity
 ```
 
 Open [vacuum playback](outputs/vacuum/viewer.html) or
@@ -107,14 +110,17 @@ suite. The 27-case phase map is exploratory, not a validated formation boundary.
 
 ## Next physics milestone
 
-Second-order reconstruction now reduces measured numerical diffusion and
-axis-force error. Next, preserve positivity in difficult low-pressure states,
-improve curved-equilibrium balance, and couple the moving fluid to the prescribed coils and genuine surrounding
+Second-order reconstruction reduces measured numerical diffusion and axis-force
+error; local admissibility limiting resolves the identified negative face-pressure
+failures without cell floors. Next, couple the moving fluid to prescribed coils
+and genuine surrounding
 vacuum with a source-work budget. Resolve conductivity/Hall applicability for
 the target plasma alongside this numerical work. The coil-driven Stage 2 entry
 point still raises an explicit `NotImplementedError` until that coupling is
 verified; the dynamic verification kernel is separately scriptable through
 `plasma_bench.mhd.AxisymmetricMHD`.
+Cold-rarefaction pressure accuracy and curved-equilibrium drift remain measured
+numerical limitations to address alongside that integration.
 
 [Open physics and numerical questions](docs/RESEARCH_QUESTIONS.md) include the
 outer vacuum boundary, transport, pre-ionization, neutral effects, objective FRC

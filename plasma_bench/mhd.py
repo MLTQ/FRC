@@ -6,6 +6,7 @@ from .mhd_state import MHDState, primitive, integrated_quantities
 from .mhd_flux import ghost_cells, rusanov, fast_speed
 from .mhd_induction import ideal_emf, resistive_emf, resistive_energy_flux, ohmic_power
 from .mhd_reconstruction import Reconstruction
+from .mhd_positivity import empty_statistics
 
 
 @dataclass(frozen=True)
@@ -14,6 +15,7 @@ class MHDParameters:
     resistivity: float = 0.0
     cfl: float = .25
     spatial_order: int = 2
+    positivity_reconstruction: bool = True
 
     def __post_init__(self):
         if not np.isfinite(self.gamma) or self.gamma <= 1:
@@ -24,6 +26,8 @@ class MHDParameters:
             raise ValueError("Use 0 < CFL <= 0.4 for this explicit reference method")
         if isinstance(self.spatial_order, bool) or self.spatial_order not in (1, 2):
             raise ValueError("Spatial order must be 1 (reference) or 2 (limited reconstruction)")
+        if not isinstance(self.positivity_reconstruction, bool):
+            raise ValueError("positivity_reconstruction must be a boolean")
 
 
 class AxisymmetricMHD:
@@ -43,6 +47,7 @@ class AxisymmetricMHD:
         self.time = 0.0
         self.steps = 0
         self.physical_ohmic_heat = 0.0
+        self.limiter_totals = empty_statistics()
         self.initial_integrals = integrated_quantities(mesh, initial, self.parameters.gamma)
 
     def timestep_limit(self, state=None):
@@ -54,11 +59,15 @@ class AxisymmetricMHD:
         return self.parameters.cfl/(hyperbolic+diffusion)
 
     def rhs(self, state):
+        derivative, heat, _ = self._rhs(state)
+        return derivative, heat
+
+    def _rhs(self, state):
         mesh, par = self.mesh, self.parameters
         q = primitive(mesh, state, par.gamma)
         ghost = ghost_cells(q)
         brf, bzf = mesh.face_fields(state.psi)
-        reconstruction = Reconstruction(mesh, q) if par.spatial_order == 2 else None
+        reconstruction = Reconstruction(mesh, q, positivity=par.positivity_reconstruction) if par.spatial_order == 2 else None
         if reconstruction is None:
             left, right, down, up = ghost[:-1, 1:-1], ghost[1:, 1:-1], ghost[1:-1, :-1], ghost[1:-1, 1:]
         else:
@@ -75,7 +84,8 @@ class AxisymmetricMHD:
         derivative[..., 1] += pt/mesh.r[:, None] if reconstruction is None else reconstruction.radial_source()
         emf = ideal_emf(mesh, ghost, brf, bzf, par.gamma, reconstruction)+er
         dpsi = -mesh.rf[:, None]*emf
-        return MHDState(derivative, dpsi), ohmic_power(mesh, er, par.resistivity)
+        stats = empty_statistics() if reconstruction is None else reconstruction.statistics
+        return MHDState(derivative, dpsi), ohmic_power(mesh, er, par.resistivity), stats
 
     def step(self, dt=None):
         limit = self.timestep_limit()
@@ -83,15 +93,20 @@ class AxisymmetricMHD:
         if not np.isfinite(dt) or dt <= 0 or dt > limit*(1+1e-12):
             raise ValueError(f"Time step must be positive and <= {limit:.6g} s (wave + diffusion limit)")
         old = self.state
-        a, qa = self.rhs(old)
+        a, qa, sa = self._rhs(old)
         predictor = MHDState(old.conserved+dt*a.conserved, old.psi+dt*a.psi)
         primitive(self.mesh, predictor, self.parameters.gamma)
-        b, qb = self.rhs(predictor)
+        b, qb, sb = self._rhs(predictor)
         new = MHDState(old.conserved+.5*dt*(a.conserved+b.conserved), old.psi+.5*dt*(a.psi+b.psi))
         primitive(self.mesh, new, self.parameters.gamma)
         # Commit only after both stages validate; a failed step leaves state unchanged.
         self.state = new
         self.physical_ohmic_heat += .5*dt*(qa+qb)
+        for key in self.limiter_totals:
+            if key == "minimum_pressure_blend_weight":
+                self.limiter_totals[key] = min(self.limiter_totals[key], sa[key], sb[key])
+            else:
+                self.limiter_totals[key] += sa[key]+sb[key]
         self.time += dt
         self.steps += 1
         return dt
@@ -116,4 +131,6 @@ class AxisymmetricMHD:
         out.update(time_s=self.time, steps=self.steps, physical_ohmic_heat_j=self.physical_ohmic_heat,
                    mass_relative_change=(out["mass_kg"]-self.initial_integrals["mass_kg"])/self.initial_integrals["mass_kg"],
                    total_energy_relative_change=(out["total_energy_j"]-self.initial_integrals["total_energy_j"])/self.initial_integrals["total_energy_j"])
+        out["reconstruction_limiter"] = {**self.limiter_totals, "count_semantics": "sum over cells in accepted RK stages, not unique cells",
+                                         "accepted_cell_stages": 2*self.steps*self.mesh.nr*self.mesh.nz}
         return out

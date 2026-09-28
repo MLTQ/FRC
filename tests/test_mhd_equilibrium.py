@@ -4,7 +4,7 @@ from numpy.testing import assert_allclose
 from scipy.constants import mu_0 as MU0
 from plasma_bench.mhd_equilibrium import PeriodicEquilibrium
 from plasma_bench.mhd_mesh import MHDMesh
-from plasma_bench.mhd import AxisymmetricMHD
+from plasma_bench.mhd import AxisymmetricMHD, MHDParameters
 from plasma_bench.mhd_state import NonphysicalState
 
 
@@ -53,7 +53,7 @@ def test_curved_equilibrium_drift_and_force_decrease_with_refinement():
 def test_unresolved_equilibrium_reconstruction_fails_without_state_repair():
     mesh = MHDMesh(1, 1, 12, 24)
     initial = PeriodicEquilibrium(background_pressure=.1).state(mesh)
-    solver = AxisymmetricMHD(mesh, initial)
+    solver = AxisymmetricMHD(mesh, initial, MHDParameters(positivity_reconstruction=False))
     with pytest.raises(NonphysicalState, match="Reconstructed"):
         solver.step()
     assert_allclose(solver.state.conserved, initial.conserved, atol=0, rtol=0)

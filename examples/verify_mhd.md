@@ -18,4 +18,6 @@ The default measurements now use second-order reconstruction. The companion
 mhd_accuracy module isolates smooth and limiter-switching temporal cases and
 reruns first-order comparisons at identical mesh/parameters. Reports explicitly
 distinguish the special straight-field equilibrium from the independently
-verified curved equilibrium and its unresolved positivity/drift limitations.
+verified curved equilibrium and its measured drift. Low-pressure results retain
+disabled-reference failures, limiter activity, stronger stress cases and cold
+rarefaction errors. Positive traces are distinguished from full-update accuracy.

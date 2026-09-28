@@ -21,12 +21,35 @@ Pressure is integrated over cells; flux is sampled on corners. No equilibrium fo
 | 1 | 48 × 96 | 0.1 | completed | 0.2133 | 0.01264 | 0.00038883 |
 | 1 | 96 × 192 | 0.1 | completed | 0.074781 | 0.0035268 | 7.7303e-05 |
 | 1 | 192 × 384 | 0.1 | completed | 0.026113 | 0.00095046 | 2.1181e-05 |
-| 0.1 | 12 × 24 | 0 | rejected_nonphysical_reconstruction_or_state | — | 0 | 0 |
-| 0.1 | 24 × 48 | 0 | rejected_nonphysical_reconstruction_or_state | — | 0 | 0 |
+| 0.1 | 12 × 24 | 0.1 | completed | 2.3935 | 0.13197 | 0.018463 |
+| 0.1 | 24 × 48 | 0.1 | completed | 0.58994 | 0.08653 | 0.0028348 |
 | 0.1 | 48 × 96 | 0.1 | completed | 0.2133 | 0.028605 | 0.00040702 |
 | 0.1 | 96 × 192 | 0.1 | completed | 0.074781 | 0.0076703 | 8.864e-05 |
 
-The p0=1 Pa fixture completes on all grids. The more demanding p0=0.1 Pa fixture is rejected on 12 and 24 radial cells because reconstructed thermal pressure is negative, despite positive cell pressure. Failed-run diagnostics are **not** comparable with completed evolution. Each background pressure is a separate declared physical input; neither is a floor or repair to the other.
+Both pressure fixtures now complete across the declared meshes. The p0=0.1 Pa, 12/24-cell cases require local admissibility limiting. Refinement reduces limiting to zero at 48/96 cells. Each background pressure is a separate physical input; there is no pressure floor or cell-energy repair.
+
+## Reconstruction activity
+
+Counts are summed over accepted RK cell-stages, not unique cells. A small blend weight means the auxiliary thermal-pressure reconstruction is used strongly. Source integration uses the same blend. [Method and limits](POSITIVITY.md).
+
+| p0 [Pa] | Radial cells | Minimum cell pressure [Pa] | Pressure-blended cell-stages | Minimum blend weight |
+|---:|---:|---:|---:|---:|
+| 1 | 12 | 0.97453 | 0.000% | 1 |
+| 1 | 24 | 0.99459 | 0.000% | 1 |
+| 1 | 48 | 0.99892 | 0.000% | 1 |
+| 1 | 96 | 0.99977 | 0.000% | 1 |
+| 1 | 192 | 0.99995 | 0.000% | 1 |
+| 0.1 | 12 | 0.081284 | 12.100% | 2.0582e-15 |
+| 0.1 | 24 | 0.097081 | 2.190% | 6.2184e-14 |
+| 0.1 | 48 | 0.099548 | 0.000% | 1 |
+| 0.1 | 96 | 0.099859 | 0.000% | 1 |
+
+The identical low-pressure inputs with admissibility limiting explicitly disabled retain their reference failures:
+
+| Radial cells | Reached time [s] | Failure |
+|---:|---:|---|
+| 12 | 0 | Reconstructed face/corner state invalid: minimum density 1 kg/m^3, thermal pressure -0.110991 Pa; no floor applied |
+| 24 | 0 | Reconstructed face/corner state invalid: minimum density 1 kg/m^3, thermal pressure -0.022668 Pa; no floor applied |
 
 Halving and quartering the time step on the resolved 48-cell, p0=1 Pa fixture checks whether finite-time drift is predominantly spatial:
 
@@ -43,6 +66,6 @@ The curved equilibrium converges but is not held exactly: force residual decreas
 
 ## Remaining accuracy gates
 
-A consistent positivity-preserving reconstruction and better curved-equilibrium stress balance are needed before difficult low-pressure formation experiments. Dynamic true-vacuum/coil coupling and regime-appropriate transport remain separate unimplemented requirements. The full FRC goal remains active.
+Positive reconstruction traces are now verified, but they do not prove positivity of every possible multidimensional CT time update. General curved-equilibrium stress balance still has measured error. Dynamic true-vacuum/coil coupling and regime-appropriate transport remain separate unimplemented requirements. The full FRC goal remains active.
 
 The quadratic pressure form follows the standard no-toroidal-field Grad–Shafranov equation; related FRC equilibrium benchmarks appear in [Solving the Grad–Shafranov equation with spectral elements](https://www.sciencedirect.com/science/article/pii/S001046551400040X). The periodic radial power-series fixture here is independently derived.

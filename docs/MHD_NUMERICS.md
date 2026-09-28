@@ -103,11 +103,15 @@ larger dissipation near discontinuities and extrema. These terms are not physica
 be adjusted to force FRC formation, and must be reduced/measured by refinement.
 No density/pressure floors, magnetic-energy resets or silent positivity repairs
 are allowed. Invalid states raise, identifying the failed quantity; an excessive
-requested step is rejected. Positive cell pressure does not guarantee positive
-reconstructed pressure: the p0=0.1 Pa closed-flux fixture is rejected on coarse
-grids. A consistent positivity-preserving limiter remains a development gate;
-do not reinterpret a rejected case as a completed evolution or add a pressure
-floor to make it finish. Diagnostic budgets separately retain total,
+requested step is rejected. A local admissibility limiter now contracts density
+slopes and blends total-pressure-derived traces toward a positive thermal-pressure
+polynomial when needed. The radial source integrates that same blend; magnetic
+traces and cell averages are unchanged. This fixes the p0=0.1 Pa coarse-grid
+reconstruction failures, which remain reproducible with the explicit disable
+switch. Positive traces are not a proof of full-update positivity. See
+[the derivation, trace margin and activation semantics](POSITIVITY.md).
+Do not reinterpret a rejected case as a completed evolution or add a cell floor
+to make it finish. Diagnostic budgets separately retain total,
 thermal, kinetic and magnetic energies and physical eta J² estimates.
 
 Global mass and total energy are conserved to roundoff under the stated closed

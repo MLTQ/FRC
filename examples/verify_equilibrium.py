@@ -12,11 +12,11 @@ from plasma_bench.mhd_mesh import MHDMesh
 from plasma_bench.mhd_state import NonphysicalState, primitive
 
 
-def run_case(background, cells, cfl=.25, end_time=.1):
+def run_case(background, cells, cfl=.25, end_time=.1, *, positivity=True):
     eq = PeriodicEquilibrium(background_pressure=background)
     mesh = MHDMesh(eq.radius, eq.half_length, cells, 2*cells)
     initial = eq.state(mesh)
-    solver = AxisymmetricMHD(mesh, initial, MHDParameters(cfl=cfl))
+    solver = AxisymmetricMHD(mesh, initial, MHDParameters(cfl=cfl, positivity_reconstruction=positivity))
     row = {"radial_cells": cells, "equilibrium": asdict(eq), "mesh": asdict(mesh),
            "parameters": asdict(solver.parameters), "requested_end_time_s": end_time,
            "radial_eigenvalue": eq.eigenvalue,
@@ -51,13 +51,14 @@ def verify(directory="outputs/equilibrium_verification"):
                               final_flux=final.psi, initial_pressure=q0[..., 3],
                               spurious_speed=np.hypot(q[..., 1], q[..., 2]))
     time_checks = [run_case(1., 48, cfl=cfl)[0] for cfl in (.125, .0625)]
+    unlimited = [run_case(.1, cells, positivity=False)[0] for cells in (12, 24)]
     digest = hashlib.sha256()
     for path in sorted(Path("plasma_bench").glob("*.py")):
         digest.update(path.name.encode()); digest.update(path.read_bytes())
-    metrics = {"cases": rows, "resolved_time_refinement": time_checks,
+    metrics = {"cases": rows, "resolved_time_refinement": time_checks, "unlimited_reference": unlimited,
                "provenance": {"source_sha256": digest.hexdigest(), "python": platform.python_version(),
                               "platform": platform.platform(), "versions": {k: importlib.metadata.version(k) for k in ("numpy", "scipy", "matplotlib")},
-                              "method": "axis-regular limited second-order Rusanov/UCT; SSP RK2; no floors",
+                              "method": "axis-regular second-order Rusanov/UCT; local admissibility reconstruction; SSP RK2; no cell floors",
                               "interpretation": "prescribed periodic closed-flux equilibrium, not formation or stability evidence"}}
     (directory/"metrics.json").write_text(json.dumps(metrics, indent=2, allow_nan=False)+"\n")
     np.savez_compressed(directory/"fields.npz", **arrays)
@@ -110,7 +111,20 @@ def report(metrics):
     for v in metrics["cases"]:
         force = f"{v['initial_force_volume_rms_n_m3']:.5g}" if "initial_force_volume_rms_n_m3" in v else "—"
         lines.append(f"| {v['equilibrium']['background_pressure']:g} | {v['radial_cells']} × {v['mesh']['nz']} | {v['time_s']:.6g} | {v['status']} | {force} | {v['velocity_over_reference_alfven_speed']:.5g} | {v['flux_relative_L2_drift']:.5g} |")
-    lines += ["", "The p0=1 Pa fixture completes on all grids. The more demanding p0=0.1 Pa fixture is rejected on 12 and 24 radial cells because reconstructed thermal pressure is negative, despite positive cell pressure. Failed-run diagnostics are **not** comparable with completed evolution. Each background pressure is a separate declared physical input; neither is a floor or repair to the other.", "",
+    lines += ["", "Both pressure fixtures now complete across the declared meshes. The p0=0.1 Pa, 12/24-cell cases require local admissibility limiting. Refinement reduces limiting to zero at 48/96 cells. Each background pressure is a separate physical input; there is no pressure floor or cell-energy repair.", "",
+              "## Reconstruction activity", "",
+              "Counts are summed over accepted RK cell-stages, not unique cells. A small blend weight means the auxiliary thermal-pressure reconstruction is used strongly. Source integration uses the same blend. [Method and limits](POSITIVITY.md).", "",
+              "| p0 [Pa] | Radial cells | Minimum cell pressure [Pa] | Pressure-blended cell-stages | Minimum blend weight |",
+              "|---:|---:|---:|---:|---:|"]
+    for v in metrics["cases"]:
+        stats = v["reconstruction_limiter"]
+        fraction = stats["pressure_blended_cells"]/max(1, stats["accepted_cell_stages"])
+        lines.append(f"| {v['equilibrium']['background_pressure']:g} | {v['radial_cells']} | {v['min_pressure_pa']:.5g} | {fraction:.3%} | {stats['minimum_pressure_blend_weight']:.5g} |")
+    lines += ["", "The identical low-pressure inputs with admissibility limiting explicitly disabled retain their reference failures:", "",
+              "| Radial cells | Reached time [s] | Failure |", "|---:|---:|---|"]
+    for v in metrics["unlimited_reference"]:
+        lines.append(f"| {v['radial_cells']} | {v['time_s']:.6g} | {v.get('failure', v['status'])} |")
+    lines += ["",
               "Halving and quartering the time step on the resolved 48-cell, p0=1 Pa fixture checks whether finite-time drift is predominantly spatial:", "",
               "| CFL | Reached time [s] | Max speed / reference vA | Flux relative L2 drift |", "|---:|---:|---:|---:|"]
     for v in metrics["resolved_time_refinement"]:
@@ -120,7 +134,7 @@ def report(metrics):
               "The curved equilibrium converges but is not held exactly: force residual decreases about 2.8-fold per doubling at fine resolution (approximately 1.5 order in this volume RMS norm), and artificial motion remains measurable. The roundoff preservation of the simpler straight-field polynomial equilibrium must not be generalized to this case.", "",
               "![Equilibrium diagnostics](../outputs/equilibrium_verification/equilibrium.png)", "",
               "## Remaining accuracy gates", "",
-              "A consistent positivity-preserving reconstruction and better curved-equilibrium stress balance are needed before difficult low-pressure formation experiments. Dynamic true-vacuum/coil coupling and regime-appropriate transport remain separate unimplemented requirements. The full FRC goal remains active.", "",
+              "Positive reconstruction traces are now verified, but they do not prove positivity of every possible multidimensional CT time update. General curved-equilibrium stress balance still has measured error. Dynamic true-vacuum/coil coupling and regime-appropriate transport remain separate unimplemented requirements. The full FRC goal remains active.", "",
               "The quadratic pressure form follows the standard no-toroidal-field Grad–Shafranov equation; related FRC equilibrium benchmarks appear in [Solving the Grad–Shafranov equation with spectral elements](https://www.sciencedirect.com/science/article/pii/S001046551400040X). The periodic radial power-series fixture here is independently derived."]
     Path("docs/EQUILIBRIUM_VERIFICATION.md").write_text("\n".join(lines)+"\n")
 

@@ -100,7 +100,7 @@ The unbalanced magnetic force is independently compared with volume-averaged ana
 | 96 | 4.8972e-05 | 3.2025e-07 |
 | 192 | 1.2292e-05 | 4.0031e-08 |
 
-On this polynomial fixture the volume force error decreases quadratically and the first-axis-cell absolute error cubically. These orders must not be generalized to arbitrary magnetic geometry. [The separate curved closed-flux equilibrium report](EQUILIBRIUM_VERIFICATION.md) records residual drift and coarse-mesh pressure failures.
+On this polynomial fixture the volume force error decreases quadratically and the first-axis-cell absolute error cubically. These orders must not be generalized to arbitrary magnetic geometry. [The curved closed-flux equilibrium report](EQUILIBRIUM_VERIFICATION.md) records residual drift, limiter activity and explicitly disabled reference failures. [Low-pressure verification](POSITIVITY_VERIFICATION.md) separately retains cold-rarefaction errors.
 
 ![Verification plots](../outputs/mhd_verification/verification.png)
 
@@ -109,7 +109,7 @@ On this polynomial fixture the volume force error decreases quadratically and th
 - Dynamic plasma–vacuum interface and source-work coupling to external coils.
 - Physical chamber ends and open exterior magnetic boundary.
 - Regime-appropriate transport and Hall/two-fluid validation.
-- Positivity-preserving reconstruction and better curved-equilibrium force balance.
+- Stronger full-update robustness, cold-rarefaction accuracy and curved-equilibrium force balance.
 - Converged closed-flux formation/lifetime tests.
 - Three-dimensional stability and particle-confinement evidence, if claimed.
 

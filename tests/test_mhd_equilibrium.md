@@ -7,6 +7,7 @@ declared aspect-ratio range, and Bz must reverse radially.
 
 The default p0=1 Pa equilibrium permits affordable two-grid force,
 finite-time flow and flux-drift checks, with conservation and discrete div B.
-The p0=0.1 Pa coarse-grid case is a known reconstruction failure and must
-raise without any state repair. The full report retains finer-grid drift and
-failed attempts for that more demanding case; it is not omitted from evidence.
+The p0=0.1 Pa coarse-grid case remains a reference failure with admissibility
+limiting explicitly disabled; it must raise without any state repair. Separate
+positivity tests verify that the enabled limiter admits this same input and
+conserves cell budgets. Reference failures remain part of the evidence.

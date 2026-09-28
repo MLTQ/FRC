@@ -35,15 +35,20 @@ integration and improved one-sided wall gradients. Smooth wave/advection errors
 are much smaller; axis force accuracy improves, and a particular straight-field
 polynomial equilibrium is held to roundoff. First-order comparison remains
 selectable and is rerun on identical grids.
-The complete suite now has **54 passing tests**. At identical resolution the
+The complete suite now has **62 passing tests**. At identical resolution the
 fast-wave error is 216 times smaller and the 2-D flux-advection error 129 times
 smaller than the first-order reference on the reported benchmark grids.
 
 An independent continuum Grad–Shafranov fixture now tests genuinely curved,
 closed poloidal flux with reversed Bz. It starts in equilibrium, not from coil
 formation. Its artificial motion decreases with refinement, but it is not held
-exactly. A lower-pressure p0=0.1 Pa stress case fails reconstruction on coarse
-meshes despite positive cell pressure; this remains visible rather than repaired.
+exactly. A lower-pressure p0=0.1 Pa stress case previously failed reconstruction
+on coarse meshes despite positive cell pressure. That failure is now fixed by
+local admissibility reconstruction, with consistent geometric-source integration.
+Cell averages and magnetic traces are unchanged by this limiter; there are no
+cell floors or energy repairs. The original failure remains reproducible with
+the explicit disable switch. Limiting affects 12.10% and 2.19% of accepted
+cell-stages at nr=12/24, and zero at nr=48/96 in that fixture.
 The default p0=1 Pa case completes across refinement after correcting the wall
 derivative. Smooth temporal refinement verifies RK2; the quarter-period wave's
 limiter-switching time ratios are separately retained and less regular.
@@ -53,18 +58,30 @@ drift 2.1181e-5. The initial force volume RMS converges at approximately order
 1.5, so this remains a measured limitation rather than exact equilibrium balance.
 Fixed-grid time refinement barely changes that drift, confirming that spatial
 error dominates this particular case. Mass/energy and face divergence remain
-at floating-point accuracy. Both generated figures were visually inspected.
+at floating-point accuracy. Generated figures were visually inspected.
+
+Additional equilibrium stress cases down to p0=1e-5 Pa finish conservatively,
+but their coarse-grid artificial motion is not physical accuracy evidence.
+An independently solved magnetized double rarefaction remains positive and
+conservative with unchanged uniform B. Its bulk L1 errors converge, while the
+central pressure is still 114% too high at 640 axial cells. The admissibility
+limiter is inactive there: this exposes underlying flux-discretization error,
+not a pressure floor. It is tracked as an accuracy requirement, not hidden by
+the passing positivity checks. No full-update positivity theorem is claimed.
 
 Measured evidence is in `docs/MHD_VERIFICATION.md`,
-`docs/EQUILIBRIUM_VERIFICATION.md`, and their JSON/plot outputs. These remain
+`docs/EQUILIBRIUM_VERIFICATION.md`, `docs/POSITIVITY_VERIFICATION.md`, and their
+JSON/plot outputs. The limiter derivation is `docs/POSITIVITY.md`. These remain
 bounded verification solvers, not the coupled coil-driven formation experiment.
 
 ## Current development step
 
-Next, address positivity-preserving reconstruction without a pressure floor,
-and improve/quantify the curved-equilibrium stress balance. Then connect dynamics
-to the independent electromagnetic/vacuum subsystem with a measured source-work
-budget. Transport applicability can be developed independently. Do not
+Next, connect dynamics to the independent electromagnetic/vacuum subsystem
+with a measured source-work budget. The bounded reference core and its
+verification issue are complete in their declared scope; remaining cold-flow
+accuracy, curved-equilibrium stress balance and stronger full-update checks
+are tracked separately and must be addressed before formation claims. Transport
+applicability can be developed independently. Do not
 simply enable `Experiment(stage=2)` with periodic/metal-wall boundaries.
 
 One physically relevant coupling route is a pre-ionized gas filling the actual
@@ -78,15 +95,16 @@ It is an implementation candidate, not a completed or validated model.
 
 | Requirement | Authoritative evidence | Status |
 |---|---|---|
-| Conservative dynamic core | mhd modules, independent tests, MHD verification report | Implemented for stated bounded domain; second-order smooth reconstruction, coarse low-pressure positivity remains unresolved |
+| Conservative dynamic core | mhd modules, independent tests, MHD/positivity reports | Implemented and verified for stated bounded reference; positive traces without cell floors; full-update robustness and cold-flow accuracy remain bounded by tests |
 | Physical source/plasma/vacuum coupling | Original Stage 2 guard still raises; beads frc-vacuum | Incomplete |
 | Regime-appropriate transport / Hall physics | Fixed eta/sigma only; beads frc-transport | Incomplete |
-| Full independent numerical verification | Wave, shock, diffusion/heating, advection, J×B and independent curved closed-flux equilibrium data | Partial; measured curved-equilibrium drift and coarse-grid failures; no formation validation |
+| Full independent numerical verification | Waves, shocks, heating, advection, J×B, curved equilibrium, admissibility and double rarefaction data | Partial; measured curved-equilibrium and cold-pressure error; no formation validation |
 | Converged FRC formation | Only older stationary-conductor results, unconverged topology duration | Not demonstrated |
 | Reproducible experimental interface | Stage 0/1 CLI/playback; dynamic benchmark scripts and metrics | Partial; no coupled dynamic experiment UI |
 
-Beads issues `frc-goal`, `frc-mhd`, `frc-vacuum`, `frc-transport`, and
-`frc-formation` preserve the remaining scope. No external process is being
+Beads issues `frc-goal`, `frc-vacuum`, `frc-transport`, `frc-accuracy`, and
+`frc-formation` preserve the remaining scope; `frc-mhd` records the completed
+bounded reference core milestone. No external process is being
 waited on. The optional request for target plasma parameters is not a blocker
 to numerical verification or development.
 

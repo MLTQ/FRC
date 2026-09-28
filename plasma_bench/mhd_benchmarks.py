@@ -49,6 +49,31 @@ def sod_initial(mesh):
                            np.where(z < 0, 1, .125), np.where(z < 0, 1, .1), gamma=1.4)
 
 
+def longitudinal_rarefaction(mesh, *, gamma=1.4, speed=2., pressure=.4, alfven_speed=1.):
+    """Two separating streams parallel to uniform B; exact gas-dynamic limit."""
+    r, _ = mesh.corners
+    _, z = mesh.centers
+    psi = .5*np.sqrt(MU0)*alfven_speed*r*r
+    return from_primitive(mesh, psi, 1., pressure, vz=np.where(z < 0, -speed, speed), gamma=gamma)
+
+
+def double_rarefaction_exact(position, time, *, gamma=1.4, speed=2., pressure=.4):
+    """Symmetric isentropic fans before the periodic boundary waves arrive."""
+    if time <= 0 or gamma <= 1 or pressure <= 0 or speed <= 0:
+        raise ValueError("Double-rarefaction parameters must be positive; gamma > 1")
+    sound = np.sqrt(gamma*pressure)
+    star = sound-(gamma-1)*speed/2
+    if star <= 0:
+        raise ValueError("This fixture excludes a true vacuum-producing Riemann problem")
+    xi = abs(np.asarray(position))/time
+    fan_sound = 2/(gamma+1)*(sound+.5*(gamma-1)*(xi-speed))
+    local_sound = np.clip(fan_sound, star, sound)
+    rho = (local_sound/sound)**(2/(gamma-1))
+    p = pressure*(local_sound/sound)**(2*gamma/(gamma-1))
+    velocity = np.where(xi <= star, 0., np.where(xi >= speed+sound, speed, xi-local_sound))
+    return rho, np.sign(position)*velocity, p
+
+
 def radial_pressure_balance(mesh, *, balanced=True):
     """Straight axial field with known J×B and optional exact pressure balance."""
     r, _ = mesh.corners

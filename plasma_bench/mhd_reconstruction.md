@@ -15,9 +15,16 @@ source integrates the same linear-in-x total pressure against dr exactly.
 This preserves the special constant-total-pressure, linear-in-x axial-field
 equilibrium; it does not guarantee arbitrary FRC equilibrium preservation.
 Face/corner thermal pressure is recovered using reconstructed magnetic fields.
-Invalid reconstructed density/pressure raises with their minima; there is no floor,
-energy repair, or silent first-order fallback. Strong low-beta flows can require
-a future positivity-preserving limiter.
+By default, scalar density slopes contract toward the positive cell density
+when needed. A separately limited thermal-pressure polynomial supplies positive
+auxiliary traces. One weight per cell blends the original pressure toward that
+polynomial just enough to make every face/corner evaluation pressure positive.
+The source integrates the same blended total pressure, including exact Gauss
+integration of reconstructed B². Magnetic traces and cell averages are unchanged.
+Activations and weights are exposed through `statistics`; `positivity=False`
+reproduces the unbounded reference and its explicit failures. This guarantees
+positive evaluation traces, not a theorem for the full CT time update. Invalid
+states still raise, with no cell floor, energy repair or hidden fallback.
 
 `staggered_corner_fields` reconstructs face-averaged Bz radially and Br axially,
 retaining the independent two-state magnetic jumps needed by full LLF UCT.

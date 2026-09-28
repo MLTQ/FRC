@@ -51,6 +51,9 @@ poloidal momentum, total energy and corner flux with SSP RK2. Both first-order
 reference and default second-order spatial errors are measured. The independent
 `mhd_equilibrium` module supplies a continuum closed-flux Grad–Shafranov fixture;
 it does not use the fluid solver to construct its reference force balance.
+The `mhd_positivity` helpers bound density/thermal reconstruction traces while
+leaving conserved cell averages intact. The solver records accepted-stage
+activation counts; trace admissibility does not imply a full-update theorem.
 It fills a verification cylinder with fluid, with a conducting radial wall and
 periodic z. The original Stage 2 formation entry point still refuses execution
 until moving-plasma/vacuum and source-work coupling are verified; it does not

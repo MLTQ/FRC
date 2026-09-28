@@ -12,3 +12,8 @@ These fixtures test algorithms; none represents a demonstrated formation event.
 radial magnetic force are analytic. Optional p+B²/(2mu0)=constant gives a known
 static equilibrium. Evolving it measures spurious flow from numerical diffusion;
 it is a straight-field equilibrium, not an FRC equilibrium or formation result.
+`longitudinal_rarefaction` separates two gas streams parallel to a uniform axial
+field. The field exerts no force and must remain unchanged. Its independent
+`double_rarefaction_exact` uses Riemann invariants for two isentropic fans and
+a low-density/low-pressure central state. It explicitly excludes initial data
+that produce true vacuum. Compare only before periodic-boundary shocks arrive.

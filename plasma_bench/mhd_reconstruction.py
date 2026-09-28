@@ -2,6 +2,9 @@
 import numpy as np
 from scipy.constants import mu_0 as MU0
 from .mhd_state import NonphysicalState
+from .mhd_positivity import positive_scale, positive_blend, limiter_statistics
+
+_GAUSS_NODES, _GAUSS_WEIGHTS = np.polynomial.legendre.leggauss(4)
 
 
 def minmod(*values):
@@ -47,7 +50,7 @@ class Reconstruction:
     constant-total-pressure straight-field equilibria without a force repair.
     No cell energy, density or pressure is changed by reconstruction.
     """
-    def __init__(self, mesh, q):
+    def __init__(self, mesh, q, *, positivity=True):
         self.mesh = mesh
         self.values = q.copy()
         self.values[..., 3] += (q[..., 4]**2+q[..., 5]**2)/(2*MU0)
@@ -59,29 +62,66 @@ class Reconstruction:
         self.coordinates[:, 0, [1, 4]] = (.3*(hi**5-lo**5)/(hi**3-lo**3))[:, None]
         self.radial = radial_slopes(self.values, self.coordinates)
         self.axial = axial_increments(self.values)
+        xcenter = self.coordinates[..., 0]
+        self.pressure = q[..., 3].copy()
+        self.pressure_radial = radial_slopes(self.pressure, xcenter)
+        self.pressure_axial = axial_increments(self.pressure)
+        density_scale = np.ones_like(self.pressure)
+        thermal_scale = np.ones_like(self.pressure)
+        if positivity:
+            density_scale = positive_scale(q[..., 0], self._linear_minimum(q[..., 0], self.radial[..., 0], self.axial[..., 0]))
+            self.radial[..., 0] *= density_scale
+            self.axial[..., 0] *= density_scale
+            thermal_scale = positive_scale(self.pressure, self._linear_minimum(self.pressure, self.pressure_radial, self.pressure_axial))
+            self.pressure_radial *= thermal_scale
+            self.pressure_axial *= thermal_scale
+        self.pressure_weight = np.ones_like(self.pressure)
+        radial = {(upper, offset): (self._raw_radial(mesh.rf[1:] if upper else mesh.rf[:-1], offset),
+                                     self._auxiliary_pressure(mesh.rf[1:] if upper else mesh.rf[:-1], offset))
+                  for upper in (False, True) for offset in (-.5, 0., .5)}
+        axial = {offset: ((self.values+offset*self.axial)*self.scale, self.pressure+offset*self.pressure_axial)
+                 for offset in (-.5, .5)}
+        if positivity:
+            for raw, auxiliary in (*radial.values(), *axial.values()):
+                proposed = raw[..., 3]-(raw[..., 4]**2+raw[..., 5]**2)/(2*MU0)
+                self.pressure_weight = np.minimum(self.pressure_weight, positive_blend(auxiliary, proposed, self.pressure))
+        self.statistics = limiter_statistics(density_scale, thermal_scale, self.pressure_weight)
+        self._radial_states = {key: self.primitive(*value) for key, value in radial.items()}
+        self._axial_states = {key: self.primitive(*value) for key, value in axial.items()}
 
-    @staticmethod
-    def primitive(values):
+    def _linear_minimum(self, center, radial, axial):
+        x = self.coordinates[..., 0]
+        lo = radial*(.5*self.mesh.rf[:-1, None]**2-x)
+        hi = radial*(.5*self.mesh.rf[1:, None]**2-x)
+        return center+np.minimum(lo, hi)-.5*np.abs(axial)
+
+    def _auxiliary_pressure(self, radius, offset=0):
+        return self.pressure+self.pressure_radial*(.5*radius[:, None]**2-self.coordinates[..., 0])+offset*self.pressure_axial
+
+    def primitive(self, values, auxiliary):
         out = values.copy()
         out[..., 3] -= (out[..., 4]**2+out[..., 5]**2)/(2*MU0)
+        limited = auxiliary+self.pressure_weight*(out[..., 3]-auxiliary)
+        out[..., 3] = np.where(self.pressure_weight < 1, limited, out[..., 3])
         if not np.all(np.isfinite(out)) or np.any(out[..., 0] <= 0) or np.any(out[..., 3] <= 0):
             raise NonphysicalState(f"Reconstructed face/corner state invalid: minimum density {out[..., 0].min():.6g} kg/m^3, thermal pressure {out[..., 3].min():.6g} Pa; no floor applied")
         return out
 
-    def radial_values(self, upper, axial_offset=0):
-        radius = self.mesh.rf[1:] if upper else self.mesh.rf[:-1]
+    def _raw_radial(self, radius, axial_offset=0):
         values = self.values+self.radial*(.5*radius[:, None, None]**2-self.coordinates)+axial_offset*self.axial
         factor = np.ones_like(self.scale)
         factor[:, 0, [1, 4]] = radius[:, None]
         return values*factor
 
+    def radial_values(self, upper, axial_offset=0):
+        return self._radial_states[(upper, axial_offset)]
+
     def faces(self):
         left, right = radial_pairs(self.radial_values(False), self.radial_values(True), reflect=True)
-        low = (self.values-.5*self.axial)*self.scale
-        high = (self.values+.5*self.axial)*self.scale
+        low, high = self._axial_states[-.5], self._axial_states[.5]
         down = np.concatenate((high[:, -1:], high), axis=1)
         up = np.concatenate((low, low[:, :1]), axis=1)
-        return tuple(self.primitive(v) for v in (left, right, down, up))
+        return left, right, down, up
 
     def corners(self):
         left_down, right_down = radial_pairs(self.radial_values(False, -.5), self.radial_values(True, -.5), reflect=True)
@@ -90,11 +130,22 @@ class Reconstruction:
         se = np.concatenate((right_up[:, -1:], right_up), axis=1)
         nw = np.concatenate((left_down, left_down[:, :1]), axis=1)
         ne = np.concatenate((right_down, right_down[:, :1]), axis=1)
-        return tuple(self.primitive(v) for v in (sw, se, nw, ne))
+        return sw, se, nw, ne
 
     def radial_source(self):
         # Integrate pt dr / integral(r dr), NOT pt/r at an assumed point.
-        return (self.values[..., 3]-self.radial[..., 3]*self.mesh.dr**2/12)/self.mesh.r[:, None]
+        original = (self.values[..., 3]-self.radial[..., 3]*self.mesh.dr**2/12)/self.mesh.r[:, None]
+        if np.all(self.pressure_weight == 1):
+            return original
+        auxiliary = (self.pressure-self.pressure_radial*self.mesh.dr**2/12)/self.mesh.r[:, None]
+        # Br is cubic and Bz quadratic in r: four-point Gauss integrates B² dr
+        # exactly. Use the same blended pressure as the face/corner states.
+        magnetic = np.zeros_like(self.pressure)
+        for node, weight in zip(_GAUSS_NODES, _GAUSS_WEIGHTS):
+            raw = self._raw_radial(self.mesh.r+.5*self.mesh.dr*node)
+            magnetic += weight*(raw[..., 4]**2+raw[..., 5]**2)/(2*MU0)
+        auxiliary += .5*self.mesh.dr*magnetic/self.mesh.radial_measure[:, None]
+        return self.pressure_weight*original+(1-self.pressure_weight)*auxiliary
 
 
 def staggered_corner_fields(mesh, br_faces, bz_faces):

@@ -18,8 +18,10 @@
 - [x] Reduce smooth-field numerical diffusion with limited second-order reconstruction;
   verify annular moments, axis forces and the full one-dimensional UCT limit.
 - [x] Add an independent curved closed-flux Grad–Shafranov equilibrium and quantify drift.
-- [ ] Add consistent positivity-preserving reconstruction for low-pressure states;
-  retain coarse-grid failure evidence until this is verified.
+- [x] Add consistent positive face/corner reconstruction for low-pressure states;
+  retain disabled-reference failures, unchanged cell budgets and limiter counts.
+- [ ] Improve cold rarefaction pressure accuracy and test stronger full-update
+  robustness; positive traces alone are not a proof of accurate evolution.
 - [ ] Improve curved-equilibrium force balance and quantify residual artificial flow.
 - [ ] Couple dynamic MHD to prescribed coils, quartz boundaries and genuine vacuum.
 - [ ] Add thermodynamic feedback before interpreting large Ohmic heating as plausible.

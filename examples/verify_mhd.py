@@ -193,13 +193,13 @@ def report(metrics):
               "| Radial cells | Force volume-relative L2 error | First axis-cell acceleration absolute error [m/s²] |", "|---|---:|---:|"]
     for row in metrics["magnetic_force"]:
         lines.append(f"| {row['radial_cells']} | {row['force_volume_relative_L2']:.5g} | {row['first_axis_cell_acceleration_absolute_error_m_s2']:.5g} |")
-    lines += ["", "On this polynomial fixture the volume force error decreases quadratically and the first-axis-cell absolute error cubically. These orders must not be generalized to arbitrary magnetic geometry. [The separate curved closed-flux equilibrium report](EQUILIBRIUM_VERIFICATION.md) records residual drift and coarse-mesh pressure failures.", "",
+    lines += ["", "On this polynomial fixture the volume force error decreases quadratically and the first-axis-cell absolute error cubically. These orders must not be generalized to arbitrary magnetic geometry. [The curved closed-flux equilibrium report](EQUILIBRIUM_VERIFICATION.md) records residual drift, limiter activity and explicitly disabled reference failures. [Low-pressure verification](POSITIVITY_VERIFICATION.md) separately retains cold-rarefaction errors.", "",
               "![Verification plots](../outputs/mhd_verification/verification.png)", "",
               "## Remaining gates", "",
               "- Dynamic plasma–vacuum interface and source-work coupling to external coils.",
               "- Physical chamber ends and open exterior magnetic boundary.",
               "- Regime-appropriate transport and Hall/two-fluid validation.",
-              "- Positivity-preserving reconstruction and better curved-equilibrium force balance.",
+              "- Stronger full-update robustness, cold-rarefaction accuracy and curved-equilibrium force balance.",
               "- Converged closed-flux formation/lifetime tests.",
               "- Three-dimensional stability and particle-confinement evidence, if claimed.", "",
               "The broad FRC-simulation goal remains active. [Numerical contract](MHD_NUMERICS.md)."]
