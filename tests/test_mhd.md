@@ -12,12 +12,19 @@ Unsupported-wall fixtures reconstruct total energy at positive pressure so the
 boundary contract, rather than a separately invalid energy state, is tested.
 At a fixed spatial grid, step refinement against a much finer time reference
 independently verifies second-order RK2 time accuracy without confusing it with
-the first-order spatial error.
+spatial error. Smooth early-time refinement uses both spatial orders, while
+the report separately retains the less regular quarter-period limiter-switch
+measurement; its temporal convergence need not have clean fourfold ratios.
 The isolated magnetic acceleration is checked against analytic J×B independently
-of gas pressure. A static total-pressure equilibrium starts force balanced;
-subsequent artificial flow caused by numerical diffusion must decrease with
-refinement. This does not claim exact equilibrium preservation or FRC balance.
+of gas pressure. A static total-pressure equilibrium starts force balanced.
+First-order artificial flow must decrease with refinement, while the reconstructed
+polynomial fixture must stay near roundoff. This does not claim general FRC balance.
 Magnetic-force convergence uses the physical annular volume norm and includes
 the axis cell. A grid-index-trimmed unweighted norm would change its physical
 region with refinement. The separate report retains first-axis-cell absolute
-acceleration error; it decreases only linearly for this first-order method.
+acceleration error: linear for the reference method and cubic for the new
+axis-regular reconstruction on this polynomial fixture. Polynomial annular
+averages independently test the axis parity and moment reconstruction.
+Both first- and second-order UCT reductions must retain full 1-D dissipation.
+The second-order constant-total-pressure straight-field fixture is preserved
+to roundoff; the first-order baseline still has measurable decreasing drift.

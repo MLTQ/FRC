@@ -15,7 +15,12 @@
 - [ ] Add physical B-dot, flux-loop, Rogowski and optical diagnostic response models.
 - [x] Implement a conservative bounded-domain resistive-MHD reference kernel;
   verify cylindrical fast waves, 2-D advection, shock propagation and heating.
-- [ ] Reduce dynamic numerical diffusion and verify force-balanced magnetic equilibria.
+- [x] Reduce smooth-field numerical diffusion with limited second-order reconstruction;
+  verify annular moments, axis forces and the full one-dimensional UCT limit.
+- [x] Add an independent curved closed-flux Grad–Shafranov equilibrium and quantify drift.
+- [ ] Add consistent positivity-preserving reconstruction for low-pressure states;
+  retain coarse-grid failure evidence until this is verified.
+- [ ] Improve curved-equilibrium force balance and quantify residual artificial flow.
 - [ ] Couple dynamic MHD to prescribed coils, quartz boundaries and genuine vacuum.
 - [ ] Add thermodynamic feedback before interpreting large Ohmic heating as plausible.
 - [ ] Test nonaxisymmetric stability only after a 3-D solver exists.

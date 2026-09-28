@@ -1,7 +1,9 @@
 # Developmental dynamic MHD solver
 `AxisymmetricMHD` evolves conservative mass, both poloidal momenta, total energy
 and corner flux together with SSP RK2. `MHDParameters` exposes gamma, physical
-scalar resistivity and CFL; no diffusion/stability term is hidden. Timestep
+scalar resistivity, CFL and spatial order (default 2; first-order reference
+remains selectable). Second-order traces and metric source integration live
+in mhd_reconstruction. No diffusion/stability term is hidden. Timestep
 restrictions combine directional fast waves and explicit resistive diffusion.
 `step` validates both stages before committing; no pressure/density floor or
 energy repair is permitted. `advance` retains partial state if a step budget

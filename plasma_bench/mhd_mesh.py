@@ -53,6 +53,10 @@ class MHDMesh:
         return np.diff(self.rf**2)/2
 
     @property
+    def radial_centroid(self):
+        return np.diff(self.rf**3)/(3*self.radial_measure)
+
+    @property
     def volumes(self):
         return np.broadcast_to(2*np.pi*self.radial_measure[:, None]*self.dz, (self.nr, self.nz))
 
@@ -68,7 +72,8 @@ class MHDMesh:
 
     def cell_fields(self, psi):
         br, bz = self.face_fields(psi)
-        return (br[:-1]+br[1:])/2, (bz[:, :-1]+bz[:, 1:])/2
+        weight = ((self.radial_centroid-self.rf[:-1])/self.dr)[:, None]
+        return (1-weight)*br[:-1]+weight*br[1:], (bz[:, :-1]+bz[:, 1:])/2
 
     def divergence(self, psi):
         br, bz = self.face_fields(psi)

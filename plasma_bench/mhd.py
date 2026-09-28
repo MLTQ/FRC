@@ -5,6 +5,7 @@ from scipy.constants import mu_0 as MU0
 from .mhd_state import MHDState, primitive, integrated_quantities
 from .mhd_flux import ghost_cells, rusanov, fast_speed
 from .mhd_induction import ideal_emf, resistive_emf, resistive_energy_flux, ohmic_power
+from .mhd_reconstruction import Reconstruction
 
 
 @dataclass(frozen=True)
@@ -12,6 +13,7 @@ class MHDParameters:
     gamma: float = 5/3
     resistivity: float = 0.0
     cfl: float = .25
+    spatial_order: int = 2
 
     def __post_init__(self):
         if not np.isfinite(self.gamma) or self.gamma <= 1:
@@ -20,6 +22,8 @@ class MHDParameters:
             raise ValueError("Resistivity must be finite and nonnegative [ohm m]")
         if not np.isfinite(self.cfl) or not 0 < self.cfl <= .4:
             raise ValueError("Use 0 < CFL <= 0.4 for this explicit reference method")
+        if isinstance(self.spatial_order, bool) or self.spatial_order not in (1, 2):
+            raise ValueError("Spatial order must be 1 (reference) or 2 (limited reconstruction)")
 
 
 class AxisymmetricMHD:
@@ -54,8 +58,13 @@ class AxisymmetricMHD:
         q = primitive(mesh, state, par.gamma)
         ghost = ghost_cells(q)
         brf, bzf = mesh.face_fields(state.psi)
-        fr, _ = rusanov(ghost[:-1, 1:-1], ghost[1:, 1:-1], brf, 0, par.gamma)
-        fz, _ = rusanov(ghost[1:-1, :-1], ghost[1:-1, 1:], bzf, 1, par.gamma)
+        reconstruction = Reconstruction(mesh, q) if par.spatial_order == 2 else None
+        if reconstruction is None:
+            left, right, down, up = ghost[:-1, 1:-1], ghost[1:, 1:-1], ghost[1:-1, :-1], ghost[1:-1, 1:]
+        else:
+            left, right, down, up = reconstruction.faces()
+        fr, _ = rusanov(left, right, brf, 0, par.gamma)
+        fz, _ = rusanov(down, up, bzf, 1, par.gamma)
         er = resistive_emf(mesh, state.psi, par.resistivity)
         sr, sz = resistive_energy_flux(mesh, q, er)
         fr[..., 3] += sr
@@ -63,8 +72,8 @@ class AxisymmetricMHD:
         derivative = -np.diff(mesh.rf[:, None, None]*fr, axis=0)/mesh.radial_measure[:, None, None]
         derivative -= np.diff(fz, axis=1)/mesh.dz
         pt = q[..., 3]+(q[..., 4]**2+q[..., 5]**2)/(2*MU0)
-        derivative[..., 1] += pt/mesh.r[:, None]
-        emf = ideal_emf(mesh, ghost, brf, bzf, par.gamma)+er
+        derivative[..., 1] += pt/mesh.r[:, None] if reconstruction is None else reconstruction.radial_source()
+        emf = ideal_emf(mesh, ghost, brf, bzf, par.gamma, reconstruction)+er
         dpsi = -mesh.rf[:, None]*emf
         return MHDState(derivative, dpsi), ohmic_power(mesh, er, par.resistivity)
 

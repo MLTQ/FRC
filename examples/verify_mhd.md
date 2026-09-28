@@ -11,6 +11,11 @@ temporal reference, without confusing spatial and temporal truncation error.
 A known static magnetic-pressure equilibrium measures spurious flow caused by
 numerical diffusion across refinements; the report does not call it an FRC.
 Analytic magnetic-force comparison includes both volume-weighted error and the
-first-axis-cell absolute acceleration error, exposing weaker pointwise axis
-accuracy rather than hiding it in a global conservation number.
+first-axis-cell absolute acceleration error, keeping local axis accuracy
+visible alongside global conservation and volume norms.
 Refinement plots label actual cell-count ticks and suppress crowded minor labels.
+The default measurements now use second-order reconstruction. The companion
+mhd_accuracy module isolates smooth and limiter-switching temporal cases and
+reruns first-order comparisons at identical mesh/parameters. Reports explicitly
+distinguish the special straight-field equilibrium from the independently
+verified curved equilibrium and its unresolved positivity/drift limitations.

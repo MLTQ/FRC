@@ -145,3 +145,6 @@ diffusion are in [MHD_NUMERICS.md](MHD_NUMERICS.md); measured wave, shock,
 advection, resistive-heating and time-convergence checks are in
 [MHD_VERIFICATION.md](MHD_VERIFICATION.md). Its gas-filled conducting-wall
 verification cylinder must not be confused with the quartz/plasma/vacuum setup.
+The [independent closed-flux equilibrium checks](EQUILIBRIUM_VERIFICATION.md)
+test curved magnetic stress, reversed Bz and residual artificial motion. They
+start from a prescribed equilibrium and do not demonstrate dynamic formation.

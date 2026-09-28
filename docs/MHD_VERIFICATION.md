@@ -10,21 +10,21 @@ They do not substitute for a moving plasma surrounded by vacuum or prove FRC for
 
 | Case | Cells | Error quantity | Error |
 |---|---:|---|---:|
-| fast_wave | 24 | velocity relative L2 | 0.098277 |
-| fast_wave | 48 | velocity relative L2 | 0.050539 |
-| fast_wave | 96 | velocity relative L2 | 0.02562 |
-| fast_wave | 192 | velocity relative L2 | 0.012898 |
-| advection | 12 | flux relative L2 | 0.16841 |
-| advection | 24 | flux relative L2 | 0.093823 |
-| advection | 48 | flux relative L2 | 0.049707 |
-| advection | 96 | flux relative L2 | 0.025615 |
-| resistive_decay | 16 | flux relative L2 | 0.0012656 |
-| resistive_decay | 32 | flux relative L2 | 0.00078117 |
-| resistive_decay | 64 | flux relative L2 | 0.00042916 |
-| resistive_decay | 128 | flux relative L2 | 0.00022434 |
-| sod | 80 | density absolute L1 [kg/m³] | 0.035594 |
-| sod | 160 | density absolute L1 [kg/m³] | 0.027316 |
-| sod | 320 | density absolute L1 [kg/m³] | 0.020318 |
+| fast_wave | 24 | velocity relative L2 | 0.0019028 |
+| fast_wave | 48 | velocity relative L2 | 0.00047483 |
+| fast_wave | 96 | velocity relative L2 | 0.00011849 |
+| fast_wave | 192 | velocity relative L2 | 3.0476e-05 |
+| advection | 12 | flux relative L2 | 0.0095709 |
+| advection | 24 | flux relative L2 | 0.0025989 |
+| advection | 48 | flux relative L2 | 0.00038606 |
+| advection | 96 | flux relative L2 | 5.3894e-05 |
+| resistive_decay | 16 | flux relative L2 | 0.00068273 |
+| resistive_decay | 32 | flux relative L2 | 0.00017065 |
+| resistive_decay | 64 | flux relative L2 | 4.2598e-05 |
+| resistive_decay | 128 | flux relative L2 | 1.0636e-05 |
+| sod | 80 | density absolute L1 [kg/m³] | 0.017889 |
+| sod | 160 | density absolute L1 [kg/m³] | 0.0094437 |
+| sod | 320 | density absolute L1 [kg/m³] | 0.0051069 |
 
 The fast wave uses analytic cylindrical Bessel eigenfunctions at quarter period,
 including compression, magnetic advection and pressure response. Its linearization
@@ -33,58 +33,74 @@ magnetic perturbation. The exact Sod comparison excludes the second periodic Rie
 
 ## Temporal refinement at fixed mesh
 
-Cylindrical fast wave on 24 radial cells, compared with a finer **time** reference at the same spatial resolution.
+Cylindrical fast wave on 24 radial cells, epsilon=1e-3, t=0.04 s, compared with a finer **time** reference at the same spatial resolution. This smooth early-time interval isolates time integration.
 
 | Steps | Reference steps | Velocity relative L2 error |
 |---|---:|---:|
-| 53 | 1678 | 4.3115e-05 |
-| 105 | 1678 | 1.1558e-05 |
-| 210 | 1678 | 2.9315e-06 |
+| 16 | 512 | 4.011e-05 |
+| 32 | 512 | 9.9831e-06 |
+| 64 | 512 | 2.4646e-06 |
 
-The error decreases approximately fourfold when the time step halves, as expected for SSP RK2. This does not remove the measured first-order spatial error.
+The smooth-case error decreases approximately fourfold when the time step halves. At quarter period, reconstruction limiters switch branches and the measured ratios are less regular. That longer-interval result is retained below; second-order RK2 does not guarantee clean ratios through nonsmooth limiter switches.
+
+| Quarter-period steps | Reference steps | Velocity relative L2 error |
+|---|---:|---:|
+| 53 | 1678 | 5.8251e-06 |
+| 105 | 1678 | 1.3992e-06 |
+| 210 | 1678 | 3.9253e-07 |
+
+## Identical-grid first-order comparison
+
+The retained first-order reference is rerun with the same source tree, mesh, physical parameters and end time.
+
+| Case | Cells | First-order error | Reconstructed error | Error reduction |
+|---|---:|---:|---:|---:|
+| fast_wave | 96 | 0.02562 | 0.00011849 | 216× |
+| advection | 48 | 0.049707 | 0.00038606 | 129× |
+| resistive_decay | 64 | 0.00042916 | 4.2598e-05 | 10.1× |
+| sod | 160 | 0.027316 | 0.0094437 | 2.89× |
 
 ## Conservation and heating
 
 Maximum relative mass change: 2.83e-16.
-Maximum relative total-energy change: 2.06e-16.
+Maximum relative total-energy change: 4.71e-16.
 Magnetic fields are obtained from evolving corner flux, maintaining telescoping face divergence.
 The independent tests also check uniform axis balance and the full one-dimensional UCT dissipation.
 
 | Radial cells | Physical Joule heat vs magnetic-energy loss discrepancy |
 |---|---:|
-| 16 | 2.989% |
-| 32 | 1.386% |
-| 64 | 0.665% |
-| 128 | 0.326% |
+| 16 | 0.499% |
+| 32 | 0.126% |
+| 64 | 0.032% |
+| 128 | 0.008% |
 
 Total energy is conserved while magnetic energy becomes internal energy; no separate
 Joule source is added to total energy. The physical heating quadrature discrepancy
 measures spatial error plus numerical magnetic diffusion; it is not forced to zero.
-The first-order Rusanov/UCT scheme remains relatively diffusive. A higher-order,
-less-dissipative method and an actual formation convergence study are still needed.
+The reconstructed method substantially reduces artificial diffusion, but topology-sensitive formation still requires its own convergence and transport checks.
 
 ## Static magnetic-pressure balance
 
 The fixture Bz=B0(1-alpha r²), p+Bz²/(2mu0)=constant has known zero continuum acceleration.
-Initial discrete force balance is accurate to roundoff. Numerical magnetic diffusion subsequently changes it and drives artificial flow. This is measured, not suppressed by a force correction.
+The second-order total-pressure reconstruction preserves this particular polynomial equilibrium to roundoff. The first-order method's nonzero, decreasing artificial flow remains covered by tests. No force correction or energy reset is applied.
 
 | Radial cells | Maximum spurious velocity / reference Alfven speed |
 |---|---:|
-| 24 | 0.00021286 |
-| 48 | 0.00012499 |
-| 96 | 6.8692e-05 |
-| 192 | 3.6382e-05 |
+| 24 | 3.5527e-16 |
+| 48 | 3.5584e-16 |
+| 96 | 7.5969e-16 |
+| 192 | 7.2852e-16 |
 
 The unbalanced magnetic force is independently compared with volume-averaged analytic J×B at rho=1 kg/m³. The physical volume norm includes the axis; only the outer wall region is excluded.
 
 | Radial cells | Force volume-relative L2 error | First axis-cell acceleration absolute error [m/s²] |
 |---|---:|---:|
-| 24 | 0.0020849 | 0.013849 |
-| 48 | 0.00056571 | 0.0069395 |
-| 96 | 0.0001503 | 0.0034716 |
-| 192 | 3.9481e-05 | 0.001736 |
+| 24 | 0.00079659 | 2.0496e-05 |
+| 48 | 0.0001959 | 2.562e-06 |
+| 96 | 4.8972e-05 | 3.2025e-07 |
+| 192 | 1.2292e-05 | 4.0031e-08 |
 
-The first-axis-cell acceleration error decreases linearly, even though the volume-weighted norm improves faster. Higher-order axis/face reconstruction remains necessary for precise core forces. A straight-field equilibrium does not verify FRC equilibrium preservation.
+On this polynomial fixture the volume force error decreases quadratically and the first-axis-cell absolute error cubically. These orders must not be generalized to arbitrary magnetic geometry. [The separate curved closed-flux equilibrium report](EQUILIBRIUM_VERIFICATION.md) records residual drift and coarse-mesh pressure failures.
 
 ![Verification plots](../outputs/mhd_verification/verification.png)
 
@@ -93,7 +109,8 @@ The first-axis-cell acceleration error decreases linearly, even though the volum
 - Dynamic plasma–vacuum interface and source-work coupling to external coils.
 - Physical chamber ends and open exterior magnetic boundary.
 - Regime-appropriate transport and Hall/two-fluid validation.
-- Equilibrium preservation and converged closed-flux formation/lifetime tests.
+- Positivity-preserving reconstruction and better curved-equilibrium force balance.
+- Converged closed-flux formation/lifetime tests.
 - Three-dimensional stability and particle-confinement evidence, if claimed.
 
 The broad FRC-simulation goal remains active. [Numerical contract](MHD_NUMERICS.md).

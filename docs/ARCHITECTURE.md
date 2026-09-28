@@ -45,9 +45,12 @@ metadata is JSON. JSON configurations and a CLI keep runs reproducible without
 a notebook. Sweeps replace typed configurations, not hidden globals.
 
 The developmental dynamic kernel is `mhd.py`, with explicit modules for annular
-mesh geometry, conservative state, Rusanov fluxes, compatible induction and
-analytic benchmarks. It evolves density, poloidal momentum, total energy and
-corner flux with SSP RK2. Its first-order spatial dissipation is measured.
+mesh geometry, conservative state, Rusanov fluxes, compatible induction,
+axis-regular reconstruction and analytic benchmarks. It evolves density,
+poloidal momentum, total energy and corner flux with SSP RK2. Both first-order
+reference and default second-order spatial errors are measured. The independent
+`mhd_equilibrium` module supplies a continuum closed-flux Grad–Shafranov fixture;
+it does not use the fluid solver to construct its reference force balance.
 It fills a verification cylinder with fluid, with a conducting radial wall and
 periodic z. The original Stage 2 formation entry point still refuses execution
 until moving-plasma/vacuum and source-work coupling are verified; it does not

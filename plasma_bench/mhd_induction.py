@@ -2,16 +2,20 @@
 import numpy as np
 from scipy.constants import mu_0 as MU0
 from .mhd_flux import fast_speed
+from .mhd_reconstruction import staggered_corner_fields
 
 
-def ideal_emf(mesh, ghost, br_faces, bz_faces, gamma):
-    sw, se = ghost[:-1, :-1], ghost[1:, :-1]
-    nw, ne = ghost[:-1, 1:], ghost[1:, 1:]
-    # Staggered normal fields become two transverse states at a corner.
-    bz_pad = np.pad(bz_faces, ((1, 1), (0, 0)), mode="edge")
-    bz_left, bz_right = bz_pad[:-1], bz_pad[1:]
-    br_pad = np.concatenate((br_faces[:, -1:], br_faces, br_faces[:, :1]), axis=1)
-    br_down, br_up = br_pad[:, :-1], br_pad[:, 1:]
+def ideal_emf(mesh, ghost, br_faces, bz_faces, gamma, reconstruction=None):
+    if reconstruction is None:
+        sw, se = ghost[:-1, :-1], ghost[1:, :-1]
+        nw, ne = ghost[:-1, 1:], ghost[1:, 1:]
+        bz_pad = np.pad(bz_faces, ((1, 1), (0, 0)), mode="edge")
+        bz_left, bz_right = bz_pad[:-1], bz_pad[1:]
+        br_pad = np.concatenate((br_faces[:, -1:], br_faces, br_faces[:, :1]), axis=1)
+        br_down, br_up = br_pad[:, :-1], br_pad[:, 1:]
+    else:
+        sw, se, nw, ne = reconstruction.corners()
+        bz_left, bz_right, br_down, br_up = staggered_corner_fields(mesh, br_faces, bz_faces)
     ar = np.maximum.reduce([np.abs(q[..., 1])+fast_speed(q, 0, gamma) for q in (sw, se, nw, ne)])
     az = np.maximum.reduce([np.abs(q[..., 2])+fast_speed(q, 1, gamma) for q in (sw, se, nw, ne)])
     electric = .25*((sw[..., 1]+nw[..., 1])*bz_left+(se[..., 1]+ne[..., 1])*bz_right

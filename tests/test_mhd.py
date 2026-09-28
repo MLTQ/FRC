@@ -7,6 +7,7 @@ from plasma_bench.mhd_state import from_primitive, primitive, NonphysicalState
 from plasma_bench.mhd import AxisymmetricMHD, MHDParameters
 from plasma_bench.mhd_flux import ghost_cells, fast_speed
 from plasma_bench.mhd_induction import ideal_emf
+from plasma_bench.mhd_reconstruction import Reconstruction
 from plasma_bench.mhd_benchmarks import radial_fast_mode, advected_flux, resistive_bessel_mode, sod_initial, sod_exact, radial_pressure_balance, radial_average
 
 
@@ -64,9 +65,9 @@ def test_cylindrical_fast_wave_converges_with_motion_and_advection():
         assert q[..., 1].max() > 0
         assert abs(solver.diagnostics()["total_energy_relative_change"]) < 1e-12
         assert abs(solver.diagnostics()["mass_relative_change"]) < 1e-12
-    assert errors[1] < .75*errors[0]
-    assert errors[2] < .75*errors[1]
-    assert errors[-1] < .08
+    assert errors[1] < errors[0]/3.5
+    assert errors[2] < errors[1]/3.5
+    assert errors[-1] < .0002
 
 
 def test_axial_advection_of_two_dimensional_flux_converges():
@@ -81,8 +82,8 @@ def test_axial_advection_of_two_dimensional_flux_converges():
         field = max(np.abs(x).max() for x in mesh.face_fields(solver.state.psi))
         assert np.abs(mesh.divergence(solver.state.psi)).max()*mesh.dr/field < 5e-14
         assert abs(solver.diagnostics()["total_energy_relative_change"]) < 1e-12
-    assert errors[1] < .75*errors[0]
-    assert errors[2] < .75*errors[1]
+    assert errors[1] < errors[0]/3
+    assert errors[2] < errors[1]/3
 
 
 def test_resistive_heating_and_decay_without_total_energy_injection():
@@ -94,7 +95,7 @@ def test_resistive_heating_and_decay_without_total_energy_injection():
     solver.advance(t)
     after = solver.diagnostics()
     expected = initial.psi*np.exp(-diffusivity*k*k*t)
-    assert np.linalg.norm(solver.state.psi-expected)/np.linalg.norm(expected) < .005
+    assert np.linalg.norm(solver.state.psi-expected)/np.linalg.norm(expected) < 1e-4
     magnetic_loss = before["magnetic_energy_j"]-after["magnetic_energy_j"]
     thermal_gain = after["internal_energy_j"]-before["internal_energy_j"]
     assert thermal_gain > 0 and after["physical_ohmic_heat_j"] > 0
@@ -137,15 +138,16 @@ def test_nonphysical_states_and_unsafe_steps_are_rejected():
         AxisymmetricMHD(mesh, bad)
 
 
-def test_rk2_temporal_order_at_fixed_spatial_grid():
+@pytest.mark.parametrize("order", [1, 2])
+def test_rk2_temporal_order_at_fixed_spatial_grid(order):
     mesh = MHDMesh(1, 1, 24, 4)
-    initial, omega = radial_fast_mode(mesh)
-    end_time = np.pi/(2*omega)
-    baseline = AxisymmetricMHD(mesh, initial).timestep_limit()
+    initial, _ = radial_fast_mode(mesh, epsilon=1e-3)
+    # Isolate smooth time integration before quarter-period limiter switches.
+    # The less regular longer interval remains a separate report measurement.
+    end_time = .04
     velocities = []
-    for fraction in (.8, .4, .2, .025):
-        solver = AxisymmetricMHD(mesh, initial)
-        steps = int(np.ceil(end_time/(fraction*baseline)))
+    for steps in (16, 32, 64, 512):
+        solver = AxisymmetricMHD(mesh, initial, MHDParameters(spatial_order=order))
         dt = end_time/steps
         for _ in range(steps):
             solver.step(dt)
@@ -157,6 +159,7 @@ def test_rk2_temporal_order_at_fixed_spatial_grid():
 
 def test_magnetic_force_against_analytic_current_cross_field():
     errors = []
+    axis_errors = []
     for n in (24, 48, 96):
         mesh = MHDMesh(1, 1, n, 4)
         initial, b0, alpha = radial_pressure_balance(mesh, balanced=False)
@@ -169,21 +172,60 @@ def test_magnetic_force_against_analytic_current_cross_field():
         weights = mesh.volumes[:, 0]
         errors.append(np.sqrt(np.sum((actual[interior]-expected[interior])**2*weights[interior])/
                               np.sum(expected[interior]**2*weights[interior])))
+        axis_errors.append(abs(actual[0]-expected[0]))
         assert np.all(actual[interior] > 0)
     assert errors[0]/errors[1] > 3.2
     assert errors[1]/errors[2] > 3.2
+    assert axis_errors[0]/axis_errors[1] > 7
+    assert axis_errors[1]/axis_errors[2] > 7
 
 
-def test_equilibrium_numerical_flow_decreases_with_refinement():
+@pytest.mark.parametrize("order", [1, 2])
+def test_straight_field_equilibrium_preservation(order):
     flows = []
     for n in (24, 48, 96):
         mesh = MHDMesh(1, 1, n, 4)
         initial, _, _ = radial_pressure_balance(mesh)
-        solver = AxisymmetricMHD(mesh, initial)
+        solver = AxisymmetricMHD(mesh, initial, MHDParameters(spatial_order=order))
         rhs, _ = solver.rhs(initial)
         assert np.abs(rhs.conserved[..., 1]).max() < 2e-12
         solver.advance(.2)
         flows.append(solver.diagnostics()["max_velocity_m_s"])
         assert abs(solver.diagnostics()["total_energy_relative_change"]) < 1e-12
-    assert flows[1] < .8*flows[0]
-    assert flows[2] < .8*flows[1]
+    if order == 1:
+        assert flows[1] < .8*flows[0]
+        assert flows[2] < .8*flows[1]
+    else:
+        assert max(flows) < 2e-13
+
+
+def test_regular_polynomial_reconstruction_including_axis():
+    mesh = MHDMesh(1, 1, 24, 8)
+    q = np.zeros((mesh.nr, mesh.nz, 6))
+    q[..., 0] = radial_average(mesh, lambda r: 1+.2*r*r)[:, None]
+    q[..., 1] = radial_average(mesh, lambda r: r*(1+.3*r*r))[:, None]
+    q[..., 2] = radial_average(mesh, lambda r: .2+.1*r*r)[:, None]
+    q[..., 4] = radial_average(mesh, lambda r: np.sqrt(MU0)*.1*r)[:, None]
+    q[..., 5] = radial_average(mesh, lambda r: np.sqrt(MU0)*(1+.2*r*r))[:, None]
+    q[..., 3] = 3-(q[..., 4]**2+q[..., 5]**2)/(2*MU0)
+    left, right, _, _ = Reconstruction(mesh, q).faces()
+    r = mesh.rf[:, None]
+    for trace in (left[1:-1], right[1:-1]):
+        assert_allclose(trace[..., 0], np.broadcast_to(1+.2*r[1:-1]**2, trace[..., 0].shape), atol=2e-14)
+        assert_allclose(trace[..., 1], np.broadcast_to(r[1:-1]*(1+.3*r[1:-1]**2), trace[..., 1].shape), atol=2e-14)
+        assert_allclose(trace[..., 3]+(trace[..., 4]**2+trace[..., 5]**2)/(2*MU0), 3, atol=2e-14)
+    assert_allclose(left[0, :, 1], 0, atol=0)
+    assert_allclose(right[0, :, 4], 0, atol=0)
+
+
+def test_reconstructed_uct_has_full_one_dimensional_limit():
+    mesh = MHDMesh(1, 1, 24, 8)
+    initial, _ = radial_fast_mode(mesh, epsilon=.01, time=.04)
+    q = primitive(mesh, initial, 5/3)
+    reconstruction = Reconstruction(mesh, q)
+    br, bz = mesh.face_fields(initial.psi)
+    emf = ideal_emf(mesh, ghost_cells(q), br, bz, 5/3, reconstruction)
+    left, right, _, _ = reconstruction.faces()
+    speed = np.maximum(np.abs(left[..., 1])+fast_speed(left, 0, 5/3), np.abs(right[..., 1])+fast_speed(right, 0, 5/3))
+    expected = .5*(left[..., 1]*left[..., 5]+right[..., 1]*right[..., 5])-.5*speed*(right[..., 5]-left[..., 5])
+    assert_allclose(emf[1:-1, :-1], expected[1:-1], rtol=2e-13, atol=2e-18)
