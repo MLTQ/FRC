@@ -23,6 +23,8 @@ is normalized to 0.3 times the bias at the chamber center in vacuum. Its unit
 geometry and plasma constants exercise coupling, not experimental argon transport.
 The pulse time step is capped at 0.002 s (at least 20 steps per rise/fall), in
 addition to CFL/diffusion constraints; temporal refinement is reported separately.
+`vacuum_boundary` and `multipole_modes` select the fixed comparison or infinite
+exterior; all other pulse and plasma inputs remain identical for comparisons.
 
 All dimensions, times and fields are SI verification fixtures, not suggested
 experimental parameters. Cell force quadrature evaluates strictly positive r;

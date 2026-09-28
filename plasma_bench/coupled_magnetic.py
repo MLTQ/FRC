@@ -34,8 +34,8 @@ class MagneticStepper:
     def advection(self, total_flux):
         m = self.mapping
         dr, dz = np.gradient(total_flux, m.field.dr, m.field.dz, edge_order=2)
-        return hstack((diags(dr[1:-1, 1:-1].ravel())@m.interpolate_r,
-                       diags(dz[1:-1, 1:-1].ravel())@m.interpolate_z), format="csr")
+        return hstack((diags(m.grid_vector(dr))@m.interpolate_r,
+                       diags(m.grid_vector(dz))@m.interpolate_z), format="csr")
 
     def step(self, gas, induced, external_before, external_after, dt):
         if not np.isfinite(dt) or dt <= 0:
@@ -43,7 +43,7 @@ class MagneticStepper:
         m, tau = self.mapping, dt/2
         q = gas_primitive(m.fluid, gas, self.gamma)
         uold = m.interior(induced)
-        ext0, ext1 = m.interior(external_before), m.interior(external_after)
+        ext0, ext1 = m.grid_vector(external_before), m.grid_vector(external_after)
         ext_mid = .5*(np.asarray(external_before)+np.asarray(external_after))
         delta_external = ext1-ext0
         velocity = np.concatenate((q[..., 1].ravel(), q[..., 2].ravel()))

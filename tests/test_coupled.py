@@ -74,9 +74,10 @@ def test_independent_continuum_magnetic_force_converges():
 
 
 @pytest.mark.parametrize("resistivity", [0., .01*MU0])
-def test_magnetic_coil_work_lorentz_exchange_and_ohmic_heat(resistivity):
+@pytest.mark.parametrize("boundary", ["fixed", "multipole"])
+def test_magnetic_coil_work_lorentz_exchange_and_ohmic_heat(resistivity, boundary):
     mesh, grid = aligned_meshes(8)
-    mapping = CouplingMesh(mesh, grid)
+    mapping = CouplingMesh(mesh, grid, boundary=boundary)
     u = compact_flux(grid.r[:, None], grid.z[None, :], amplitude=.1)
     gas = gas_from_primitive(mesh, 1., 1.)
     ext0 = .5*np.sqrt(MU0)*grid.r[:, None]**2+np.zeros((1, grid.nz))

@@ -9,6 +9,10 @@ and pass magnetic flux. The larger exterior has no density, pressure or
 conductivity: only a quasistatic elliptic magnetic field. The finite outer
 boundary sets induced psi to zero. Prescribed analytic filament coils and a
 uniform bias enter through the independent `VacuumField` interface.
+The fixed-boundary derivation below remains a comparison. The optional
+[multipole exterior](OPEN_BOUNDARY.md) extends the same symmetric energy system
+to infinity, adding algebraic modal rows and the beyond-grid field energy;
+its independent checks are in [OPEN_BOUNDARY_VERIFICATION.md](OPEN_BOUNDARY_VERIFICATION.md).
 Prescribed source filaments must lie outside the fluid chamber. The exterior
 zero-current constraint concerns the induced response, excluding those sources.
 

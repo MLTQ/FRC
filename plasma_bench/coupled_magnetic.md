@@ -22,3 +22,9 @@ See docs/COUPLED_NUMERICS.md for derivation, assumptions and limitations.
 
 Adjoint pairing proves discrete work cancellation, not spatial force accuracy,
 shock fidelity or free-boundary validity. These require independent checks.
+
+With multipole boundaries, the same K includes unbounded exterior magnetic
+energy. Algebraic vacuum rows also include the modal amplitudes; C, R and source
+forcing have zero modal rows. Prescribed coil/bias fields are sampled on physical
+nodes, never projected into the decaying induced-field basis. The paired work
+identity therefore remains unchanged, including exterior energy beyond the grid.

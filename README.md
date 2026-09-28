@@ -26,6 +26,8 @@ positive reconstruction and conserved budgets from adequate flow resolution.
 The [dynamic coupling study](docs/COUPLED_VERIFICATION.md) measures independent
 force/advection/diffusion errors, external-source work and finite-domain error.
 Its [energy and boundary contract](docs/COUPLED_NUMERICS.md) defines the scope.
+The [open-boundary study](docs/OPEN_BOUNDARY_VERIFICATION.md) now verifies a
+decaying magnetic exterior to infinity, including its energy beyond the grid.
 
 ## Use the existing environment
 
@@ -40,6 +42,7 @@ Its [energy and boundary contract](docs/COUPLED_NUMERICS.md) defines the scope.
 .venv/bin/python -m examples.verify_equilibrium
 .venv/bin/python -m examples.verify_positivity
 .venv/bin/python -m examples.verify_coupled
+.venv/bin/python -m examples.verify_open_boundary
 ```
 
 Open [vacuum playback](outputs/vacuum/viewer.html) or
@@ -100,6 +103,7 @@ conductivity without an ionization/transport closure. See the research queue.
 - `numerics.py`, `plasma.py`: compatible flux operators, mixed diffusion/vacuum solver.
 - `mhd*.py`: developmental conservative dynamics and independent analytic benchmarks.
 - `coupled*.py`, `coupling_mesh.py`: gas/magnetic splitting, prescribed coils and genuine exterior vacuum.
+- `open_boundary.py`: decaying magnetic multipoles and full-space magnetic energy.
 - `diagnostics.py`, `topology.py`: validity scales, energy, O/X points, closed flux.
 - `simulation.py`, `results.py`: orchestration and reproducible numeric archives.
 - `experiments.py`, `visualization.py`, `cli.py`: sweeps, plots and playback.
@@ -121,9 +125,10 @@ Second-order reconstruction reduces measured numerical diffusion and axis-force
 error; local admissibility limiting resolves the identified negative face-pressure
 failures without cell floors. A fixed gas-filled chamber now couples moving fluid
 to prescribed coils and genuine surrounding magnetic vacuum with a measured
-source-work budget. The exterior contains no fluid atmosphere. Next, address
-free interfaces, realistic end conditions, source-driven skin-layer resolution
-and magnetic-shock fidelity, alongside conductivity/Hall applicability.
+source-work budget. A verified multipole boundary extends the induced magnetic
+field to infinity and counts its exterior energy, without adding fluid there.
+Next, address free interfaces, realistic end conditions, source-driven skin-layer
+resolution and magnetic-shock fidelity, alongside conductivity/Hall applicability.
 The coil-driven Stage 2 entry point still raises an explicit `NotImplementedError`
 until the physical formation requirements are verified. The dynamic references
 are separately scriptable through `plasma_bench.mhd.AxisymmetricMHD` and
@@ -131,6 +136,20 @@ are separately scriptable through `plasma_bench.mhd.AxisymmetricMHD` and
 energy and must not be interchanged with the former's total-MHD state.
 Cold-rarefaction pressure accuracy and curved-equilibrium drift remain measured
 numerical limitations to address alongside that integration.
+
+To run the numerical coil fixture with the infinite magnetic exterior:
+
+```python
+from plasma_bench.coupled_benchmarks import coil_pulse
+model = coil_pulse(16, vacuum_boundary="multipole", multipole_modes=12)
+model.advance(0.1)
+print(model.diagnostics())
+```
+
+These unit-scale SI verification parameters are not a physical argon experiment.
+The matching surface must enclose the entire fluid source sphere; mode and mesh
+refinement remain required. `vacuum_boundary="fixed"` retains the historical
+finite-wall comparison. Neither option yet provides an evolving free gas surface.
 
 [Open physics and numerical questions](docs/RESEARCH_QUESTIONS.md) include the
 outer vacuum boundary, transport, pre-ionization, neutral effects, objective FRC

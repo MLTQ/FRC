@@ -3,6 +3,7 @@ import numpy as np
 from scipy.sparse import coo_matrix, diags
 from scipy.sparse.linalg import splu
 from .numerics import stiffness, expand
+from .open_boundary import MultipoleBoundary
 
 
 def _linear_weights(centers, location):
@@ -15,11 +16,11 @@ def _linear_weights(centers, location):
 class CouplingMesh:
     """Fluid exists only in its declared cylinder; no exterior fluid arrays.
 
-    The aligned field grid extends beyond both radius and ends. Induced flux
-    vanishes at its finite outer boundary; the exterior interior-node equation
-    is exactly K u=0. This is a fixed chamber interface, not a moving free surface.
+    The aligned field grid extends beyond both radius and ends. The induced
+    exterior equation is K u=0, with either a fixed far boundary or an infinite
+    multipole exterior. The fluid interface is fixed, not a moving free surface.
     """
-    def __init__(self, fluid, field):
+    def __init__(self, fluid, field, *, boundary="fixed", multipole_modes=12):
         self.fluid, self.field = fluid, field
         if not np.isclose(fluid.dr, field.dr, rtol=1e-12, atol=0) or not np.isclose(fluid.dz, field.dz, rtol=1e-12, atol=0):
             raise ValueError("Fluid faces and field nodes require matching dr and dz")
@@ -29,9 +30,16 @@ class CouplingMesh:
         self.z_offset = int(round(offset))
         if field.radius < fluid.radius+field.dr*(2-1e-12) or self.z_offset < 2:
             raise ValueError("At least two exterior field intervals are required radially and beyond both ends")
-        self.k = stiffness(field)
+        if boundary not in ("fixed", "multipole"):
+            raise ValueError("Magnetic boundary must be 'fixed' or 'multipole'")
+        if boundary == "multipole" and min(field.radius, field.half_length) <= np.hypot(fluid.radius, fluid.half_length):
+            raise ValueError("Multipole matching boundary must enclose the entire fluid source sphere")
+        self.open_boundary = MultipoleBoundary(field, multipole_modes) if boundary == "multipole" else None
+        self.k = self.open_boundary.k if self.open_boundary else stiffness(field)
+        self.grid_node_count = (field.nr-2)*(field.nz-2)
         self.node_count, self.cell_count = self.k.shape[0], fluid.nr*fluid.nz
-        self.node_radius = np.broadcast_to(field.r[1:-1, None], (field.nr-2, field.nz-2)).ravel()
+        self.node_radius = np.pad(np.broadcast_to(field.r[1:-1, None], (field.nr-2, field.nz-2)).ravel(),
+                                  (0, self.node_count-self.grid_node_count))
         self.node_area = np.zeros(self.node_count)
         rr, rc, rv, zr, zc, zv, hr, hc, hv = ([] for _ in range(9))
         for i in range(1, fluid.nr+1):
@@ -66,17 +74,24 @@ class CouplingMesh:
         flux = np.asarray(flux, dtype=float)
         if flux.shape != self.field.shape or not np.all(np.isfinite(flux)):
             raise ValueError("Flux must be finite on the full field-node grid")
-        return flux[1:-1, 1:-1].ravel().copy()
+        return self.open_boundary.pack(flux) if self.open_boundary else flux[1:-1, 1:-1].ravel().copy()
+
+    def grid_vector(self, flux):
+        """Physical grid values, padded by zero for non-nodal modal unknowns."""
+        flux = np.asarray(flux, dtype=float)
+        if flux.shape != self.field.shape or not np.all(np.isfinite(flux)):
+            raise ValueError("Flux must be finite on the full field-node grid")
+        return np.pad(flux[1:-1, 1:-1].ravel(), (0, self.node_count-self.grid_node_count))
 
     def full(self, interior):
-        return expand(self.field, interior)
+        return self.open_boundary.expand(interior) if self.open_boundary else expand(self.field, interior)
 
     def fluid_flux(self, full_flux):
-        self.interior(full_flux)
+        self.grid_vector(full_flux)
         return np.asarray(full_flux)[:self.fluid.nr+1, self.z_offset:self.z_offset+self.fluid.nz+1]
 
     def harmonic_extension(self, flux):
         """Keep the prescribed plasma-node flux and solve only exterior vacuum."""
-        u = self.interior(flux)
+        u = self.grid_vector(flux)
         u[self.vacuum] = self._vacuum_factor.solve(-self.k[self.vacuum][:, self.active]@u[self.active])
         return self.full(u)

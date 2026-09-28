@@ -16,6 +16,8 @@ class CoupledParameters:
     nonlinear_tolerance: float = 1e-11
     max_nonlinear_iterations: int = 40
     max_timestep: float | None = None
+    vacuum_boundary: str = "fixed"
+    multipole_modes: int = 12
 
     def __post_init__(self):
         if not np.isfinite(self.gamma) or self.gamma <= 1:
@@ -24,6 +26,8 @@ class CoupledParameters:
             raise ValueError("Use 0 < CFL <= 0.3 for the coupled reference")
         if self.max_timestep is not None and (not np.isfinite(self.max_timestep) or self.max_timestep <= 0):
             raise ValueError("An optional source-resolution time cap must be finite and positive")
+        if self.vacuum_boundary not in ("fixed", "multipole"):
+            raise ValueError("Magnetic boundary must be 'fixed' or 'multipole'")
 
 
 @dataclass
@@ -47,14 +51,17 @@ class VacuumCoupledMHD:
         if any(coil.radius <= fluid_mesh.radius and abs(coil.z) <= fluid_mesh.half_length
                for coil in vacuum_field.coils):
             raise ValueError("Prescribed source filaments must be outside the gas-filled chamber")
-        self.mapping = CouplingMesh(fluid_mesh, vacuum_field.grid)
+        self.mapping = CouplingMesh(fluid_mesh, vacuum_field.grid, boundary=self.parameters.vacuum_boundary,
+                                    multipole_modes=self.parameters.multipole_modes)
         self.magnetic = MagneticStepper(self.mapping, self.parameters.resistivity, self.parameters.gamma,
                                         tolerance=self.parameters.nonlinear_tolerance,
                                         max_iterations=self.parameters.max_nonlinear_iterations)
         gas_primitive(self.mesh, initial.gas, self.parameters.gamma)
         u = self.mapping.interior(initial.induced_psi)
-        if np.any(initial.induced_psi[[0, -1]]) or np.any(initial.induced_psi[:, [0, -1]]):
-            raise ValueError("Induced flux must vanish on axis and outer field boundaries")
+        if np.any(initial.induced_psi[0]):
+            raise ValueError("Induced flux must vanish on the symmetry axis")
+        if not self.mapping.open_boundary and (np.any(initial.induced_psi[-1]) or np.any(initial.induced_psi[:, [0, -1]])):
+            raise ValueError("Induced flux must vanish on fixed outer field boundaries")
         ku = self.mapping.k@u
         if np.linalg.norm(ku[self.mapping.vacuum]) > 1e-10*max(np.linalg.norm(ku), 1e-30):
             raise ValueError("Initial induced flux violates the exterior vacuum constraint")
@@ -75,10 +82,15 @@ class VacuumCoupledMHD:
         u = self.mapping.interior(state.induced_psi)
         gas_energy = float(np.sum(state.gas[..., 3]*volume))
         field_energy = float(np.pi/MU0*(u@(self.mapping.k@u)))
+        exterior_energy = 0.
+        if self.mapping.open_boundary:
+            modes = u[self.mapping.grid_node_count:]
+            exterior_energy = float(np.pi/MU0*(modes@self.mapping.open_boundary.exterior@modes))
         return {"mass_kg": float(np.sum(q[..., 0]*volume)), "gas_energy_j": gas_energy,
                 "internal_energy_j": float(np.sum(q[..., 3]*volume/(self.parameters.gamma-1))),
                 "kinetic_energy_j": float(np.sum(.5*q[..., 0]*(q[..., 1]**2+q[..., 2]**2)*volume)),
                 "induced_field_energy_j": field_energy, "response_energy_j": gas_energy+field_energy,
+                "beyond_grid_induced_energy_j": exterior_energy,
                 "minimum_density_kg_m3": float(q[..., 0].min()), "minimum_pressure_pa": float(q[..., 3].min()),
                 "maximum_speed_m_s": float(np.hypot(q[..., 1], q[..., 2]).max())}
 
@@ -129,7 +141,9 @@ class VacuumCoupledMHD:
     def diagnostics(self):
         out = self._integrals(self.state)
         ku = self.mapping.k@self.mapping.interior(self.state.induced_psi)
-        vacuum_j = ku[self.mapping.vacuum]/(MU0*self.mapping.field.dr*self.mapping.field.dz)
+        grid_nodes = self.mapping.grid_node_count
+        vacuum_j = ku[:grid_nodes][self.mapping.vacuum[:grid_nodes]]/(MU0*self.mapping.field.dr*self.mapping.field.dz)
+        exterior_residual = float(np.linalg.norm(ku[grid_nodes:])/max(np.linalg.norm(ku[self.mapping.active]), 1e-30))
         residual = out["response_energy_j"]-self.initial["response_energy_j"]-self.source_work
         out.update(time_s=self.time, steps=self.steps, source_work_j=self.source_work,
                    ohmic_heat_j=self.ohmic_heat, lorentz_work_j=self.lorentz_work,
@@ -138,6 +152,7 @@ class VacuumCoupledMHD:
                    mass_relative_change=(out["mass_kg"]-self.initial["mass_kg"])/self.initial["mass_kg"],
                    magnetic_exchange_residual_j=self.exchange_residual,
                    max_midpoint_iterations=self.max_iterations, max_midpoint_relative_residual=self.max_nonlinear_residual,
+                   open_boundary_relative_stationarity_residual=exterior_residual,
                    max_vacuum_induced_current_residual_a_m2=float(abs(vacuum_j).max(initial=0)),
                    max_face_divergence_t_m=float(abs(cell_divergence(self.mapping.field, self.total_flux())).max()))
         return out

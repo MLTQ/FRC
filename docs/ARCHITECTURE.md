@@ -77,3 +77,14 @@ measurement/report modules save complete configurations, histories and source
 fingerprints. See `COUPLED_NUMERICS.md` and `COUPLED_VERIFICATION.md`.
 The fixed chamber reference does not yet supply the moving free plasma interface,
 physical transport or boundary validity required by the formation workflow.
+
+`open_boundary` adds an analytic decaying multipole exterior to the finite field
+grid. Its modal amplitudes follow interior nodal unknowns in the global energy
+matrix, with algebraic vacuum stationarity rows. No fluid or resistivity is
+assigned to modes. Boundary nodal values are their trace; the entire exterior
+magnetic energy is counted. `CouplingMesh.interior/full` pack and expand induced
+unknowns, while `grid_vector` handles arbitrary physical grid data such as bias
+and coil flux without projecting them into the decaying basis. Diagnostics keep
+modal stationarity separate from actual vacuum current density. Independent
+asymmetric loop-integral and dynamic pulse checks are in `open_benchmarks` and
+the open-boundary report. Fixed-boundary comparisons remain selectable.

@@ -157,3 +157,9 @@ show smooth convergence and quantify the finite magnetic boundary. Its fixed,
 gas-filled reflecting chamber is still a verification restriction, not a moving
 free plasma or validated quartz/end model. The response-energy budget excludes
 external-field self/mutual energy; it is not total electrical input from a coil.
+The optional [infinite magnetic exterior](OPEN_BOUNDARY.md) now replaces the
+fixed far-field condition with decaying vacuum multipoles. Its field energy
+beyond the grid is included in the same response budget, and [independent
+verification](OPEN_BOUNDARY_VERIFICATION.md) separates mode truncation, spatial
+error and matching-surface sensitivity. This changes the magnetic boundary only;
+it does not create an evolving free fluid surface or establish transport validity.

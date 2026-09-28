@@ -81,7 +81,7 @@ def passive_diffusion(cells, *, diffusivity=.05, amplitude=1e-6, cfl=.2):
                            CoupledParameters(resistivity=diffusivity*MU0, cfl=cfl))
 
 
-def coil_pulse(cells, *, extent=2, cfl=.2):
+def coil_pulse(cells, *, extent=2, cfl=.2, vacuum_boundary="fixed", multipole_modes=12):
     """Two prescribed loops drive initially resting chamber gas; no FRC claim."""
     from .coils import Coil
     from .waveforms import Unipolar
@@ -93,4 +93,5 @@ def coil_pulse(cells, *, extent=2, cfl=.2):
     coils = tuple(Coil(radius, z, wave, name=f"verification_{i}") for i, z in enumerate(positions))
     return VacuumCoupledMHD(mesh, VacuumField(grid, coils, bias=np.sqrt(MU0)),
                            CoupledState(gas_from_primitive(mesh, 1., 1.), np.zeros(grid.shape)),
-                           CoupledParameters(resistivity=.1*MU0, cfl=cfl, max_timestep=.002))
+                           CoupledParameters(resistivity=.1*MU0, cfl=cfl, max_timestep=.002,
+                                             vacuum_boundary=vacuum_boundary, multipole_modes=multipole_modes))

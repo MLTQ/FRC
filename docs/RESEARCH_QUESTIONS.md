@@ -5,7 +5,10 @@
 - [ ] Validate electron-neutral and ion-neutral cross sections for argon and other gases.
 - [ ] Establish collisionality / kinetic limits with defensible mean free paths.
 - [ ] Identify where di/L, gyro scales and pulse times require Hall/two-fluid physics.
-- [ ] Replace distant fixed induced-flux boundary with a verified open-boundary map.
+- [x] Add a verified open magnetic boundary using decaying multipoles, including
+  full-space magnetic energy, asymmetric source checks and matching-surface studies.
+- [ ] Verify and, if necessary, improve open-boundary efficiency for long chambers;
+  the current single-center expansion requires a source-enclosing sphere.
 - [ ] Quantify end effects, actual quartz geometry and any conductive structures.
 - [ ] Refine interface placement, temporal error and spatial convergence near skin layers.
 - [ ] Verify topology with manufactured islands, axis nulls, separatrices and noise.
