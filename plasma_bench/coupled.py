@@ -6,6 +6,7 @@ from .coupling_mesh import CouplingMesh
 from .coupled_hydro import gas_primitive, hydro_step
 from .coupled_magnetic import MagneticStepper
 from .numerics import cell_divergence
+from .magnetic_dissipation import shock_resistance
 
 
 @dataclass(frozen=True)
@@ -13,11 +14,13 @@ class CoupledParameters:
     gamma: float = 5/3
     resistivity: float = 0.
     cfl: float = .2
-    nonlinear_tolerance: float = 1e-11
+    nonlinear_tolerance: float = 1e-13
     max_nonlinear_iterations: int = 40
     max_timestep: float | None = None
     vacuum_boundary: str = "fixed"
     multipole_modes: int = 12
+    midpoint_method: str = "picard"
+    shock_diffusion: float = 0.
 
     def __post_init__(self):
         if not np.isfinite(self.gamma) or self.gamma <= 1:
@@ -28,6 +31,10 @@ class CoupledParameters:
             raise ValueError("An optional source-resolution time cap must be finite and positive")
         if self.vacuum_boundary not in ("fixed", "multipole"):
             raise ValueError("Magnetic boundary must be 'fixed' or 'multipole'")
+        if self.midpoint_method not in ("direct", "picard"):
+            raise ValueError("Midpoint method must be 'direct' or 'picard'")
+        if not np.isfinite(self.shock_diffusion) or not 0 <= self.shock_diffusion <= 2:
+            raise ValueError("Use a declared numerical shock-diffusion coefficient between zero and two")
 
 
 @dataclass
@@ -55,7 +62,8 @@ class VacuumCoupledMHD:
                                     multipole_modes=self.parameters.multipole_modes)
         self.magnetic = MagneticStepper(self.mapping, self.parameters.resistivity, self.parameters.gamma,
                                         tolerance=self.parameters.nonlinear_tolerance,
-                                        max_iterations=self.parameters.max_nonlinear_iterations)
+                                        max_iterations=self.parameters.max_nonlinear_iterations,
+                                        method=self.parameters.midpoint_method, shock_diffusion=self.parameters.shock_diffusion)
         gas_primitive(self.mesh, initial.gas, self.parameters.gamma)
         u = self.mapping.interior(initial.induced_psi)
         if np.any(initial.induced_psi[0]):
@@ -68,6 +76,7 @@ class VacuumCoupledMHD:
         self.state = initial.copy()
         self.time, self.steps = 0., 0
         self.source_work = self.ohmic_heat = self.lorentz_work = self.exchange_residual = 0.
+        self.numerical_heat = self.maximum_numerical_resistivity = 0.
         self.max_iterations = 0
         self.max_nonlinear_residual = 0.
         self.initial = self._integrals(self.state)
@@ -101,7 +110,12 @@ class VacuumCoupledMHD:
         waves = np.max((abs(q[..., 1])+speed)/self.mesh.dr+(abs(q[..., 2])+speed)/self.mesh.dz)
         # Midpoint diffusion is implicit, but this accuracy bound avoids poorly
         # resolved alternating high-frequency diffusion modes.
-        diffusion = 2*self.parameters.resistivity/MU0*(1/self.mesh.dr**2+1/self.mesh.dz**2)
+        maximum_eta = 0.
+        if self.parameters.shock_diffusion:
+            velocity = np.concatenate((q[..., 1].ravel(), q[..., 2].ravel()))
+            _, maximum_eta = shock_resistance(self.mapping, q, self.total_flux(), velocity,
+                                               self.parameters.shock_diffusion, self.parameters.gamma)
+        diffusion = 2*(self.parameters.resistivity+maximum_eta)/MU0*(1/self.mesh.dr**2+1/self.mesh.dz**2)
         limit = float(self.parameters.cfl/(waves+diffusion))
         return limit if self.parameters.max_timestep is None else min(limit, self.parameters.max_timestep)
 
@@ -120,6 +134,8 @@ class VacuumCoupledMHD:
         self.source_work += update.source_work
         self.ohmic_heat += update.ohmic_heat
         self.lorentz_work += update.lorentz_work
+        self.numerical_heat += update.numerical_heat
+        self.maximum_numerical_resistivity = max(self.maximum_numerical_resistivity, update.maximum_numerical_resistivity)
         self.exchange_residual += update.exchange_residual
         self.max_iterations = max(self.max_iterations, update.iterations)
         self.max_nonlinear_residual = max(self.max_nonlinear_residual, update.nonlinear_residual)
@@ -147,6 +163,8 @@ class VacuumCoupledMHD:
         residual = out["response_energy_j"]-self.initial["response_energy_j"]-self.source_work
         out.update(time_s=self.time, steps=self.steps, source_work_j=self.source_work,
                    ohmic_heat_j=self.ohmic_heat, lorentz_work_j=self.lorentz_work,
+                   numerical_magnetic_heat_j=self.numerical_heat,
+                   maximum_numerical_resistivity_ohm_m=self.maximum_numerical_resistivity,
                    response_energy_balance_residual_j=residual,
                    response_energy_balance_relative=residual/max(abs(self.initial["response_energy_j"]), abs(self.source_work), 1e-30),
                    mass_relative_change=(out["mass_kg"]-self.initial["mass_kg"])/self.initial["mass_kg"],

@@ -56,8 +56,12 @@ Strang splitting applies a gas-only Euler half-step, a magnetic midpoint full-st
 and an Euler half-step. Euler uses annular finite volumes, limited second-order
 reconstruction, Rusanov fluxes and SSP RK2 with reflected gas ghosts. Its numerical
 diffusion acts on gas transport. The magnetic step uses centered derivatives and
-implicit midpoint, with no added magnetic artificial resistivity. This smooth
-energy-stable formulation has no established magnetic-shock monotonicity guarantee.
+implicit midpoint. The historical centered option has no added magnetic
+artificial resistivity and remains the default comparison. It has no established
+magnetic-shock monotonicity guarantee; an independent shock now demonstrates
+false magnetic reversal. Optional `shock_diffusion` adds explicitly measured
+compressive numerical resistivity and separate numerical heat; see
+[SHOCK_NUMERICS.md](SHOCK_NUMERICS.md). This is not physical transport.
 
 At tau=dt/2, eliminating midpoint velocity gives, for a fixed iterate of C,
 
@@ -69,12 +73,16 @@ v_mid = v_old + tau M_v^-1 C^T g_mid.
 ```
 
 Here P,V in matrix expressions denote row-selector diagonal matrices. C has
-zero vacuum rows. Sparse direct solves and fixed-point iteration update C from
-u_mid plus the average external flux. Both iterate change and the nonlinear
+zero vacuum rows. `midpoint_method="direct"` retains sparse direct solves inside
+the nonlinear iteration. The default `"picard"` evaluates the same midpoint
+equation directly and completes vacuum rows with a cached factorization. Both
+update C from u_mid plus the average external flux and reevaluate any optional
+numerical resistance. Both iterate change and the nonlinear
 induction residual must meet the tolerance. Nonconvergence raises; no partial
 state, clock or cumulative energy is committed. No cell density/pressure floor
 or failed-state energy reset is used. A conservative fast-wave CFL and explicit
 diffusion accuracy bound still cap dt, although the magnetic step is implicit.
+That bound includes physical plus current estimated numerical resistivity.
 An optional `max_timestep` resolves known waveform features. A fluid CFL cannot
 discover an arbitrary narrow callback pulse; source time resolution must be
 declared and tested. The provided coil fixture caps dt at one twentieth of rise.
@@ -92,7 +100,9 @@ delta(W + E_gas) = W_source.
 
 Heat is distributed to adjoining fluid cells with nonnegative fractions summing
 to one. Gas energy changes by the actual kinetic work plus Q in this physical
-subsystem; internal energy is constant when eta=0. The separate gas transport
+subsystem; internal energy is constant when both physical and numerical eta=0.
+When enabled, numerical Q has the same positive work identity and heat shares
+but is accumulated separately from physical Ohmic heating. The separate gas transport
 step conserves mass and gas energy under closed walls. Diagnostics report the
 global budget, magnetic exchange residual, vacuum current residual, nonlinear
 residual and compatible face divergence.

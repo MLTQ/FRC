@@ -114,9 +114,12 @@ measurements of their recorded source, not reruns with this different solver.
 ## Current development step
 
 The magnetic boundary requirement has progressed with the verified infinite
-exterior described below. Now prioritize resolution of source-driven skin layers
-and stronger compression/magnetic-shock checks for the split method. Energy
-pairing alone does not prove local momentum or shock accuracy. Replace the
+exterior described below. The new shock study exposes false magnetic reversal
+in the centered split and measures an explicit vanishing diffusion option.
+Prioritize a flux-consistent conservative magnetic-shock treatment and stronger
+shock/weak-solution tests, alongside source-driven skin-layer resolution. The
+diffusion option improves bulk errors but does not resolve irregular frozen-flux
+error or establish general local momentum conservation. Replace the
 fixed gas-filled interface with a defensible
 evolving plasma–vacuum treatment before interpreting detached torus formation.
 Validate actual chamber/end conditions, transport and Hall applicability. The
@@ -128,7 +131,7 @@ be developed alongside numerical coupling without selecting arbitrary closure.
 
 ## Infinite magnetic exterior checkpoint
 
-The current full suite has **83 passing tests** (20.90 s). The preceding turn
+That checkpoint had **83 passing tests** (20.90 s). The preceding turn
 made verified progress, with no external job remaining live at this checkpoint.
 `vacuum_boundary="multipole"` now represents the induced magnetic field to
 infinity using regular-axis decaying Legendre modes. Boundary nodal traces,
@@ -170,6 +173,59 @@ source fingerprint are in `docs/OPEN_BOUNDARY.md`,
 **magnetic** exterior, not a moving free plasma surface, gas outflow, transport,
 magnetic shocks or FRC formation. `frc-vacuum` and the full objective stay active.
 
+## Magnetic shock and implicit solver checkpoint
+
+The latest full suite has **99 passing tests** (25.17 s). This continuation made
+verified progress; all measurement/report jobs completed, with none left live.
+
+An independent strong perpendicular shock now has exact Rankine–Hugoniot jumps
+and steady cylindrical branches. Finite-difference momentum and invariant checks
+validate the reference independently of the numerical kernels. Both actual 2-D
+solvers are tested in an interior annulus before remote boundaries dominate.
+The centered coupled method creates a **false Bz reversal** at nr=48, reaching
+Bz/B1=-0.027288 even with a relative response-energy residual around 1e-14.
+Such magnetic structure must not be interpreted as FRC topology.
+
+The explicit `shock_diffusion` option adds a nonnegative compressive diffusivity
+that scales as h² in smooth flow and h at shocks. It is off by default and
+separately records numerical magnetic heat, without changing physical Ohmic
+heat or putting fluid/resistivity in vacuum. No cell floors or energy repair are
+introduced. With C=1, magnetic-profile L1/B1 errors at nr=24/48/96/192 are
+0.330402, 0.218542, 0.106434, 0.0581267; density errors are 0.299483, 0.187281,
+0.0960794, 0.046949 kg/m³; pressure errors are 1.93626, 1.06167, 0.574753,
+0.190947 Pa. No false sign reversal occurs in those C=1 windows. However,
+frozen B/rho error is **not monotonic**, and nr=192 still overshoots Bz/B1 to
+3.6293 versus the physical shock value 3.53234. The conservative bounded
+reference preserves that special B/rho invariant to roundoff. More diffusion
+is not uniformly more accurate; the coefficient study retains that tradeoff.
+
+At nr=48, moving the inner nonanalytic extension changes pressure/B profiles by
+0.3302%/0.08888% in relative L2. Doubling chamber length changes profiles below
+7.1e-9; a shorter 0.01 s wall-taper control gives density change 4.86e-5.
+CFL halving changes the B profile by 1.43e-5, then 3.45e-6. These are measured
+controls at that grid/window/time, not general free-boundary verification.
+Maximum coupled response-energy residual is 1.94e-14, mass change 2.19e-16,
+and face divergence 1.25e-16 T/m. Numerical magnetic heat remains explicitly
+reported (0.433 J at nr=192 for the whole chamber); physical eta and heat are
+zero. Entropy-producing shock dissipation need not vanish with grid spacing.
+
+The midpoint solve now defaults to a cached-vacuum Picard iteration at tolerance
+1e-13. It solves the same implicit equations and retains atomic failure. The
+original direct solve remains selectable. Direct/Picard tests cover both
+magnetic boundaries and independent physical/numerical diffusion choices. Their
+nr=24 shock profiles agree within 9.9e-13 relative L2; measured advance time is
+6.96 times faster for Picard in that fixture. This is a CPU wall-time measurement,
+not a GPU or general real-time claim.
+
+The inspected six-panel figure, 20 completed cases, complete configuration,
+initial/final diagnostics, profiles, environment and source fingerprints are in
+`docs/SHOCK_VERIFICATION.md`, `docs/SHOCK_NUMERICS.md`, and
+`outputs/shock_verification/metrics.json`. Old reports retain historical hashes.
+Next, investigate the split method's inconsistent magnetic/fluid numerical flux
+and local momentum/weak-shock accuracy, while preserving the verified vacuum
+and work identities. Continue the unresolved cold rarefaction, equilibrium,
+skin-layer, free-interface, transport and formation requirements below.
+
 ## Completion audit at this checkpoint
 
 | Requirement | Authoritative evidence | Status |
@@ -177,7 +233,7 @@ magnetic shocks or FRC formation. `frc-vacuum` and the full objective stay activ
 | Conservative dynamic core | mhd modules, independent tests, MHD/positivity reports | Implemented and verified for stated bounded reference; positive traces without cell floors; full-update robustness and cold-flow accuracy remain bounded by tests |
 | Physical source/plasma/vacuum coupling | Fixed-chamber split reference, COUPLED_VERIFICATION and OPEN_BOUNDARY_VERIFICATION; original Stage 2 guard still raises | Partial: full-space magnetic/work checks pass; source-layer resolution, moving free interface, end conditions and magnetic shocks remain |
 | Regime-appropriate transport / Hall physics | Fixed eta/sigma only; beads frc-transport | Incomplete |
-| Full independent numerical verification | Waves, gas shocks, heating, advection, J×B, curved equilibrium, admissibility, rarefaction, coil budgets and independent infinite-exterior checks | Partial; measured cold-pressure/equilibrium errors and coupled pulse resolution sensitivity; no formation validation |
+| Full independent numerical verification | Waves, gas and perpendicular magnetic shocks, heating, advection, J×B, curved equilibrium, admissibility, rarefaction, coil budgets and independent infinite-exterior checks | Partial; false reversal exposed in centered split, selectable numerical diffusion improves bulk shock errors but not uniformly frozen-flux error; cold-pressure/equilibrium and pulse-resolution limitations remain |
 | Converged FRC formation | Only older stationary-conductor results, unconverged topology duration | Not demonstrated |
 | Reproducible experimental interface | Stage 0/1 CLI/playback; dynamic and coupled benchmark scripts, histories and metrics | Partial; no coupled dynamic experiment UI |
 

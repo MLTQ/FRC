@@ -28,6 +28,9 @@ force/advection/diffusion errors, external-source work and finite-domain error.
 Its [energy and boundary contract](docs/COUPLED_NUMERICS.md) defines the scope.
 The [open-boundary study](docs/OPEN_BOUNDARY_VERIFICATION.md) now verifies a
 decaying magnetic exterior to infinity, including its energy beyond the grid.
+The [strong magnetic-shock study](docs/SHOCK_VERIFICATION.md) exposes false field
+reversal in the centered split method and measures an explicit numerical
+diffusion option. Its heat is reported separately from physical Ohmic heating.
 
 ## Use the existing environment
 
@@ -43,6 +46,7 @@ decaying magnetic exterior to infinity, including its energy beyond the grid.
 .venv/bin/python -m examples.verify_positivity
 .venv/bin/python -m examples.verify_coupled
 .venv/bin/python -m examples.verify_open_boundary
+.venv/bin/python -m examples.verify_shocks
 ```
 
 Open [vacuum playback](outputs/vacuum/viewer.html) or
@@ -104,6 +108,8 @@ conductivity without an ionization/transport closure. See the research queue.
 - `mhd*.py`: developmental conservative dynamics and independent analytic benchmarks.
 - `coupled*.py`, `coupling_mesh.py`: gas/magnetic splitting, prescribed coils and genuine exterior vacuum.
 - `open_boundary.py`: decaying magnetic multipoles and full-space magnetic energy.
+- `shock_reference.py`, `shock_benchmarks.py`: independent cylindrical magnetic shocks and actual-kernel comparisons.
+- `magnetic_dissipation.py`: optional declared compressive numerical diffusion, with separately accounted heat.
 - `diagnostics.py`, `topology.py`: validity scales, energy, O/X points, closed flux.
 - `simulation.py`, `results.py`: orchestration and reproducible numeric archives.
 - `experiments.py`, `visualization.py`, `cli.py`: sweeps, plots and playback.
@@ -150,6 +156,24 @@ These unit-scale SI verification parameters are not a physical argon experiment.
 The matching surface must enclose the entire fluid source sphere; mode and mesh
 refinement remain required. `vacuum_boundary="fixed"` retains the historical
 finite-wall comparison. Neither option yet provides an evolving free gas surface.
+
+To reproduce the initialized strong-shock verification fixture:
+
+```python
+from plasma_bench.shock_benchmarks import standing_shock
+model, reference = standing_shock(48, shock_diffusion=1.0)
+model.advance(0.02)
+print(model.diagnostics())
+```
+
+`shock_diffusion` is numerical stabilization, off by default, not material
+resistivity. The centered `0.0` comparison can generate false magnetic reversal;
+neither option should be used to assert FRC formation. The independent exact
+shock is valid only in the stated interior annulus and comparison time.
+`midpoint_method="picard"` caches the vacuum solve and is now the faster default;
+`"direct"` retains the original solve for comparison of the same equations.
+Both require converged nonlinear residuals and leave accepted state intact on
+failure. Read the [shock equations and limitations](docs/SHOCK_NUMERICS.md).
 
 [Open physics and numerical questions](docs/RESEARCH_QUESTIONS.md) include the
 outer vacuum boundary, transport, pre-ionization, neutral effects, objective FRC

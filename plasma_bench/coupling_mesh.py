@@ -69,6 +69,7 @@ class CouplingMesh:
         self.active_diagonal = diags(self.active.astype(float), format="csc")
         self.vacuum_rows = diags(self.vacuum.astype(float), format="csc")@self.k
         self._vacuum_factor = splu(self.k[self.vacuum][:, self.vacuum].tocsc())
+        self._vacuum_cross = self.k[self.vacuum][:, self.active]
 
     def interior(self, flux):
         flux = np.asarray(flux, dtype=float)
@@ -92,6 +93,12 @@ class CouplingMesh:
 
     def harmonic_extension(self, flux):
         """Keep the prescribed plasma-node flux and solve only exterior vacuum."""
-        u = self.grid_vector(flux)
-        u[self.vacuum] = self._vacuum_factor.solve(-self.k[self.vacuum][:, self.active]@u[self.active])
-        return self.full(u)
+        return self.full(self.complete_vacuum(self.grid_vector(flux)))
+
+    def complete_vacuum(self, unknowns):
+        """Retain plasma unknowns and solve cached exterior constraints."""
+        u = np.asarray(unknowns, float).copy()
+        if u.shape != (self.node_count,) or not np.all(np.isfinite(u)):
+            raise ValueError("Finite magnetic unknowns must match the coupled mesh")
+        u[self.vacuum] = self._vacuum_factor.solve(-self._vacuum_cross@u[self.active])
+        return u

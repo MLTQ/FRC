@@ -33,3 +33,14 @@ The fixed zero-flux option remains the default comparison for historical fixture
 `beyond_grid_induced_energy_j` accounts for exterior energy outside that surface;
 the modal stationarity residual is separate from physical nodal vacuum current.
 An infinite magnetic exterior does not remove the fixed gas chamber restriction.
+`midpoint_method` selects the original direct linearized solve or a Picard update
+with cached vacuum completion. Both solve the same implicit equations and obey
+the same nonlinear residual/atomic-commit contract; comparisons measure their
+field, gas and budget agreement as well as runtime. Picard is the default, with
+a tighter default relative tolerance of 1e-13; direct remains an explicit reference.
+`shock_diffusion` is an explicit, dimensionless numerical coefficient, zero in
+the original centered comparison. Numerical magnetic heating and maximum added
+eta are reported separately from physical resistivity/Ohmic heat. Enabling it
+does not constitute a transport closure or validate physical reconnection.
+The time-step accuracy cap includes the maximum current numerical resistivity,
+as well as physical resistivity, keeping its fixed-point iteration controlled.

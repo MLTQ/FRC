@@ -35,6 +35,14 @@
   source work is nearly converged before peak flow is converged on current meshes.
 - [ ] Establish magnetic-shock/strong-compression accuracy for the split coupling;
   energy pairing and positive internal energy are insufficient evidence.
+- [x] Expose centered magnetic-shock oscillations with an independent cylindrical
+  Rankine–Hugoniot/steady-flow reference in the actual two-dimensional kernels.
+- [x] Add selectable vanishing compressive numerical magnetic diffusion with
+  separately measured heat; verify the faster cached-vacuum implicit solve
+  against the retained direct method under both magnetic boundary choices.
+- [ ] Resolve the remaining irregular B/rho error and overshoot, establish local
+  conservative shock limits, and extend shock tests to other strengths and
+  orientations. Numerical diffusion is not physical transport or reconnection.
 - [ ] Replace the fixed chamber interface with a defensible evolving free-plasma
   treatment without exterior fluid floors; validate gas loss and actual end conditions.
 - [ ] Add thermodynamic feedback before interpreting large Ohmic heating as plausible.

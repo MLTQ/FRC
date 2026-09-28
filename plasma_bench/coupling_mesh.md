@@ -35,3 +35,6 @@ pads arbitrary physical grid data (notably external coil flux) with zero modes.
 nodes and modes, ignoring supplied boundary data. The default fixed boundary is
 retained as an explicit comparison. No arbitrary field may be packed as a
 decaying induced trace; prescribed external bias/coils use `grid_vector`.
+`complete_vacuum` works directly on unknown vectors, preserving active plasma
+values and solving cached exterior/mode constraints. Its fixed factorization
+and cross-block support fast midpoint iterations without changing the equations.

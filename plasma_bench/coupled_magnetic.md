@@ -10,7 +10,18 @@ replaced by their elliptic constraint. No plasma mass exists there.
 
 The nonlinear midpoint is solved by iterating its sparse, velocity-eliminated
 linear system. Nonconvergence raises; no partially updated state is returned.
-The gas energy increment is the actual kinetic work plus positive Ohmic heat,
+`method="direct"` retains that reference iteration. `method="picard"` instead
+updates plasma flux by the same nonlinear midpoint residual and completes the
+vacuum using its cached factorization each iteration. It avoids repeated global
+factorizations, while preserving the identical converged equations and work
+identity. The existing CFL/diffusion accuracy cap is required for convergence;
+the method never silently accepts a nonconverged fixed point.
+An explicit `shock_diffusion` coefficient optionally adds vanishing positive
+numerical resistivity, reevaluated within the nonlinear midpoint. Its magnetic
+heating is separate from physical Ohmic heat, and its maximum eta is returned.
+Zero retains the centered reference. Total heat, not just physical heat, enters
+the exact work identity; no numerical dissipation is relabeled as transport.
+The gas energy increment is actual kinetic work plus physical and numerical heat,
 not a repair to a failed total-MHD-energy update. Heat uses nonnegative cell
 shares; the complete field/gas work identity is independently diagnosed.
 
