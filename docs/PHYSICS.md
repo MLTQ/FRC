@@ -10,7 +10,7 @@ The axisymmetric domain includes `r=0`, with no theta dependence.
 |---|---|---|
 | 0 | Implemented magnetoquasistatic vacuum coil superposition | Radiation, displacement current, conducting walls |
 | 1 | Implemented stationary scalar-conductivity induction and surrounding vacuum | Motion, thermodynamic feedback, transport closure |
-| 2 | Developmental conservative r-z resistive-MHD kernel; independent benchmarks | Dynamic coil/plasma/vacuum coupling still gated |
+| 2 | Conservative bounded MHD reference plus verified smooth fixed-chamber gas/coil/vacuum coupling | Free plasma interfaces, physical ends, magnetic shocks and formation workflow remain incomplete |
 | 3 | Research: energy, transport, ionization, neutrals, radiation | Atomic data and closure choices unresolved |
 | 4 | Research: Hall / two-fluid | Electron pressure and inertia closures unresolved |
 | 5 | Research: 3-D / hybrid / kinetic | Nonaxisymmetric modes and particle confinement |
@@ -148,3 +148,12 @@ verification cylinder must not be confused with the quartz/plasma/vacuum setup.
 The [independent closed-flux equilibrium checks](EQUILIBRIUM_VERIFICATION.md)
 test curved magnetic stress, reversed Bz and residual artificial motion. They
 start from a prescribed equilibrium and do not demonstrate dynamic formation.
+
+The separate [dynamic vacuum coupling](COUPLED_NUMERICS.md) uses gas-only energy
+and global induced self-field energy with an adjoint force/induction work pair.
+It includes moving gas, scalar resistivity and prescribed coil work without an
+exterior fluid atmosphere. [Independent measurements](COUPLED_VERIFICATION.md)
+show smooth convergence and quantify the finite magnetic boundary. Its fixed,
+gas-filled reflecting chamber is still a verification restriction, not a moving
+free plasma or validated quartz/end model. The response-energy budget excludes
+external-field self/mutual energy; it is not total electrical input from a coil.

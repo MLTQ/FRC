@@ -58,3 +58,22 @@ It fills a verification cylinder with fluid, with a conducting radial wall and
 periodic z. The original Stage 2 formation entry point still refuses execution
 until moving-plasma/vacuum and source-work coupling are verified; it does not
 silently substitute these verification boundaries for the physical experiment.
+
+The separate `coupled.py` reference integrates moving gas in a fixed chamber
+with prescribed analytic coils and a magnetic-only exterior. `coupling_mesh`
+maps fluid cell velocities/heat to current-bearing field nodes; `coupled_hydro`
+advances conservative gas transport under reflecting walls/ends; and
+`coupled_magnetic` pairs force/advection by adjoints in an implicit midpoint
+solve with exact elliptic vacuum rows. Strang splitting combines the steps.
+All stages must succeed before state, time or cumulative work is committed.
+
+`CoupledState.gas` stores internal plus kinetic energy, while the global field
+owns induced self-energy. This deliberately differs from `MHDState`'s total
+energy; converting arrays by simple copying would double-count magnetic energy.
+Diagnostics name the response-energy budget explicitly and retain source work,
+physical heat, vacuum current and nonlinear residuals. `coupled_benchmarks` and
+`vacuum_benchmarks` supply independent mathematical references; separate example
+measurement/report modules save complete configurations, histories and source
+fingerprints. See `COUPLED_NUMERICS.md` and `COUPLED_VERIFICATION.md`.
+The fixed chamber reference does not yet supply the moving free plasma interface,
+physical transport or boundary validity required by the formation workflow.

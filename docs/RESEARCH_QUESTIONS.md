@@ -24,6 +24,16 @@
   robustness; positive traces alone are not a proof of accurate evolution.
 - [ ] Improve curved-equilibrium force balance and quantify residual artificial flow.
 - [ ] Couple dynamic MHD to prescribed coils, quartz boundaries and genuine vacuum.
+- [x] Verify an intermediate fixed, gas-filled chamber with moving fluid,
+  prescribed coils, magnetic-only exterior and a discrete source-work budget.
+- [x] Separate elliptic solver residual from finite magnetic-domain error using
+  an independent infinite-space circular-loop integral and exact-boundary checks.
+- [ ] Resolve pulse-driven skin layers and compression in the coupled reference;
+  source work is nearly converged before peak flow is converged on current meshes.
+- [ ] Establish magnetic-shock/strong-compression accuracy for the split coupling;
+  energy pairing and positive internal energy are insufficient evidence.
+- [ ] Replace the fixed chamber interface with a defensible evolving free-plasma
+  treatment without exterior fluid floors; validate gas loss and actual end conditions.
 - [ ] Add thermodynamic feedback before interpreting large Ohmic heating as plausible.
 - [ ] Test nonaxisymmetric stability only after a 3-D solver exists.
 

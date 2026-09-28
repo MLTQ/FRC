@@ -5,7 +5,9 @@ analytic vacuum electromagnetics and stationary resistive plasma induction with
 a coupled nonconducting exterior. A developmental conservative MHD kernel now
 simulates compression, axial motion, pressure/energy evolution and resistive
 heating in explicit verification domains. The coil-driven formation workflow
-still needs verified dynamic plasma–vacuum coupling. Stability and particle
+now has a separate fixed-chamber coupling reference with moving gas, prescribed
+coils and an elliptic magnetic vacuum. Free plasma interfaces, appropriate end
+conditions and physical transport remain unfinished. Stability and particle
 confinement have not been established.
 
 ![Waveform comparison](outputs/comparison/comparison.png)
@@ -21,6 +23,9 @@ See [dynamic MHD verification](docs/MHD_VERIFICATION.md),
 [equations and boundary contract](docs/MHD_NUMERICS.md).
 The [low-pressure verification](docs/POSITIVITY_VERIFICATION.md) distinguishes
 positive reconstruction and conserved budgets from adequate flow resolution.
+The [dynamic coupling study](docs/COUPLED_VERIFICATION.md) measures independent
+force/advection/diffusion errors, external-source work and finite-domain error.
+Its [energy and boundary contract](docs/COUPLED_NUMERICS.md) defines the scope.
 
 ## Use the existing environment
 
@@ -34,6 +39,7 @@ positive reconstruction and conserved budgets from adequate flow resolution.
 .venv/bin/python -m examples.verify_mhd
 .venv/bin/python -m examples.verify_equilibrium
 .venv/bin/python -m examples.verify_positivity
+.venv/bin/python -m examples.verify_coupled
 ```
 
 Open [vacuum playback](outputs/vacuum/viewer.html) or
@@ -93,6 +99,7 @@ conductivity without an ionization/transport closure. See the research queue.
 - `coils.py`, `waveforms.py`, `electromagnetics.py`: solver-independent sources.
 - `numerics.py`, `plasma.py`: compatible flux operators, mixed diffusion/vacuum solver.
 - `mhd*.py`: developmental conservative dynamics and independent analytic benchmarks.
+- `coupled*.py`, `coupling_mesh.py`: gas/magnetic splitting, prescribed coils and genuine exterior vacuum.
 - `diagnostics.py`, `topology.py`: validity scales, energy, O/X points, closed flux.
 - `simulation.py`, `results.py`: orchestration and reproducible numeric archives.
 - `experiments.py`, `visualization.py`, `cli.py`: sweeps, plots and playback.
@@ -112,13 +119,16 @@ suite. The 27-case phase map is exploratory, not a validated formation boundary.
 
 Second-order reconstruction reduces measured numerical diffusion and axis-force
 error; local admissibility limiting resolves the identified negative face-pressure
-failures without cell floors. Next, couple the moving fluid to prescribed coils
-and genuine surrounding
-vacuum with a source-work budget. Resolve conductivity/Hall applicability for
-the target plasma alongside this numerical work. The coil-driven Stage 2 entry
-point still raises an explicit `NotImplementedError` until that coupling is
-verified; the dynamic verification kernel is separately scriptable through
-`plasma_bench.mhd.AxisymmetricMHD`.
+failures without cell floors. A fixed gas-filled chamber now couples moving fluid
+to prescribed coils and genuine surrounding magnetic vacuum with a measured
+source-work budget. The exterior contains no fluid atmosphere. Next, address
+free interfaces, realistic end conditions, source-driven skin-layer resolution
+and magnetic-shock fidelity, alongside conductivity/Hall applicability.
+The coil-driven Stage 2 entry point still raises an explicit `NotImplementedError`
+until the physical formation requirements are verified. The dynamic references
+are separately scriptable through `plasma_bench.mhd.AxisymmetricMHD` and
+`plasma_bench.coupled.VacuumCoupledMHD`; the latter's gas energy excludes magnetic
+energy and must not be interchanged with the former's total-MHD state.
 Cold-rarefaction pressure accuracy and curved-equilibrium drift remain measured
 numerical limitations to address alongside that integration.
 

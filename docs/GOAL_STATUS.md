@@ -35,7 +35,7 @@ integration and improved one-sided wall gradients. Smooth wave/advection errors
 are much smaller; axis force accuracy improves, and a particular straight-field
 polynomial equilibrium is held to roundoff. First-order comparison remains
 selectable and is rerun on identical grids.
-The complete suite now has **62 passing tests**. At identical resolution the
+The bounded-reference checkpoint had **62 passing tests**. At identical resolution the
 fast-wave error is 216 times smaller and the 2-D flux-advection error 129 times
 smaller than the first-order reference on the reported benchmark grids.
 
@@ -74,33 +74,67 @@ Measured evidence is in `docs/MHD_VERIFICATION.md`,
 JSON/plot outputs. The limiter derivation is `docs/POSITIVITY.md`. These remain
 bounded verification solvers, not the coupled coil-driven formation experiment.
 
+## Dynamic vacuum coupling checkpoint
+
+The complete suite now has **74 passing tests** (18.08 s at this checkpoint).
+`VacuumCoupledMHD` advances compressible gas inside a fixed, gas-filled chamber
+with reflecting slip walls/ends and magnetically transparent boundaries. A
+larger magnetic-only exterior satisfies the elliptic induced-current constraint;
+there are no exterior density, pressure or conductivity degrees of freedom.
+An adjoint magnetic force/advection pair, implicit midpoint and gas Euler Strang
+splitting account for induced self-field energy, gas energy, prescribed-source
+work and positive physical Ohmic heat. This response-energy budget excludes
+external-field self/mutual energy and is not a coil-circuit energy estimate.
+Failure leaves accepted state, time and cumulative work intact. A source time
+cap is explicit because fluid CFL cannot discover arbitrary short pulses.
+
+Independent compact-field J cross B errors decrease from 0.2707 to 0.006437 in
+volume L2 as radial resolution increases 8→64, including axis cells. Passive
+advection errors decrease 0.008325→0.002155→0.0005438 at 12/24/48 cells; Gaussian
+resistive-diffusion errors decrease 0.007174→0.001822→0.0004573. Fixed-grid time
+halving reduces momentum error by 4.010 and 4.050. A separate infinite-space
+circular-loop integral distinguishes mesh error from magnetic-box error:
+at 32 cells/m, zero-flux outer extents 2/4/8 m give 5.429%, 0.6791%, 0.08840%
+probe error. With independent exact boundary data the 32-cell/m error is 0.03344%.
+
+Two prescribed coils now induce current, gas acceleration and heat in this
+reference. Across the reported dynamic cases the maximum relative response-
+energy residual is 1.63e-14; mass change is at most 1.42e-16. Compatible face
+divergence is near roundoff. **Pulse flow is not yet converged:** final peak speed
+increases 0.0661→0.1473→0.1798→0.1999 m/s at 8/16/24/32 radial cells. The magnetic
+boundary also matters: at 16 cells, extent 2→4 m changes final source work by
+about 19%, and 3→4 m still changes it by about 3.8%. A small solver residual is
+therefore not physical boundary accuracy. Figures were inspected; full inputs,
+histories, source fingerprint and versions are retained with the report.
+
+See `docs/COUPLED_NUMERICS.md`, `docs/COUPLED_VERIFICATION.md` and
+`outputs/coupled_verification/metrics.json`. Earlier reports remain historical
+measurements of their recorded source, not reruns with this different solver.
+
 ## Current development step
 
-Next, connect dynamics to the independent electromagnetic/vacuum subsystem
-with a measured source-work budget. The bounded reference core and its
-verification issue are complete in their declared scope; remaining cold-flow
-accuracy, curved-equilibrium stress balance and stronger full-update checks
-are tracked separately and must be addressed before formation claims. Transport
-applicability can be developed independently. Do not
-simply enable `Experiment(stage=2)` with periodic/metal-wall boundaries.
-
-One physically relevant coupling route is a pre-ionized gas filling the actual
-chamber, with fluid only inside the chamber and a true magnetic vacuum outside.
-That avoids adding an artificial massive exterior. It still requires validated
-quartz/end boundary treatment and must address rarefaction, changing conductivity
-and formation of an internal plasma–vacuum interface if a detached torus forms.
-It is an implementation candidate, not a completed or validated model.
+Prioritize a verified open magnetic boundary or demonstrated domain convergence,
+resolution of source-driven skin layers and stronger compression/magnetic-shock
+checks for the split method. Energy pairing alone does not prove local momentum
+or shock accuracy. Replace the fixed gas-filled interface with a defensible
+evolving plasma–vacuum treatment before interpreting detached torus formation.
+Validate actual chamber/end conditions, transport and Hall applicability. The
+fixed-chamber reference is useful measured progress, not completion of
+`frc-vacuum`. `Experiment(stage=2)` stays gated.
+Cold-flow pressure accuracy, curved-equilibrium stress balance and stronger
+full-update robustness remain tracked separately. Transport applicability can
+be developed alongside numerical coupling without selecting arbitrary closure.
 
 ## Completion audit at this checkpoint
 
 | Requirement | Authoritative evidence | Status |
 |---|---|---|
 | Conservative dynamic core | mhd modules, independent tests, MHD/positivity reports | Implemented and verified for stated bounded reference; positive traces without cell floors; full-update robustness and cold-flow accuracy remain bounded by tests |
-| Physical source/plasma/vacuum coupling | Original Stage 2 guard still raises; beads frc-vacuum | Incomplete |
+| Physical source/plasma/vacuum coupling | Fixed-chamber split reference and COUPLED_VERIFICATION; original Stage 2 guard still raises | Partial: smooth/work checks pass; finite-domain sensitivity, free interface, end conditions and magnetic shocks remain |
 | Regime-appropriate transport / Hall physics | Fixed eta/sigma only; beads frc-transport | Incomplete |
-| Full independent numerical verification | Waves, shocks, heating, advection, J×B, curved equilibrium, admissibility and double rarefaction data | Partial; measured curved-equilibrium and cold-pressure error; no formation validation |
+| Full independent numerical verification | Waves, gas shocks, heating, advection, J×B, curved equilibrium, admissibility, rarefaction and new vacuum/coil budget checks | Partial; measured cold-pressure/equilibrium errors and coupled pulse/boundary sensitivity; no formation validation |
 | Converged FRC formation | Only older stationary-conductor results, unconverged topology duration | Not demonstrated |
-| Reproducible experimental interface | Stage 0/1 CLI/playback; dynamic benchmark scripts and metrics | Partial; no coupled dynamic experiment UI |
+| Reproducible experimental interface | Stage 0/1 CLI/playback; dynamic and coupled benchmark scripts, histories and metrics | Partial; no coupled dynamic experiment UI |
 
 Beads issues `frc-goal`, `frc-vacuum`, `frc-transport`, `frc-accuracy`, and
 `frc-formation` preserve the remaining scope; `frc-mhd` records the completed
