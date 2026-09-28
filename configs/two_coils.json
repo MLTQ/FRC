@@ -1,0 +1,65 @@
+{
+  "grid": {
+    "radius": 0.15,
+    "half_length": 0.3,
+    "nr": 61,
+    "nz": 121
+  },
+  "chamber": {
+    "radius": 0.05,
+    "half_length": 0.15
+  },
+  "material": {
+    "region": {
+      "radius": 0.035,
+      "half_length": 0.1
+    },
+    "conductivity": 20000.0,
+    "species": "Ar+",
+    "ion_mass": 6.633521472521616e-26,
+    "charge_state": 1,
+    "ion_density": 1e+20,
+    "electron_temperature_ev": 5.0,
+    "ion_temperature_ev": 1.0,
+    "initial_ionization": 1.0
+  },
+  "coils": [
+    {
+      "radius": 0.061,
+      "z": -0.055,
+      "turns": 1.0,
+      "polarity": 1,
+      "name": "formation_left",
+      "waveform": {
+        "kind": "Unipolar",
+        "amplitude": 1000,
+        "start": 0.0,
+        "rise": 5e-06,
+        "hold": 1e-05,
+        "fall": 1.5e-05
+      }
+    },
+    {
+      "radius": 0.061,
+      "z": 0.055,
+      "turns": 1.0,
+      "polarity": 1,
+      "name": "formation_right",
+      "waveform": {
+        "kind": "Unipolar",
+        "amplitude": 1000,
+        "start": 0.0,
+        "rise": 5e-06,
+        "hold": 1e-05,
+        "fall": 1.5e-05
+      }
+    }
+  ],
+  "bias": 0.005,
+  "duration": 0.0001,
+  "dt": 2.5e-07,
+  "stage": 1,
+  "label": "two-coil formation experiment",
+  "output_stride": 4,
+  "persistence_threshold": 5e-06
+}
