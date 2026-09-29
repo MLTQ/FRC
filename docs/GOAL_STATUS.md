@@ -113,36 +113,40 @@ measurements of their recorded source, not reruns with this different solver.
 
 ## Current development step
 
-The moving resistive material reference now has optional initial radial grading,
-clustering plasma and true magnetic-vacuum cells at their shared surface. It
-adds no exterior fluid or artificial transport. The full suite has **179 passing
-tests (80.30 s)**. All 21 moving cases, 13 independent component cases and 18
-comparison pairs with separate integration-order checks are complete. Source,
-configuration, field, comparison and report hashes are checked; both final
-figures were visually inspected. No numerical job remains live at this checkpoint.
+The separate fixed-material `MaterialCurrent` component now includes physical
+electron inertia, spatially prescribed positive carrier density/nonnegative
+resistivity, true magnetic vacuum and explicit electron drift kinetic energy.
+Conditional Coulomb transport and local Hall/inertia/drift diagnostics are
+integrated into reference experiment metadata. Prescribed conductivity and
+moving dynamics are unchanged. The full suite has **192 passing tests (79.10 s)**.
+All 35 current-component cases, an independent time audit, 43 conditional
+states and 41 prescribed-edge samples are complete. Both final figures were
+visually inspected; complete source/configuration/field hashes are checked.
+No numerical job remains live at this checkpoint.
 
-SURFACE_VERIFICATION.md reports large spatial differences and persistent fine
-time sensitivity: grade-2 nr=32 velocity changes 5.39874%, then 2.75800%, when
-CFL and step caps are successively halved. The new integrated physical-material
-velocity norm differs from the historical coarse-vertex norm, so its 34.1273%
-uniform nr=16/32 result must not be substituted for the older 63.821% number.
+CURRENT_VERIFICATION.md separates continuum error, time order, physical current
+energy and numerical false reversal. The unresolved de/R=.05, nr=8 screening
+case produces negative Bz down to -0.0033032 of applied bias, despite a small
+energy residual; the independent exact field is positive. Finer sampled fields
+remove this artifact but nr=64 still has 7.3078% magnetic-field L2 error. The
+inertial decay's nr=64 current/heat errors are 0.082887%/0.10486%; initial weak
+surface-current error limits convergence and is retained, not hidden.
 
-SURFACE_COMPATIBILITY.md derives an additional conditional continuum defect:
-continuous B and a smooth zero-pressure material surface with bounded div(v)
-require zero edge Joule heating, whereas the initialized FRC has nonzero edge
-current at positive eta. This is not a general weak-solution nonexistence result
-and does not explain away numerical error. The immediate physical task is to
-specify a defensible current/thermal edge model and its species, collision, Hall
-and electron-inertia regime, and build an independent compatible heated-surface
-reference. Preserve the original stress cases and their full refinement evidence.
+The original Ar+ reference has di/R=4.0972 and conditional electron mean-free-
+path/R=0.11088. It does not justify ignoring Hall physics. Smaller physical
+edge-gradient lengths raise electron inertia, carrier-drift and kinetic
+requirements. The heated sharp-edge incompatibility in SURFACE_COMPATIBILITY
+remains unresolved; the new linear fixed-density component does not fix it.
 
-Spatial circular coils remain the next source capability; MOVING_COIL_PLAN.md
-specifies its independent force/work checks. Neither that capability nor a
-smaller energy residual can validate the heated edge. Material distortion,
-low-energy modes, shock capture/remapping, actual chamber/end conditions,
-transport/ionization/Hall applicability, converged formation and an interactive
-dynamic experiment remain required. `Experiment(stage=2)` stays gated and the
-overarching goal remains active.
+The next bounded coding step is the axisymmetric Hall/toroidal reference and
+independent wave-dispersion verification in EXTENDED_PLASMA_PLAN.md. Its parent
+species equations, current-energy force/transport terms, separate electron/ion
+thermal evolution and justified edge treatment must precede complete moving
+coupling. Spatial coil force/work checks remain in MOVING_COIL_PLAN.md. Actual
+gas ends, mesh/shock robustness, converged formation and the experimental UI
+remain required. The original low-pressure scope is retained; a denser/easier
+fixture cannot silently replace it. `Experiment(stage=2)` stays gated and the
+full objective remains active.
 
 ## Infinite magnetic exterior checkpoint
 
@@ -698,14 +702,78 @@ rerun using all 18 verified comparison caches. All jobs are terminal. The goal
 and relevant beads issues remain open with physical surface closure and the
 independent spatial-coil force reference as concrete next work.
 
+## Electron-current inertia and conditional transport checkpoint
+
+This continuation adds `MaterialCurrent` with physical me and frozen prescribed
+ne/eta profiles, counting current kinetic energy alongside magnetic energy and
+positive per-cell collisional heating. Its sparse mixed Ampere/Ohm solve keeps
+vacuum elliptic with no exterior carriers. Increment formulation preserves
+stationary current; diagonal algebraic scaling improves axis-conditioned
+roundoff without changing physics. A final exact-ideal-limit regression also
+preserves tiny material flux under a much larger source-field change, with its
+Ampere residual explicitly checked. Independent massless-limit and variable-
+coefficient physical-volume energy checks pass. This is a separate linear
+component, not a hidden change to the moving plasma or a complete edge model.
+
+Thirteen new tests bring the full suite to **192 passed (79.10 s)**. Primary NRL
+collision coefficients in SI agree with independent published cgs numbers.
+Coulomb logs are never floored; invalid classical closure is explicitly
+unavailable. Reference Stage 0/1 metadata now carries conditional thermal,
+Hall/electron-inertia/Debye and drift diagnostics, retaining the original
+prescribed conductivity and distinguishing inferred Drude rates. No absence of
+a warning establishes validity; neutrals/ionization and tensors remain open.
+
+All 35 current cases completed, including the added thin-layer nr=64 control.
+Uniform inertial sphere decay, collisionless modified-Bessel screening and
+an exact variable-density/resistivity profile independently test continuum
+fields/current/heat. For de/R=.2, nr=8/16/32/64 current errors are
+0.0249752/0.00768733/0.00247993/0.000828866; finest B and local-heat errors are
+0.00523256 and 0.00104859. Finite inertia retains the weak derivative error in
+the interpolated initial field, yielding roughly order 1.5 current convergence;
+surface grading alone worsens this in the recorded control. This is explicit.
+
+Strong screening de/R=.05 exposes false reversal on nr=8: minimum Bz/bias
+-0.00330320 and 40.2668% of sampled material volume negative, while the analytic
+field is positive everywhere inside. The amplitude is small relative to bias
+but would invalidate a sign-only topology claim. Finer recorded samples have no
+negative Bz; nr=64 current error is 0.00480722 and magnetic-field error 0.0730778.
+No clipping, carrier floor, anomalous resistance or heat cutoff removes the
+coarse artifact. Sample positivity is not a between-sample topology guarantee.
+
+An independently diagonalized fixed spatial mode gives temporal halving ratios
+4.002221 and 4.000555. Matching-radius, angular, quadrature, mode-count and
+grading controls are retained. True-sphere energy quadrature orders 48/96 agree
+within 9.172e-14 relative; maximum whole-run energy residual is 8.414e-15 of
+the reported continuum energy scale and maximum equation residual 2.341e-12.
+These do not erase current/field error or validate nonlinear formation.
+
+The conditional scan records 43 assumed states and 41 prescribed-density-edge
+samples. The original Ar+ case gives di/R=4.09721, de/R=0.0151831 and electron
+mean-free-path/R=0.110877. Conditional perpendicular momentum and Z=1 parallel
+resistivities are 8.57541e-5 and 4.37521e-5 ohm m; their limits are distinct and
+neither is automatically installed. Fixed charge/temperature/ionization are
+inputs, not equilibrium predictions. The prescribed vanishing-density edge
+and its fixed current are a diagnostic illustration, not a thermal solution.
+
+All source/configuration/lossless archive identities and companion documents
+are checked. Frozen component measurement SHA256 is
+`c66fb837ef6af44768c87d3a88e624f9ec75e318fd24a4cfd62a82752725908f`;
+report, plotting, time audit and transport scan are separately hashed. Both
+final figures are visually inspected. Full records are in
+`outputs/current_verification`, equations in CURRENT_INERTIA and
+TRANSPORT_REGIME, and results in CURRENT_VERIFICATION. All jobs are terminal.
+EXTENDED_PLASMA_PLAN defines the next Hall/toroidal wave reference and the
+remaining current-energy, thermal and edge integration requirements. The full
+goal remains active; a component milestone is not FRC formation validation.
+
 ## Completion audit at this checkpoint
 
 | Requirement | Authoritative evidence | Status |
 |---|---|---|
 | Conservative dynamic core | mhd modules, independent tests, MHD/positivity reports | Implemented and verified for stated bounded reference; positive traces without cell floors; full-update robustness and cold-flow accuracy remain bounded by tests |
 | Physical source/plasma/vacuum coupling | Fixed-chamber, boundary, moving/resistive and SURFACE_VERIFICATION reports; SURFACE_COMPATIBILITY audit; Stage 2 guard still raises | Partial: moving resistive free surface and explicit surface refinement are implemented; conditional heated-edge incompatibility, unresolved flow/current, spatial coils, mesh robustness and actual ends remain |
-| Regime-appropriate transport / Hall physics | Fixed eta/sigma only; conditional edge audit; beads frc-transport | Incomplete; current/thermal edge closure and collision/Hall/electron-inertia validity are immediate physical requirements |
-| Full independent numerical verification | Prior waves/shocks/skin/CT and moving studies; new graded volume/expansion/decay and common-material overlap checks, 21 dynamic/13 component records | Partial; 179 passing tests; large spatial and remaining time error, cold-pressure/equilibrium, broader shocks and physical surface closure remain |
+| Regime-appropriate transport / Hall physics | Conditional Coulomb/local regime module; independent finite-current-inertia component; CURRENT_VERIFICATION and EXTENDED_PLASMA_PLAN | Partial component progress; chosen formation closure, Hall/toroidal response, moving electron/ion thermal dynamics and physical edge/kinetic treatment remain incomplete |
+| Full independent numerical verification | Prior dynamic/shock/vacuum/surface studies; new Coulomb units, inertial decay/screening/variable profiles, independent time/energy checks and 35-case study | Partial; 192 passing tests; known false reversal on unresolved current layer, substantial thin-layer B error, moving-flow/cold-pressure/shock robustness and physical surface closure remain |
 | Converged FRC formation | Only older stationary-conductor results, unconverged topology duration | Not demonstrated |
 | Reproducible experimental interface | Stage 0/1 CLI/playback; dynamic and coupled benchmark scripts, histories and metrics | Partial; no coupled dynamic experiment UI |
 

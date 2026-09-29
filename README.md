@@ -13,6 +13,10 @@ meshes now expose substantial spatial and time sensitivity and a conditional
 thermal incompatibility of the initialized heated edge. Spatial coil coupling,
 physical surface/transport models and appropriate end conditions remain
 unfinished. Stability and particle confinement have not been established.
+A separate electron-current component now includes finite carrier inertia and
+its kinetic energy, with independent decay/screening references. Conditional
+Coulomb and local Hall/inertia diagnostics are available; the moving thermal
+and Hall coupling still needs implementation and verification.
 
 ![Waveform comparison](outputs/comparison/comparison.png)
 
@@ -71,6 +75,12 @@ derives a conflict between initial edge heating and a smooth zero-pressure
 surface under the stated continuous-field assumptions. This restricts the
 interpretation of these stress fixtures and does not prove that every weak
 solution is impossible.
+The [current-inertia study](docs/CURRENT_VERIFICATION.md) adds 35 complete
+component cases and [physical regime checks](docs/TRANSPORT_REGIME.md). The
+original argon reference has an ion inertial length about four times its plasma
+radius, so its parameters do not justify ignoring Hall physics. A coarse
+collisionless screening mesh also produces false reversal despite a small
+energy residual; this artifact and the remaining fine-grid error are explicit.
 
 ## Use the existing environment
 
@@ -102,6 +112,9 @@ solution is impossible.
 .venv/bin/python -m examples.surface_measurements --reuse
 .venv/bin/python -m examples.surface_time_control
 .venv/bin/python -m examples.verify_surface
+.venv/bin/python -m examples.current_measurements --reuse
+.venv/bin/python -m examples.transport_study
+.venv/bin/python -m examples.verify_current
 ```
 
 The boundary verifier assembles completed boundary-study records. To regenerate its
@@ -112,7 +125,8 @@ modules. The separately recorded fine shock uses
 These fine-grid studies can take many minutes; partial records are not results.
 The moving measurement/assembly commands validate exact source/configuration and
 lossless field hashes before reusing completed cases. The resistive commands
-reproduce the uniform extension; the final four reproduce the surface study.
+reproduce the uniform extension; the surface commands reproduce the graded
+study; the final three reproduce the current-inertia and transport assessment.
 Historical studies retain their recorded
 source fingerprints; current production changes do not relabel old outputs.
 The finest material meshes also take several minutes.
@@ -184,6 +198,8 @@ conductivity without an ionization/transport closure. See the research queue.
 - `moving_geometry.py`, `moving_field.py`: evolving material geometry, magnetic virtual work and exact infinite exterior.
 - `moving_advection.py`, `moving_plasma.py`: ideal material flux labels, adiabatic gas and actual free-surface motion.
 - `material_resistivity.py`, `resistive_substeps.py`, `resistive_moving.py`: consistent current, physical diffusion/heat, adaptive accuracy control and atomic resistive/material composition.
+- `current_inertia.py`: separate fixed-material linear current response, physical electron inertia, drift kinetic energy and true exterior vacuum.
+- `coulomb_transport.py`: conditional classical collision coefficients and explicit local carrier/Hall/inertia/thermal scale checks.
 - `diagnostics.py`, `topology.py`: validity scales, energy, O/X points, closed flux.
 - `simulation.py`, `results.py`: orchestration and reproducible numeric archives.
 - `experiments.py`, `visualization.py`, `cli.py`: sweeps, plots and playback.
@@ -219,6 +235,10 @@ driven flow, a defensible heated-edge model, spatial coil coupling, realistic
 ends and transport/Hall validity remain required. Surface grading preserves
 the uniform default and makes refinement explicit; it does not by itself
 resolve the flow or repair the conditional thermal incompatibility.
+The finite-inertia current component is verified separately and is not yet
+coupled to moving gas. The original argon scales motivate Hall/toroidal and
+electron/ion thermal extensions; [the next integration contract](docs/EXTENDED_PLASMA_PLAN.md)
+retains their energy, vacuum and model-validity requirements.
 The coil-driven Stage 2 entry point still raises an explicit `NotImplementedError`
 until the physical formation requirements are verified. The dynamic references
 are separately scriptable through `plasma_bench.mhd.AxisymmetricMHD` and
@@ -325,6 +345,13 @@ retains the large moving-flow mesh dependence and source/time/boundary controls.
 vacuum shells at the shared surface. The default is `1.0`; the new uniform
 runs reproduce the historical saved state arrays exactly. See the
 [surface method](docs/SURFACE_NUMERICS.md) for its measured accuracy and limits.
+
+Stage 0/1 run metadata now includes conditional Coulomb estimates from the
+supplied species and temperatures. Their reference current is initially zero;
+the local `plasma_bench.coulomb_transport.regime` function accepts actual current,
+physical structure length and variation time for a separate assessment.
+These estimates never overwrite prescribed conductivity or establish validity
+merely because a warning threshold is not crossed.
 
 [Open physics and numerical questions](docs/RESEARCH_QUESTIONS.md) include the
 outer vacuum boundary, transport, pre-ionization, neutral effects, objective FRC

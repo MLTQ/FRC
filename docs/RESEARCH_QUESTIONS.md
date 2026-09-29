@@ -1,6 +1,17 @@
 # Research queue
 
 - [ ] Choose a formation-time conductivity closure; test anisotropy and Hall terms.
+- [x] Add independently checked conditional Coulomb coefficients and local
+  Hall/electron-inertia/Debye, drift and collisionality diagnostics; retain
+  explicit assumptions and never turn an absent warning into a validity claim.
+- [x] Implement a fixed-material current-inertia component with physical electron
+  mass, variable carrier/resistivity profiles and true magnetic vacuum. Verify
+  continuum decay/screening, variable coefficients, current kinetic energy,
+  positive heat and independent time order; retain coarse false-reversal evidence.
+- [ ] Implement the axisymmetric Hall/toroidal reference and verify independent
+  wave dispersion, then couple electron/ion thermal and current-energy transport
+  consistently to motion. See EXTENDED_PLASMA_PLAN; the linear current component
+  alone is not a physical heated edge or a formation solver.
 - [ ] Connect gas pressure, ionization fraction, density and pre-ionization histories.
 - [ ] Validate electron-neutral and ion-neutral cross sections for argon and other gases.
 - [ ] Establish collisionality / kinetic limits with defensible mean free paths.

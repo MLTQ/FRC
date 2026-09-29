@@ -1,6 +1,7 @@
 """Reference scales and candid model-validity warnings."""
 import numpy as np
 from scipy.constants import mu_0, elementary_charge as E, electron_mass as ME, c
+from .coulomb_transport import regime
 
 
 def characteristic_scales(config):
@@ -42,7 +43,7 @@ def characteristic_scales(config):
         warnings.append("Inferred electron Hall parameter exceeds one; scalar conductivity needs a transport justification.")
     if m.initial_ionization < .9:
         warnings.append("Partially ionized input: neutral collisions and ionization dynamics are omitted.")
-    warnings.extend(["Conductivity is prescribed, not derived from species/temperature; collision mean free paths are unknown.",
+    warnings.extend(["Conductivity remains prescribed; conditional Coulomb estimates below are not a complete transport closure.",
                      "Scales use |bias field|; local validity can be worse near magnetic nulls.",
                      "No equilibrium, stability, FRC success or particle confinement is established by these stages."])
     if config.stage == 1:
@@ -76,6 +77,12 @@ def characteristic_scales(config):
         out["radial_cells_per_skin_depth"] = float(skin/g.dr)
         if skin/g.dr < 5:
             warnings.append("Oscillatory skin depth spans fewer than five radial cells; refine the mesh.")
+    reference=regime(ne,m.electron_temperature_ev,m.ion_temperature_ev,m.ion_mass,
+                     charge_state=m.charge_state,ionization=m.initial_ionization,field=b,
+                     length=length,timescale=min(features) if features else config.duration)
+    reference["current_assumption"]="Zero-current initial reference; evolving local current must be assessed separately"
+    out["coulomb_reference"]=reference
+    warnings.extend("Coulomb reference: "+w for w in reference["warnings"])
     return out, warnings
 
 

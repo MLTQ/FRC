@@ -151,3 +151,20 @@ the added geometry/control, separately from actual surface-flow convergence.
 See SURFACE_NUMERICS.md and the conditional thermal trace audit in
 SURFACE_COMPATIBILITY.md; mesh refinement cannot by itself validate missing
 physical interface assumptions.
+
+## Current inertia and conditional transport
+
+`current_inertia.py` is a separate fixed-material linear current component. It
+reuses the existing full-space stiffness/plasma mass, adds positive carrier
+inertia and relaxation matrices, and solves a mixed Ampere/Ohm increment system.
+Magnetic energy, electron drift energy, per-cell heat and source work remain
+separate. No incomplete current-energy force or Hall term is inserted into
+`ResistiveMovingPlasma`. Three independent continuum references, time order and
+physical-volume energy checks are recorded in CURRENT_VERIFICATION.
+
+`coulomb_transport.py` supplies conditional classical coefficients and local
+physical-scale diagnostics. `diagnostics.characteristic_scales` includes these
+as a named initial reference without changing conductivity. Zero-density
+vacuum has no transport state; invalid Coulomb closure is not floored. The
+next Hall/toroidal and electron/ion thermal integration contract is
+EXTENDED_PLASMA_PLAN. Stage 2 remains gated on full formation requirements.
