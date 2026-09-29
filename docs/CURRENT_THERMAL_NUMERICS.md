@@ -148,3 +148,9 @@ local pressure partition independently, retaining maximum/axis errors and
 failed trials. Collision heating/exchange, conduction/ionization, the original
 heated free edge, true vacuum, real ends/coils and physical validity remain
 separate requirements. None is discharged by this constrained reference.
+
+The subsequent MOVING_CURRENT_NUMERICS/VERIFICATION checkpoint derives and
+independently checks the exact moving continuum contract and instantaneous
+induction rate, including n_t and curl v. It leaves the actual conservative
+moving fluid time update as the next integration gate; this fixed-n module
+and its frozen measurements remain unchanged.

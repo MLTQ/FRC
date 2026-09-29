@@ -12,18 +12,18 @@ waves converge at order two. The tested hybrid waves retain measured time/energy
 errors; no FRC formation or GPU speedup claim is made. See ENGINE_COMPARISON.
 No production backend or Stage 2 gate changed.
 
-Latest custom checkpoint: **316 passing tests; 41 finite-mass/current baseline cases audited**
-(40 completions and one preserved massless nonlinear rejection), plus **18
-stationary controls and 15 precision evolutions**. A joint physical-electron-mass
-component improves the unchanged nonbarotropic fixture's local pressure defect
-with mesh refinement. A stationary-background roundoff rejection is fixed using
-direct current increments, with independent weak-wave and stored-state checks.
-The component constrains density and bulk flow; moving finite-mass dynamics,
-physical transport, the heated edge/exact vacuum and formation remain incomplete.
-See CURRENT_THERMAL_NUMERICS and CURRENT_THERMAL_VERIFICATION. The frozen baseline
-source and prior failures remain preserved. Next derive and verify moving
-finite-mass stress/current-energy transport together before coupling this stage
-into the existing fluid solver; do not merely update its density matrix.
+Latest custom checkpoint: **322 passing tests; 19 moving finite-mass induction
+rate cases independently audited**. Exact parent-species momentum and local
+energy verify the moving-density, drift-stress and mixed energy-flux contract.
+Physical B_t/J_t/E errors decrease under refinement; at nr128 they are
+1.16252%/0.459108%/0.643579% in volume L2. These are instantaneous prescribed-
+kinematics tests, not a full moving time integration. The previous 41 baseline
+and 33 stationary/precision controls retain their original source and evidence.
+See MOVING_CURRENT_NUMERICS and MOVING_CURRENT_VERIFICATION. Next implement the
+discrete conservative continuity/momentum/thermal coupling using shared fluxes
+and actual n_t, then verify finite-mass compressible waves and moving trajectories.
+The original heated edge/exact vacuum, transport and formation remain incomplete;
+do not merely change the fixed-density component's inertia matrix.
 
 ## Completion evidence still required
 
@@ -1325,3 +1325,57 @@ ionization, the original heated free edge and exact vacuum, real ends and
 spatial coil work, shocks/entropy/kinetic validity, converged formation and
 interactive experiments remain open. Stage2 remains guarded, the overarching
 FRC goal remains active, and there is no external blocker or repository remote.
+
+## Moving finite-mass rate and continuum energy checkpoint
+
+The full suite passes **322 tests in 107.36 s**. `MovingCurrent` now includes
+bulk B* advection, velocity curl, actual prescribed n_t/n and kinetic/mixed
+scalar potentials with physical reduced mass. A positive magnetic-space solve
+handles both poloidal and toroidal instantaneous rates. No density, momentum
+or thermal trajectory is advanced by this component.
+
+Independent manufactured parent species check continuity, momentum, Ohm,
+Faraday, the B* identity and direct full energy flux at physical Ar+ masses,
+the original n0=1e20 regime, equal masses and consistent massless limits.
+Pointwise identities agree within 5.09e-15. Local energy differentiation
+refines approximately fourth order; dropping mixed bulk/current transport
+retains a finite 9.68227e-4 relative defect in the n0=1e18 argon fixture.
+
+All **19 rate cases** finish and pass source/configuration/archive/physical
+audits. For n0=1e18, nr8→128 B_t errors decrease 0.217882→0.0116252,
+J_t 0.275820→0.00459108, E 1.54929→0.00643579 in physical volume L2.
+Finest first-annulus errors are 0.000283210/0.00711149/0.00708714.
+Volume B_t and axis J_t/E are approximately first order; axis B_t is second
+order. Original-density and phase/mass/quadrature/tolerance controls complete.
+The massless nr64 J_t volume error remains **0.403719**, with latest observed
+order only 0.588; this numerical limitation is retained for investigation.
+
+Removing density/vorticity/bulk terms separately changes the nr32 magnetic
+rate by 1.89967%/0.146032%/28.0284%. Maximum full-E Faraday replay error is
+1.3718e-11; the changing-density physical energy-derivative balance is at most
+1.3690e-10 of component powers. These are instantaneous identities, not a
+conservative complete-update energy theorem. Higher norm quadrature changes
+relative L2/axis metrics by at most 1.33e-15 absolute.
+
+The initial nr128 residual rejection and target nr32 energy-cancellation audit
+failure are preserved with their exact source. Explicit linear refinement of
+the original residual and stable polarization of the unchanged energy functional
+resolve them without relaxing tolerances or repairing physical states. One
+linear refinement is used at nr128 and in the tighter nr64 control. All final
+cases share fingerprint
+`d3984fb056edb1aa150d030937b9bce6c21d292b84ef80305b19b52f88af5489`;
+the previous current/thermal fingerprint 80fd45b... remains unchanged.
+The final source snapshot, report/helper/field hashes, inspected figure, full
+test log and failed-attempt audit are retained. All jobs are terminal; no
+remote Git, publication or background numerical job was introduced.
+
+Next derive and implement a **discrete conservative moving finite-mass update**
+with rho=(mi+me)n, actual continuity flux/n_t, a consistent regular velocity
+map, drift-stress momentum/angular momentum, species thermal transport and full
+bulk/current/Poynting/enthalpy energy flux. Verify local pressure/energy and
+independent finite-mass compressible waves/manufactured moving trajectories
+with spatial/time convergence and atomic failure. Do not bolt the rate onto
+the old split. Physical collisions/transport/ionization, heated free edge and
+exact vacuum, real ends/spatial coils, shocks/entropy/kinetic validity, converged
+formation and interactive experiments remain open. Stage2 stays guarded and
+the overarching goal remains active. See MOVING_CURRENT_NUMERICS/VERIFICATION.

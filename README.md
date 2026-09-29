@@ -28,8 +28,11 @@ The [finite-mass current/thermal study](docs/CURRENT_THERMAL_VERIFICATION.md)
 now audits 41 baseline trajectories and 33 precision controls. Physical electron
 mass improves the original bounded pressure fixture; a stationary-background
 roundoff rejection is fixed without suppressing weak waves. This component
-still holds density and bulk flow fixed, so moving finite-mass integration and
-the physical plasma-vacuum edge remain the next requirements.
+still holds density and bulk flow fixed. The new
+[moving-current study](docs/MOVING_CURRENT_VERIFICATION.md) verifies the exact
+finite-mass momentum/energy reduction and 19 varying-density induction-rate
+cases. Magnetic/current/electric errors decrease under refinement; the full
+moving conservative time update and physical plasma-vacuum edge remain open.
 
 ![Waveform comparison](outputs/comparison/comparison.png)
 

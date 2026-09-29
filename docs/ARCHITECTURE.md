@@ -319,3 +319,23 @@ continuous pressure/temperature quadrature live in separate `examples/warm_*`
 modules. WARM_ADIABATIC_NUMERICS/VERIFICATION document errors and the remaining
 entropy defect. The next gate connects electron-current enthalpy/Poynting work
 and Hall with a compatible boundary, as specified in TWO_TEMPERATURE_PLAN.
+
+## Exact finite-mass moving-current contract
+
+`finite_mass_moments` implements the exact species reduction, barycentric mass,
+drift stress, current energy and full bulk/current energy flux. The separate
+fixed-density `current_thermal` path retains its previous source identity.
+`dual_kinematics` supplies regular nodal bulk velocity and cylindrical vorticity;
+`moving_current` adds moving-density and bulk-gradient terms to instantaneous
+induction. `inertial_induction` eliminates the mixed equations into a positive
+magnetic-space solve with checked original residuals and explicit linear
+iterative refinement. No moving fluid time integrator is hidden in these modules.
+
+Independent analytic parent-species fields and manufactured force/heat live in
+`examples/moving_species_reference`; the continuum audit checks both species
+and local total energy. Separate case, work, measurement, provenance, audit,
+plot and report modules preserve nineteen full rate records and the initial
+failed attempt. MOVING_CURRENT_NUMERICS/VERIFICATION specify equations, domains,
+measured errors and the still-required discrete momentum/thermal integration.
+Actual conservative continuity must supply n_t, and a consistent primal/dual
+velocity and stress/energy flux must precede full moving finite-mass evolution.
