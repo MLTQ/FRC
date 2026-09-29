@@ -6,11 +6,12 @@ a coupled nonconducting exterior. A developmental conservative MHD kernel now
 simulates compression, axial motion, pressure/energy evolution and resistive
 heating in explicit verification domains. The coil-driven formation workflow
 now has a separate fixed-chamber coupling reference with moving gas, prescribed
-coils and an elliptic magnetic vacuum. A new ideal material-mesh reference
-evolves a free plasma surface against a magnetic vacuum extending to infinity.
-Its resistive extension, appropriate end conditions and physical transport
-remain unfinished. Stability and particle
-confinement have not been established.
+coils and an elliptic magnetic vacuum. A new material-mesh reference evolves a
+free plasma surface against a magnetic vacuum extending to infinity, with
+scalar resistive induction and positive local Ohmic heating. Its moving flow
+remains resolution-sensitive; spatial coil coupling, appropriate end conditions
+and physical transport remain unfinished. Stability and particle confinement
+have not been established.
 
 ![Waveform comparison](outputs/comparison/comparison.png)
 
@@ -54,7 +55,12 @@ equilibrium for free-boundary verification, not a formation result.
 The [moving-material study](docs/MOVING_PLASMA_VERIFICATION.md) measures actual
 free expansion, equilibrium drift, magnetic virtual force, source work and
 interior flux interpolation error. Its [method](docs/MOVING_PLASMA.md) makes
-the ideal-only scope and mesh/axis approximations explicit.
+the ideal component and mesh/axis approximations explicit.
+The [resistive moving study](docs/RESISTIVE_MOVING_VERIFICATION.md) adds independent
+spherical-decay, current, local-heat and stiff-time checks. Its
+[method](docs/RESISTIVE_MOVING_NUMERICS.md) defines adaptive diffusion control and
+atomic coupling to motion. The finest driven-flow comparison still differs by
+63.8% between meshes despite much smaller energy and time-integration errors.
 
 ## Use the existing environment
 
@@ -79,6 +85,9 @@ the ideal-only scope and mesh/axis approximations explicit.
 .venv/bin/python -m examples.moving_static_measurements
 .venv/bin/python -m examples.moving_measurements --reuse
 .venv/bin/python -m examples.verify_moving
+.venv/bin/python -m examples.resistive_decay_measurements
+.venv/bin/python -m examples.resistive_dynamic_measurements --reuse
+.venv/bin/python -m examples.verify_resistive_moving
 ```
 
 The boundary verifier assembles completed boundary-study records. To regenerate its
@@ -87,9 +96,11 @@ pulse, skin and end measurements, run the `examples.boundary_pulse_measurements`
 modules. The separately recorded fine shock uses
 `examples.boundary_order_probe.run(384, .2, "outputs/boundary_verification/fine_shock")`.
 These fine-grid studies can take many minutes; partial records are not results.
-The final three commands measure and assemble the separate ideal moving-plasma
-study. They validate exact source/configuration and lossless field hashes before
-reusing completed cases. The finest material meshes also take several minutes.
+The moving measurement/assembly commands validate exact source/configuration and
+lossless field hashes before reusing completed cases. The last three commands
+reproduce the resistive extension. Historical studies retain their recorded
+source fingerprints; current production changes do not relabel old outputs.
+The finest material meshes also take several minutes.
 
 Open [vacuum playback](outputs/vacuum/viewer.html) or
 [conducting-plasma playback](outputs/comparison/burst/viewer.html) in a browser.
@@ -157,6 +168,7 @@ conductivity without an ionization/transport closure. See the research queue.
 - `magnetic_quadrature.py`, `vacuum_energy.py`: positive staggered energy and natural magnetic-vacuum work.
 - `moving_geometry.py`, `moving_field.py`: evolving material geometry, magnetic virtual work and exact infinite exterior.
 - `moving_advection.py`, `moving_plasma.py`: ideal material flux labels, adiabatic gas and actual free-surface motion.
+- `material_resistivity.py`, `resistive_substeps.py`, `resistive_moving.py`: consistent current, physical diffusion/heat, adaptive accuracy control and atomic resistive/material composition.
 - `diagnostics.py`, `topology.py`: validity scales, energy, O/X points, closed flux.
 - `simulation.py`, `results.py`: orchestration and reproducible numeric archives.
 - `experiments.py`, `visualization.py`, `cli.py`: sweeps, plots and playback.
@@ -186,9 +198,10 @@ energy errors. Local complete-update fallback preserves distant interior
 accuracy, and compatible spatial work plus a quadratic RK audit separate the
 remaining energy mechanisms. A fixed boundary strip improves shock energy but
 has a measured driven-flow accuracy cost. The new ideal material reference
-provides actual free-surface evolution and independent expansion/force checks;
-resistive coupling, resolved driven flow, realistic ends and transport/Hall
-validity remain required.
+provides actual free-surface evolution and independent expansion/force checks.
+Its resistive extension verifies scalar diffusion and heating, but resolved
+driven flow, spatial coil coupling, realistic ends and transport/Hall validity
+remain required.
 The coil-driven Stage 2 entry point still raises an explicit `NotImplementedError`
 until the physical formation requirements are verified. The dynamic references
 are separately scriptable through `plasma_bench.mhd.AxisymmetricMHD` and
@@ -274,6 +287,23 @@ material mesh can distort; preserved vertex flux does not prove exact frozen
 flux everywhere between vertices. `examples.moving_cases.MovingCase` supplies
 initialized FRC and uniform-bias fixtures with fully recorded mathematical inputs.
 They do not establish formation, species validity or confinement.
+
+The moving resistive fixture is separately scriptable:
+
+```python
+from examples.resistive_records import ResistiveCase
+
+model = ResistiveCase("example", "source", radial_cells=8).build()
+model.advance(0.04)
+print(model.diagnostics())
+```
+
+This initializes a known reversed-field equilibrium and applies a uniform bias
+ramp. It tests resistive relaxation and source coupling, not formation from an
+unreversed plasma. `ResistiveMovingPlasma` accepts explicit scalar resistivity in
+ohm m; its diffusion tolerance controls local field/current/heat estimates, not
+global physical accuracy. The [complete study](docs/RESISTIVE_MOVING_VERIFICATION.md)
+retains the large moving-flow mesh dependence and source/time/boundary controls.
 
 [Open physics and numerical questions](docs/RESEARCH_QUESTIONS.md) include the
 outer vacuum boundary, transport, pre-ionization, neutral effects, objective FRC

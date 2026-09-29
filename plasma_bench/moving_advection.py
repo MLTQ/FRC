@@ -26,7 +26,7 @@ class MaterialFlux:
                 values.append(weight/domain.fluid_reference[node,0])
         self.axis_stretch = coo_matrix((values,(rows,cols)),shape=(len(axis_ids),domain.fluid_node_count)).tocsr()
 
-    def coefficients(self, coordinates):
+    def _scale(self, coordinates):
         d = self.domain
         d.coordinates(coordinates)  # Validate before division by material radius.
         radius = coordinates[:,0]
@@ -36,7 +36,17 @@ class MaterialFlux:
         if np.any(stretch <= 0) or not np.all(np.isfinite(stretch)):
             raise ValueError("Positive regular-axis radial stretch is required")
         scale[d.axis] = 1/stretch**2
-        return self.labels*scale
+        return scale
+
+    def coefficients(self, coordinates):
+        return self.labels*self._scale(coordinates)
+
+    def labels_for_coefficients(self, coordinates, coefficients):
+        """Invert the declared geometric rule after a physical nonideal update."""
+        coefficients = np.asarray(coefficients,float)
+        if coefficients.shape != self.labels.shape or not np.all(np.isfinite(coefficients)):
+            raise ValueError("Finite material coefficients must match the flux labels")
+        return coefficients/self._scale(coordinates)
 
     def pullback(self, coordinates, coefficient_load):
         """Radial derivative of load dot advected a, without changing labels."""

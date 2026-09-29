@@ -23,6 +23,10 @@ relative-node-motion cap plus any declared source cap. Its optional callback
 observes accepted steps only. `diagnostics` distinguishes response work, true
 physical mass, mesh quality, boundary motion and vacuum residual.
 
+`ResistiveMovingPlasma` separately composes this unchanged ideal step with
+physical diffusion and positive heat. The base class retains its ideal contract;
+subclasses must protect flux/entropy arrays as well as positions on failure.
+
 This reference currently has no resistivity/heating, ionization/transport,
 arbitrary spatial coil sources, remapping, shock capture or open gas ends.
 Q1/P0 material discretization can have low-energy mesh modes and distortion;

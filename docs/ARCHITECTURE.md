@@ -118,3 +118,23 @@ is frozen during a study; report/plot hashes are separate. The measured flux
 interpolation defect, magnetic translation-force error and equilibrium drift
 are part of the numerical contract, alongside missing shock/remapping and
 transport support. See MOVING_PLASMA.md and MOVING_PLASMA_VERIFICATION.md.
+
+`material_resistivity` adds a consistent plasma-only r³-weighted mass matrix,
+weak Jtheta/r recovery and implicit midpoint diffusion against the same
+full-space induced-field stiffness. Vacuum has no mass or resistivity. Physical
+eta J² supplies nonnegative cell heat. `resistive_substeps` uses step doubling
+to control magnetic, current and local-heat differences, accepting the two-half
+solution without extrapolation or energy repair. Raw midpoint can falsely
+reverse an underresolved decaying mode even with exact energy bookkeeping;
+independent stiff controls retain that failure and measure adaptive improvement.
+
+`resistive_moving.ResistiveMovingPlasma` composes resistive half-steps with the
+unchanged ideal Verlet step. It evolves flux labels and cell entropy, preserves
+fixed mass, and commits all stages atomically. Eta=0 retains the ideal path.
+Current, cumulative cell heat, labels and entropy join the archived geometry,
+velocity and fields. Physical scalar eta is a prescribed input, not a transport
+closure. Uniform bias is still the only moving-source geometry. The completed
+13-case continuum and 20-case moving studies distinguish current/heat convergence
+from the large remaining flow error; see RESISTIVE_MOVING_NUMERICS.md and
+RESISTIVE_MOVING_VERIFICATION.md. Neither this extension nor its local tolerance
+unlocks Stage 2 or replaces mesh, surface thermodynamics and regime validation.

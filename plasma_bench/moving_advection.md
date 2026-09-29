@@ -18,5 +18,7 @@ stiffness derivatives. No field is adjusted to repair energy or equilibrium.
 Flux labels at non-axis nodes are invariant under ideal evolution. Continuity
 of r²a across shared faces gives a solenoidal weak magnetic field. Preservation
 of all interpolated material surfaces/topology is not claimed from nodal
-invariance alone. Resistive evolution, remapping and topology change are not
-implemented by this ideal-advection component.
+invariance alone. `labels_for_coefficients` purely inverts the declared geometry/
+axis rule after a separate physical resistive update, without mutating accepted
+labels. It validates finite shape-compatible inputs, including initially zero
+flux. This component itself supplies no resistive evolution or mesh remapping.

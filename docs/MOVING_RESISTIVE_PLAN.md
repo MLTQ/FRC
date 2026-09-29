@@ -1,9 +1,11 @@
 # Next component: resistive material induction and heat
 
-This is a derived implementation/verification plan, **not an implemented model
-or completed verification result**. The current moving reference is ideal.
-First test induction on frozen geometry; only then combine with material motion
-and recheck source work, splitting error, pressure and interface accuracy.
+This precursor derives the resistive extension and its independent continuum
+reference. The scalar-eta operator, positive heat and moving Strang composition
+are now implemented, with adaptive diffusion accuracy control; the actual
+method and its limitations are in RESISTIVE_MOVING_NUMERICS.md. This derivation
+alone is not numerical verification: measured field/current/heat, source work,
+splitting, pressure and interface accuracy remain distinct required evidence.
 
 ## Fixed-geometry compatible form
 

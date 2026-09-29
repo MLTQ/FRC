@@ -113,19 +113,21 @@ measurements of their recorded source, not reruns with this different solver.
 
 ## Current development step
 
-The fixed-chamber source/skin/end study is complete and retains the experimental
-boundary strip's measured flow-accuracy cost. The new ideal material-mesh
-reference now evolves a true free surface against infinite magnetic vacuum,
-without exterior fluid. Its force, independent expansion, equilibrium drift,
-source-work and interpolation errors are recorded under refinement.
-The full suite has 155 passing tests; all 26 moving evolution cases and 27
-static evaluations are complete, with checked source/configuration/field hashes.
+The moving material reference now includes scalar physical resistivity, weak
+current recovery, positive per-cell Ohmic heating and adaptive diffusion accuracy
+control, with gas only inside its free surface and infinite magnetic vacuum
+outside. The full suite has **170 passing tests (62.11 s)**. All 13 stationary
+decay studies, stiff time controls and 20 moving cases are complete; production,
+configuration, field and separate report hashes are checked. Both figures were
+visually inspected. No numerical job remains live at this checkpoint.
 
-Next add compatible physical resistive induction and positive Ohmic heat to
-that moving reference, using the independent spherical-decay target derived in
-MOVING_RESISTIVE_PLAN.md. Then add spatially varying circular-coil sources and
-verify geometry/source derivatives and driven-flow/current convergence. These
-extensions must not substitute budget identities for actual profile accuracy.
+Fixed-sphere current and local heat converge at about second order, but actual
+moving velocity differs by 63.821% between the finest driven meshes (nr=16/32,
+D=0.1 m²/s). Neither positive heat nor a small response-energy error establishes
+resolved flow. Inspect that spatial/surface error while adding spatially varying
+circular coils with the full geometric source-force derivative and independent
+source-work controls. RESISTIVE_MOVING_VERIFICATION.md gives the measured
+evidence; MOVING_COIL_PLAN.md specifies the next source-coupling reference.
 Material-mesh distortion, low-energy modes, shock capture/remapping, actual
 chamber/end conditions, transport/ionization/Hall applicability and converged
 formation remain required. The fixed-chamber references and their numerical
@@ -495,7 +497,7 @@ The Stage 2 formation gate and full objective remain unchanged.
 
 ## Moving material / infinite vacuum checkpoint
 
-The current suite has **155 passing tests (61.39 s)**. This continuation is
+That checkpoint had **155 passing tests (61.39 s)**. That continuation was
 verified progress toward the active objective, not completion. All 26 evolution
 cases and 27 static evaluations completed. No numerical jobs remain live.
 Source/configuration/environment and all lossless field hashes are checked;
@@ -548,21 +550,87 @@ These are numerical interpolation effects, not physical resistivity or
 reconnection. The regular-axis stretch approximation and low-energy/distorted
 mesh modes remain explicit. No shock capture or remapping is provided yet.
 
-Next implement compatible physical resistive induction and positive Ohmic heat
-for the moving mesh, starting with the independent spherical-decay eigenmode
-derived and quadrature-checked in MOVING_RESISTIVE_PLAN.md. Then spatial coil
-sources, resolved current/flow, mesh/shock robustness, physical transport and
-Hall applicability, actual ends, converged formation and the dynamic experiment
-UI remain required. All overarching issues and the Stage 2 gate remain open.
+The next resistive checkpoint below implements the scalar diffusion and heat
+extension against the independent spherical-decay eigenmode. This ideal report
+retains its historical source, including ideal source-flow limitations.
+
+## Resistive moving material / vacuum checkpoint
+
+The full suite has **170 passing tests (62.11 s)**. All 13 fixed-geometry decay
+cases, independent stiff-mode controls and 20 actual moving cases completed.
+Full configurations, histories, snapshots, source hashes and inspected figures
+are in `outputs/resistive_moving_verification`; the method and report are
+`docs/RESISTIVE_MOVING_NUMERICS.md` and
+`docs/RESISTIVE_MOVING_VERIFICATION.md`. Frozen production/measurement SHA256 is
+`452e51b4405b8a44fc6191f6716fa4e19e5798ba367bb84a0953ce3c6703503b`.
+Report, analysis and plotting sources have separate recorded hashes.
+
+`MaterialResistivity` uses a consistent plasma-only weighted mass and the same
+full-space magnetic stiffness to solve scalar physical induction and recover
+Jtheta. Implicit midpoint gives positive per-cell eta J² heat and a separate
+source-work/energy check. `ResistiveMovingPlasma` atomically composes two
+resistive half-steps with ideal material motion, updating both flux labels and
+cell entropy. Fixed mass is retained and no exterior fluid, artificial
+resistivity, pressure floor or energy repair is introduced. Eta=0 follows the
+unchanged ideal evolution. Failure of the second resistive stage after trial
+heating/motion leaves all accepted arrays, time and accounting unchanged.
+
+An independent continuum conducting-sphere eigenmode matches a vacuum dipole
+with continuous field at the surface. Maxwell/Faraday/Ohm derivatives and
+all-space quadrature independently verify its current, energy and heat. At
+t=0.1 s and nr=4/8/16/32/64, magnetic-field relative volume L2 errors decrease
+0.0926223→0.00523351, current errors 0.0521209→0.000206685, and local-heat
+errors 0.124056→0.000458581. Q1-gradient field error is about first order;
+flux, current and cell heat are about second order. Axis-field and one-sided
+surface-current errors are reported separately. A second radial eigenmode,
+time, tolerance, matching-radius, mode-count and quadrature controls are complete.
+The geometry is held fixed for this diffusion fixture; it is not force balanced.
+
+A raw midpoint step of an independently diagonalized decaying spatial mode
+produces a false amplitude -1/3 instead of exp(-4), despite a 2.22e-16 J energy
+residual. Adaptive step doubling controls field, current and local heat, accepts
+the unmodified two-half solution, and retains positive heat. Tolerances 1e-3
+through 1e-6 reduce absolute modal-amplitude error 3.30e-4→4.13e-6 and preserve
+the tested positive decay. This is local error control, not a global error,
+positivity or arbitrarily small-field topology guarantee.
+
+The actual moving cases start from the analytic FRC and then undergo resistive
+relaxation, with or without a Gaussian uniform-bias ramp. Reversed topology is
+initialized, not formed. With D=eta/mu0=0.1 m²/s, the driven nr=16→32 comparison
+differs by 63.821% in mass-weighted velocity, 29.357% in magnetic change,
+3.67623% in total current and 5.4924% in local heat density. Density change
+differs by 54.0889%. These material-coordinate differences use coincident
+material sampling and actual volume restriction, independently checked with
+polynomial and geometric integration tests. They are not absolute solution
+errors. Higher physical D=1 still gives 53.915% velocity difference; changing D
+is a physical change, not numerical stabilization. The large flow error remains.
+
+At nr=8, halving outer time caps gives approximately fourfold reduction in
+velocity differences and response residuals. Driven energy residuals at
+dt=0.001/0.0005/0.00025 s are 4.39132e-4/1.09776e-4/2.74435e-5 J; the last
+velocity comparison differs by 0.0149697%. At nr=16, moving the magnetic
+matching radius 2→3 m changes driven velocity by 0.539718%; mode/quadrature
+changes are smaller. Tightening diffusion tolerance 1e-4→1e-5 leaves identical
+accepted stages in these D=0.1 cases and therefore identical results. D=1 cases
+do reject/subdivide diffusion trials. Mass is unchanged; maximum sampled
+resistive-stage energy residual is 1.679e-14 J and vacuum relative residual
+4.451e-13. These are distinct from full moving-state accuracy.
+
+Next inspect spatial modes and surface thermal/force accuracy and add circular
+coils at moving coordinates with the geometric external-source derivative.
+An independent exact dipole/loop force fixture is specified in MOVING_COIL_PLAN.md.
+Shock capture/remapping, material distortion, physical transport/ionization/Hall
+regime, actual ends, converged formation and the experimental UI remain required.
+All overarching issues and the Stage 2 entry remain open.
 
 ## Completion audit at this checkpoint
 
 | Requirement | Authoritative evidence | Status |
 |---|---|---|
 | Conservative dynamic core | mhd modules, independent tests, MHD/positivity reports | Implemented and verified for stated bounded reference; positive traces without cell floors; full-update robustness and cold-flow accuracy remain bounded by tests |
-| Physical source/plasma/vacuum coupling | Fixed-chamber references, boundary reports and new MOVING_PLASMA_VERIFICATION; Stage 2 guard still raises | Partial: actual ideal free-surface motion with infinite vacuum is implemented; moving resistive/coil coupling, driven flow/current convergence, mesh robustness and actual ends remain |
+| Physical source/plasma/vacuum coupling | Fixed-chamber references, boundary reports, MOVING_PLASMA_VERIFICATION and RESISTIVE_MOVING_VERIFICATION; Stage 2 guard still raises | Partial: actual resistive free-surface motion with infinite vacuum is implemented; spatial coils, surface thermodynamics, flow/current convergence, mesh robustness and actual ends remain |
 | Regime-appropriate transport / Hall physics | Fixed eta/sigma only; beads frc-transport | Incomplete |
-| Full independent numerical verification | Prior waves/shocks/heating/skin/CT and vacuum checks; new exact gas expansion, moving magnetic virtual force, FRC drift, prescribed-bias work and interior material flux | Partial; 155 passing tests and complete moving-study controls; driven flow/current convergence, cold-pressure/equilibrium, broader shocks and nonideal moving-interface accuracy remain |
+| Full independent numerical verification | Prior waves/shocks/skin/CT, vacuum and ideal motion; new independent sphere decay/current/local heat, stiff control, atomic resistive motion and source/time/matching studies | Partial; 170 passing tests and complete resistive controls; large moving-flow error, cold-pressure/equilibrium, broader shocks and physical surface closure remain |
 | Converged FRC formation | Only older stationary-conductor results, unconverged topology duration | Not demonstrated |
 | Reproducible experimental interface | Stage 0/1 CLI/playback; dynamic and coupled benchmark scripts, histories and metrics | Partial; no coupled dynamic experiment UI |
 

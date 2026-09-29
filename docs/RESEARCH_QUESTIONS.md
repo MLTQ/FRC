@@ -86,16 +86,26 @@
   The independently verified spherical Hill-vortex reference supplies a true
   vacuum, continuous boundary traction and exact full-space energy target;
   its ideal material-mesh evolution now has measured force and drift refinement.
-  Physical thermodynamics and nonideal moving-interface coupling remain open.
+  Scalar resistive coupling is now verified separately; physical surface
+  thermodynamics and resolved nonideal moving flow remain open.
 - [x] Implement a two-dimensional ideal material mesh with gas only inside an
   evolving surface, regular a=psi/r² magnetic energy, analytic geometry forces,
   an exactly curved matching sphere and full-space decaying vacuum modes.
 - [x] Verify actual free gas expansion, initialized FRC force/drift, independent
   sphere energy/virtual force, prescribed uniform-bias work, and material flux
   interpolation error. See MOVING_PLASMA_VERIFICATION.md for recorded studies.
-- [ ] Extend the moving reference to resistive induction and positive physical
+- [x] Extend the moving reference to resistive induction and positive physical
   Ohmic heating with compatible full-space energy and entropy accounting;
   independently verify diffusion/current/heat, source work and time splitting.
+- [x] Expose raw midpoint false reversal in an independently diagonalized decay
+  mode; add adaptive field/current/local-heat controls with positive physical
+  heating and atomic failure. Local tolerance is not a global topology guarantee.
+- [ ] Resolve moving resistive flow and surface thermal behavior: 16→32 material
+  grids differ by 63.821% in driven velocity at D=0.1 m²/s, despite much smaller
+  time/boundary controls and about second-order fixed-sphere current/heat errors.
+  D=1 changes the physics and still differs by 53.915%; it is not a numerical
+  remedy. Inspect spatial modes, axis/interface forces and geometry before
+  interpreting initialized reversal or improved global energy accounting.
 - [ ] Couple spatial circular-coil sources to moving material coordinates,
   including geometric source derivatives and source-work controls; the new
   material solver currently supports only prescribed uniform axial bias.
