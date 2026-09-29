@@ -49,11 +49,18 @@ cancellation. These results do not establish accurate formation.
 
 The [compatible field study](docs/COMPATIBLE_FIELD_VERIFICATION.md) now audits
 25 improved linear cases and 25 preserved precision-failure comparisons, with
-**343 passing tests**. Higher-order magnetic/current fields and exact separate
+343 passing tests at that checkpoint. Higher-order magnetic/current fields and exact separate
 bias storage reduce the finest slow-mode magnetic-rate error to about 0.00024%.
 All three wave branches refine, with independent current/electric/energy checks.
-This component is not yet connected to the moving plasma solver. Deriving its
-variable-density energy and species transport coupling is the next milestone.
+This component is not yet connected to the moving plasma solver.
+
+The [changing-density study](docs/VARIABLE_CURRENT_VERIFICATION.md) now extends
+it with physical variable-density current inertia and local energy derivatives,
+using the actual continuity rate. **351 tests pass**. Fourteen manufactured
+component cases show strong magnetic/current-energy convergence. The corrected
+species pressure-work pairing conserves its stated lumped energy, but the finest
+entropy-rate error remains about 6.35%, concentrated near the axis. A consistent
+higher-order thermal representation and full moving coupling remain next.
 
 ![Waveform comparison](outputs/comparison/comparison.png)
 

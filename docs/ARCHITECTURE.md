@@ -416,3 +416,26 @@ has been proved and the remaining common work/particle-transport contract.
 The nonlinear SmoothFiniteMassMHD remains unchanged: variable-density inertia,
 current energy, thermal pressure/transport and momentum work must be coupled
 consistently before this representation is adopted in full moving evolution.
+
+## Variable-density field component and explicit pressure bridge
+
+`compatible_density` reconstructs actual conservative number-density means and
+provides its physical quadrature adjoint. `variable_compatible_current` applies
+the positive variable-density inertia by tensor products and exposes separate
+local current, density and full magnetic-energy derivatives. The existing
+original-equation solver consumes its matrix-free inertia without a different
+physical mass, frozen-density substitute or changed tolerance. The caller still
+owns continuity; this component does not integrate density or momentum.
+
+`compatible_charge` derives weak graph current flux from the full magnetic
+Hessian, preserving divergence and matching Ampere/gradient work. The deliberate
+`compatible_pressure` bridge pairs the older lumped species thermodynamics with
+that current. Its thermal error remains explicitly low order; nodal thermal
+density and reconstructed conservative density are not silently interchanged.
+
+Independent continuum fields, physical norms using root-product primitives,
+source/array archives, original-equation replay and plots live in separate
+`examples/variable_current_*` modules. VARIABLE_CURRENT_NUMERICS/VERIFICATION
+separate strong field/energy convergence from the remaining entropy-rate error.
+Full moving thermal compression, velocity/vorticity, stress and complete energy
+flux must be derived and verified before changing the production state partition.

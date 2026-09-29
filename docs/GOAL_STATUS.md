@@ -12,20 +12,23 @@ waves converge at order two. The tested hybrid waves retain measured time/energy
 errors; no FRC formation or GPU speedup claim is made. See ENGINE_COMPARISON.
 No production backend or Stage 2 gate changed.
 
-Latest custom checkpoint: **343 passing tests; 25 higher-order compatible-field
-cases and 25 preserved rounded-total comparisons independently audited**. A
-consistent nodal/edge field representation and explicit uniform-bias/increment
-storage reduce the matched slow linear magnetic-rate error at nr64 from 16.8431
-to 2.36657e-6. All three branches converge; physical current, current-rate,
-full electric, axis/max and independent energy norms remain separate. No physical
-mass or initial velocity is fitted. See COMPATIBLE_FIELD_NUMERICS/VERIFICATION.
+Latest custom checkpoint: **351 passing tests; 14 changing-density component
+cases independently audited**, following the 25 compatible linear cases and 25
+preserved rounded comparisons. Actual conservative n/n_t now enter the physical
+variable-density current inertia and local magnetic/current/density energy
+derivative. Finest manufactured B_t/J_t errors are 4.97e-10/4.65e-10; independent
+local-energy agreement is 4.57e-15. No physical mass or current is fitted.
+See VARIABLE_CURRENT_NUMERICS/VERIFICATION for the explicit component scope.
 
-This component is not yet connected to nonlinear moving density/thermal/energy
-evolution. The earlier smooth solver's 31 rates/27 trajectories remain unchanged:
-fast-wave pi error is 5.38315%, manufactured nr32 pi-change error 70.2663%, and
-slow nr64 magnetic-rate error still 16.8431 in that solver. Next derive the new
-variable-density current-energy/pressure split, velocity/vorticity and common
-particle/work transport, then repeat full parent-species and trajectory checks.
+The higher-order fields are still not adopted in nonlinear moving evolution.
+A common graph pressure-work bridge conserves its lumped energy but has 6.35%
+finest electron entropy-rate error; 99.8% of its squared error lies in the first
+four radial rows, whose local relative error does not converge (~39%). Next
+derive the common physical thermal metric/transport and resolve that axis defect,
+then velocity/vorticity and full stress/current/enthalpy/Poynting work before
+repeating full parent-species and trajectory checks. The earlier smooth solver's
+31 rates/27 trajectories remain unchanged: fast-wave pi error 5.38315%,
+manufactured nr32 pi-change error 70.2663%, and slow nr64 B_t error 16.8431.
 Physical heated-edge/exact-vacuum, transport and formation requirements remain.
 Earlier 19 moving-rate and fixed-density studies retain their source identities.
 The original heated edge/exact vacuum, transport and formation remain incomplete.
@@ -1570,3 +1573,58 @@ parent manufactured equations and coupled wave/contact trajectories, including
 small-pressure-change, axis/max, time, quadrature and atomic failure evidence.
 The original heated free edge/exact vacuum, transport/ionization, real ends/coils,
 shock/entropy and kinetic validity, converged formation and UI remain open.
+
+
+## Variable-density physical inertia and the axis thermal limitation
+
+This continuation made verified component progress. The final suite passes
+**351 tests in123.17 s**, including eight new focused checks. All14 prescribed-
+continuity manufactured cases completed and passed original-equation, source,
+raw-array and independent physical local-energy audits. Every worker is terminal.
+
+`CompatibleDensity` uses actual conservative cell-average number density and the
+same linear reconstruction for supplied continuity n_t. Its physical adjoint
+pairs the changing-current-energy density work with the actual cell state.
+`VariableCompatibleCurrent` supplies positive variable-density inertia through
+tensor products, with physical masses and the unchanged original induction
+solve. Local J dot J_t, −J² n_t/(2n), and full B dot B_t (including bias cross
+work) remain separate. Negative/nonfinite reconstructions or unrepresentable
+inertia reject, without floors or energy repair.
+
+The14-case degree3/5, resolution, quadrature, physical-density and flow-sign
+protocol is instantaneous and explicitly manufactured. Finest degree5 B_t/J_t
+relative errors are4.96985e-10/4.65041e-10. Local current-energy-rate and its
+density-contribution errors are8.93213e-10/1.17057e-9. Independent root-product
+field and primitive-polynomial density quadrature agree with production local
+energies/rates within4.57e-15. Original backward error is below9.94e-13; checked
+solver residual below1.33e-11 at1e-10 tolerance. Full-array Faraday rate-relative
+error reaches5.77e-10 and remains separately exposed.
+
+`CompatibleCharge` replaces the old diagonal-g stream with (H_g g)/(dx dz),
+restoring graph divergence and pressure/current work pairing. The explicit
+`CompatibleSpeciesPressure` bridge retains the old lumped nodal thermal state.
+Its species work and fixed-n logarithmic entropy cancel near roundoff, but its
+physical pressure E remains roughly second order and entropy rate is inaccurate.
+Finest electron/ion whole-domain nodal entropy-rate errors are6.35129%/6.28264%.
+The first four radial rows contain99.8072% of the electron squared error; their
+local relative error grows toward39.09% with refinement rather than converging.
+The interior relative error is0.09767% at nr64. This local axis defect is the
+next thermal target; global conservation or shrinking error volume cannot
+justify adoption. The scientific figure and radial profiles were inspected.
+
+Final source fc106dc19b9bc208aaf7d9b36a43dc69ea49f4d49d126b4f4dfd2ecd85c59e97
+is saved in outputs/variable_current_verification. The complete initial source
+310809e2 and all14 cases/audit/test logs remain in
+outputs/variable_current_before_range_guard. Final finite-range guards reproduce
+every saved numerical array bit for bit across all14 cases. The old smooth
+source dd060015 and linear compatible source8cfb1a2f remain unchanged.
+
+NEXT derive a common physical higher-order thermal density/energy/transport
+metric and its pressure-work adjoint, explicitly correcting the nonconverging
+near-axis lumped entropy rate. Then derive actual conservative velocity/vorticity,
+stress and complete bulk/current/enthalpy/Poynting energy transport, and repeat
+independent parent-species and full wave/contact trajectories. This component
+has not replaced SmoothFiniteMassMHD. Heated free edge/exact vacuum, physical
+transport/ionization, real end/coil coupling, shocks/entropy, kinetic validity,
+converged formation, three-dimensional stability/confinement and UI remain open.
+No remote exists; work and issue state are saved locally without publication.

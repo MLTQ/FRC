@@ -12,3 +12,7 @@ nonlinear moving finite-mass integrator, species transport or a fixed-density
 substitute for formation. Constant n is an explicit linear verification domain.
 Variable-density Hodge/inertia, pressure/work/thermal pairing and conservative
 moving coupling must be derived and verified before production adoption.
+The separate `variable_compatible_current` now verifies conservative variable-n
+inertia and local energy derivatives. Its explicit graph pressure bridge still
+has a nonconverging near-axis entropy-rate defect, so full moving adoption remains
+open. This constant-density class and its archived linear studies are unchanged.
