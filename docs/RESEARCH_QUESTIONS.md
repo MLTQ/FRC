@@ -85,7 +85,26 @@
   treatment without exterior fluid floors; validate gas loss and actual end conditions.
   The independently verified spherical Hill-vortex reference supplies a true
   vacuum, continuous boundary traction and exact full-space energy target;
-  its numerical evolution and a thermodynamic closure are not yet implemented.
+  its ideal material-mesh evolution now has measured force and drift refinement.
+  Physical thermodynamics and nonideal moving-interface coupling remain open.
+- [x] Implement a two-dimensional ideal material mesh with gas only inside an
+  evolving surface, regular a=psi/r² magnetic energy, analytic geometry forces,
+  an exactly curved matching sphere and full-space decaying vacuum modes.
+- [x] Verify actual free gas expansion, initialized FRC force/drift, independent
+  sphere energy/virtual force, prescribed uniform-bias work, and material flux
+  interpolation error. See MOVING_PLASMA_VERIFICATION.md for recorded studies.
+- [ ] Extend the moving reference to resistive induction and positive physical
+  Ohmic heating with compatible full-space energy and entropy accounting;
+  independently verify diffusion/current/heat, source work and time splitting.
+- [ ] Couple spatial circular-coil sources to moving material coordinates,
+  including geometric source derivatives and source-work controls; the new
+  material solver currently supports only prescribed uniform axial bias.
+- [ ] Address material-mesh distortion/low-energy modes, shock entropy, remapping
+  and continuum frozen flux between vertices. Preserved nodal psi alone is not
+  a topology guarantee; nonuniform-deformation flux interpolation error is
+  measured explicitly and must remain separate from physical resistivity.
+- [ ] Reduce and quantify the finite magnetic mesh's spurious axial force on a
+  translated plasma and its matching-surface dependence under stronger motion.
 - [ ] Add thermodynamic feedback before interpreting large Ohmic heating as plausible.
 - [ ] Test nonaxisymmetric stability only after a 3-D solver exists.
 

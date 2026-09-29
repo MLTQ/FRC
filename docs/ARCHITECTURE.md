@@ -98,3 +98,23 @@ expands only the affected region, and retains a global comparison mode. Exact
 fluid energy-flux conservation and independently measured whole-space response
 error are separate contracts; neither pressure floors nor energy resets hide
 the latter. See the conservative coupling and local-limiter reports.
+
+The separate experimental `moving_*` modules evolve a material surface rather
+than restricting fluid to a fixed chamber. `moving_geometry` owns material Q1
+cells, massless exterior mesh motion, a curved matching sphere and integration.
+`moving_field` solves stationary vacuum degrees of freedom and derives magnetic
+geometric force from full-space induced energy. `moving_advection` supplies
+fixed nodal flux labels and an explicit regular-axis stretch approximation.
+`moving_plasma` owns actual material positions/velocities, fixed masses and
+adiabatic cell entropy, with second-order Verlet and prescribed uniform-bias
+work. No exterior fluid arrays are allocated. Dynamic field arrays use node
+and element ordering, not the earlier rectangular-grid layout.
+
+This reference is ideal and smooth-flow only: it does not silently replace the
+resistive fixed-chamber solvers or unlock Stage 2. Its accepted state plus fixed
+material constants and full magnetic coefficients are archived by independent
+`examples/moving_*` measurement/analysis modules. Solver/measurement provenance
+is frozen during a study; report/plot hashes are separate. The measured flux
+interpolation defect, magnetic translation-force error and equilibrium drift
+are part of the numerical contract, alongside missing shock/remapping and
+transport support. See MOVING_PLASMA.md and MOVING_PLASMA_VERIFICATION.md.

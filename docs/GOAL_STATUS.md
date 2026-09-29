@@ -113,23 +113,24 @@ measurements of their recorded source, not reruns with this different solver.
 
 ## Current development step
 
-The magnetic boundary requirement has progressed with the verified infinite
-exterior described below. The new shock study exposes false magnetic reversal
-in the centered split and measures an explicit vanishing diffusion option.
-An unsplit conservative fluid/UCT implementation now couples through the same
-vacuum and preserves the tested interior frozen-flux relation. Prioritize
-localizing its full-update flux limiter and extending shock/interface-work
-verification, alongside source-driven skin-layer resolution. Its global limiter
-is active on finer cold-boundary grids and affects otherwise smooth interior
-accuracy. The historical split diffusion option remains a comparison. Replace the
-fixed gas-filled interface with a defensible
-evolving plasma–vacuum treatment before interpreting detached torus formation.
-Validate actual chamber/end conditions, transport and Hall applicability. The
-fixed-chamber reference is useful measured progress, not completion of
-`frc-vacuum`. `Experiment(stage=2)` stays gated.
-Cold-flow pressure accuracy, curved-equilibrium stress balance and stronger
-full-update robustness remain tracked separately. Transport applicability can
-be developed alongside numerical coupling without selecting arbitrary closure.
+The fixed-chamber source/skin/end study is complete and retains the experimental
+boundary strip's measured flow-accuracy cost. The new ideal material-mesh
+reference now evolves a true free surface against infinite magnetic vacuum,
+without exterior fluid. Its force, independent expansion, equilibrium drift,
+source-work and interpolation errors are recorded under refinement.
+The full suite has 155 passing tests; all 26 moving evolution cases and 27
+static evaluations are complete, with checked source/configuration/field hashes.
+
+Next add compatible physical resistive induction and positive Ohmic heat to
+that moving reference, using the independent spherical-decay target derived in
+MOVING_RESISTIVE_PLAN.md. Then add spatially varying circular-coil sources and
+verify geometry/source derivatives and driven-flow/current convergence. These
+extensions must not substitute budget identities for actual profile accuracy.
+Material-mesh distortion, low-energy modes, shock capture/remapping, actual
+chamber/end conditions, transport/ionization/Hall applicability and converged
+formation remain required. The fixed-chamber references and their numerical
+limitations remain useful comparisons. `Experiment(stage=2)` stays gated and
+the overarching goal remains active.
 
 ## Infinite magnetic exterior checkpoint
 
@@ -492,14 +493,76 @@ transport/ionization/Hall validity, stronger shock/cold-flow and curved-equilibr
 accuracy, converged formation and a dynamic experimental UI remain in scope.
 The Stage 2 formation gate and full objective remain unchanged.
 
+## Moving material / infinite vacuum checkpoint
+
+The current suite has **155 passing tests (61.39 s)**. This continuation is
+verified progress toward the active objective, not completion. All 26 evolution
+cases and 27 static evaluations completed. No numerical jobs remain live.
+Source/configuration/environment and all lossless field hashes are checked;
+both scientific figures were visually inspected, with logarithmic tick-label
+collisions corrected. The full report is MOVING_PLASMA_VERIFICATION.md and the
+derivation is MOVING_PLASMA.md, with records in outputs/moving_verification.
+
+The new `MovingPlasma` reference has actual two-dimensional material motion,
+adiabatic gas only inside its evolving surface, regular a=psi/r² induction
+labels, analytic magnetic/pressure virtual work, an exactly curved matching
+sphere and decaying magnetic modes extending to infinity. No exterior fluid,
+pressure/density floors, numerical dissipation or energy repair are introduced.
+This prototype is ideal-only with prescribed uniform bias; fixed-chamber
+resistive references and production defaults remain unchanged.
+
+Independent uniform-sphere/dipole energy and homologous force errors converge
+approximately at second order. At nr=32 and scale=0.9, relative energy/force
+errors are 0.000724094 / 0.002616710. Translating the sphere by 0.3 m exposes
+spurious net axial force -0.00796587→-0.000122393 N at nr=4→32; it refines
+but precludes a claim of exact magnetic axial-momentum conservation.
+
+For exact free gas expansion at 0.1 s, velocity relative mass L2 errors are
+0.0726360, 0.0268221, 0.00924936 and 0.00302204 at nr=4/8/16/32. Finest
+surface-position error is 0.000138224 m and pressure-cell-average relative L2
+error 0.000101608. Actual material mass is unchanged. The exact sphere radius
+is 1.009950494 m; polygonal geometry and cell entropy projection are not repaired.
+
+For the initialized spherical FRC, initial acceleration mass RMS decreases
+0.713087→0.243325→0.0828970→0.0285246 m/s². Maximum artificial speed after
+0.04 s decreases 0.0764241→0.0327842→0.0120209→0.00635480 m/s; finest surface
+displacement is 0.000127825 m. This is measured equilibrium drift, not formation
+or stability. Moving the matching sphere 2→3 m at nr=16 changes the artificial
+velocity by at most 0.000331791 m/s RMS (12.2083% relative to the small reference
+drift). Quadrature 5→7 changes it below 1.65e-12 m/s RMS; modes 4→8 below
+2.15e-6 m/s. A tiny vacuum residual does not erase matching/mesh error.
+
+Velocity Verlet and source-work integration show second-order time refinement
+when the explicit cap controls actual steps. In the Gaussian uniform-bias ramp,
+nr=8 response errors at dt=0.001/0.0005/0.00025 s are 0.000448658,
+0.000112158 and 0.0000280390 J. However driven velocity changes **47.1666%**
+between nr=8 and nr=16, and peak speed rises 0.166450→0.290958→0.524906 m/s
+at nr=4/8/16. The driven ideal current-layer response is explicitly unconverged.
+Source-work accuracy is not a reason to interpret it as physical formation.
+
+Vertex psi is preserved near roundoff, while interpolated interior material
+flux is not exact. A prescribed nonuniform deformation has relative flux errors
+0.00386486→0.000929701→0.000229928→0.0000573222 at nr=4/8/16/32. Initialized
+FRC interior flux drift at nr=32 is 1.85284e-6; source nr=16 is 0.000631995.
+These are numerical interpolation effects, not physical resistivity or
+reconnection. The regular-axis stretch approximation and low-energy/distorted
+mesh modes remain explicit. No shock capture or remapping is provided yet.
+
+Next implement compatible physical resistive induction and positive Ohmic heat
+for the moving mesh, starting with the independent spherical-decay eigenmode
+derived and quadrature-checked in MOVING_RESISTIVE_PLAN.md. Then spatial coil
+sources, resolved current/flow, mesh/shock robustness, physical transport and
+Hall applicability, actual ends, converged formation and the dynamic experiment
+UI remain required. All overarching issues and the Stage 2 gate remain open.
+
 ## Completion audit at this checkpoint
 
 | Requirement | Authoritative evidence | Status |
 |---|---|---|
 | Conservative dynamic core | mhd modules, independent tests, MHD/positivity reports | Implemented and verified for stated bounded reference; positive traces without cell floors; full-update robustness and cold-flow accuracy remain bounded by tests |
-| Physical source/plasma/vacuum coupling | Fixed-chamber split and conservative/CT references; compatible energy and BOUNDARY_VERIFICATION reports; original Stage 2 guard still raises | Partial: compatible spatial work, audited time error and completed source/skin/end/fine-shock comparisons; strip energy improvement has a measured flow-accuracy cost; driven flow/current convergence, free-interface evolution and actual ends remain |
+| Physical source/plasma/vacuum coupling | Fixed-chamber references, boundary reports and new MOVING_PLASMA_VERIFICATION; Stage 2 guard still raises | Partial: actual ideal free-surface motion with infinite vacuum is implemented; moving resistive/coil coupling, driven flow/current convergence, mesh robustness and actual ends remain |
 | Regime-appropriate transport / Hall physics | Fixed eta/sigma only; beads frc-transport | Incomplete |
-| Full independent numerical verification | Waves, gas/perpendicular magnetic shocks, heating, advection, J×B, equilibrium, trace/local full-update admissibility, rarefaction, interface traces, source budgets, instantaneous energy-rate audit and infinite-exterior checks | Partial; 142 passing tests, analytic skin response, full-field pulse and gas-end comparisons, full-space work/time audits and free-boundary topology target; driven flow/current convergence, cold-pressure/equilibrium and broader shocks remain |
+| Full independent numerical verification | Prior waves/shocks/heating/skin/CT and vacuum checks; new exact gas expansion, moving magnetic virtual force, FRC drift, prescribed-bias work and interior material flux | Partial; 155 passing tests and complete moving-study controls; driven flow/current convergence, cold-pressure/equilibrium, broader shocks and nonideal moving-interface accuracy remain |
 | Converged FRC formation | Only older stationary-conductor results, unconverged topology duration | Not demonstrated |
 | Reproducible experimental interface | Stage 0/1 CLI/playback; dynamic and coupled benchmark scripts, histories and metrics | Partial; no coupled dynamic experiment UI |
 

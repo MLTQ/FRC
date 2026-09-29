@@ -3,7 +3,9 @@
 This independent continuum fixture supplies a target for future free-boundary
 verification. It is **prescribed static equilibrium**, not evolution from coils,
 not a density/transport closure and not evidence of stability or confinement.
-The existing dynamic solvers still have their declared fixed chamber boundaries.
+The earlier dynamic solvers retain their declared fixed chamber boundaries.
+The new ideal material reference evolves this fixture with an actual moving
+surface; its drift/refinement is reported in MOVING_PLASMA_VERIFICATION.md.
 
 The poloidal Hill-vortex form is used as an FRC reference in
 [Glasser and Cohen (2022), section III.A](https://w3.pppl.gov/ppst/docs/glasser2022rsi.pdf).
@@ -73,14 +75,15 @@ the induced-energy target. These are field/plasma integrals, not coil-circuit
 energies. Independent Gauss quadrature uses x=a/s to cover the entire vacuum
 without imposing a finite outer boundary or fitting its missing energy.
 
-## How the reference will be used
+## How the reference is used
 
 The independent formulas in `examples/spherical_frc_reference.py` are separate
 from numerical evolution. Tests verify differential force balance, vacuum
-current, axis/flux signs, interface continuity and full-space energy. Before
-claiming a free-boundary solver, initialize this continuum equilibrium through
-accurate cut-cell or moving-mesh integrals and measure force, pressure, shape,
-flux and energy drift under spatial/time refinement. Perturbation dynamics
+current, axis/flux signs, interface continuity and full-space energy. The ideal
+material prototype now initializes these fields through Q1 magnetic values and
+quadrature-integrated cell pressure, and measures force, shape, flux and energy
+drift under spatial/time refinement. Its deliberately uniform verification
+density does not select a physical species or transport regime. Perturbation dynamics
 require their own reference or convergence tests; the static target is not
 a proof of stability.
 
