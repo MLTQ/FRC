@@ -127,8 +127,9 @@ unconditional-positivity theorem; nonpositive or nonfinite states fail explicitl
 No artificial heat, entropy source, temperature floor or diffusivity is added.
 Sharp gradients/shocks will require an entropy-stable dissipative extension.
 
-The current closed thermal reference requires constant wall Btheta and wall
-density. Normal particle current vanishes, and the generally nonzero pressure
+The closed thermal reference requires constant wall Btheta. For nonzero wall
+Btheta it also requires constant wall density; the zero-Btheta specialization
+now permits varying wall density. Normal particle current vanishes, and the generally nonzero pressure
 Ez at the wall has zero **integrated** magnetic input. Local boundary Poynting
 flux need not vanish. This fixed magnetic-trace boundary is **not** HallMHD's
 conducting Ez=0 wall. Deleting the gradient part for induction does not make
@@ -139,3 +140,9 @@ Next couple the dual thermal state to conservative moving ion mass flux and
 the primal total-energy state, with explicit boundary compatibility and positive
 ion/electron partition. See TWO_TEMPERATURE_PLAN; the isolated component must
 not be installed by resetting primal energy or interpolating density arbitrarily.
+
+The subsequent warm coupling implements conservative local fluxes but its fine
+pressure-only evolution rejects a negative ion partition. A continuum principal-
+symbol counterexample further restricts this isolated split. See
+WARM_PRESSURE_SPLIT_LIMITATION; the earlier global energy/entropy identities
+do not establish general stability or local ion-energy accuracy.

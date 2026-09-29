@@ -20,3 +20,5 @@ Work cancellation uses its actual absolute summation scale; a nearly vanishing
 net exchange is not an appropriate floating-point backward-error denominator.
 Adiabatic and isothermal barotropes and proxy density-scale changes are controls.
 Invalid boundary closures and failed solves preserve all input physical arrays.
+Varying wall density is invalid with nonzero constant Btheta; the separately
+verified zero-Btheta trace now allows it with pointwise zero boundary power.

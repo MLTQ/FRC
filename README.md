@@ -19,9 +19,10 @@ Coulomb and local Hall/inertia diagnostics are available. A bounded nonlinear
 compressible Hall solver now evolves toroidal fields, rotation, density and
 energy with compatible magnetic work and implicit Hall/resistive induction.
 Separate electron/ion temperatures now evolve with moving ions in an ideal
-common-velocity reference, with independently verified translation/compression.
-Warm Hall integration, physical heating/transport and free-edge coupling remain
-unfinished; the cold-electron Hall reduction is explicitly limited.
+reference and an experimental warm Hall coupling. Local enthalpy/Poynting
+transport and fast warm waves refine, but finer tests expose a pressure-split
+failure and substantial slow-wave error. Physical heating/transport and free-
+edge coupling remain unfinished; this is not yet an accurate formation solver.
 
 ![Waveform comparison](outputs/comparison/comparison.png)
 
@@ -91,7 +92,7 @@ The [linear Hall study](docs/LINEAR_HALL_VERIFICATION.md) adds 49 cylindrical
 runs and 16 parallel-wave references, including both polarizations, finite
 electron mass, damping and mesh/time refinement. This component verifies the
 linear work pairing; its finite-mass extension to nonlinear moving flow remains
-incomplete. The full suite now passes 266 tests.
+incomplete. The full suite now passes 293 tests.
 The [nonlinear toroidal study](docs/TOROIDAL_MHD_VERIFICATION.md) adds
 compressible rotation, toroidal induction and conservative angular momentum,
 with 33 complete equilibrium/transport/wave/diffusion cases. Independent physical
@@ -126,7 +127,17 @@ ideal common-velocity part of that coupling: shared conservative mass flow,
 compression and separate temperatures. All 36 cases complete; finest continuous
 electron-pressure errors are 0.561% in translation and 0.0593% in compression.
 A stronger-case physical entropy decrease shrinks with refinement but remains
-explicit. This is not yet the combined warm Hall or formation solver.
+explicit. This ideal reference remains a separate limit of the new coupling.
+
+The [warm Hall integration study](docs/WARM_HALL_VERIFICATION.md) adds 58 main
+measurements and five successful supplemental controls, with conservative
+electron-current enthalpy transport and a consistent zero-Btheta/free-Ez wall.
+Finest fast-wave electron-pressure error is 0.347%, but the slow branch still
+has 16.4% electron-pressure and 83.0% ion-pressure error. Three fine-grid
+[pressure-split rejections](docs/WARM_PRESSURE_SPLIT_LIMITATION.md) preserve
+negative prospective ion energy despite conserved global energy. An independent
+continuum symbol also restricts that isolated split. Coupled nonideal integration,
+axis accuracy and the full physical formation requirements remain active.
 
 ## Use the existing environment
 
@@ -152,6 +163,8 @@ explicit. This is not yet the combined warm Hall or formation solver.
 .venv/bin/python -m examples.warm_measurements
 .venv/bin/python -m examples.warm_controls
 .venv/bin/python -m examples.verify_warm_adiabatic
+.venv/bin/python -m examples.warm_hall_measurements
+.venv/bin/python -m examples.verify_warm_hall
 .venv/bin/python -m examples.verify_mhd
 .venv/bin/python -m examples.verify_equilibrium
 .venv/bin/python -m examples.verify_positivity

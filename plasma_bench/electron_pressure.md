@@ -27,9 +27,11 @@ Fixed density and derived thermodynamic coefficients are immutable arrays.
 The full-domain dual nodes carry scalar values and lumped volumes. This is an
 explicit change in placement for the isolated thermal component, not automatic
 conversion of existing primal ion/fluid energy. Density and wall Btheta are
-fixed; wall density and Btheta must each be constant in z. Normal wall current
-then vanishes. Ez at the wall is a pressure-gradient field, generally nonzero,
-whose integrated Poynting input is zero for these constants. This magnetic trace
+fixed; Btheta must be constant in z. For nonzero Btheta, wall density must also
+be constant. For **zero Btheta**, arbitrary positive wall density is allowed:
+normal wall current and pointwise magnetic boundary power are both zero.
+Ez at the wall is a pressure-gradient field, generally nonzero. For constant
+nonzero Btheta/density its integrated Poynting input still vanishes. This trace
 boundary is **not** HallMHD's conducting Ez=0 boundary. General particle inflow
 and sheath/reservoir boundary thermodynamics remain unimplemented.
 

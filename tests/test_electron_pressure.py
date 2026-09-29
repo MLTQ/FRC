@@ -152,7 +152,7 @@ def test_invalid_closure_and_failed_midpoint_leave_inputs_unchanged():
     np.testing.assert_array_equal(g, oldg); np.testing.assert_array_equal(u, oldu)
     bad = model.density.copy(); bad[-1, 0] *= 1.1
     with pytest.raises(ValueError, match='wall density'):
-        ElectronPressure(mesh, bad)
+        ElectronPressure(mesh, bad, wall_btheta=.01)
     bad[0, 0] = 0
     with pytest.raises(ValueError, match='Positive'):
         ElectronPressure(mesh, bad)

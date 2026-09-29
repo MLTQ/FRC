@@ -1,4 +1,4 @@
-# Next bounded gate: separate electron and ion thermal transport
+# Separate electron and ion thermal transport: current integration gate
 
 The compatible Hall solver now advances nonlinear compressible fields and flow,
 but it uses pe=0 and a single represented gas energy. Its prescribed-resistance
@@ -6,15 +6,42 @@ heat is a conditional reduced closure, not the original Te=5 eV / Ti=1 eV
 argon target. The next step must derive and verify massless electron/ion thermal
 transport before extending the moving free surface or claiming formation.
 
-Current progress: the conservative dual current and isolated electron pressure/
-entropy operator are implemented and verified in ELECTRON_PRESSURE_NUMERICS and
-ELECTRON_PRESSURE_VERIFICATION: 266 tests, 46 records, actual heat transport and
-nonlinear pressure battery. The moving ideal common-velocity limit is now
-implemented in `AdiabaticSpeciesMHD`: overlap mass/flux, shared fluid/electron
-RK stages, compression and positive species energy partition. See
-WARM_ADIABATIC_NUMERICS and WARM_ADIABATIC_VERIFICATION. The next integration is
-**local electron-current enthalpy/Poynting transport with compatible warm Hall
-boundary traces**, then physical heating/exchange and finite-mass current terms.
+Current progress: conservative dual current, electron pressure/entropy, moving
+ideal species, compatible zero-Btheta/free-Ez traces and local enthalpy/Poynting
+flux are implemented. `WarmHallMHD` composes these with nonlinear Hall induction.
+The full suite has 293 tests. All 58 main warm cases and five follow-up controls
+finish, but three fine pressure-only replays reject a negative ion partition.
+The isolated continuum pressure symbol also admits nonreal characteristic
+speeds. See WARM_HALL_NUMERICS, WARM_HALL_VERIFICATION and
+WARM_PRESSURE_SPLIT_LIMITATION. Earlier completed gates below are retained as
+derivation history; the current next gate is the joint update described here.
+
+### Immediate next coupled gate
+
+First analyze the full nonideal principal behavior at the recorded variable
+n/pe/B backgrounds. The pressure-only split cannot be assumed uniformly stable.
+A candidate joint stage at fixed n uses common magnetic midpoint Bm and
+logarithmic thermal stage Um=L(Uold,Unew):
+
+    Bnew-Bold = dt [-curl(EHall(Bm,n)+Epressure(Um,n))]
+    Unew-Uold = dt div[w(Um,n) J(Bm)/e].
+
+The pressure curl must retain its cancellation-safe evaluation, while its full
+electric gradient enters Poynting transport. Use the same midpoint current in
+Hall and paired pressure work, and total energy from their actual conservative
+face powers. Solve the coupled equations, check both residuals, validate the
+species partition and commit atomically. Neither local energy reset nor an
+arbitrary heat/diffusion coefficient is an admissible substitute.
+
+Joint fixed-density evolution is a candidate, not a proven cure. Where
+axisymmetric wavevectors are perpendicular to the magnetic field, its leading
+Hall dispersion can degenerate. If the joint principal behavior remains
+unacceptable, retain the necessary ion/density dynamics or finite-mass terms
+from the parent system instead of adding an easier bias to hide the failure.
+Preserve the exact nr128 rejected fixture, time refinements and axis-local
+diagnostics as controls. Also retain the slow warm modes and standalone
+resistive axis derivative defect. Only then proceed to justified collision
+heating/exchange, conduction/ionization and finite-mass current transport.
 
 ## Parent conservation to preserve
 

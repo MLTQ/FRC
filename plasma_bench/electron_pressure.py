@@ -12,8 +12,8 @@ class ElectronPressure:
         self.density = self.geometry.scalar(number_density, 'electron density').copy()
         if np.any(self.density <= 0) or not np.isfinite([gamma, density_scale, wall_btheta]).all() or gamma <= 1 or density_scale <= 0:
             raise ValueError('Positive density/scale, gamma > 1 and finite constant wall Btheta required')
-        if np.ptp(self.density[-1]) > 1e-13*self.density[-1].max():
-            raise ValueError('This closed pressure component requires constant wall density')
+        if wall_btheta != 0 and np.ptp(self.density[-1]) > 1e-13*self.density[-1].max():
+            raise ValueError('Nonzero wall Btheta requires constant wall density for closed pressure energy')
         self.gamma, self.density_scale, self.wall_btheta = gamma, density_scale, float(wall_btheta)
         self.a = (self.density/density_scale)**(gamma-1)
         self.energy_weight = self.a/(gamma-1)

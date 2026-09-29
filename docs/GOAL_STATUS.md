@@ -4,14 +4,16 @@ The goal is a numerically verified and physically justified simulation in which
 we can vary geometry, plasma and prescribed coil waveforms to investigate FRC
 formation. Passing the existing stationary-conductor tests is not completion.
 
-Latest checkpoint: **283 passing tests; 36 moving-species records audited**.
-Conservative primal/dual mass flux now couples changing density to separate
-electron/ion temperatures in an ideal common-velocity reference. Physical
-translation/compression errors refine, while a finite physical-entropy defect
-is explicitly retained. The prior 46-case electron-pressure and 63-case Hall
-components remain separate. Unified warm Hall boundary/enthalpy transport,
-collision/finite-mass physics and vacuum/edge formation are incomplete. See
-WARM_ADIABATIC_VERIFICATION and TWO_TEMPERATURE_PLAN for the next integration.
+Latest checkpoint: **293 passing tests; 58 main warm Hall cases audited**.
+An experimental coupling now includes moving species, consistent magnetic
+traces and conservative current enthalpy/Poynting flux. Five supplemental cases
+finish and three fine-pressure replays reject a negative ion partition. Fast
+waves refine; slow-wave species errors and a standalone resistive axis error
+remain. A pressure-only continuum symbol is nonhyperbolic on the actual
+nonbarotropic reference. Next derive a credible joint nonideal update, checking
+its continuum behavior before assuming it resolves these failures. Physical
+collisions/finite mass, true vacuum/edge and formation remain incomplete. See
+WARM_HALL_VERIFICATION, WARM_PRESSURE_SPLIT_LIMITATION and TWO_TEMPERATURE_PLAN.
 
 ## Completion evidence still required
 
@@ -1179,3 +1181,77 @@ edge, exact vacuum, real gas ends, spatial coils, shock/remapping/entropy
 robustness, converged FRC formation and dynamic experimental UI remain required.
 Stage2 stays guarded; the full goal and transport/vacuum/accuracy/formation
 issues remain active. This is progress, not completion or an external blocker.
+
+## Warm Hall coupling and pressure-split limitation checkpoint
+
+The full production suite passes **293 tests (94.10 s)**. A zero-Btheta/free-Ez
+magnetic trace now supports full pressure gradients and varying wall density,
+with exact curl-gradient/dual-current work identities. The moving warm reference
+adds conservative pressure/Hall Poynting power and electron-current enthalpy
+face fluxes. No local total-energy reset, pressure floor or hidden retry is used.
+The five-stage coupling is experimental and retains eta=0.
+
+All **58 main cases** finish and are audited. Conservative local pressure-energy
+rate errors decrease .0940091→.000395013 over nr8→128; local ion-work residuals
+also decrease. Warm branch2 electron/ion pressure errors at nr32 are
+.00347082/.0173594, while physical magnetic error remains .0394869. The slow
+branch is still inaccurate: finest electron/ion pressure errors are
+.164298/.829787 and ion-temperature error is 2.34858 of its small perturbation.
+Half-CFL and tenfold amplitude reduction do not remove the slow error.
+Fixed-grid pe time-halving ratios are about four for isolated pressure, fast
+warm waves and nonlinear coupled evolution. Nonlinear nr16 versus nr32 physical
+pe/B differences are 4.19%/9.99% of the reference trajectory changes, not a
+converged formation claim. Maximum main mass/total-energy/proxy drifts are
+5.41e-16/2.15e-15/5.82e-15. Independent physical energy, density, species and
+field-norm replay pass; all three scientific figures were visually inspected.
+
+The boundary resistive mode retains a **-15.21% instantaneous first-annulus
+g-rate error**, even though its evolved coefficient errors decrease. Evolved
+time controls show finite time error too. This is a separate unresolved axis
+consistency issue; resistivity is not enabled in the warm model.
+
+Five supplemental runs finish, but the sixth exposes a stronger limitation.
+At nr64 the maximum local pressure-only ion-energy error grows to .0921 Pa
+despite a decreasing volume RMS; finer time steps retain about .0914 Pa.
+At nr128, three dedicated replays with 320/640/1280 planned steps reject
+negative ion pressure at about .95 microseconds, at cell [0,100]. Electron
+pressure stays above 51 Pa, nonlinear residuals are below 1e-10 and global
+energy drift is at most 2.08e-16. Accepted and rejected states are separately
+archived; none of these failed trajectories is labeled completed.
+
+An independent local continuum pressure-only symbol has discriminant
+-7.40906e7 m²/s² at an interior point of the original nonbarotropic reference,
+including background-current advection. Its frozen short-wave growth is
+4303.79 |k| per second when |k| is in inverse meters. This rules out assuming
+general hyperbolicity of that isolated split. It is not a proof that full warm
+Hall is illposed or that this interior symbol caused the observed axis failure.
+See WARM_PRESSURE_SPLIT_LIMITATION for the derivation and preserved evidence.
+
+Frozen engine/reference/measurement fingerprint:
+`ff529e0fab60fb0888806589056142c7040b3c66fcff0cfde669635e1fbb7c20`.
+Complete data consist of 58 main completions, five supplemental completions and
+three rejected replays, plus the analytic symbol scan. Main/supplemental source,
+configuration, archive, accepted-history and failure audits pass. Reports hash
+their helper sources and inspected figures. Earlier warm-ideal source is
+unchanged; old electron records were source-verified at419c951 and old Hall
+records at16969a9. They remain historical measurements of those sources.
+All numerical/test/report jobs are terminal at this checkpoint.
+
+### Immediate continuation and remaining objective
+
+First analyze the combined nonideal principal behavior, then derive and verify
+a joint Hall-plus-pressure stage with one magnetic midpoint and thermal mean,
+shared current work, conservative face energy and atomic validation. Joint
+fixed-density splitting is a candidate, not a proven cure: degeneracy for
+k perpendicular to B may require retaining ion/density or finite-mass dynamics.
+Preserve the exact failed fixture and time/axis/maximum-norm controls; do not
+add a convenient bias, arbitrary heat or numerical atmosphere to hide failure.
+Address the slow-wave and standalone resistive-axis errors explicitly.
+
+Then physical collision/heating partition, conduction/ionization and full
+finite-mass current transport remain. The original low-pressure argon target,
+heated edge/true vacuum, actual gas ends, spatial coil work, shock/remapping/
+entropy robustness, kinetic validity, converged formation and interactive
+experiments are unfinished. Stage2 stays guarded. The full goal and its
+transport/accuracy/vacuum/formation issues remain active. This checkpoint is
+progress with a diagnosed limitation, not completion or an external blocker.

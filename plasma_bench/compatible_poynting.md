@@ -11,3 +11,9 @@ radial fluxes vanish, periodic axial fluxes telescope, and no boundary power
 is silently added. Local difference from magnetic energy change is a numerical
 transfer error to be measured, not repaired or converted to physical Joule heat.
 The midpoint integrator uses this flux at midpoint fields/electric coefficients.
+
+`radial_faces` exposes the shared annular-centroid trace interpolation. The
+legacy Ez shape still pads a conducting zero at R. A full radial Ez shape
+requires the geometry's explicit `wall_btheta`, used in the radial Poynting
+flux rather than a copied last-cell field. `TraceHallCurl` supplies zero; both
+boundary models conserve closed-domain energy, but have different local fields.
