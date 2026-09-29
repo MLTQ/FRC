@@ -40,13 +40,20 @@ The measured reconstruction error, time controls and higher-order diagnostic
 are retained; the physical plasma-vacuum edge and formation gates stay open.
 
 The [smooth transport study](docs/SMOOTH_FINITE_MASS_VERIFICATION.md) now audits
-31 rate cases and 27 trajectories, with **336 passing tests**. Shared transport
+31 rate cases and 27 trajectories, with 336 passing tests at that checkpoint. Shared transport
 reduces fast-wave ion-pressure error from about 60% to 5.4% at the same grid.
 Independent full-transit contacts include initial projection, continuous
 temperature, time-step and flow-direction checks. Slow magnetic response still
 fails because the velocity/current representations lose a delicate bulk/Hall
-cancellation. Improving that shared field representation is the next physics
-milestone; these results do not establish accurate formation.
+cancellation. These results do not establish accurate formation.
+
+The [compatible field study](docs/COMPATIBLE_FIELD_VERIFICATION.md) now audits
+25 improved linear cases and 25 preserved precision-failure comparisons, with
+**343 passing tests**. Higher-order magnetic/current fields and exact separate
+bias storage reduce the finest slow-mode magnetic-rate error to about 0.00024%.
+All three wave branches refine, with independent current/electric/energy checks.
+This component is not yet connected to the moving plasma solver. Deriving its
+variable-density energy and species transport coupling is the next milestone.
 
 ![Waveform comparison](outputs/comparison/comparison.png)
 

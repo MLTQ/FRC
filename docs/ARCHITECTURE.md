@@ -391,3 +391,28 @@ evidence. SMOOTH_FINITE_MASS_NUMERICS/VERIFICATION document improved pressure
 transport alongside unresolved magnetic/energy errors and entropy defects.
 No shock scheme, physical transport closure, exact-vacuum formation gate or
 3-D stability/confinement result is enabled by this smooth bounded reference.
+
+## Higher-order compatible fields and affine harmonic storage
+
+`compatible_polynomials` supplies local nodal interpolation and interval-average
+edge functions whose derivatives commute with incidence. `compatible_geometry`
+constructs regular cylindrical B/E sampling and physical electric/magnetic
+Gram matrices from separable tensor factors. Its fixed-axis/wall mixed trace
+retains the existing Faraday map; no general boundary or vacuum substitution is
+implied. `compatible_velocity` reconstructs degree-3/5 physical velocities from
+actual conservative annular averages, without fitting them to current.
+
+`compatible_current` supplies the physical constant-density mass/inertia/Ampere
+contract consumed by the unchanged instantaneous inertia solver. `harmonic_magnetic`
+stores a constant axial bias and increment separately, preserving weak currents
+without discarding full physical field/local cross energy. Its rounded-total
+export is explicitly lossy and is not an evolution input.
+
+Independent root-product field norms, all-branch wave protocols, bias precision
+diagnosis, separate source provenance, original-equation audits and scientific
+plots live in `examples/compatible_*`. Both the first rounded failure and final
+affine study are preserved. COMPATIBLE_FIELD_NUMERICS/VERIFICATION define what
+has been proved and the remaining common work/particle-transport contract.
+The nonlinear SmoothFiniteMassMHD remains unchanged: variable-density inertia,
+current energy, thermal pressure/transport and momentum work must be coupled
+consistently before this representation is adopted in full moving evolution.

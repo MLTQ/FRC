@@ -12,20 +12,21 @@ waves converge at order two. The tested hybrid waves retain measured time/energy
 errors; no FRC formation or GPU speedup claim is made. See ENGINE_COMPARISON.
 No production backend or Stage 2 gate changed.
 
-Latest custom checkpoint: **336 passing tests; 31 complete smooth finite-mass
-rate cases and 27 coupled trajectories independently audited**. Shared cubic
-mass/momentum/enthalpy transport and conservative electron entropy reconstruction
-improve fast-wave ion-pressure error from 59.5516% to 5.38315%. All trajectories
-finish with positive species states and near-roundoff global conservation.
-Local accuracy remains inadequate: manufactured nr32 ion-pressure error is
-0.325299% of full pressure but 70.2663% of its actual change. Slow nr64 pi-rate
-error is .00883534, but magnetic-rate error is still **16.8431 times its signal**.
-The bulk-motion and Hall electric terms each have about 19200 times their net
-magnitude; their lower-order velocity/current representations spoil cancellation.
-See SMOOTH_FINITE_MASS_NUMERICS and SMOOTH_FINITE_MASS_VERIFICATION. Next derive
-and independently verify consistent higher-order velocity/current and compatible
-electromagnetic representations, retaining physical masses and actual initial
-fields. Exact-field substitution is only a diagnostic, not an adopted correction.
+Latest custom checkpoint: **343 passing tests; 25 higher-order compatible-field
+cases and 25 preserved rounded-total comparisons independently audited**. A
+consistent nodal/edge field representation and explicit uniform-bias/increment
+storage reduce the matched slow linear magnetic-rate error at nr64 from 16.8431
+to 2.36657e-6. All three branches converge; physical current, current-rate,
+full electric, axis/max and independent energy norms remain separate. No physical
+mass or initial velocity is fitted. See COMPATIBLE_FIELD_NUMERICS/VERIFICATION.
+
+This component is not yet connected to nonlinear moving density/thermal/energy
+evolution. The earlier smooth solver's 31 rates/27 trajectories remain unchanged:
+fast-wave pi error is 5.38315%, manufactured nr32 pi-change error 70.2663%, and
+slow nr64 magnetic-rate error still 16.8431 in that solver. Next derive the new
+variable-density current-energy/pressure split, velocity/vorticity and common
+particle/work transport, then repeat full parent-species and trajectory checks.
+Physical heated-edge/exact-vacuum, transport and formation requirements remain.
 Earlier 19 moving-rate and fixed-density studies retain their source identities.
 The original heated edge/exact vacuum, transport and formation remain incomplete.
 
@@ -1510,3 +1511,62 @@ frc-vacuum and the overarching goal remain open. Continue collision/heating
 partition, conduction/ionization, heated free-edge exact vacuum, real ends/
 spatial coils, shocks and kinetic validity, converged formation and the UI.
 No FRC stability or particle-confinement claim follows from this checkpoint.
+
+## Higher-order compatible field and harmonic precision checkpoint
+
+The full suite passes **343 tests in 118.34 s**. New `compatible_polynomials`
+and `compatible_geometry` supply local degree-1/3/5 nodal/interval-average bases
+with commuting derivative, unchanged Faraday incidence and physical tensor
+electric/magnetic masses. `compatible_velocity` reconstructs actual annular
+conservative averages. `compatible_current` uses physical finite species masses
+and constant-background inertia. Five independent polynomial/integral/current/
+energy/Faraday/mixed-system tests verify the component, not just its algebra.
+
+The first 25-case rounded-total study exposed a precision limit: slow nr32/64
+B_t errors .0117924/.0245827 despite far smaller spatial error in the weak
+perturbation-only control. A hundredfold weaker full-bias wave gave 1.17396.
+This complete attempt is preserved under source 485edaa1fdb9bffcb76b2a4e9196e3e4b1ddc071b20f319b4c3062b42ebae667.
+An independent three-way probe distinguishes current-operator cancellation from
+digits already lost in storage; subtracting bias afterwards does not recover them.
+
+`HarmonicMagnetic` now stores an explicit constant physical bias and independently
+retained increment. Uniform axial bias has exactly zero current under the stated
+fixed-flux periodic boundary. Full field/local energy keep the bias and local
+cross term; its cross integral is zero by exact boundary values. Two polynomial
+tests verify weak currents through amplitude 1e-12 beside that unchanged bias,
+small-increment energy and independent full local energy. No signal threshold,
+fitted velocity/current/mass, energy repair or numerical atmosphere is introduced.
+
+All **25 affine cases and 25 rounded comparisons** pass the independent full
+source/input/field/physical-norm/original-equation audit. Main full-bias degree5
+slow B_t errors at nr8/16/32/64 are .789352/.0141969/.000190057/2.36657e-6.
+Finest intermediate/fast errors are 6.68e-9/2.51e-9. Slow current-rate error
+decreases to 7.73307e-5, less favorable than magnetic accuracy; axis/max errors
+are retained. Hundredfold weaker signal, opposite propagation, original n1e20
+and quadrature controls retain the improvement. The exactly matched earlier
+linear diagnosis used the same physical inputs, without analytic forcing fields.
+
+Largest independent physical energy discrepancy is 2.75e-14, including error
+normalized by the small increment energy. Original backward errors are below
+1.83e-12, but full-E Faraday replay relative to its tiny rate reaches 5.88e-10
+after restoring pressure potential. Rounded export still loses current accuracy;
+its worst current-relative Ampere replay error is .000129808. These distinct
+measures are not mislabeled as small-signal solver residuals. All jobs are
+confirmed terminal, and the scientific figure was visually inspected.
+
+Final source is 8cfb1a2f89f7ee58fadae2e47ae9e4fbb5c49037face19da117518188ed8d720
+in outputs/compatible_wave_verification; report, snapshots, failures, all arrays,
+test/worker logs and checkpoint hashes are retained. The smooth nonlinear source
+dd060015... and prior finite-mass 3edae529... remain unchanged. The new component
+is **not yet adopted in nonlinear moving evolution**, and no trajectory energy,
+entropy, shock, formation or confinement claim follows from these rates.
+
+NEXT derive positive variable-density physical current inertia and local energy
+derivatives on this field basis, with actual conservative mass-flux n_t. Derive
+the common species transport/pressure-gradient adjoint and full velocity/vorticity,
+stress/Poynting/current-enthalpy work before replacing the old state partition.
+Retain local bias cross energy and exact physical masses. Verify full independent
+parent manufactured equations and coupled wave/contact trajectories, including
+small-pressure-change, axis/max, time, quadrature and atomic failure evidence.
+The original heated free edge/exact vacuum, transport/ionization, real ends/coils,
+shock/entropy and kinetic validity, converged formation and UI remain open.
