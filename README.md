@@ -18,8 +18,10 @@ its kinetic energy, with independent decay/screening references. Conditional
 Coulomb and local Hall/inertia diagnostics are available. A bounded nonlinear
 compressible Hall solver now evolves toroidal fields, rotation, density and
 energy with compatible magnetic work and implicit Hall/resistive induction.
-Separate electron/ion thermal evolution and physical free-edge coupling remain
-unfinished; the cold-electron reduction is explicitly limited.
+Separate electron/ion temperatures now evolve with moving ions in an ideal
+common-velocity reference, with independently verified translation/compression.
+Warm Hall integration, physical heating/transport and free-edge coupling remain
+unfinished; the cold-electron Hall reduction is explicitly limited.
 
 ![Waveform comparison](outputs/comparison/comparison.png)
 
@@ -119,6 +121,13 @@ one deliberately strict solver failure is retained. The finest continuous
 heat-transport error is 0.2672% after a full transit. This fixed-density component
 still needs coupling to moving ion mass/energy and a unified boundary model.
 
+The [moving-species study](docs/WARM_ADIABATIC_VERIFICATION.md) now verifies the
+ideal common-velocity part of that coupling: shared conservative mass flow,
+compression and separate temperatures. All 36 cases complete; finest continuous
+electron-pressure errors are 0.561% in translation and 0.0593% in compression.
+A stronger-case physical entropy decrease shrinks with refinement but remains
+explicit. This is not yet the combined warm Hall or formation solver.
+
 ## Use the existing environment
 
 ```sh
@@ -140,6 +149,9 @@ still needs coupling to moving ion mass/energy and a unified boundary model.
 .venv/bin/python -m examples.verify_compatible_hall
 .venv/bin/python -m examples.electron_measurements
 .venv/bin/python -m examples.verify_electron_pressure
+.venv/bin/python -m examples.warm_measurements
+.venv/bin/python -m examples.warm_controls
+.venv/bin/python -m examples.verify_warm_adiabatic
 .venv/bin/python -m examples.verify_mhd
 .venv/bin/python -m examples.verify_equilibrium
 .venv/bin/python -m examples.verify_positivity

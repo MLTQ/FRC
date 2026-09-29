@@ -4,13 +4,14 @@ The goal is a numerically verified and physically justified simulation in which
 we can vary geometry, plasma and prescribed coil waveforms to investigate FRC
 formation. Passing the existing stationary-conductor tests is not completion.
 
-Latest checkpoint: **266 passing tests; 46 electron-pressure records audited**.
-Conservative dual current flux now supports an isolated nonlinear electron
-pressure/entropy component with energy and discrete physical entropy accounting.
-The prior 63-case compressible Hall solver is retained. Moving primal ion/dual
-electron coupling, unified boundaries, collision/finite-mass transport and
-physical vacuum/edge formation remain incomplete. See ELECTRON_PRESSURE_VERIFICATION
-and TWO_TEMPERATURE_PLAN for measured evidence and the next action.
+Latest checkpoint: **283 passing tests; 36 moving-species records audited**.
+Conservative primal/dual mass flux now couples changing density to separate
+electron/ion temperatures in an ideal common-velocity reference. Physical
+translation/compression errors refine, while a finite physical-entropy defect
+is explicitly retained. The prior 46-case electron-pressure and 63-case Hall
+components remain separate. Unified warm Hall boundary/enthalpy transport,
+collision/finite-mass physics and vacuum/edge formation are incomplete. See
+WARM_ADIABATIC_VERIFICATION and TWO_TEMPERATURE_PLAN for the next integration.
 
 ## Completion evidence still required
 
@@ -1097,3 +1098,84 @@ experimental UI are still incomplete. The original low-pressure argon target
 is unchanged; Stage2 remains guarded. The full goal and its transport/vacuum/
 accuracy/formation issues stay active. This checkpoint is concrete progress,
 not completion or an external blocker.
+
+## Moving ideal electron/ion coupling checkpoint: verified progress
+
+The full suite passes **283 tests (94.53 s)**. `DualMass` maps actual primal
+mass and Rusanov fluxes to the electron dual grid with a locally commuting
+divergence, explicit axis/wall half support and periodic seam. Independent
+affine physical flux integrals and random open-boundary tests verify this.
+The Q1 scalar average is the volume adjoint of the overlap, giving an explicit
+electron energy representation. No separate electron density is evolved.
+
+`AdiabaticSpeciesMHD` now evolves moving ions and electron entropy with the same
+two ideal RK stages. Changing n supplies electron compression work; positive
+ion pressure is recovered from conservative total thermal energy. Equal gamma
+keeps total fluid dynamics identical to the existing ideal solver, verified
+bit for bit at both orders. No total-energy reset, temperature floor or hidden
+retry is used. Resistivity is rejected pending physical heating partition.
+
+All **36 declared evolutions** finish: 30 main and six stronger-gradient/common-
+time controls. Independent translating contact and finite-amplitude compressing
+simple waves satisfy continuity, momentum, total energy and both species
+equations at two gammas. The finest continuous electron-pressure errors are
+0.00561259 after one contact transit and 0.000592550 after half a compression
+transit at nz256. Finest reconstructed ion-pressure compression error is
+0.00150679; corresponding electron/ion temperature errors are
+0.000670223/0.00343809. Node and physical-field norms remain distinct.
+Pa/eV values and quadrature controls are preserved in the report.
+
+The strong contact has a **negative physical electron entropy change**. The
+reported (gamma-1) delta Se/(N kB) decreases in magnitude from 5.83338e-4 to
+1.09066e-4 to 2.39562e-5 for nz64/128/256, while physical pe errors decrease
+0.152234→0.0417378→0.0123756. This scheme has no proven entropy inequality or
+shock heating partition; exact total energy does not remove that limitation.
+Strong Mach .12 compression pe errors reach 0.000738578. Positive accepted and
+reconstructed species states are retained throughout all recorded runs.
+
+Fixed-grid time ratios are 4.03370/4.50765 contact and 4.10340/4.30592 compression.
+Half-CFL changes are 0.401%/4.19% of the base node errors. A radial refinement
+control's apparent 5.14219e-6 pressure difference becomes 1.61383e-15 when time
+steps are matched, identifying the original CFL confound. Reference-density
+scale changes pressure by 1.06722e-15. Opposite translation, gamma 1.4, first-order
+and nearly cold-electron controls finish. Physical-norm quadrature uncertainty
+is at most 2.41243e-10 absolute in relative-L2 units.
+
+Maximum accepted-history mass/total-energy/linear-proxy drifts are
+5.40031e-16/8.87805e-16/1.12490e-15 relative. Independent physical magnetic energy,
+quarter-volume species density, electron/ion energy and logarithmic entropy
+replay pass. Frozen engine/reference/measurement fingerprint:
+`0e37c39afe2dc22bd122cd6d21ec5e21981cfa97b7d5d59e154bd263d88c73b4`.
+Main and supplemental source/configuration/archive/history audits pass; both
+scientific figures were visually inspected. All jobs are terminal. See
+WARM_ADIABATIC_NUMERICS and WARM_ADIABATIC_VERIFICATION.
+All 36 cases were regenerated under this final source after compacting history
+storage into lossless columns. Every accepted value, endpoint, physical metric
+and NPZ hash matched the earlier layout exactly; both figure hashes are
+unchanged. Saved collections shrink from about 143 MB to 43 MB without losing
+diagnostics. The earlier c4dca9... working fingerprint is superseded.
+
+### Remaining integration and completion audit
+
+This is a **common-velocity ideal thermal reference**, not a coupled warm Hall
+solver. Its ideal electric wall trace does not validate the full pressure
+electric field along a conducting wall, even in curl-free one-dimensional
+fixtures. The isolated pressure/current and cold Hall components remain separate.
+The earlier 63 Hall-case source hashes were checked against 16969a9 after the
+new mass-flux interface changed source identity; they were not relabeled as
+new-source records. The isolated electron fingerprint is unchanged.
+
+Next derive and implement local conservative electron-current enthalpy and
+Poynting transport on this moving state with mutually consistent magnetic
+boundary traces, then verify warm Hall waves and nonlinear evolution. One
+candidate worth deriving is natural fixed Btheta(R)=0 with free pressure Ez(R),
+which makes boundary magnetic power zero without requiring constant wall n;
+it is not the previous conducting Ez=0 boundary. This candidate is not yet
+implemented or verified. No mapped local energy reset may replace the flux.
+
+Then physical collisions/heating partition, conduction/ionization and full
+finite-mass current/drift energy must follow. Original argon validity, heated
+edge, exact vacuum, real gas ends, spatial coils, shock/remapping/entropy
+robustness, converged FRC formation and dynamic experimental UI remain required.
+Stage2 stays guarded; the full goal and transport/vacuum/accuracy/formation
+issues remain active. This is progress, not completion or an external blocker.

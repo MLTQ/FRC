@@ -279,3 +279,27 @@ electron pressure/energy and boundary work; TWO_TEMPERATURE_PLAN retains it.
 archive/history, and separates time and nested-state norms. The report plots
 continuous pressure error and actual battery energy transfer. Equations and
 limits are in ELECTRON_PRESSURE_NUMERICS and ELECTRON_PRESSURE_VERIFICATION.
+
+## Moving ideal species temperatures
+
+`dual_mass` maps primal ion density and its actual integrated mass flux to the
+dual thermal grid. The overlap and flux divergence commute locally; the reverse
+Q1 scalar average is its volume adjoint. `ToroidalMHD._rhs_with_fluxes` exposes
+the shared mass flux while preserving its previous RHS contract and arithmetic.
+`bulk_entropy` transports electron U with that flux; `two_temperature` recovers
+pe from changing n and pi from conservative total thermal energy. `warm_mhd`
+integrates both through the same two ideal RK stages with atomic validation.
+
+The total fluid energy is never reset to fit the thermal partition. This ideal,
+equal-gamma, common-velocity path reproduces the prior total fluid trajectory.
+It rejects resistivity until heating partition is derived; it has no Hall,
+electron-current enthalpy, pressure battery, collisions, conduction or finite
+electron mass. Positive cell temperatures and exact energy do not guarantee
+physical entropy monotonicity or accurate shock partition.
+
+Independent contact and finite-amplitude simple-wave references, 30 main cases,
+six stronger-gradient/common-time controls, independent energy replay and
+continuous pressure/temperature quadrature live in separate `examples/warm_*`
+modules. WARM_ADIABATIC_NUMERICS/VERIFICATION document errors and the remaining
+entropy defect. The next gate connects electron-current enthalpy/Poynting work
+and Hall with a compatible boundary, as specified in TWO_TEMPERATURE_PLAN.

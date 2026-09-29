@@ -34,7 +34,7 @@ class ToroidalMHD:
         diffusion = self.parameters.resistivity/MU0*(5/self.mesh.dr**2+2/self.mesh.dz**2)
         return self.parameters.cfl/(wave+diffusion)
 
-    def _rhs(self, state):
+    def _rhs_with_fluxes(self, state):
         mesh, par = self.mesh, self.parameters
         q = primitive(mesh, state, par.gamma)
         reconstruction = ToroidalReconstruction(mesh, q, order=par.spatial_order, positivity=par.positivity_reconstruction)
@@ -52,7 +52,13 @@ class ToroidalMHD:
         du[..., 1] += reconstruction.radial_source()
         du[..., 5] += dg
         electric = ideal_emf(mesh, reconstruction, br, bz, par.gamma, par.spatial_order)+er
-        return ToroidalState(du, -mesh.rf[:, None]*electric, state.magnetic_quadrature), heat+ohmic_power(mesh, er, par.resistivity), reconstruction.statistics
+        derivative = ToroidalState(du, -mesh.rf[:, None]*electric, state.magnetic_quadrature)
+        mass_r = 2*np.pi*mesh.rf[:, None]*mesh.dz*fr[..., 0]
+        mass_z = 2*np.pi*mesh.radial_measure[:, None]*fz[..., 0]
+        return derivative, heat+ohmic_power(mesh, er, par.resistivity), reconstruction.statistics, (mass_r, mass_z)
+
+    def _rhs(self, state):
+        return self._rhs_with_fluxes(state)[:3]
 
     def rhs(self, state):
         derivative, heat, _ = self._rhs(state)

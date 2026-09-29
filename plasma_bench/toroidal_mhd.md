@@ -28,3 +28,9 @@ RHS and trial states preserve the explicit magnetic-energy quadrature metadata.
 The historical default remains cell energy. HallMHD uses this ideal-fluid
 integrator with zero resistivity and compatible energy for the fluid half steps;
 its nonideal magnetic work is advanced separately by a matched midpoint solve.
+
+`_rhs_with_fluxes` additionally returns the actual integrated radial/axial mass
+fluxes [kg/s] from the same Rusanov evaluation used in continuity. The radial
+shape is (nr+1,nz), axial (nr,nz+1) with duplicate periodic endpoints. This is
+the shared stage contract for `AdiabaticSpeciesMHD`; `_rhs` and public `rhs`
+retain their original return values. No fluid arithmetic or flux is changed.
