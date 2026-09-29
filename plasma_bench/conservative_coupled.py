@@ -1,0 +1,218 @@
+"""Unsplit conservative MHD in a fixed chamber coupled to a genuine vacuum."""
+from dataclasses import dataclass
+import numpy as np
+from scipy.constants import mu_0 as MU0
+from .coupling_mesh import CouplingMesh
+from .mhd_state import MHDState, primitive, NonphysicalState
+from .mhd_flux import fast_speed
+from .vacuum_flux import flux_rhs
+from .vacuum_trace import tangential_field, interface_resistivity
+
+
+@dataclass(frozen=True)
+class ConservativeParameters:
+    gamma: float = 5/3
+    resistivity: float = 0.
+    cfl: float = .2
+    max_timestep: float | None = None
+    vacuum_boundary: str = "multipole"
+    multipole_modes: int = 12
+    interface_diffusion: bool = True
+    spatial_order: int = 2
+    positivity_flux_limiting: bool = True
+
+    def __post_init__(self):
+        if not np.isfinite(self.gamma) or self.gamma <= 1:
+            raise ValueError("gamma must be finite and greater than one")
+        if not np.isfinite(self.resistivity) or self.resistivity < 0:
+            raise ValueError("Physical resistivity must be finite and nonnegative")
+        if not np.isfinite(self.cfl) or not 0 < self.cfl <= .3:
+            raise ValueError("Use 0 < CFL <= 0.3")
+        if self.max_timestep is not None and (not np.isfinite(self.max_timestep) or self.max_timestep <= 0):
+            raise ValueError("Source-resolution time cap must be finite and positive")
+        if not isinstance(self.interface_diffusion, bool):
+            raise ValueError("Interface numerical-diffusion switch must be boolean")
+        if isinstance(self.spatial_order, bool) or self.spatial_order not in (1, 2):
+            raise ValueError("Spatial order must be 1 or 2")
+        if not isinstance(self.positivity_flux_limiting, bool):
+            raise ValueError("Flux admissibility switch must be boolean")
+
+
+@dataclass
+class ConservativeState:
+    conserved: np.ndarray  # rho, rho vr, rho vz, total fluid-cell MHD energy
+    induced_psi: np.ndarray  # full induced magnetic field grid, including vacuum
+
+    def copy(self):
+        return ConservativeState(self.conserved.copy(), self.induced_psi.copy())
+
+
+class ConservativeVacuumMHD:
+    """Reflecting gas chamber, transparent magnetic boundaries, no fluid exterior.
+
+    Total-energy flux conservation is exact in the fluid cells. The independent
+    full-space response-energy budget has measurable discretization error;
+    it is never imposed through a thermal-energy repair.
+    """
+    def __init__(self, mesh, sources, initial, parameters=None):
+        self.mesh, self.sources = mesh, sources
+        self.parameters = parameters or ConservativeParameters()
+        p = self.parameters
+        if any(coil.radius <= mesh.radius and abs(coil.z) <= mesh.half_length for coil in sources.coils):
+            raise ValueError("Prescribed source filaments must be outside the gas chamber")
+        self.mapping = CouplingMesh(mesh, sources.grid, boundary=p.vacuum_boundary, multipole_modes=p.multipole_modes)
+        self.state = initial.copy()
+        self.time, self.steps = 0., 0
+        self.source_work = self.ohmic_heat = self.outward_energy = 0.
+        self.numerical_interface_heat = 0.
+        self.limited_euler_stages, self.minimum_high_order_weight = 0, 1.
+        self._primitive(self.state, 0.)
+        u = self.mapping.interior(initial.induced_psi)
+        ku = self.mapping.k@u
+        if np.linalg.norm(ku[self.mapping.vacuum]) > 1e-10*max(np.linalg.norm(ku), 1e-30):
+            raise ValueError("Initial induced field violates the vacuum constraint")
+        if np.any(initial.induced_psi[0]):
+            raise ValueError("Axis induced flux must vanish")
+        if not self.mapping.open_boundary and (np.any(initial.induced_psi[-1]) or np.any(initial.induced_psi[:, [0, -1]])):
+            raise ValueError("Fixed outer induced flux must vanish")
+        self.initial = self._integrals(self.state, 0.)
+
+    def total_flux(self, state=None, time=None):
+        state = self.state if state is None else state
+        time = self.time if time is None else time
+        return state.induced_psi+self.sources.at(time).psi
+
+    def _primitive(self, state, time):
+        flux = self.mapping.fluid_flux(self.total_flux(state, time))
+        return primitive(self.mesh, MHDState(state.conserved, flux), self.parameters.gamma)
+
+    def _integrals(self, state, time):
+        q = self._primitive(state, time)
+        vol, m = self.mesh.volumes, self.mapping
+        magnetic_cell = float(np.sum((q[..., 4]**2+q[..., 5]**2)/(2*MU0)*vol))
+        energy = float(np.sum(state.conserved[..., 3]*vol))
+        u = m.interior(state.induced_psi)
+        induced_energy = float(np.pi/MU0*(u@(m.k@u)))
+        return {"mass_kg": float(np.sum(q[..., 0]*vol)), "fluid_total_energy_j": energy,
+                "gas_energy_j": energy-magnetic_cell, "fluid_magnetic_energy_j": magnetic_cell,
+                "induced_field_energy_j": induced_energy, "response_energy_j": energy-magnetic_cell+induced_energy,
+                "internal_energy_j": float(np.sum(q[..., 3]*vol/(self.parameters.gamma-1))),
+                "minimum_density_kg_m3": float(q[..., 0].min()), "minimum_pressure_pa": float(q[..., 3].min()),
+                "maximum_speed_m_s": float(np.hypot(q[..., 1], q[..., 2]).max())}
+
+    def timestep_limit(self):
+        q = self._primitive(self.state, self.time)
+        mesh, p = self.mesh, self.parameters
+        waves = np.max((abs(q[..., 1])+fast_speed(q, 0, p.gamma))/mesh.dr+
+                       (abs(q[..., 2])+fast_speed(q, 1, p.gamma))/mesh.dz)
+        eta = interface_resistivity(self.mapping, q, p.gamma) if p.interface_diffusion else np.zeros(1)
+        diffusion = 2*(p.resistivity+float(eta.max()))/MU0*(1/mesh.dr**2+1/mesh.dz**2)
+        limit = float(p.cfl/(waves+diffusion))
+        return limit if p.max_timestep is None else min(limit, p.max_timestep)
+
+    def _rhs(self, state, time, spatial_order=None):
+        m, p = self.mapping, self.parameters
+        q = self._primitive(state, time)
+        ku = m.k@m.interior(state.induced_psi)
+        current = np.divide(ku, MU0*m.node_area, out=np.zeros(m.node_count), where=m.active)
+        electric = m.fluid_flux(m.full(p.resistivity*current))
+        full_total = self.total_flux(state, time)
+        total = m.fluid_flux(full_total)
+        numerical_eta = interface_resistivity(m, q, p.gamma) if p.interface_diffusion else np.zeros(m.node_count)
+        numerical_electric = m.fluid_flux(m.full(numerical_eta*current))
+        conserved, dflux, outward = flux_rhs(self.mesh, q, total, p.gamma, electric, tangential_field(m, full_total),
+                                            numerical_electric, p.spatial_order if spatial_order is None else spatial_order)
+        source_derivative = m.grid_vector(self.sources.at(time).dpsi_dt)
+        source_power = -float((2*np.pi/MU0)*ku[m.active]@source_derivative[m.active])
+        ohmic_power = float(2*np.pi*np.sum(p.resistivity*current**2*m.node_radius*m.node_area))
+        numerical_power = float(2*np.pi*np.sum(numerical_eta*current**2*m.node_radius*m.node_area))
+        return conserved, dflux, outward, source_power, ohmic_power, numerical_power
+
+    def _forward_euler(self, state, time, total, dt):
+        """Blend complete conservative/CT fluxes, never repair cell energy."""
+        high = self._rhs(state, time)
+        def admissible(rhs):
+            try:
+                primitive(self.mesh, MHDState(state.conserved+dt*rhs[0], total+dt*rhs[1]), self.parameters.gamma)
+                return True
+            except NonphysicalState:
+                return False
+        if admissible(high):
+            return high, 1.
+        if not self.parameters.positivity_flux_limiting or self.parameters.spatial_order == 1:
+            raise NonphysicalState("Conservative Euler proposal is nonphysical; no flux fallback enabled")
+        low = self._rhs(state, time, spatial_order=1)
+        if not admissible(low):
+            raise NonphysicalState("First-order conservative Euler proposal is nonphysical; no state repair applied")
+        def blend(theta):
+            return tuple(a+theta*(b-a) for a, b in zip(low, high))
+        lower, upper = 0., 1.
+        for _ in range(40):
+            middle = .5*(lower+upper)
+            if admissible(blend(middle)):
+                lower = middle
+            else:
+                upper = middle
+        theta = .9*lower  # Stay inside the admissible set; no absolute state floor.
+        return blend(theta), theta
+
+    def _new_state(self, conserved, fluid_total_flux, time):
+        m, mesh = self.mapping, self.mesh
+        data = np.zeros(m.field.shape)
+        external = self.sources.at(time).psi
+        data[:mesh.nr+1, m.z_offset:m.z_offset+mesh.nz+1] = fluid_total_flux-m.fluid_flux(external)
+        result = ConservativeState(conserved, m.harmonic_extension(data))
+        self._primitive(result, time)
+        return result
+
+    def step(self, dt=None):
+        limit = self.timestep_limit()
+        dt = limit if dt is None else dt
+        if not np.isfinite(dt) or dt <= 0 or dt > limit*(1+1e-12):
+            raise ValueError(f"Time step must be positive and <= {limit:.6g} s")
+        old = self.state
+        total = self.mapping.fluid_flux(self.total_flux())
+        a, weight_a = self._forward_euler(old, self.time, total, dt)
+        predictor = self._new_state(old.conserved+dt*a[0], total+dt*a[1], self.time+dt)
+        b, weight_b = self._forward_euler(predictor, self.time+dt, total+dt*a[1], dt)
+        final = self._new_state(old.conserved+.5*dt*(a[0]+b[0]), total+.5*dt*(a[1]+b[1]), self.time+dt)
+        # Both RK stages and exact vacuum completion validate before any commit.
+        self.state = final
+        self.time += dt; self.steps += 1
+        self.outward_energy += .5*dt*(a[2]+b[2])
+        self.source_work += .5*dt*(a[3]+b[3])
+        self.ohmic_heat += .5*dt*(a[4]+b[4])
+        self.numerical_interface_heat += .5*dt*(a[5]+b[5])
+        self.limited_euler_stages += int(weight_a < 1)+int(weight_b < 1)
+        self.minimum_high_order_weight = min(self.minimum_high_order_weight, weight_a, weight_b)
+        return dt
+
+    def advance(self, end_time, *, max_steps=1_000_000):
+        if not np.isfinite(end_time) or end_time < self.time:
+            raise ValueError("End time must be finite and not precede accepted time")
+        count = 0
+        while self.time < end_time:
+            remaining = end_time-self.time
+            if remaining <= 4*np.finfo(float).eps*max(abs(end_time), 1e-300):
+                self.time = end_time; break
+            if count >= max_steps:
+                raise RuntimeError("Step budget exceeded; accepted state retained")
+            self.step(min(self.timestep_limit(), remaining)); count += 1
+        return self.state
+
+    def diagnostics(self):
+        result = self._integrals(self.state, self.time)
+        response_residual = result["response_energy_j"]-self.initial["response_energy_j"]-self.source_work
+        fluid_residual = result["fluid_total_energy_j"]-self.initial["fluid_total_energy_j"]+self.outward_energy
+        ku = self.mapping.k@self.mapping.interior(self.state.induced_psi)
+        result.update(time_s=self.time, steps=self.steps, source_work_j=self.source_work, ohmic_heat_j=self.ohmic_heat,
+                      numerical_interface_heat_j=self.numerical_interface_heat,
+                      limited_euler_stages=self.limited_euler_stages, minimum_high_order_weight=self.minimum_high_order_weight,
+                      outward_fluid_energy_j=self.outward_energy, fluid_energy_balance_residual_j=fluid_residual,
+                      response_energy_balance_residual_j=response_residual,
+                      response_residual_over_source_work=response_residual/abs(self.source_work) if self.source_work else None,
+                      response_energy_balance_relative=response_residual/max(abs(self.initial["response_energy_j"]), abs(self.source_work), 1e-30),
+                      mass_relative_change=(result["mass_kg"]-self.initial["mass_kg"])/self.initial["mass_kg"],
+                      vacuum_relative_residual=float(np.linalg.norm(ku[self.mapping.vacuum])/max(np.linalg.norm(ku), 1e-30)),
+                      max_face_divergence_t_m=float(abs(self.mesh.divergence(self.mapping.fluid_flux(self.total_flux()))).max()))
+        return result

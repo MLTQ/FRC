@@ -116,10 +116,12 @@ measurements of their recorded source, not reruns with this different solver.
 The magnetic boundary requirement has progressed with the verified infinite
 exterior described below. The new shock study exposes false magnetic reversal
 in the centered split and measures an explicit vanishing diffusion option.
-Prioritize a flux-consistent conservative magnetic-shock treatment and stronger
-shock/weak-solution tests, alongside source-driven skin-layer resolution. The
-diffusion option improves bulk errors but does not resolve irregular frozen-flux
-error or establish general local momentum conservation. Replace the
+An unsplit conservative fluid/UCT implementation now couples through the same
+vacuum and preserves the tested interior frozen-flux relation. Prioritize
+localizing its full-update flux limiter and extending shock/interface-work
+verification, alongside source-driven skin-layer resolution. Its global limiter
+is active on finer cold-boundary grids and affects otherwise smooth interior
+accuracy. The historical split diffusion option remains a comparison. Replace the
 fixed gas-filled interface with a defensible
 evolving plasma–vacuum treatment before interpreting detached torus formation.
 Validate actual chamber/end conditions, transport and Hall applicability. The
@@ -175,7 +177,7 @@ magnetic shocks or FRC formation. `frc-vacuum` and the full objective stay activ
 
 ## Magnetic shock and implicit solver checkpoint
 
-The latest full suite has **99 passing tests** (25.17 s). This continuation made
+That checkpoint had **99 passing tests** (25.17 s). That continuation made
 verified progress; all measurement/report jobs completed, with none left live.
 
 An independent strong perpendicular shock now has exact Rankine–Hugoniot jumps
@@ -226,14 +228,84 @@ and local momentum/weak-shock accuracy, while preserving the verified vacuum
 and work identities. Continue the unresolved cold rarefaction, equilibrium,
 skin-layer, free-interface, transport and formation requirements below.
 
+## Conservative fluid/CT coupling checkpoint
+
+The current full suite has **109 passing tests** (32.92 s). This continuation is
+verified progress: all 22 measurement jobs completed, including 20 successful
+runs and two deliberately disabled-method failure controls. No job remains live.
+
+`ConservativeVacuumMHD` advances mass, momentum, total fluid-cell MHD energy and
+upwind constrained induction together, with shared Rusanov/UCT diffusion. It
+retains the exact discrete induced vacuum and infinite magnetic exterior, with
+no exterior fluid or conductivity. Vacuum-side magnetic traction and Poynting
+flux include interface-current work. Positive numerical diffusivity D=a h/4 is
+assigned only to plasma boundary nodes and uses the symmetric stiffness current;
+its diagnosed heat is separate from physical eta J². This is declared numerical
+interface stabilization, not transport. Physical and numerical electric fields
+enter all adjacent total-energy fluxes, including transport along the boundary
+layer, with no double-counted Joule source. An independent manufactured Poynting
+identity checks that a prescribed electric curl in initially uniform B changes
+magnetic energy without a spurious instantaneous thermal-energy derivative.
+
+The original strong shock fixture reaches 0.02 s at nr=24/48/96/192. Interior
+frozen B/rho defects are 2.85e-6, 9.22e-8, 4.45e-13 and 9.27e-14, with no false
+field reversal. B-profile L1/B1 errors are 0.309278, 0.203389, 0.104325 and
+0.0746278. Cold boundary cells require blending complete conservative/CT fluxes
+toward an admissible first-order Euler proposal: 0/88, 0/176, 6/372 and 154/810
+Euler stages are limited. Minimum high-order weight is 0.000332 at nr=192.
+No cell pressure/density floor or energy repair is used. A failed low-order
+proposal still raises atomically; no unrestricted positivity theorem is claimed.
+The disabled limiter fails at 0.019111 s on nr=96; disabling interface diffusion
+and limiting fails at 0.0100 s on nr=24. These failures remain in the data.
+
+The invariant improvement is not universal profile improvement: at nr=192 the
+new B error 0.07463 exceeds the historical split C=1 error 0.05813, and pressure
+error is 0.36880 Pa versus 0.19095 Pa. Global limiting caused by boundary cells
+reduces accuracy in the whole domain, so localization is the immediate numerical
+task. Shock time halving at nr=96 changes B/density profiles by 0.02976% and
+pressure by 0.07051%; doubling chamber length at nr=48 changes profiles below
+2.70e-8. The original initial data and independent reference were retained.
+
+Fluid-cell energy flux accounting is at roundoff, but independently calculated
+gas-plus-full-space-induced-field response energy is not forced exact. Relative
+shock response errors decrease 1.996e-4, 8.248e-5, 4.050e-5, 2.873e-5. This
+explicit finite-grid error is distinct from the historical split work identity.
+Mass changes are at most 2.19e-16 and compatible divergence 2.09e-16 T/m across
+completed cases. All quantities remain independently diagnosed.
+
+The same prescribed-coil pulse runs at nr=8/16/32/64. Final response error
+normalized to **actual source work** decreases in magnitude 2.722%, 1.108%,
+0.3406%, 0.1021%. At nr=64, physical Ohmic heat is 0.082397 J and numerical
+interface heat is 0.0014725 J (about 1.8% of physical heat). Source work still
+changes 0.125487→0.121817 J from nr=32→64, and peak speed increases
+0.06981→0.12737→0.17880→0.20744 m/s over the four grids. The driven flow remains
+unconverged. No pulse stages require flux limiting. CFL halving at nr=32 changes
+work by 0.001741%, and magnetic matching extent 2→4 at nr=16 changes work by
+0.002050%. Removing numerical interface diffusion at nr=32 changes work by
+0.6537% and peak speed by 1.4146%, so its effects must not be ignored.
+
+Independent smooth advection errors at nr=12/24/48 are 0.05585, 0.009702 and
+0.001778; Gaussian diffusion errors are 0.007897, 0.002115 and 0.0004833, with
+no flux limiting. Harmonic-polynomial tests independently verify vacuum-side
+interface traces and their radial convergence. Tests cover no vacuum numerical
+resistance, rest/bias preservation, cold-boundary atomic failure, local energy
+conservation and independent source-budget refinement. The inspected figure,
+full inputs/histories/profiles/failure records and fingerprints are in
+`docs/CONSERVATIVE_COUPLING.md`, `docs/CONSERVATIVE_VERIFICATION.md` and
+`outputs/conservative_verification/metrics.json`.
+
+This remains a fixed gas-filled chamber reference. Free plasma motion and
+actual end conditions, transport/ionization/Hall validity, converged formation
+and a dynamic experiment UI remain unfinished. Original Stage 2 stays gated.
+
 ## Completion audit at this checkpoint
 
 | Requirement | Authoritative evidence | Status |
 |---|---|---|
 | Conservative dynamic core | mhd modules, independent tests, MHD/positivity reports | Implemented and verified for stated bounded reference; positive traces without cell floors; full-update robustness and cold-flow accuracy remain bounded by tests |
-| Physical source/plasma/vacuum coupling | Fixed-chamber split reference, COUPLED_VERIFICATION and OPEN_BOUNDARY_VERIFICATION; original Stage 2 guard still raises | Partial: full-space magnetic/work checks pass; source-layer resolution, moving free interface, end conditions and magnetic shocks remain |
+| Physical source/plasma/vacuum coupling | Fixed-chamber split and conservative/CT references; COUPLED, OPEN_BOUNDARY and CONSERVATIVE verification reports; original Stage 2 guard still raises | Partial: magnetic/work/interface refinement measured; global flux limiter, source-layer resolution, moving free interface and actual end conditions remain |
 | Regime-appropriate transport / Hall physics | Fixed eta/sigma only; beads frc-transport | Incomplete |
-| Full independent numerical verification | Waves, gas and perpendicular magnetic shocks, heating, advection, J×B, curved equilibrium, admissibility, rarefaction, coil budgets and independent infinite-exterior checks | Partial; false reversal exposed in centered split, selectable numerical diffusion improves bulk shock errors but not uniformly frozen-flux error; cold-pressure/equilibrium and pulse-resolution limitations remain |
+| Full independent numerical verification | Waves, gas/perpendicular magnetic shocks, heating, advection, J×B, equilibrium, trace/full-update admissibility, rarefaction, interface traces, source budgets and infinite-exterior checks | Partial; conservative/CT removes tested frozen-flux defect, but global limiting and interface diffusion affect accuracy; cold-pressure/equilibrium, broader shocks and pulse-resolution requirements remain |
 | Converged FRC formation | Only older stationary-conductor results, unconverged topology duration | Not demonstrated |
 | Reproducible experimental interface | Stage 0/1 CLI/playback; dynamic and coupled benchmark scripts, histories and metrics | Partial; no coupled dynamic experiment UI |
 

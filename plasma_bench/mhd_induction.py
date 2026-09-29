@@ -16,14 +16,21 @@ def ideal_emf(mesh, ghost, br_faces, bz_faces, gamma, reconstruction=None):
     else:
         sw, se, nw, ne = reconstruction.corners()
         bz_left, bz_right, br_down, br_up = staggered_corner_fields(mesh, br_faces, bz_faces)
-    ar = np.maximum.reduce([np.abs(q[..., 1])+fast_speed(q, 0, gamma) for q in (sw, se, nw, ne)])
-    az = np.maximum.reduce([np.abs(q[..., 2])+fast_speed(q, 1, gamma) for q in (sw, se, nw, ne)])
-    electric = .25*((sw[..., 1]+nw[..., 1])*bz_left+(se[..., 1]+ne[..., 1])*bz_right
-                     -(sw[..., 2]+se[..., 2])*br_down-(nw[..., 2]+ne[..., 2])*br_up)
-    electric += -.5*ar*(bz_right-bz_left)+.5*az*(br_up-br_down)
+    electric = uct_electric((sw, se, nw, ne), (bz_left, bz_right, br_down, br_up), gamma)
     electric[[0, -1]] = 0  # Axis regularity / fixed perfectly conducting wall.
     electric[:, -1] = electric[:, 0]
     return electric
+
+
+def uct_electric(corners, fields, gamma):
+    """Four-state LLF UCT electric field before imposing a boundary contract."""
+    sw, se, nw, ne = corners
+    bz_left, bz_right, br_down, br_up = fields
+    ar = np.maximum.reduce([np.abs(q[..., 1])+fast_speed(q, 0, gamma) for q in corners])
+    az = np.maximum.reduce([np.abs(q[..., 2])+fast_speed(q, 1, gamma) for q in corners])
+    electric = .25*((sw[..., 1]+nw[..., 1])*bz_left+(se[..., 1]+ne[..., 1])*bz_right
+                     -(sw[..., 2]+se[..., 2])*br_down-(nw[..., 2]+ne[..., 2])*br_up)
+    return electric-.5*ar*(bz_right-bz_left)+.5*az*(br_up-br_down)
 
 
 def resistive_emf(mesh, psi, resistivity):

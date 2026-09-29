@@ -31,6 +31,10 @@ decaying magnetic exterior to infinity, including its energy beyond the grid.
 The [strong magnetic-shock study](docs/SHOCK_VERIFICATION.md) exposes false field
 reversal in the centered split method and measures an explicit numerical
 diffusion option. Its heat is reported separately from physical Ohmic heating.
+The [conservative coupling study](docs/CONSERVATIVE_VERIFICATION.md) advances
+fluid and magnetic shock fluxes consistently through the same verified vacuum.
+It measures a complete-update flux limiter, numerical interface heating and
+whole-space energy error separately from exact fluid-cell conservation.
 
 ## Use the existing environment
 
@@ -47,6 +51,7 @@ diffusion option. Its heat is reported separately from physical Ohmic heating.
 .venv/bin/python -m examples.verify_coupled
 .venv/bin/python -m examples.verify_open_boundary
 .venv/bin/python -m examples.verify_shocks
+.venv/bin/python -m examples.verify_conservative
 ```
 
 Open [vacuum playback](outputs/vacuum/viewer.html) or
@@ -110,6 +115,7 @@ conductivity without an ionization/transport closure. See the research queue.
 - `open_boundary.py`: decaying magnetic multipoles and full-space magnetic energy.
 - `shock_reference.py`, `shock_benchmarks.py`: independent cylindrical magnetic shocks and actual-kernel comparisons.
 - `magnetic_dissipation.py`: optional declared compressive numerical diffusion, with separately accounted heat.
+- `conservative_coupled.py`, `vacuum_flux.py`, `vacuum_trace.py`: unsplit conservative fluid/CT evolution, interface traction and magnetic vacuum.
 - `diagnostics.py`, `topology.py`: validity scales, energy, O/X points, closed flux.
 - `simulation.py`, `results.py`: orchestration and reproducible numeric archives.
 - `experiments.py`, `visualization.py`, `cli.py`: sweeps, plots and playback.
@@ -133,8 +139,10 @@ failures without cell floors. A fixed gas-filled chamber now couples moving flui
 to prescribed coils and genuine surrounding magnetic vacuum with a measured
 source-work budget. A verified multipole boundary extends the induced magnetic
 field to infinity and counts its exterior energy, without adding fluid there.
-Next, address free interfaces, realistic end conditions, source-driven skin-layer
-resolution and magnetic-shock fidelity, alongside conductivity/Hall applicability.
+An unsplit conservative vacuum-coupled reference now preserves the tested
+perpendicular shock's frozen-flux relation while measuring interface and global
+energy errors. Next, localize its complete-update limiter, resolve driven skin
+layers, and address free interfaces, realistic ends and transport/Hall validity.
 The coil-driven Stage 2 entry point still raises an explicit `NotImplementedError`
 until the physical formation requirements are verified. The dynamic references
 are separately scriptable through `plasma_bench.mhd.AxisymmetricMHD` and
@@ -143,11 +151,12 @@ energy and must not be interchanged with the former's total-MHD state.
 Cold-rarefaction pressure accuracy and curved-equilibrium drift remain measured
 numerical limitations to address alongside that integration.
 
-To run the numerical coil fixture with the infinite magnetic exterior:
+To run the conservative numerical coil fixture with the infinite magnetic exterior:
 
 ```python
 from plasma_bench.coupled_benchmarks import coil_pulse
-model = coil_pulse(16, vacuum_boundary="multipole", multipole_modes=12)
+from plasma_bench.conservative_benchmarks import from_split_initial
+model = from_split_initial(coil_pulse(16, vacuum_boundary="multipole", multipole_modes=12))
 model.advance(0.1)
 print(model.diagnostics())
 ```
@@ -156,6 +165,11 @@ These unit-scale SI verification parameters are not a physical argon experiment.
 The matching surface must enclose the entire fluid source sphere; mode and mesh
 refinement remain required. `vacuum_boundary="fixed"` retains the historical
 finite-wall comparison. Neither option yet provides an evolving free gas surface.
+The original split reference is available directly as `coil_pulse(...)`.
+`ConservativeState` includes fluid-cell magnetic energy, whereas `CoupledState`
+contains gas energy only; `from_split_initial` makes that conversion explicitly
+for unadvanced initial fixtures. The conservative solver's whole-space energy
+error is diagnosed, not forced to zero. See its [numerical contract](docs/CONSERVATIVE_COUPLING.md).
 
 To reproduce the initialized strong-shock verification fixture:
 

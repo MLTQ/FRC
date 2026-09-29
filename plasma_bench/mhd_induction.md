@@ -10,3 +10,7 @@ energy equation; no Joule source is double counted. `ohmic_power` independently
 estimates physical heating with corner dual-volume quadrature; energy-partition
 agreement needs refinement and is not enforced through a corrective source.
 Axial arrays include the duplicate periodic endpoint. All outputs use SI.
+`uct_electric` exposes the same four-state expression before boundary conditions;
+the vacuum-coupled conservative solver applies its own reflecting-gas,
+magnetically transparent boundary contract. `ideal_emf` retains its periodic
+ends and perfectly conducting radial wall exactly.

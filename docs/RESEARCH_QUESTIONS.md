@@ -43,6 +43,17 @@
 - [ ] Resolve the remaining irregular B/rho error and overshoot, establish local
   conservative shock limits, and extend shock tests to other strengths and
   orientations. Numerical diffusion is not physical transport or reconnection.
+- [x] Add unsplit conservative fluid/UCT coupling to the existing magnetic vacuum;
+  verify original shocks, independent smooth solutions and driven source-work
+  refinement, while distinguishing fluid conservation from full-space accuracy.
+- [x] Add a declared whole-update conservative flux blend when positive traces
+  alone fail, preserving budgets and CT with no cell floor or energy reset.
+- [ ] Localize that flux limiter so a troubled cold boundary cell does not
+  downgrade the entire interior. Activity rises to 154/810 Euler stages at
+  nr=192 in the recorded shock and limits its fine-grid profile accuracy.
+- [ ] Refine and validate magnetic interface traction and numerical heating;
+  conservative pulse response error is 0.1021% of source work at nr=64, but
+  numerical interface heat and driven peak flow are still resolution-sensitive.
 - [ ] Replace the fixed chamber interface with a defensible evolving free-plasma
   treatment without exterior fluid floors; validate gas loss and actual end conditions.
 - [ ] Add thermodynamic feedback before interpreting large Ohmic heating as plausible.
