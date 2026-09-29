@@ -53,7 +53,8 @@ def snapshot(solver):
 
 def run(cells, directory="outputs/local_limiter_verification/energy_audit"):
     directory = Path(directory); directory.mkdir(parents=True, exist_ok=True)
-    solver = from_split_initial(standing_shock(cells)[0])
+    solver = from_split_initial(standing_shock(cells)[0], energy_quadrature="cell",
+                                boundary_poynting="riemann", time_order=2)
     record = {"radial_cells": cells, "parameters": asdict(solver.parameters), "provenance": provenance(),
               "audit_source_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(), "snapshots": []}
     for time in np.linspace(0, .02, 5):

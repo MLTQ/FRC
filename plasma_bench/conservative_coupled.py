@@ -8,6 +8,8 @@ from .mhd_flux import fast_speed
 from .vacuum_flux import flux_components
 from .flux_limiting import admissible_update
 from .vacuum_trace import tangential_field, interface_resistivity
+from .vacuum_energy import variational_trace
+from .magnetic_quadrature import selected_energy
 
 
 @dataclass(frozen=True)
@@ -22,6 +24,9 @@ class ConservativeParameters:
     spatial_order: int = 2
     positivity_flux_limiting: bool = True
     flux_limiter: str = "local"
+    energy_quadrature: str = "cell"
+    boundary_poynting: str = "riemann"
+    time_order: int = 2
 
     def __post_init__(self):
         if not np.isfinite(self.gamma) or self.gamma <= 1:
@@ -40,6 +45,12 @@ class ConservativeParameters:
             raise ValueError("Flux admissibility switch must be boolean")
         if self.flux_limiter not in ("local", "global"):
             raise ValueError("Flux limiter must be local or global")
+        if self.energy_quadrature not in ("cell", "staggered"):
+            raise ValueError("Energy quadrature must be cell or staggered")
+        if self.boundary_poynting not in ("riemann", "variational"):
+            raise ValueError("Boundary Poynting flux must be riemann or variational")
+        if isinstance(self.time_order, bool) or self.time_order not in (2, 3):
+            raise ValueError("Time order must be 2 or 3")
 
 
 @dataclass
@@ -67,6 +78,7 @@ class ConservativeVacuumMHD:
         self.mapping = CouplingMesh(mesh, sources.grid, boundary=p.vacuum_boundary, multipole_modes=p.multipole_modes)
         self.state = initial.copy()
         self.time, self.steps = 0., 0
+        self.euler_stages = 0
         self.source_work = self.ohmic_heat = self.outward_energy = 0.
         self.numerical_interface_heat = 0.
         self.limited_euler_stages, self.minimum_high_order_weight = 0, 1.
@@ -92,12 +104,14 @@ class ConservativeVacuumMHD:
 
     def _primitive(self, state, time):
         flux = self.mapping.fluid_flux(self.total_flux(state, time))
-        return primitive(self.mesh, MHDState(state.conserved, flux), self.parameters.gamma)
+        return primitive(self.mesh, MHDState(state.conserved, flux), self.parameters.gamma,
+                         energy_quadrature=self.parameters.energy_quadrature)
 
     def _integrals(self, state, time):
         q = self._primitive(state, time)
         vol, m = self.mesh.volumes, self.mapping
-        magnetic_cell = float(np.sum((q[..., 4]**2+q[..., 5]**2)/(2*MU0)*vol))
+        flux = m.fluid_flux(self.total_flux(state, time))
+        magnetic_cell = float(np.sum(selected_energy(self.mesh, flux, self.parameters.energy_quadrature)*vol))
         energy = float(np.sum(state.conserved[..., 3]*vol))
         u = m.interior(state.induced_psi)
         induced_energy = float(np.pi/MU0*(u@(m.k@u)))
@@ -128,8 +142,11 @@ class ConservativeVacuumMHD:
         total = m.fluid_flux(full_total)
         numerical_eta = interface_resistivity(m, q, p.gamma) if p.interface_diffusion else np.zeros(m.node_count)
         numerical_electric = m.fluid_flux(m.full(numerical_eta*current))
-        fluxes = flux_components(self.mesh, q, total, p.gamma, electric, tangential_field(m, full_total),
+        boundary = variational_trace(m, full_total, ku) if p.boundary_poynting == "variational" else None
+        traces = boundary.face_fields(self.mesh) if boundary is not None else tangential_field(m, full_total)
+        fluxes = flux_components(self.mesh, q, total, p.gamma, electric, traces,
                                   numerical_electric, p.spatial_order if spatial_order is None else spatial_order)
+        fluxes.boundary_poynting = boundary
         source_derivative = m.grid_vector(self.sources.at(time).dpsi_dt)
         source_power = -float((2*np.pi/MU0)*ku[m.active]@source_derivative[m.active])
         ohmic_power = float(2*np.pi*np.sum(p.resistivity*current**2*m.node_radius*m.node_area))
@@ -142,7 +159,8 @@ class ConservativeVacuumMHD:
         p = self.parameters
         mode = p.flux_limiter if p.positivity_flux_limiting and p.spatial_order == 2 else "off"
         rhs, report = admissible_update(self.mesh, state.conserved, total, dt, high,
-                                        lambda: self._fluxes(state, time, spatial_order=1)[0], mode=mode)
+                                        lambda: self._fluxes(state, time, spatial_order=1)[0], mode=mode,
+                                        energy_quadrature=p.energy_quadrature)
         # Current, physical/interface eta and analytic source power are independent
         # of reconstruction order at this state; only outward flux is selected.
         return (*rhs, *powers), report
@@ -166,15 +184,27 @@ class ConservativeVacuumMHD:
         a, report_a = self._forward_euler(old, self.time, total, dt)
         predictor = self._new_state(old.conserved+dt*a[0], total+dt*a[1], self.time+dt)
         b, report_b = self._forward_euler(predictor, self.time+dt, total+dt*a[1], dt)
-        final = self._new_state(old.conserved+.5*dt*(a[0]+b[0]), total+.5*dt*(a[1]+b[1]), self.time+dt)
-        # Both RK stages and exact vacuum completion validate before any commit.
+        if self.parameters.time_order == 2:
+            final = self._new_state(old.conserved+.5*dt*(a[0]+b[0]), total+.5*dt*(a[1]+b[1]), self.time+dt)
+            weighted = ((.5, a), (.5, b))
+            reports = (report_a, report_b)
+        else:
+            half_flux = total+.25*dt*(a[1]+b[1])
+            half = self._new_state(old.conserved+.25*dt*(a[0]+b[0]), half_flux, self.time+.5*dt)
+            c, report_c = self._forward_euler(half, self.time+.5*dt, half_flux, dt)
+            final = self._new_state(old.conserved+dt*((a[0]+b[0])/6+2*c[0]/3),
+                                    total+dt*((a[1]+b[1])/6+2*c[1]/3), self.time+dt)
+            weighted = ((1/6, a), (1/6, b), (2/3, c))
+            reports = (report_a, report_b, report_c)
+        # Every Euler proposal and exact vacuum completion validates atomically.
         self.state = final
         self.time += dt; self.steps += 1
-        self.outward_energy += .5*dt*(a[2]+b[2])
-        self.source_work += .5*dt*(a[3]+b[3])
-        self.ohmic_heat += .5*dt*(a[4]+b[4])
-        self.numerical_interface_heat += .5*dt*(a[5]+b[5])
-        for report in (report_a, report_b):
+        self.euler_stages += len(reports)
+        self.outward_energy += dt*sum(w*rates[2] for w, rates in weighted)
+        self.source_work += dt*sum(w*rates[3] for w, rates in weighted)
+        self.ohmic_heat += dt*sum(w*rates[4] for w, rates in weighted)
+        self.numerical_interface_heat += dt*sum(w*rates[5] for w, rates in weighted)
+        for report in reports:
             self.limited_euler_stages += int(report.minimum_weight < 1)
             self.minimum_high_order_weight = min(self.minimum_high_order_weight, report.minimum_weight)
             self.limiter_cell_counts += report.affected
@@ -184,7 +214,7 @@ class ConservativeVacuumMHD:
             self.maximum_limiter_iterations = max(self.maximum_limiter_iterations, report.iterations)
         return dt
 
-    def advance(self, end_time, *, max_steps=1_000_000):
+    def advance(self, end_time, *, max_steps=1_000_000, on_step=None):
         if not np.isfinite(end_time) or end_time < self.time:
             raise ValueError("End time must be finite and not precede accepted time")
         count = 0
@@ -195,6 +225,8 @@ class ConservativeVacuumMHD:
             if count >= max_steps:
                 raise RuntimeError("Step budget exceeded; accepted state retained")
             self.step(min(self.timestep_limit(), remaining)); count += 1
+            if on_step is not None:
+                on_step(self)
         return self.state
 
     def diagnostics(self):
@@ -202,7 +234,8 @@ class ConservativeVacuumMHD:
         response_residual = result["response_energy_j"]-self.initial["response_energy_j"]-self.source_work
         fluid_residual = result["fluid_total_energy_j"]-self.initial["fluid_total_energy_j"]+self.outward_energy
         ku = self.mapping.k@self.mapping.interior(self.state.induced_psi)
-        result.update(time_s=self.time, steps=self.steps, source_work_j=self.source_work, ohmic_heat_j=self.ohmic_heat,
+        result.update(time_s=self.time, steps=self.steps, euler_stages=self.euler_stages,
+                      source_work_j=self.source_work, ohmic_heat_j=self.ohmic_heat,
                       numerical_interface_heat_j=self.numerical_interface_heat,
                       limited_euler_stages=self.limited_euler_stages, minimum_high_order_weight=self.minimum_high_order_weight,
                       affected_euler_cell_stages=int(self.limiter_cell_counts.sum()),

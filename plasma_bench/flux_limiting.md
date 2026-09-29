@@ -19,7 +19,7 @@ regions or a universal MHD positivity theorem. It checks strict positive gas
 internal energy and density, finite conserved values and cell magnetic field,
 without absolute floors, pressure resets, entropy substitution or added heat.
 The geometry/source/boundary baseline itself is conditional on the chosen time
-step and physical state. Both SSP Euler stages and final state are validated.
+step and physical state. All SSP Euler proposals and final state are validated.
 
 Mass and total cell energy remain shared-flux conservative; corner CT preserves
 compatible divergence. In a translationally invariant one-dimensional limit,
@@ -32,3 +32,9 @@ number of replacement passes (40 bisections for global comparison), and minimum
 high-order weight. The solver accumulates these only after the entire step
 validates. `invalid_cells` uses the same kinetic/magnetic energy convention as
 `mhd_state.primitive`; it does not mutate state.
+The explicit `energy_quadrature` selector is passed through every complete
+proposal check. Both cell and staggered conventions are convex quadratic
+magnetic energies of linear flux-derived fields, so the same SSP/convexity
+argument applies. Selected boundary Poynting flux is reassembled from the
+chosen corners by `FluxUpdate`, including all neighbor rechecks.
+Magnetic units and quadrature reside in the shared energy helper.

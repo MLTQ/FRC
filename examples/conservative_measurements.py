@@ -46,7 +46,7 @@ def shock_errors(solver, reference):
     return errors, profile
 
 
-def measure(kind, cells, *, cfl=.2, extent=2, half_length=1, **overrides):
+def measure(kind, cells, *, cfl=.2, extent=2, half_length=1, progress=None, **overrides):
     start = perf_counter()
     reference = None
     if kind == "shock":
@@ -70,9 +70,21 @@ def measure(kind, cells, *, cfl=.2, extent=2, half_length=1, **overrides):
            "initial_diagnostics": solver.diagnostics()}
     history = [solver.diagnostics()]
     start = perf_counter()
+    last_progress = start
+    def report(current, force=False):
+        nonlocal last_progress
+        now = perf_counter()
+        if progress is not None and (force or now-last_progress >= 30):
+            progress({**row, "completed": False, "status": "running",
+                      "advance_seconds": now-start, "history": history.copy(),
+                      "diagnostics": current.diagnostics()})
+            last_progress = now
+    report(solver, force=True)
     try:
         for time in np.linspace(0, end, count)[1:]:
-            solver.advance(float(time)); history.append(solver.diagnostics())
+            solver.advance(float(time), on_step=report if progress is not None else None)
+            history.append(solver.diagnostics())
+            report(solver, force=True)
     except (ValueError, RuntimeError) as error:
         row.update(completed=False, failure=str(error))
         history.append(solver.diagnostics())

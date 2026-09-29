@@ -16,7 +16,8 @@ def cases():
     result += [("pulse_half_cfl", "pulse", 32, {"cfl": .1}),
                ("pulse_far_matching", "pulse", 16, {"extent": 4})]
     result += [(f"{kind}_{n}", kind, n, {}) for kind in ("advection", "diffusion") for n in (12, 24, 48)]
-    return result
+    legacy = {"energy_quadrature": "cell", "boundary_poynting": "riemann", "time_order": 2}
+    return [(name, kind, cells, {**legacy, **options}) for name, kind, cells, options in result]
 
 
 def source_record():

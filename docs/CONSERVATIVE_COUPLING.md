@@ -6,6 +6,12 @@ and magnetic shock diffusion. The original split solver remains available for
 its exact work pairing and comparison; neither solver yet provides a moving
 free plasma surface or validated FRC formation.
 
+The equations below describe the historical/default cell-energy, Riemann
+boundary-work and RK2 choices. The selectable staggered-energy, natural-boundary
+and RK3 extension has its own [derivation and limitations](COMPATIBLE_ENERGY.md)
+and [measured study](COMPATIBLE_ENERGY_VERIFICATION.md). Existing study drivers
+now select their historical controls explicitly.
+
 ## Equations, geometry and state
 
 Inside the fixed gas-filled r-z cylinder, the equations are compressible

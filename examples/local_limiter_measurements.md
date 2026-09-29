@@ -15,3 +15,5 @@ records and cannot count as final-time convergence evidence.
 The recorded nr=384 case required about 36 minutes including setup on this
 CPU environment. Use the ordinary test suite for a fast check and `--reuse`
 for unchanged measurements; do not mistake long execution for completion.
+Every historical case explicitly selects cell magnetic energy, Riemann boundary
+Poynting flux and RK2 so later solver defaults cannot alter this protocol.

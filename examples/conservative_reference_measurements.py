@@ -10,7 +10,8 @@ def protocol():
     # inputs before overwriting any requested output; never infer them from a
     # current solver default which may have changed since the reference study.
     archive = json.loads(Path("outputs/conservative_verification/metrics.json").read_text())
-    return [(r["name"], r["kind"], r["radial_cells"], {**r["input_options"], "flux_limiter": "global"})
+    legacy = {"flux_limiter": "global", "energy_quadrature": "cell", "boundary_poynting": "riemann", "time_order": 2}
+    return [(r["name"], r["kind"], r["radial_cells"], {**r["input_options"], **legacy})
             for r in archive["cases"]]
 
 

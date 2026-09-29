@@ -369,21 +369,87 @@ repairs. Stronger multidimensional shocks, cold rarefaction, free surfaces,
 actual ends, transport/ionization/Hall validity, formation and the dynamic
 experiment UI all remain in scope.
 
+## Compatible-energy and free-boundary-reference checkpoint
+
+Positive staggered face-square magnetic energy and a natural variational
+vacuum trace are now explicit solver options, with optional SSP RK3. Pressure,
+initial energy, complete-update admissibility and diagnostics use the same
+selected quadrature. Boundary work uses actual selected CT corner fields;
+there are no thermal repairs or exterior fluid variables. Historical defaults
+remain selectable and unchanged. Independent polynomial/force/work tests cover
+unequal grid spacings, nonautonomous temporal order, third-stage atomic rejection
+and mixed-boundary fallback. The pulse16 and advection12 legacy checks reproduce
+historical source work, energy and analytic errors exactly.
+
+The original shock completes nr=24/48/96/192/384. At nr=192 the response residual
+falls from historical 0.0140806 J to 0.000596124 J; at nr=384 it falls from
+0.0575258 J to **0.00173278 J**, or 0.728851% of net outward fluid transfer.
+The fine B L1/B1 remains 0.0306581 and pressure L1 0.175312 Pa; frozen-ratio
+defect is 7.07e-13. No central-reference-window cell is directly limited.
+The finest run finishes 1408 steps with minimum density 0.000916625 kg/m³,
+3423/4224 limited Euler stages, at most 0.48489% affected cells per stage and
+three replacement passes. It takes 98.9 s setup and 2792.9 s advancement.
+Its energy error still grows from nr=192, so full boundary convergence is
+not established by this substantial improvement.
+
+A per-step quadratic RK audit independently predicts the entire nr=192
+response error to roundoff, with maximum stage spatial defect 2.20e-11 W and
+maximum per-step identity error 1.13e-12 J. The constant-bias semidiscrete work
+mismatch is resolved for this method; its finite-step error is not repaired.
+At nr=24, CFL halving reduces RK3 energy error by factors 8.88 and 7.85.
+The fine boundary is not time-converged: half-CFL gives 0.00100662 J with RK3
+and 0.00218710 J with RK2. The full first-order spatial baseline instead gives
+3.97637e-7 and 4.79246e-8 J, but degrades B L1 to 0.15656.
+
+An explicitly experimental fixed first-order boundary strip retains the
+second-order interior. Recorded coarse/fine controls test that hypothesis;
+its forced order reduction is counted separately from any adaptive fallback.
+It is not a production default. Source-driven skin layers, boundary accuracy
+and finer shock meshes must be checked before adopting it.
+The nr=64 unmodified compatible pulse residual is **0.00315436%** of applied
+source work, versus historical 0.102119%. Peak flow remains mesh-sensitive.
+All original pulse/smooth cases complete with inactive adaptive limiting.
+
+The spherical FRC reference independently verifies true vacuum outside,
+continuous magnetic traction with no sheet current, exact force balance and
+full-space energy integrals. The existing topology detector finds one O-ring
+and two axis nulls; separatrix-volume error falls from 0.219889% to 0.00374111%
+over 24→192 intervals. This is initialized ideal equilibrium, not formation,
+a density/transport closure, stability or confinement evidence. Its figure
+has been visually inspected. See FREE_BOUNDARY_REFERENCE.md.
+
+The full suite now has **135 passing tests (49.04 s)**. All 25 primary cases
+(24 complete, one retained disabled-limiter failure), two first-order controls,
+six boundary-strip probes and four RK audits are finished. Their source hashes
+match the frozen engine/measurement fingerprint
+`5247cc3d60224324a8f1f731b164f9fd41a16a8ea70a140af70ae1a302c022c2`.
+Both scientific figures were visually inspected. No numerical jobs remain.
+The nr=192 strip probe preserves B L1 0.059316 and gives response residual
+3.97369e-7 J, decreasing to 4.78879e-8 J at half CFL; its 766 forced cells
+and 1528 affected cells are explicitly reported separately from adaptive
+fallback. Source-driven and finer-boundary checks remain open for this probe.
+See COMPATIBLE_ENERGY.md and COMPATIBLE_ENERGY_VERIFICATION.md; full
+source-matched records are in outputs/compatible_energy_verification.
+The next numerical step is to verify the fixed boundary strip with driven
+pulses and finer meshes, or improve the higher-order boundary closure without
+losing conservation, CT and admissibility. Free-boundary evolution, actual
+ends, transport/ionization/Hall validity, converged formation and the dynamic
+experiment UI remain required. The Stage 2 formation gate stays closed.
+
 ## Completion audit at this checkpoint
 
 | Requirement | Authoritative evidence | Status |
 |---|---|---|
 | Conservative dynamic core | mhd modules, independent tests, MHD/positivity reports | Implemented and verified for stated bounded reference; positive traces without cell floors; full-update robustness and cold-flow accuracy remain bounded by tests |
-| Physical source/plasma/vacuum coupling | Fixed-chamber split and conservative/CT references; COUPLED, OPEN_BOUNDARY, CONSERVATIVE and LOCAL_LIMITER reports; original Stage 2 guard still raises | Partial: local limiting preserves interior accuracy; interface/energy and source-layer convergence, moving free interface and actual end conditions remain |
+| Physical source/plasma/vacuum coupling | Fixed-chamber split and conservative/CT references; COUPLED, OPEN_BOUNDARY, CONSERVATIVE and LOCAL_LIMITER reports; original Stage 2 guard still raises | Partial: compatible spatial work and audited time error; experimental boundary-strip controls; source-layer/fine-boundary convergence, free-interface evolution and actual ends remain |
 | Regime-appropriate transport / Hall physics | Fixed eta/sigma only; beads frc-transport | Incomplete |
-| Full independent numerical verification | Waves, gas/perpendicular magnetic shocks, heating, advection, J×B, equilibrium, trace/local full-update admissibility, rarefaction, interface traces, source budgets, instantaneous energy-rate audit and infinite-exterior checks | Partial; local limiting restores distant shock profiles but exposes unresolved interface energy/time sensitivity; cold-pressure/equilibrium, broader shocks and pulse-resolution requirements remain |
+| Full independent numerical verification | Waves, gas/perpendicular magnetic shocks, heating, advection, J×B, equilibrium, trace/local full-update admissibility, rarefaction, interface traces, source budgets, instantaneous energy-rate audit and infinite-exterior checks | Partial; 135 passing tests, unequal-spacing verification, full-space work/time audits and analytic free-boundary topology target; fine-boundary/source-layer convergence, cold-pressure/equilibrium and broader shocks remain |
 | Converged FRC formation | Only older stationary-conductor results, unconverged topology duration | Not demonstrated |
 | Reproducible experimental interface | Stage 0/1 CLI/playback; dynamic and coupled benchmark scripts, histories and metrics | Partial; no coupled dynamic experiment UI |
 
 Beads issues `frc-goal`, `frc-vacuum`, `frc-transport`, `frc-accuracy`, and
 `frc-formation` preserve the remaining scope; `frc-mhd` records the completed
-bounded reference core milestone. No external process is being
-waited on. The optional request for target plasma parameters is not a blocker
+bounded reference core milestone. All numerical jobs at this checkpoint are complete. The optional request for target plasma parameters is not a blocker
 to numerical verification or development.
 
 The full objective remains active until all completion evidence is present.

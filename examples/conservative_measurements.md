@@ -21,3 +21,10 @@ Sparse per-cell accepted limiter maps record affected and troubled Euler-stage
 counts, grid centers, maximum distance from a gas boundary and any direct
 limiting in the independent shock's reference window. Empty entries mean zero,
 not missing samples. Aggregate counts remain in every history diagnostic.
+
+An optional `progress` observer receives accepted-state summaries at setup,
+each requested output and at most every 30 seconds during advancement. It does
+not change steps or physical parameters. These records are explicitly marked
+`status=running, completed=False`; they are progress evidence, not restart files
+or final convergence points. The compatible-energy driver persists them in
+separate progress files until the final complete record is saved.

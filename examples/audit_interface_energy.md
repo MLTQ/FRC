@@ -14,3 +14,5 @@ by a probe. Normal advancement retains the same five output times as the
 main shock measurements. Each snapshot is persisted; an interrupted file
 must not be mistaken for a complete five-snapshot study. Source and audit
 fingerprints are recorded separately from the main study.
+The historical cell/Riemann/RK2 method is selected explicitly; this audit's
+cell-field derivative is not reused for a staggered-energy state.

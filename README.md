@@ -38,6 +38,13 @@ whole-space energy error separately from exact fluid-cell conservation.
 The [local-limiter study](docs/LOCAL_LIMITER_VERIFICATION.md) confines fallback
 to troubled boundary stencils and restores interior shock accuracy. It retains
 the newly exposed whole-space energy-error limitation explicitly.
+The [compatible-energy study](docs/COMPATIBLE_ENERGY_VERIFICATION.md) tests
+staggered magnetic energy, natural vacuum boundary work and optional RK3.
+Its independent step audit separates spatial work consistency from remaining
+time-integration error; these controls are explicit during verification.
+An [analytic spherical FRC reference](docs/FREE_BOUNDARY_REFERENCE.md) now tests
+force balance, magnetic-vacuum matching and topology diagnostics. It is prescribed
+equilibrium for future free-boundary verification, not a formation result.
 
 ## Use the existing environment
 
@@ -56,6 +63,8 @@ the newly exposed whole-space energy-error limitation explicitly.
 .venv/bin/python -m examples.verify_shocks
 .venv/bin/python -m examples.verify_conservative
 .venv/bin/python -m examples.verify_local_limiter
+.venv/bin/python -m examples.verify_compatible_energy --reuse
+.venv/bin/python -m examples.verify_spherical_frc
 ```
 
 Open [vacuum playback](outputs/vacuum/viewer.html) or
@@ -121,6 +130,7 @@ conductivity without an ionization/transport closure. See the research queue.
 - `magnetic_dissipation.py`: optional declared compressive numerical diffusion, with separately accounted heat.
 - `conservative_coupled.py`, `vacuum_flux.py`, `vacuum_trace.py`: unsplit conservative fluid/CT evolution, interface traction and magnetic vacuum.
 - `flux_update.py`, `flux_limiting.py`: shared flux assembly, local complete-update fallback and explicit global comparison.
+- `magnetic_quadrature.py`, `vacuum_energy.py`: positive staggered energy and natural magnetic-vacuum work.
 - `diagnostics.py`, `topology.py`: validity scales, energy, O/X points, closed flux.
 - `simulation.py`, `results.py`: orchestration and reproducible numeric archives.
 - `experiments.py`, `visualization.py`, `cli.py`: sweeps, plots and playback.
@@ -180,6 +190,21 @@ The default `flux_limiter="local"` replaces shared fluxes around inadmissible
 cells and rechecks neighbors. `flux_limiter="global"` retains the earlier
 comparison, and `positivity_flux_limiting=False` retains unprotected failures.
 Neither mode repairs cell energy or guarantees every low-order proposal is valid.
+
+The compatible-energy comparison is selected when constructing the initial
+fixture, before any state is advanced:
+
+```python
+model = from_split_initial(
+    coil_pulse(16, vacuum_boundary="multipole"),
+    energy_quadrature="staggered", boundary_poynting="variational", time_order=3,
+)
+model.advance(0.1)
+```
+
+Do not change an evolved state's magnetic-energy convention. All three selectors
+retain historical choices for controlled comparison. Neither a smaller energy
+residual nor a higher time order establishes a converged free-plasma experiment.
 
 To reproduce the initialized strong-shock verification fixture:
 

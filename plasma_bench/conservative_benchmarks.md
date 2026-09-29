@@ -11,3 +11,7 @@ Conservative-only interface controls use their declared defaults, since the
 split fixture has no corresponding numerical interface-flux parameter.
 Explicit parameter overrides support first-order, limiter-disabled, interface
 and temporal control runs; they are validated at construction and recorded.
+The selected magnetic energy quadrature is applied only when constructing
+initial total energy from the identical gas fixture. Staggered and historical
+cell conventions therefore start with the same gas state and magnetic flux.
+The shared quadrature helper owns the SI magnetic-energy conversion constant.

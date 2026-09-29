@@ -12,3 +12,5 @@ validated measurement factory; no code is loaded from the records. Driver,
 normalized protocol, common measurement and engine fingerprints are recorded.
 Reuse requires an exact match. A named subset can be measured for a smoke check.
 The default local study has its own driver and never invokes this one.
+Cell magnetic energy, Riemann boundary Poynting and RK2 are also explicit legacy
+choices; changing later solver defaults cannot change the historical method.

@@ -15,3 +15,10 @@ The returned affected mask includes diagonal neighbors sharing corner fields.
 Untouched entities retain the high-order arrays exactly. No updated cell state
 or energy is overwritten. The routine does not decide admissibility or silently
 expand the region; `flux_limiting` owns that policy and its checks.
+
+An optional `BoundaryPoynting` supplies impermeable-boundary energy fluxes from
+the selected corner electric field and a fixed variational magnetic trace.
+`rhs` inserts these actual face fluxes before taking the same conservative
+divergence; it does not change a state or apply a cell-energy residual. Local
+fallback keeps the boundary object and reevaluates its flux after selecting
+corners. Both orders must refer to the same initial magnetic boundary load.

@@ -12,6 +12,9 @@
 - [ ] Quantify end effects, actual quartz geometry and any conductive structures.
 - [ ] Refine interface placement, temporal error and spatial convergence near skin layers.
 - [ ] Verify topology with manufactured islands, axis nulls, separatrices and noise.
+  A clean analytic spherical FRC now verifies the existing O-ring/axis-null
+  detector and approximately second-order separatrix-volume convergence.
+  Noisy, degenerate and subgrid cases remain open.
 - [ ] Define an FRC-like transient using independent reversal, topology and force-balance criteria.
 - [ ] Define excluded-flux radius against a specified probe geometry/reference flux.
 - [ ] Define equal-energy waveform comparisons including source/plasma mutual energy.
@@ -60,11 +63,22 @@
 - [x] Derive and independently perturbation-check the instantaneous response
   energy rate at common states, separating boundary fluid flux, cell magnetic
   energy and full-space nodal work. The audit does not alter evolved diagnostics.
+- [x] Add compatible staggered fluid magnetic energy and natural boundary
+  Poynting work; independently verify the constant-bias semidiscrete identity.
+- [x] Separate remaining finite-step error with a quadratic RK stage audit and
+  verify optional SSP RK3 using independent nonautonomous and actual-MHD controls.
+- [ ] Validate the experimental fixed first-order boundary strip under source
+  pulses, skin-layer refinement, matching/end changes and finer shock meshes.
+  It preserves the sharper second-order interior in the initial controlled probes;
+  its explicit order reduction is not yet a production default or physical closure.
 - [ ] Refine and validate magnetic interface traction and numerical heating;
   conservative pulse response error is 0.1021% of source work at nr=64, but
   numerical interface heat and driven peak flow are still resolution-sensitive.
 - [ ] Replace the fixed chamber interface with a defensible evolving free-plasma
   treatment without exterior fluid floors; validate gas loss and actual end conditions.
+  The independently verified spherical Hill-vortex reference supplies a true
+  vacuum, continuous boundary traction and exact full-space energy target;
+  its numerical evolution and a thermodynamic closure are not yet implemented.
 - [ ] Add thermodynamic feedback before interpreting large Ohmic heating as plausible.
 - [ ] Test nonaxisymmetric stability only after a 3-D solver exists.
 

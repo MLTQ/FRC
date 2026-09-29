@@ -1,7 +1,7 @@
 # Unsplit conservative MHD coupled to magnetic vacuum
 
 `ConservativeVacuumMHD` evolves actual fluid-cell mass, momentum and total MHD
-energy together with shared upwind constrained induction in SSP RK2. The
+energy together with shared upwind constrained induction in SSP RK2 or RK3. The
 induced field outside the gas is completed by the existing exact discrete
 elliptic/multipole solve at each stage. Prescribed external flux increments are
 subtracted exactly when constructing induced state; analytic source power is
@@ -31,7 +31,7 @@ proposal. The default `flux_limiter="local"` replaces only shared entities
 incident to troubled cells, rechecking neighbors until the mixed update is
 admissible; `flux_limiting.md` documents its conditional termination argument.
 The explicit `"global"` comparison retains the previous convex bisection.
-Both SSP Euler stages are checked before their final convex average.
+Every SSP Euler proposal is checked before its convex combination.
 No cell is clamped or energetically repaired. A nonphysical first-order proposal
 still raises atomically. Diagnostics record affected/troubled cell-stage counts,
 maximum affected fraction, minimum high-order weight and iteration counts.
@@ -62,3 +62,20 @@ All RK stages must remain physical before state, time and budgets commit. No
 pressure/density floors, energy repairs or silent step fallback are used. The
 historical split solver remains available for independent work-identity and
 shock comparison. Original experimental Stage 2 remains gated.
+
+Experimental `energy_quadrature="staggered"` uses positive face-square energy
+consistently in construction, pressure, admissibility and budgets.
+`boundary_poynting="variational"` uses the natural discrete vacuum traction
+and the actual selected CT electric field for boundary work. Both are explicit
+controls during verification; the historical cell/Riemann choices remain
+selectable. No evolved state is converted to change its thermal energy.
+
+`time_order=3` selects the nonautonomous three-stage SSP method with RHS times
+`t, t+dt, t+dt/2` and budget weights `1/6, 1/6, 2/3`. Stage completion subtracts
+the external field at that stage's actual time. The historical RK2 remains
+the default comparison. All stages and their limiter counters commit atomically;
+`euler_stages` records the accepted count instead of assuming two per step.
+Neither method preserves a general quadratic magnetic-energy invariant exactly.
+`advance(..., on_step=callback)` optionally observes each accepted step for
+long-run progress; the callback must not mutate the solver. It is not invoked
+for rejected proposals and does not alter timestep selection.
