@@ -339,3 +339,30 @@ failed attempt. MOVING_CURRENT_NUMERICS/VERIFICATION specify equations, domains,
 measured errors and the still-required discrete momentum/thermal integration.
 Actual conservative continuity must supply n_t, and a consistent primal/dual
 velocity and stress/energy flux must precede full moving finite-mass evolution.
+
+## Conservative moving finite-mass integration
+
+`finite_mass_state` now defines an explicit total-species-mass conservative state
+and its magnetic/current/bulk/electron/ion energy partition. `primal_velocity`
+maps mass-weighted regular bulk velocity onto dual nodes. `finite_mass_flux`
+and `finite_mass_transport` separate Rusanov bulk transport from full computed
+Poynting power, drift stress and mixed current/enthalpy transport. The shared
+mass flux supplies the actual n_t used by `moving_current` and electron entropy.
+
+`finite_mass_rhs` evaluates the entire derivative without fixed-n splitting;
+`finite_mass_mhd` advances it by explicit RK4 with atomic stage validation and
+source/boundary energy accounting. A positive filled periodic cylinder is the
+only implemented domain for this integrator. There is no physical vacuum edge,
+collisional/neutral transport, general stability theorem or shock entropy rule.
+
+Independent manufactured parent species and exact finite-mass compressible
+waves live in separate `examples/finite_mass_*` references. Measurement, physical
+energy/entropy audit, time comparison, source provenance and plots remain separate
+modules. The 21 baseline rates preserve their original snapshot; 18 trajectories
+have an expanded measurement fingerprint with unchanged production sources.
+
+`annular_polynomial` is a separately verified diagnostic for nearly solenoidal
+mass-flux cancellation. It is not selected by the solver. Full shared momentum,
+enthalpy and kinetic work must be derived before adopting that reconstruction.
+FINITE_MASS_NUMERICS/VERIFICATION retain pressure errors rather than treating
+global conservation as proof of accurate temperatures or formation physics.

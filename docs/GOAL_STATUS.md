@@ -12,18 +12,20 @@ waves converge at order two. The tested hybrid waves retain measured time/energy
 errors; no FRC formation or GPU speedup claim is made. See ENGINE_COMPARISON.
 No production backend or Stage 2 gate changed.
 
-Latest custom checkpoint: **322 passing tests; 19 moving finite-mass induction
-rate cases independently audited**. Exact parent-species momentum and local
-energy verify the moving-density, drift-stress and mixed energy-flux contract.
-Physical B_t/J_t/E errors decrease under refinement; at nr128 they are
-1.16252%/0.459108%/0.643579% in volume L2. These are instantaneous prescribed-
-kinematics tests, not a full moving time integration. The previous 41 baseline
-and 33 stationary/precision controls retain their original source and evidence.
-See MOVING_CURRENT_NUMERICS and MOVING_CURRENT_VERIFICATION. Next implement the
-discrete conservative continuity/momentum/thermal coupling using shared fluxes
-and actual n_t, then verify finite-mass compressible waves and moving trajectories.
-The original heated edge/exact vacuum, transport and formation remain incomplete;
-do not merely change the fixed-density component's inertia matrix.
+Latest custom checkpoint: **328 passing tests; 21 complete moving finite-mass
+rate cases and 18 coupled trajectories independently audited**. The unsplit
+update now includes conservative continuity/momentum, actual shared-flux n_t,
+drift stress, both species thermal evolution and full bulk/current/Poynting
+energy transport. All requested trajectories finish with positive species
+states and conservation near roundoff. Temperature accuracy remains inadequate:
+nr32 manufactured ion-pressure error is 0.36276% of full pressure but 78.358%
+of its actual change; fast-wave ion-pressure perturbation error is 59.5516%.
+Slow-mode rate errors are still much larger. See FINITE_MASS_NUMERICS and
+FINITE_MASS_VERIFICATION. Next derive consistent higher-order shared mass,
+momentum, enthalpy and kinetic transport, addressing the measured central-flux
+cancellation defect rather than only changing continuity or the timestep.
+Earlier 19 moving-rate and fixed-density studies retain their source identities.
+The original heated edge/exact vacuum, transport and formation remain incomplete.
 
 ## Completion evidence still required
 
@@ -1379,3 +1381,70 @@ the old split. Physical collisions/transport/ionization, heated free edge and
 exact vacuum, real ends/spatial coils, shocks/entropy/kinetic validity, converged
 formation and interactive experiments remain open. Stage2 stays guarded and
 the overarching goal remains active. See MOVING_CURRENT_NUMERICS/VERIFICATION.
+
+## Conservative moving finite-mass integration checkpoint
+
+The full suite passes **328 tests in 120.97 s**. FiniteMassMHD now evolves
+rho=(mi+me)n, all momentum components, conservative total energy, psi/g and
+electron entropy through four complete unsplit RK4 derivatives. The actual
+mass flux supplies dual n_t, induction retains physical reduced mass and bulk
+velocity gradients, and shared fluxes carry drift stress, species enthalpy,
+mixed current energy and full computed Poynting power. All stages validate
+positive species states before atomic commit. No physical step retry, thermal
+floor, artificial mass, atmosphere or total-energy reset is introduced.
+
+All **21 complete-rate cases and 18 declared trajectories** finish and pass
+source/configuration/archive/physical audits. Parent manufactured species and
+independent exact-mass compressible waves verify rates and final states. The
+manufactured and unforced nonlinear runs last 50 ns; the fast waves last one
+quarter period (29.1294 ns). Slow/medium branches have rate evidence only.
+Global mass/energy-budget errors are at most 4.44e-16/3.26e-16; independent
+physical energy replay differs by at most 2.55e-14. Explicit source work matches
+independent parent total-energy change within 5.08e-12 J. All accepted species
+pressures are positive. These conservation properties do not prove local accuracy.
+
+The finest manufactured nr128 mass/total-energy rate errors are
+.000861842/.000529452, but pe/pi rate errors remain .00774879/.143364.
+The pi-rate maximum increases slightly from 30535.9 to 31209.6 Pa/s at nr64→128,
+despite decreasing volume/axis errors. The slow-mode nr64 pi-rate error is
+41.4570 times its physical signal. Tenfold amplitude reduction leaves these
+errors essentially unchanged. Preserve maximum norms as well as L2 evidence.
+
+At nr32, evolved manufactured ion pressure has .00362760 relative error against
+the full pressure and **.783580 against the true pressure change**. The original
+n0=1e20 case retains .00250372/.540816. Fast-wave magnetic/electron/ion pressure
+perturbation errors are .0398052/.0105524/.595516. The weak-wave control preserves
+that limitation. Fixed-grid dt halving has a much smaller effect than mesh error.
+Magnetic time ratios are about 15.4; pressure ratios range 3.15–5.19, so formal
+RK4 order is not asserted for every quantity. Unforced electron physical log
+entropy decreases by 5.13e-6→3.95e-7 per particle under refinement; the method
+has no entropy inequality or physical shock partition.
+
+The slow-wave continuity error is chiefly the limited central reconstruction,
+not Rusanov density diffusion. At nr32 those error/contribution norms are
+28.6816 and 1.03981 times the true rate. A separately tested cubic reconstruction
+of exact annular linear momentum averages reduces the density-rate error to
+.0202495 at nr32 and .000179355 at nr128. With actual finite-amplitude momentum
+it instead levels near .00311608 against the linear oracle. This candidate is
+**diagnostic only**, not adopted into the coupled solver. Correcting mass flux
+alone would leave enthalpy/kinetic/momentum work inconsistent.
+
+Baseline rate source is 8937eefb61c197962881e7d844bee6d9f5dfce45aff93025c1c35e00dba63ea7;
+expanded trajectory source is 3edae52928f5cdaa20ca240f11d6fa729a137be327c9b1ffc64f09c6440f42fb.
+Baseline production sources are unchanged; only provenance coverage expands.
+Prior moving-rate d3984fb... and current/thermal 80fd45b... fingerprints remain
+unchanged. Full records, fields, histories, physical/source audits, diagnostic
+arrays, source snapshots, inspected accuracy figure and test log are retained
+in outputs/finite_mass_initial_attempt and outputs/finite_mass_evolution.
+See FINITE_MASS_NUMERICS/VERIFICATION for scope and complete measured errors.
+
+Immediate next work is to derive shared higher-order particle, momentum,
+enthalpy and kinetic-energy transport. Verify a translating two-temperature
+contact and all finite-mass wave pressure rates, including near-solenoidal
+cancellation, before adopting a reconstruction. Retain independent parent
+pressure/energy, axis/max norms, exact uniform flow and atomic failure checks.
+Then revisit physical collision/heating partition, conduction/ionization,
+original heated free edge and exact vacuum, actual gas ends/spatial coils,
+shocks/entropy/kinetic validity, converged formation and the experimental UI.
+frc-7mm and the overarching goal remain open; this is progress with a diagnosed
+accuracy limitation, not an external blocker or a completed formation simulator.

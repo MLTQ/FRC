@@ -31,8 +31,13 @@ roundoff rejection is fixed without suppressing weak waves. This component
 still holds density and bulk flow fixed. The new
 [moving-current study](docs/MOVING_CURRENT_VERIFICATION.md) verifies the exact
 finite-mass momentum/energy reduction and 19 varying-density induction-rate
-cases. Magnetic/current/electric errors decrease under refinement; the full
-moving conservative time update and physical plasma-vacuum edge remain open.
+cases. The [conservative moving study](docs/FINITE_MASS_VERIFICATION.md) now
+couples density, momentum, both species temperatures and full finite-mass
+induction through an unsplit update. All 21 rate tests and 18 bounded trajectories
+are audited, with 328 passing tests. Global conservation is near roundoff, but
+small ion-temperature changes and slow compressible modes remain inaccurate.
+The measured reconstruction error, time controls and higher-order diagnostic
+are retained; the physical plasma-vacuum edge and formation gates stay open.
 
 ![Waveform comparison](outputs/comparison/comparison.png)
 
