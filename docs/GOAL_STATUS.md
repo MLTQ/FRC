@@ -436,14 +436,70 @@ losing conservation, CT and admissibility. Free-boundary evolution, actual
 ends, transport/ionization/Hall validity, converged formation and the dynamic
 experiment UI remain required. The Stage 2 formation gate stays closed.
 
+## Boundary source, skin and end validation checkpoint
+
+The current suite has **142 passing tests (57.97 s)**. A new independent
+infinite-cylinder Bessel solution checks sinusoidal skin diffusion, regular-axis
+and vacuum matching, Maxwell/Ohm identities and time-averaged surface/volume
+Ohmic power. Fifteen recorded grid/time cases compare physical-only diffusion,
+the production induction stencil and the fixed first-order boundary strip.
+Both production choices converge in magnetic field; the surface-current
+stencil has separate, slower pointwise accuracy. At nr=128 the maximum B L2
+errors normalized by applied amplitude are 0.000934414 (standard) and
+0.00150768 (strip), with about 7.22 cells per analytic skin depth.
+This is stationary-conductor induction verification, not evolved gas dynamics.
+
+All twelve full coil-pulse runs and four gas-end controls are complete, with
+hashed lossless conserved/primitive/CT/current snapshots at 0.04, 0.06 and
+0.10 s. The standard nr=16/32/64 budgets and peak speeds reproduce the previous
+compatible study exactly. At nr=128, standard/strip final peak speeds are
+0.221845/0.217821 m/s, but their maximum same-grid velocity L2 difference is
+**9.76713%**. The 64→128 velocity changes are **7.05911% / 10.4227%**.
+Thus the strip's favorable shock energy result has a material driven-flow
+accuracy cost and it remains experimental; no production default is changed.
+Density/pressure perturbations and surface currents also remain resolution
+sensitive. A small energy residual is not an accurate formation result.
+
+Half timestep changes pulse velocity below 0.0000710%; moving the magnetic
+matching surface changes it below 0.000333%. Moving actual reflecting gas ends
+from ±1 to ±2 m at a common matching extent of 3 m changes central |z|<0.5 m
+velocity by 0.8174% / 0.8372%, and whole-domain source work by about 2.1%.
+Spatial and material-boundary accuracy dominate those time/matching errors.
+The change of gas ends is a physical-domain sensitivity, not an open-end model.
+
+The nr=384 original shock with the strip completes to 0.02 s: B L1/B1 is
+0.03065827, pressure L1 0.1753145 Pa, frozen-ratio defect 5.11e-13 and response
+residual **1.01130e-7 J**, versus 0.00173278 J for the standard compatible case.
+There are 985 steps and no additional adaptive limiting, but 1534 forced and
+3064 neighboring affected cells. Minimum density is 0.0496321 kg/m³ without
+a floor; fluid energy-flux residual is 3.28e-15 J. This preserves interior shock
+accuracy and removes the observed growth of the strip's energy error through
+nr=384. A separate nr=384 time study is not claimed.
+
+All **32 new recorded cases** (12 pulses, 15 skin cases, four end controls and
+the fine shock) are complete. No numerical jobs remain. Full fields, inputs,
+source/environment fingerprints and the report are in
+`outputs/boundary_verification` and `docs/BOUNDARY_VERIFICATION.md`.
+An independent annular polynomial checks field restriction to 4.44e-16;
+all saved-field hashes and the common frozen engine fingerprint match.
+The final six-panel scientific figure was visually inspected after fixing
+overlapping resolution-axis labels.
+
+The next numerical implementation must address boundary/flow accuracy and
+free-interface evolution using these source/skin/current checks. Keep the strip
+experimental until its driven-field accuracy is adequate. Real gas ends,
+transport/ionization/Hall validity, stronger shock/cold-flow and curved-equilibrium
+accuracy, converged formation and a dynamic experimental UI remain in scope.
+The Stage 2 formation gate and full objective remain unchanged.
+
 ## Completion audit at this checkpoint
 
 | Requirement | Authoritative evidence | Status |
 |---|---|---|
 | Conservative dynamic core | mhd modules, independent tests, MHD/positivity reports | Implemented and verified for stated bounded reference; positive traces without cell floors; full-update robustness and cold-flow accuracy remain bounded by tests |
-| Physical source/plasma/vacuum coupling | Fixed-chamber split and conservative/CT references; COUPLED, OPEN_BOUNDARY, CONSERVATIVE and LOCAL_LIMITER reports; original Stage 2 guard still raises | Partial: compatible spatial work and audited time error; experimental boundary-strip controls; source-layer/fine-boundary convergence, free-interface evolution and actual ends remain |
+| Physical source/plasma/vacuum coupling | Fixed-chamber split and conservative/CT references; compatible energy and BOUNDARY_VERIFICATION reports; original Stage 2 guard still raises | Partial: compatible spatial work, audited time error and completed source/skin/end/fine-shock comparisons; strip energy improvement has a measured flow-accuracy cost; driven flow/current convergence, free-interface evolution and actual ends remain |
 | Regime-appropriate transport / Hall physics | Fixed eta/sigma only; beads frc-transport | Incomplete |
-| Full independent numerical verification | Waves, gas/perpendicular magnetic shocks, heating, advection, J×B, equilibrium, trace/local full-update admissibility, rarefaction, interface traces, source budgets, instantaneous energy-rate audit and infinite-exterior checks | Partial; 135 passing tests, unequal-spacing verification, full-space work/time audits and analytic free-boundary topology target; fine-boundary/source-layer convergence, cold-pressure/equilibrium and broader shocks remain |
+| Full independent numerical verification | Waves, gas/perpendicular magnetic shocks, heating, advection, J×B, equilibrium, trace/local full-update admissibility, rarefaction, interface traces, source budgets, instantaneous energy-rate audit and infinite-exterior checks | Partial; 142 passing tests, analytic skin response, full-field pulse and gas-end comparisons, full-space work/time audits and free-boundary topology target; driven flow/current convergence, cold-pressure/equilibrium and broader shocks remain |
 | Converged FRC formation | Only older stationary-conductor results, unconverged topology duration | Not demonstrated |
 | Reproducible experimental interface | Stage 0/1 CLI/playback; dynamic and coupled benchmark scripts, histories and metrics | Partial; no coupled dynamic experiment UI |
 

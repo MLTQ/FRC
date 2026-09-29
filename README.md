@@ -42,6 +42,10 @@ The [compatible-energy study](docs/COMPATIBLE_ENERGY_VERIFICATION.md) tests
 staggered magnetic energy, natural vacuum boundary work and optional RK3.
 Its independent step audit separates spatial work consistency from remaining
 time-integration error; these controls are explicit during verification.
+The [boundary accuracy study](docs/BOUNDARY_VERIFICATION.md) adds an independent
+cylindrical skin solution, full-field coil-pulse refinement and separate gas-end
+and magnetic-matching controls. It measures an explicit first-order boundary
+strip's accuracy and dissipation alongside the second-order comparison.
 An [analytic spherical FRC reference](docs/FREE_BOUNDARY_REFERENCE.md) now tests
 force balance, magnetic-vacuum matching and topology diagnostics. It is prescribed
 equilibrium for future free-boundary verification, not a formation result.
@@ -65,7 +69,15 @@ equilibrium for future free-boundary verification, not a formation result.
 .venv/bin/python -m examples.verify_local_limiter
 .venv/bin/python -m examples.verify_compatible_energy --reuse
 .venv/bin/python -m examples.verify_spherical_frc
+.venv/bin/python -m examples.verify_boundary
 ```
+
+The last command assembles completed boundary-study records. To regenerate its
+pulse, skin and end measurements, run the `examples.boundary_pulse_measurements`,
+`examples.cylindrical_skin_measurements` and `examples.boundary_end_controls`
+modules. The separately recorded fine shock uses
+`examples.boundary_order_probe.run(384, .2, "outputs/boundary_verification/fine_shock")`.
+These fine-grid studies can take many minutes; partial records are not results.
 
 Open [vacuum playback](outputs/vacuum/viewer.html) or
 [conducting-plasma playback](outputs/comparison/burst/viewer.html) in a browser.
@@ -157,8 +169,10 @@ field to infinity and counts its exterior energy, without adding fluid there.
 An unsplit conservative vacuum-coupled reference now preserves the tested
 perpendicular shock's frozen-flux relation while measuring interface and global
 energy errors. Local complete-update fallback preserves distant interior
-accuracy; independent interface/energy error remains to resolve, along with
-driven skin layers, free interfaces, realistic ends and transport/Hall validity.
+accuracy, and compatible spatial work plus a quadratic RK audit separate the
+remaining energy mechanisms. A fixed boundary strip improves shock energy but
+has a measured driven-flow accuracy cost. Flow/current convergence, free
+interfaces, realistic ends and transport/Hall validity remain required.
 The coil-driven Stage 2 entry point still raises an explicit `NotImplementedError`
 until the physical formation requirements are verified. The dynamic references
 are separately scriptable through `plasma_bench.mhd.AxisymmetricMHD` and

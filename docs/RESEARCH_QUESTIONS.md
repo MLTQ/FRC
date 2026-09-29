@@ -67,13 +67,20 @@
   Poynting work; independently verify the constant-bias semidiscrete identity.
 - [x] Separate remaining finite-step error with a quadratic RK stage audit and
   verify optional SSP RK3 using independent nonautonomous and actual-MHD controls.
-- [ ] Validate the experimental fixed first-order boundary strip under source
-  pulses, skin-layer refinement, matching/end changes and finer shock meshes.
-  It preserves the sharper second-order interior in the initial controlled probes;
-  its explicit order reduction is not yet a production default or physical closure.
+- [x] Measure the experimental fixed first-order boundary strip under source
+  pulses, analytic skin-layer refinement, matching/end changes and nr=384 shocks.
+  It preserves interior shock accuracy and reduces fine shock response error
+  to 1.01130e-7 J, but changes nr=128 driven velocity by up to 9.767% versus
+  the standard method. It remains experimental and is not a physical closure.
+- [ ] Improve boundary/flow accuracy using the new full-field evidence;
+  64→128 velocity changes are 7.059% standard and 10.423% with the strip.
+  Small source-budget error and converged matching/time controls do not remove
+  this spatial limitation. See BOUNDARY_VERIFICATION.md.
 - [ ] Refine and validate magnetic interface traction and numerical heating;
-  conservative pulse response error is 0.1021% of source work at nr=64, but
-  numerical interface heat and driven peak flow are still resolution-sensitive.
+  compatible nr=128 pulse response error is 0.000838% of source work, but
+  flow, density perturbations and current remain resolution-sensitive.
+  Local numerical eta and integrated numerical/physical heat are separately
+  reported; the latter excludes implicit Rusanov/UCT diffusion.
 - [ ] Replace the fixed chamber interface with a defensible evolving free-plasma
   treatment without exterior fluid floors; validate gas loss and actual end conditions.
   The independently verified spherical Hill-vortex reference supplies a true
