@@ -24,6 +24,13 @@ transport and fast warm waves refine, but finer tests expose a pressure-split
 failure and substantial slow-wave error. Physical heating/transport and free-
 edge coupling remain unfinished; this is not yet an accurate formation solver.
 
+The [finite-mass current/thermal study](docs/CURRENT_THERMAL_VERIFICATION.md)
+now audits 41 baseline trajectories and 33 precision controls. Physical electron
+mass improves the original bounded pressure fixture; a stationary-background
+roundoff rejection is fixed without suppressing weak waves. This component
+still holds density and bulk flow fixed, so moving finite-mass integration and
+the physical plasma-vacuum edge remain the next requirements.
+
 ![Waveform comparison](outputs/comparison/comparison.png)
 
 Start with [the measured findings](docs/RESULTS.md),

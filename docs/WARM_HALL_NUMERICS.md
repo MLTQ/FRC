@@ -10,7 +10,9 @@ WARM_HALL_VERIFICATION and WARM_PRESSURE_SPLIT_LIMITATION.
 No magnetic vacuum, physical gas ends, coils, collisions, conduction, ionization
 or electron inertia are included. Resistivity is explicitly rejected pending
 a physical heating partition. The original low-density argon formation target
-is unchanged; this denser verification fixture does not establish its validity.
+is unchanged; this bounded verification fixture does not establish its validity.
+Its base n=1e20 m^-3, R=.035 m, Te=5 eV and Ti=1 eV match the original input;
+uniform equilibrium and idealized boundaries are the verification simplifications.
 
 ## Parent conservation
 

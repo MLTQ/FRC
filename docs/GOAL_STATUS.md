@@ -10,19 +10,20 @@ existing bench and custom axisymmetric path; an external engine is not yet a
 verified shortcut around the physical plasma-vacuum edge. Full-Maxwell vacuum
 waves converge at order two. The tested hybrid waves retain measured time/energy
 errors; no FRC formation or GPU speedup claim is made. See ENGINE_COMPARISON.
-No production physics or Stage 2 gate changed. Next resume the pending
-finite-mass/current result audit and stationary-bias precision fix.
+No production backend or Stage 2 gate changed.
 
-Latest fully audited custom coupling checkpoint: **293 passing tests; 58 main warm Hall cases audited**.
-An experimental coupling now includes moving species, consistent magnetic
-traces and conservative current enthalpy/Poynting flux. Five supplemental cases
-finish and three fine-pressure replays reject a negative ion partition. Fast
-waves refine; slow-wave species errors and a standalone resistive axis error
-remain. A pressure-only continuum symbol is nonhyperbolic on the actual
-nonbarotropic reference. Next derive a credible joint nonideal update, checking
-its continuum behavior before assuming it resolves these failures. Physical
-collisions/finite mass, true vacuum/edge and formation remain incomplete. See
-WARM_HALL_VERIFICATION, WARM_PRESSURE_SPLIT_LIMITATION and TWO_TEMPERATURE_PLAN.
+Latest custom checkpoint: **316 passing tests; 41 finite-mass/current baseline cases audited**
+(40 completions and one preserved massless nonlinear rejection), plus **18
+stationary controls and 15 precision evolutions**. A joint physical-electron-mass
+component improves the unchanged nonbarotropic fixture's local pressure defect
+with mesh refinement. A stationary-background roundoff rejection is fixed using
+direct current increments, with independent weak-wave and stored-state checks.
+The component constrains density and bulk flow; moving finite-mass dynamics,
+physical transport, the heated edge/exact vacuum and formation remain incomplete.
+See CURRENT_THERMAL_NUMERICS and CURRENT_THERMAL_VERIFICATION. The frozen baseline
+source and prior failures remain preserved. Next derive and verify moving
+finite-mass stress/current-energy transport together before coupling this stage
+into the existing fluid solver; do not merely update its density matrix.
 
 ## Completion evidence still required
 
@@ -1264,3 +1265,63 @@ entropy robustness, kinetic validity, converged formation and interactive
 experiments are unfinished. Stage2 stays guarded. The full goal and its
 transport/accuracy/vacuum/formation issues remain active. This checkpoint is
 progress with a diagnosed limitation, not completion or an external blocker.
+
+## Finite-mass current and precision checkpoint
+
+The separate `CurrentThermal` subsystem now evolves magnetic/current energy
+and both species thermal entropies jointly at fixed positive density and
+constrained zero barycentric flow. Physical reduced electron/ion mass and full
+nonlinear convective inertia are retained; no effective mass, heating repair,
+atmosphere or state floor is added. CURRENT_THERMAL_NUMERICS gives parent species,
+constraint reaction, boundaries and the full physical energy flux.
+
+All 41 baseline cases are audited: 40 finish and the massless nr128 original
+fixture rejects at its 0.75 microsecond trial, with positive ion pressure at
+the last accepted state. Physical mass reduces the unchanged original fixture's
+local pressure-defect RMS from 0.0591249 to 0.000254304 Pa across nr8→128;
+maximum/axis errors also decrease. A finer-time control confirms this particular
+error is spatially dominated. Full component/conservative energy drift stays
+below 5.80e-16/3.87e-16. Exact nonlinear waves and full face powers refine, but
+physical B/J interpolation errors remain roughly first order. A local massless
+joint/moving symbol retains nonhyperbolic directions; no global theorem or
+claim that it caused the numerical axis failure is made.
+
+The independent intermediate convective-inertia forcing has a nonconvergent
+first-annulus error near 0.2354. The separately verified physical inertia
+inversion gives full-rate L2/axis errors 1.00341e-4/6.56197e-5 at nr128;
+isolated convective L2/axis errors are 2.74914e-4/6.89978e-3. The positive
+magnetic-space elimination is equivalent to the original static mixed system,
+verified against fresh direct solves and a separate Fourier/Chebyshev continuum
+reference. The interrupted direct archives remain labeled partial.
+
+Four uniform-bias failures were reproduced exactly from the frozen source.
+Their subtraction of nearly equal weak currents is now replaced by direct
+Faraday-increment current evaluation. Small-signal Ohm and stored-state backward
+errors are checked separately at unchanged tolerances. Eighteen ten-step
+stationary controls and 15 nonlinear/weak-wave evolutions complete and are
+independently audited. Maximum stationary B error/bias is 3.54e-14; tiny waves
+retain the same physical refinement as ordinary waves. Energy/rate replay
+roundoff limits under strong backgrounds are explicit, not hidden by a pressure
+repair. The six repeated baseline metrics agree near roundoff.
+
+Baseline source `6c3e50a2d595ee1e2bbe14c5a6679d8da0855ab99143fa802f3422543dec8cd8`
+and exact report helpers are retained in a hashed source snapshot. Current
+engine source is `80fd45bddda51871f7f36682e8d0bdc4495d0c41430191c25ef03e06ed47c4d2`.
+Reports verify every relevant source/archive hash. Baseline convergence/limits
+and the physical-rate plot were visually inspected. See
+CURRENT_THERMAL_VERIFICATION for the detailed errors and reproduction paths.
+The final full suite passes 316 tests in 103.41 s. All local numerical/audit/test
+jobs are terminal; the redundant remote direct solve was explicitly terminated
+and its process exit verified. Issue state is exported locally; no publication
+or remote Git configuration was performed.
+
+Next derive a genuinely moving finite-mass update with drift stress, changing
+1/n current kinetic energy, bulk/current transport and velocity-gradient terms
+in one conservative contract. First construct an independent manufactured
+moving, varying-density reference that checks both parent species and local
+energy. The fixed-n component must not be bolted into the moving split by only
+changing its density matrix. Physical collision/heating partition, transport/
+ionization, the original heated free edge and exact vacuum, real ends and
+spatial coil work, shocks/entropy/kinetic validity, converged formation and
+interactive experiments remain open. Stage2 remains guarded, the overarching
+FRC goal remains active, and there is no external blocker or repository remote.

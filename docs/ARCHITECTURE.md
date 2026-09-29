@@ -21,6 +21,15 @@ definitions and result diagnostics remain reusable; adopting kinetic dynamics
 still requires explicit model, vacuum/edge and output-conversion contracts.
 The current custom axisymmetric research path is retained.
 
+`current_thermal`, `current_thermal_midpoint` and `current_thermal_flux` form a
+separate constrained fixed-n, zero-barycentric-flow subsystem with physical
+reduced-mass current inertia, both species entropy and the full drift-energy
+flux. Stable current increments preserve weak signals under a large background;
+stored-state backward error is distinct from nonlinear Ohm error. No moving
+solver was silently switched to this component. Its analytic references,
+baseline archives, independent energy/current audit and precision controls are
+documented in CURRENT_THERMAL_NUMERICS and CURRENT_THERMAL_VERIFICATION.
+
 References: [SciPy cached factorization](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.factorized.html),
 [JAX supported installation platforms](https://docs.jax.dev/en/latest/installation.html).
 
