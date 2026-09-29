@@ -5,6 +5,29 @@ verified. The next missing physics is Hall induction with the same current,
 field and source-work conventions. It must be coupled to this nonlinear state,
 not substituted by the earlier uniform-density linear wave solver.
 
+## Current integration gate
+
+The new finite-pressure oracle and nonlinear variable-density manufactured
+reference are implemented (COMPRESSIBLE_HALL_REFERENCE). An experimental
+common-quadrature Hall operator now cancels assembled magnetic work and has
+explicit Poynting transport, but **fails the regular-axis consistency gate**:
+the first-annulus gdot error approaches 21.46% through nr=128. It is not enabled
+in ToroidalMHD. The 42 completed instantaneous cases and source/archive evidence
+are in HALL_WORK_VERIFICATION; equations are in HALL_WORK_NUMERICS.
+
+The immediate next action is to reconcile regular polynomial moments, current
+and electric sampling with the magnetic energy convention. Use exact local
+polynomials and the retained full nonlinear snapshot, not a fitted correction
+for this one case. Any energy-quadrature change must be explicit in state
+pressure recovery, fluxes and diagnostics. Preserve the existing verified MHD
+path and rerun relevant equilibrium/transport tests. Do not enable Hall merely
+because its global work cancels or a shrinking-axis-volume norm converges.
+
+Then verify local energy transfer and a stable time integrator. Purely adding
+nondissipative Hall to the existing SSPRK2 step is not stable for imaginary
+wave eigenvalues. Actual nonlinear wave propagation, mesh/time refinement,
+variable-density transfer and finite-amplitude controls remain unimplemented.
+
 ## Current and electromagnetic work
 
 For singly charged massless electrons with prescribed fully ionized species,
@@ -28,6 +51,9 @@ later interface cannot divide by zero density or use a floor to mimic carriers.
 Electron pressure adds -(grad pe)/(ne e); it is not generally curl-free for
 variable ne. A nonlinear massless-Hall checkpoint may use an explicitly stated
 barotropic electron-pressure reduction, but cannot claim the full thermal goal.
+The implemented reference chooses explicitly cold electrons pe=0 and adiabatic
+ion pressure; a warm barotropic extension also needs electron enthalpy/work
+accounting even when its induction curl vanishes.
 
 ## Independent compressible cylindrical wave reference
 

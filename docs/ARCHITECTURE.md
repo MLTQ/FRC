@@ -209,3 +209,21 @@ cylinder still has periodic z and conducting slip radial wall; it has no Hall,
 free-vacuum, neutral or separate species-thermal coupling. TOROIDAL_MHD_NUMERICS
 and TOROIDAL_MHD_VERIFICATION define the measured scope. NONLINEAR_HALL_PLAN
 specifies the next current/induction work pairing and finite-sound-speed oracle.
+
+## Experimental nonlinear Hall spatial component
+
+`hall_curl` differentiates the existing magnetic state energy and pairs its
+adjoint Faraday map with a common electric quadrature. `hall_induction` projects
+the full nonlinear J cross B/(ne e) with the same masses, exactly canceling
+assembled Hall work. `hall_poynting` independently evaluates face energy
+transport and records the local numerical mismatch without repair or heating.
+There is no new fluid force, time integrator or connection to ToroidalMHD.
+
+The finite-pressure reference derives all compressible branches independently;
+the nonlinear analytic reference includes variable density, all field/current
+components and regular-axis limits. Forty-two spatial cases show global
+convergence and roundoff Hall work, but expose a persistent 21.46% first-annulus
+gdot error. This explicitly prevents integration. HALL_WORK_NUMERICS and
+HALL_WORK_VERIFICATION describe the experimental stencil and failed gate;
+NONLINEAR_HALL_PLAN requires a consistent regular-axis energy/current/electric
+revision before local transfer and actual stable nonlinear wave evolution.

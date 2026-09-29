@@ -14,6 +14,12 @@
 - [x] Integrate conservative toroidal field/angular momentum into a nonlinear
   bounded compressible core, with independent stresses, finite-amplitude
   transport, waves and compatible scalar resistive work (33 complete cases).
+- [x] Derive and independently verify finite-sound-speed Hall modes and a
+  finite-amplitude variable-density Hall/Poynting snapshot; record the complete
+  42-case experimental spatial study with global work and local errors.
+- [ ] Correct the experimental Hall operator's nonvanishing first-annulus gdot
+  error (21.46% through nr128) with consistent regular-axis energy/current/
+  electric moments, then verify local transport and stable actual evolution.
 - [ ] Couple nonlinear Hall, electron/ion thermal and finite-current-energy
   transport consistently to the dynamic state. See NONLINEAR_HALL_PLAN and
   EXTENDED_PLASMA_PLAN; the linear components alone do not supply a physical

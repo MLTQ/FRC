@@ -50,6 +50,14 @@ The older incompressible oracle cannot be treated as an exact compressible mode.
 Steps 2–5 remain required; neither wave nor nonlinear reference transport tests
 validate the heated plasma boundary or actual formation.
 
+The finite-pressure oracle and experimental nonlinear Hall spatial work pair
+now exist, with 42 complete instantaneous audits. Its first-annulus gdot error
+does not converge (21.46% at nr128), despite exact assembled work cancellation.
+It remains disconnected from the compressible solver. HALL_WORK_VERIFICATION
+retains this failed gate; NONLINEAR_HALL_PLAN first requires a regular-axis
+energy/current/electric correction, then local transport and actual wave/time
+verification. This diagnosis does not reduce the full closure/interface scope.
+
 The already implemented linear `MaterialCurrent` limit remains useful for
 coefficient, vacuum, source and electron-energy checks. Its 35-case records,
 known coarse false reversal and thin-layer accuracy limits are retained in

@@ -4,6 +4,11 @@ The goal is a numerically verified and physically justified simulation in which
 we can vary geometry, plasma and prescribed coil waveforms to investigate FRC
 formation. Passing the existing stationary-conductor tests is not completion.
 
+Latest checkpoint: **244 passing tests; 42 completed Hall spatial audits**.
+The experimental nonlinear Hall work pairing is not connected to the fluid
+solver because it has a persistent 21.46% first-annulus induction error.
+See HALL_WORK_VERIFICATION and NONLINEAR_HALL_PLAN for evidence and next action.
+
 ## Completion evidence still required
 
 1. Conservative axisymmetric compressible dynamics: mass, momentum, pressure/
@@ -881,3 +886,53 @@ bounded reference core milestone. All numerical jobs at this checkpoint are comp
 to numerical verification or development.
 
 The full objective remains active until all completion evidence is present.
+
+## Nonlinear Hall spatial checkpoint: progress, failed axis gate retained
+
+The full suite passes **244 tests (84.28 s)**. New independently checked
+finite-sound-speed Hall modes derive all three branches from compressible
+momentum, pressure and Faraday; original electron/ion and Maxwell residuals,
+physical energy, conducting/axis traces and limiting dispersions are verified.
+The declared reduction has massless cold electrons and adiabatic ion pressure.
+A separate finite-amplitude variable-density analytic snapshot verifies local
+Hall current, induction and Poynting identities before judging numerical work.
+
+The experimental HallCurl/HallInduction/HallPoynting components cancel assembled
+Hall magnetic work through a common electric quadrature and an exact adjoint
+of the existing magnetic energy. Both poloidal and toroidal rates are present;
+there is no carrier floor, Hall Joule heat, extra fluid force or energy repair.
+They are **not enabled in ToroidalMHD**, whose prior verified path is unchanged.
+
+All 42 instantaneous spatial cases completed. Nonlinear nr=8/16/32/64/128
+physical magnetic-rate errors decrease 0.259461/0.132568/0.0666923/0.0333967/
+0.0167042, and current error reaches 0.00235369. However, first-annulus gdot
+error approaches 0.214581 instead of zero. A shrinking physical axis volume
+hides that coefficient defect in global norms. This explicitly fails the Hall
+integration gate; global conservation is not accepted as physical accuracy.
+Local energy-transfer defect decreases to 0.000109583 relative but is not
+installed as heating or used to repair magnetic energy.
+
+Maximum assembled Hall work ratio is 2.72060e-17. Independent archive energy
+replay backward error is 2.60690e-17 using the actual summation scale. Reference
+quadrature 10/14 changes cell comparisons by at most 4.75452e-16; common
+quadrature 5/7 changes the nr32 physical induction error by 1.97065e-15.
+All three finite-pressure branch/sign Hall-rate errors refine to 3.52–4.00%
+at nr32. These are spatial rates, not time-evolved waves. Direct quadratic
+Hall amplitude powers are 1.999999987 and 2.000000001; the ill-conditioned
+opposite-full-field subtraction and its small-amplitude failure remain saved.
+
+Frozen production/measurement SHA256:
+`35cea1122c521983ac6808a8d8f6d27c3cf430428561e2f0de45819598a93996`.
+Every declared case/config/source/archive identity passed audit; both final
+scientific figures were visually inspected. All test, measurement and report
+jobs are terminal. Details: COMPRESSIBLE_HALL_REFERENCE, HALL_WORK_NUMERICS,
+HALL_WORK_VERIFICATION and `outputs/hall_work_verification`.
+
+The next action is to fix regular-axis polynomial current/electric/energy
+compatibility, then local Poynting transfer and stable nonlinear Hall time
+evolution. The original SSPRK2 fluid method cannot simply receive an undamped
+imaginary-spectrum Hall RHS. Full electron/ion thermal and finite-mass transport,
+heated-edge/vacuum/real-end closure, spatial coils, shock/remapping robustness,
+kinetic ordering, converged formation and interactive experiments remain open.
+No formation claim or original-argon target change is made. The full goal is
+active; this is progress rather than completion or an external blocker.
