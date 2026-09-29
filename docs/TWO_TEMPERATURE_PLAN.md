@@ -6,6 +6,12 @@ heat is a conditional reduced closure, not the original Te=5 eV / Ti=1 eV
 argon target. The next step must derive and verify massless electron/ion thermal
 transport before extending the moving free surface or claiming formation.
 
+Current progress: the conservative dual current and isolated electron pressure/
+entropy operator are implemented and verified in ELECTRON_PRESSURE_NUMERICS and
+ELECTRON_PRESSURE_VERIFICATION: 266 tests, 46 records, actual heat transport and
+nonlinear pressure battery. The next missing step is **coupling the dual thermal
+state to moving primal ion mass/energy with consistent boundary traces**.
+
 ## Parent conservation to preserve
 
 In the quasineutral, singly charged, massless-electron reduction, v=vi,
@@ -51,13 +57,46 @@ C G=0 implies G.T M j=0, with the appropriate potential/boundary spaces. This
 is a dual charge-flux identity; construct and test its actual control-volume
 flux interpretation before advancing electron density/thermal energy.
 
-Required first implementation: an independent scalar-gradient/current-flux
+The first implementation now supplies an independent scalar-gradient/current-flux
 audit at the axis, conducting wall and periodic seam, followed by a conservative
 electron enthalpy transport operator sharing that current and pressure work.
 Track which dual fluxes enter primal fluid cells; verify local and boundary
 charge conservation, not only a zero global integral. If primal/dual placement
 requires a different compatible state space, make the convention explicit and
 retain the current Hall baseline as a comparison.
+
+The new current uses K=2pi <r²>g/mu0 and its exact dual face differences. Its
+scalar state is nodal with lumped full-domain dual volumes. A physical toroidal
+wall trace is required; omitting it inserts a return-current sheet. The isolated
+pressure component uses constant wall Btheta/density with zero normal charge
+flux, but generally nonzero tangential pressure electric field and local boundary
+Poynting flux. It must not silently replace the Hall conducting Ez=0 boundary.
+
+### Next concrete integration gate
+
+Derive an overlap mass map from primal finite-volume ion density to nodal dual
+electron density, and a corresponding dual bulk particle flux. In x=r²/2,z,
+each primal cell contributes one quarter of its mass to each of its four scalar
+vertices, folding periodic endpoints; axis/wall dual volumes account for their
+half support. Reconstruct the primal conservative mass flux within each cell
+with matching normal face flux and constant divergence (lowest-order H(div)).
+Integrate it over dual faces. Prove and independently test that mapping the
+primal mass divergence equals the dual flux divergence, including axis/wall/
+periodic boundaries. This candidate construction is a plan, not yet implemented.
+
+Then advance electron entropy with bulk dual flux minus J/e while the density
+changes, and couple electron pressure/enthalpy and ion energy through an explicit
+local conservative total-energy flux. For equal species gammas the total ideal
+pressure is fixed by total internal energy, but positive ion/electron partition
+still must be verified. Returning a mapped electron-energy change and resetting
+cell total energy to fit it is not an acceptable substitute for a derivation.
+
+The pressure split's fixed-density thermodynamic means alone do not establish
+the varying-density chain rule or bulk compression work. Derive those terms,
+check exact contact/compression/warm Hall limits and preserve boundary work.
+Choose and declare a mutually compatible bounded magnetic/particle condition;
+discarding curl-free electric gradients does not turn the physical field into
+a conducting-wall field. Keep the eventual true-vacuum/edge model requirement.
 
 ## Bounded independent verification sequence
 

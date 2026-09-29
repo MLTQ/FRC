@@ -26,11 +26,15 @@
   independent conducting Bessel decay (63 complete cases, 257 passing tests).
 - [ ] Improve physical magnetic representation accuracy: nr32 wave perturbation
   errors remain about 4%, dominated by the initial lowest-order field space.
-- [ ] Add electron/ion thermal and finite-current-energy transport consistently
-  to the dynamic state. TWO_TEMPERATURE_PLAN first requires conservative charge
-  flux, pressure work and electron enthalpy transport; then warm waves, collision
-  exchange and finite-mass terms. Neither the linear components nor the new
-  cold-electron Hall solver supply a physical heated edge or formation model.
+- [x] Derive and verify conservative dual charge flux, electron pressure work
+  and entropy/enthalpy drift as an isolated component; retain full wall trace
+  and discrete physical entropy alongside energy. All 46 records complete,
+  including actual heat translation, nonlinear battery and a strict failure.
+- [ ] Couple this dual electron thermal state to moving primal ion mass and
+  total energy with a consistent boundary model; then warm waves, collision
+  exchange and full finite-mass current terms. TWO_TEMPERATURE_PLAN retains the
+  conservative mass-map and local energy-flux requirements. Isolated electron
+  pressure dynamics do not supply a physical heated edge or formation model.
 - [ ] Connect gas pressure, ionization fraction, density and pre-ionization histories.
 - [ ] Validate electron-neutral and ion-neutral cross sections for argon and other gases.
 - [ ] Establish collisionality / kinetic limits with defensible mean free paths.

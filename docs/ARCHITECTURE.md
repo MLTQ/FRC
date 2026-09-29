@@ -253,3 +253,29 @@ first-order physical field representation, actual mode damping/phase, local
 transfer, nonlinear mesh differences and second-order time convergence.
 COMPATIBLE_HALL_NUMERICS/VERIFICATION define this bounded reduction; the next
 charge/enthalpy and electron/ion thermal contract is TWO_TEMPERATURE_PLAN.
+
+## Electron pressure and thermodynamic transport
+
+`dual_current` derives locally conservative integrated charge fluxes directly
+from toroidal magnetic work, including the physical wall trace and Poynting
+boundary term. `thermal_means` implements stable logarithmic means with
+independent high-precision checks. `electron_pressure` uses the same entropy
+mean in electron drift and pressure Ohm; `electron_midpoint` pairs magnetic
+midpoint with a logarithmic temporal state to preserve discrete energy and
+physical electron entropy. Failed trials preserve inputs; no state repair,
+temperature floor, ad hoc wall return current or extra heat is introduced.
+
+Electron scalars occupy full-domain nodal dual volumes. They are not silently
+mapped onto the existing primal fluid energy. This fixed-density pressure split
+has explicit constant toroidal-field/density wall traces, generally nonzero
+local pressure Ez and zero integrated boundary power. That boundary differs
+from the prior conducting Hall wall, so the component is not inserted into
+HallMHD. The next required integration is conservative primal/dual mass,
+electron pressure/energy and boundary work; TWO_TEMPERATURE_PLAN retains it.
+
+`electron_reference`, `electron_cases`, `electron_records` and
+`electron_measurements` retain independent physical oracles and all 46 records.
+`electron_audit` replays actual physical pressure/energy/entropy, checks every
+archive/history, and separates time and nested-state norms. The report plots
+continuous pressure error and actual battery energy transfer. Equations and
+limits are in ELECTRON_PRESSURE_NUMERICS and ELECTRON_PRESSURE_VERIFICATION.

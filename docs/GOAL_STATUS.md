@@ -4,12 +4,13 @@ The goal is a numerically verified and physically justified simulation in which
 we can vary geometry, plasma and prescribed coil waveforms to investigate FRC
 formation. Passing the existing stationary-conductor tests is not completion.
 
-Latest checkpoint: **257 passing tests; 63 completed compatible Hall cases**.
-The prior axis error is corrected, and a separate compressible Hall solver now
-evolves nonlinear flow/fields with implicit Hall/resistive induction and explicit
-compatible magnetic energy. Physical B representation remains first order;
-separate electron/ion thermal transport, finite-mass and vacuum/edge coupling
-remain incomplete. See COMPATIBLE_HALL_VERIFICATION and TWO_TEMPERATURE_PLAN.
+Latest checkpoint: **266 passing tests; 46 electron-pressure records audited**.
+Conservative dual current flux now supports an isolated nonlinear electron
+pressure/entropy component with energy and discrete physical entropy accounting.
+The prior 63-case compressible Hall solver is retained. Moving primal ion/dual
+electron coupling, unified boundaries, collision/finite-mass transport and
+physical vacuum/edge formation remain incomplete. See ELECTRON_PRESSURE_VERIFICATION
+and TWO_TEMPERATURE_PLAN for measured evidence and the next action.
 
 ## Completion evidence still required
 
@@ -1010,3 +1011,89 @@ work, shock/remapping robustness, kinetic ordering and converged formation.
 No easier or colder fixture replaces the original argon target. Beads goal,
 transport, vacuum, accuracy and formation issues stay open. The full objective
 is **active**; this checkpoint is progress, not completion or an external block.
+
+## Conservative electron pressure/entropy checkpoint: verified progress
+
+The full suite passes **266 tests (88.54 s)**. `DualCurrent` now converts
+toroidal magnetic work into exact locally conservative integrated charge fluxes
+on full-domain nodal dual volumes. Axis, periodic seam and physical wall trace
+are explicit. An independent uniform-current control shows why omitting a
+nonzero wall Btheta trace inserts a false return-current sheet and reverses
+the last dual-cell current. General electric work includes wall Poynting power.
+
+`ElectronPressure` pairs electron entropy drift by -J/(ne e) with pressure-driven
+induction, retaining the enthalpy/pressure energy exchange. Stable logarithmic
+spatial means and a magnetic-midpoint/thermal-logarithmic temporal state preserve
+both total magnetic/electron energy and discrete physical logarithmic entropy.
+The latter is distinct from a convenient linear entropy proxy. Constant-density,
+isothermal and adiabatic barotropic fields provide independent zero-battery
+limits. Exact gradient identities reduce axis cancellation without a fitted
+multiplier, state repair, artificial heat or temperature floor.
+
+All **46 declared records** complete: 17 spatial cases, 28 successful evolutions,
+and one deliberately strict nonlinear failure. Pressure-battery gdot errors
+decrease 0.0252946→0.00636035→0.00159239→0.000398242→0.0000995696 for nr8→128;
+first-annulus error reaches 9.79904e-5 and thermal-rate error 4.10757e-4.
+Current face-integral and nondefault gamma/strong-density controls converge.
+Uniform-density induction is exactly zero; the isothermal nr64 residual is
+1.31973e-9 T/(m s) absolute, with no invented relative zero-reference norm.
+
+Actual electron pressure translates at the analytic electron velocity through
+one full periodic transit, with stationary bulk and unchanged Btheta. Physical
+continuous pressure errors at nz16/32/64/128 are
+0.167636/0.0425302/0.0106771/0.00267227 relative to the perturbation. Nodal and
+between-node errors are separate; quadrature uncertainty is at most 6.16e-17.
+Opposite propagation and 70% amplitude controls are retained. Fixed-grid
+pressure time-halving ratios are 4.04340/4.19891 for drift and
+4.00765/4.04658 for finite-field nonlinear evolution; independent DOP853 tests
+separately verify second-order temporal consistency.
+
+Starting from Btheta=0, the isolated pressure battery generates 20.0123 microjoules
+of toroidal magnetic energy after 1 microsecond at nr64, with the corresponding
+electron thermal-energy loss. Compared to restricted nr64, nr32 magnetic and
+pressure differences are 0.1122%/0.5289% of reference changes. These are discrete
+coefficient/nodal comparisons, not an exact continuum or formation claim.
+The strong-density/temperature nr64 case generates 278.219 microjoules and
+retains positive electron pressure. Density-scale and solver-tolerance controls
+show changes far below the measured mesh errors.
+
+Maximum charge/work/entropy-rate backward errors are
+1.38766e-16/1.80985e-16/1.74751e-16. Maximum accepted-history energy drift is
+5.70516e-15 relative; physical logarithmic entropy drift is 3.35616e-12 per
+particle, including accumulated nonlinear tolerance over long drift runs.
+The strict nr64 tolerance 2e-13 control fails at zero accepted time with residual
+9.95419e-13; budgets 80/160/320 retain that stagnation and exact untouched inputs.
+No failed trial is relabeled as evolved data. The default tolerance is 1e-10.
+
+The full protocol/configuration/source/archive/history and independent physical
+pressure/energy/entropy audit passes. Both scientific figures were visually
+inspected. Frozen engine/reference/measurement fingerprint:
+`5cccf843cfe6ebbf6005d6b87261db7e9ae9decc1277a624b2ec90de8bbc78a7`.
+Report-source and figure hashes, supplemental precision controls and lossless
+fields are retained in `outputs/electron_pressure_verification`. All numerical,
+test and report jobs are terminal. Details: ELECTRON_PRESSURE_NUMERICS and
+ELECTRON_PRESSURE_VERIFICATION.
+
+### Remaining integration and completion audit
+
+This new component has **fixed density and no moving ions or Hall J cross B**.
+Its constant toroidal-field/density trace boundary generally permits local
+pressure Ez/Poynting flux; it is not the old Hall solver's conducting Ez=0 wall.
+It is therefore deliberately not inserted as an inconsistent warm closure.
+The existing compressible Hall path and all its original limitations remain.
+
+Next implement TWO_TEMPERATURE_PLAN's conservative primal-to-dual mass overlap
+and bulk flux map, proving that its divergence commutes with the existing
+finite-volume continuity update. Then couple dual electron entropy to changing
+density and primal total pressure/ion energy with explicit local enthalpy and
+Poynting work, positive species partition and unified boundary assumptions.
+Warm coupled waves, collision exchange/resistive heating partition, conduction/
+ionization and full finite-mass current transport remain required. No local
+energy reset may stand in for that derivation.
+
+The physical heated edge, exact vacuum, real gas ends, spatial coil work,
+shock/remapping robustness, kinetic ordering, converged FRC formation and dynamic
+experimental UI are still incomplete. The original low-pressure argon target
+is unchanged; Stage2 remains guarded. The full goal and its transport/vacuum/
+accuracy/formation issues stay active. This checkpoint is concrete progress,
+not completion or an external blocker.

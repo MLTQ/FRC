@@ -49,6 +49,12 @@ TWO_TEMPERATURE_PLAN is the next bounded task: construct compatible charge flux,
 electron pressure work and electron enthalpy transport, then verify warm species
 dynamics and collisions. The current Hall solver has explicitly cold electrons.
 The older incompressible oracle cannot be treated as an exact compressible mode.
+The isolated dual electron-pressure/entropy component now supplies conservative
+current flux, nonlinear Biermann/thermal exchange and discrete physical entropy,
+with 46 complete measured records (ELECTRON_PRESSURE_VERIFICATION). It does not
+yet advance moving ions or share HallMHD's boundary. Step 2 must next join primal
+fluid and dual electron particle/energy fluxes without energy resets, then add
+separate-temperature collision exchange and remaining physical transport.
 Steps 2–5 remain required; neither wave nor nonlinear reference transport tests
 validate the heated plasma boundary or actual formation.
 

@@ -89,7 +89,7 @@ The [linear Hall study](docs/LINEAR_HALL_VERIFICATION.md) adds 49 cylindrical
 runs and 16 parallel-wave references, including both polarizations, finite
 electron mass, damping and mesh/time refinement. This component verifies the
 linear work pairing; its finite-mass extension to nonlinear moving flow remains
-incomplete. The full suite now passes 257 tests.
+incomplete. The full suite now passes 266 tests.
 The [nonlinear toroidal study](docs/TOROIDAL_MHD_VERIFICATION.md) adds
 compressible rotation, toroidal induction and conservative angular momentum,
 with 33 complete equilibrium/transport/wave/diffusion cases. Independent physical
@@ -111,6 +111,14 @@ despite much smaller toroidal-coefficient and phase errors. The
 [method](docs/COMPATIBLE_HALL_NUMERICS.md) states boundaries and reductions;
 [separate species thermal transport](docs/TWO_TEMPERATURE_PLAN.md) is next.
 
+The [electron-pressure study](docs/ELECTRON_PRESSURE_VERIFICATION.md) adds a
+conservative current/heat-transport component with paired pressure induction,
+electron energy and discrete physical entropy. Its 46 declared checks include
+actual heat translation and nonlinear pressure-driven magnetic-field creation;
+one deliberately strict solver failure is retained. The finest continuous
+heat-transport error is 0.2672% after a full transit. This fixed-density component
+still needs coupling to moving ion mass/energy and a unified boundary model.
+
 ## Use the existing environment
 
 ```sh
@@ -130,6 +138,8 @@ despite much smaller toroidal-coefficient and phase errors. The
 .venv/bin/python -m examples.compatible_hall_measurements
 .venv/bin/python -m examples.compatible_hall_controls
 .venv/bin/python -m examples.verify_compatible_hall
+.venv/bin/python -m examples.electron_measurements
+.venv/bin/python -m examples.verify_electron_pressure
 .venv/bin/python -m examples.verify_mhd
 .venv/bin/python -m examples.verify_equilibrium
 .venv/bin/python -m examples.verify_positivity
