@@ -1,6 +1,6 @@
 # Conservative gas-chamber MHD fluxes
 
-`flux_rhs` uses shared limited primitive reconstruction, Rusanov fluid fluxes,
+`flux_components` uses shared limited primitive reconstruction, Rusanov fluid fluxes,
 and four-state LLF upwind constrained transport. Mass, both momentum components
 and total fluid-cell MHD energy advance by flux differences plus the cylindrical
 radial total-pressure source. The induction flux has the same one-dimensional
@@ -23,6 +23,9 @@ redistribution. It is not counted as physical eta J heating.
 `spatial_order=1` supplies piecewise-constant conservative fluxes and CT electric
 fields as an admissibility baseline. Second-order remains the preferred update;
 any blending must apply to all fluxes, induction and metric sources together.
+It returns `FluxUpdate` with shared face fluxes, corner electric fields and the
+radial metric source. `flux_rhs` retains the assembled derivative API by calling
+its `rhs`; local limiting selects shared entities before this same assembly.
 
 Physical eta J at corners comes from the full plasma/vacuum stiffness and its
 actual plasma-node areas. Its Poynting flux enters total energy, with no separate

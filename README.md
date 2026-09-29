@@ -35,6 +35,9 @@ The [conservative coupling study](docs/CONSERVATIVE_VERIFICATION.md) advances
 fluid and magnetic shock fluxes consistently through the same verified vacuum.
 It measures a complete-update flux limiter, numerical interface heating and
 whole-space energy error separately from exact fluid-cell conservation.
+The [local-limiter study](docs/LOCAL_LIMITER_VERIFICATION.md) confines fallback
+to troubled boundary stencils and restores interior shock accuracy. It retains
+the newly exposed whole-space energy-error limitation explicitly.
 
 ## Use the existing environment
 
@@ -52,6 +55,7 @@ whole-space energy error separately from exact fluid-cell conservation.
 .venv/bin/python -m examples.verify_open_boundary
 .venv/bin/python -m examples.verify_shocks
 .venv/bin/python -m examples.verify_conservative
+.venv/bin/python -m examples.verify_local_limiter
 ```
 
 Open [vacuum playback](outputs/vacuum/viewer.html) or
@@ -116,6 +120,7 @@ conductivity without an ionization/transport closure. See the research queue.
 - `shock_reference.py`, `shock_benchmarks.py`: independent cylindrical magnetic shocks and actual-kernel comparisons.
 - `magnetic_dissipation.py`: optional declared compressive numerical diffusion, with separately accounted heat.
 - `conservative_coupled.py`, `vacuum_flux.py`, `vacuum_trace.py`: unsplit conservative fluid/CT evolution, interface traction and magnetic vacuum.
+- `flux_update.py`, `flux_limiting.py`: shared flux assembly, local complete-update fallback and explicit global comparison.
 - `diagnostics.py`, `topology.py`: validity scales, energy, O/X points, closed flux.
 - `simulation.py`, `results.py`: orchestration and reproducible numeric archives.
 - `experiments.py`, `visualization.py`, `cli.py`: sweeps, plots and playback.
@@ -141,8 +146,9 @@ source-work budget. A verified multipole boundary extends the induced magnetic
 field to infinity and counts its exterior energy, without adding fluid there.
 An unsplit conservative vacuum-coupled reference now preserves the tested
 perpendicular shock's frozen-flux relation while measuring interface and global
-energy errors. Next, localize its complete-update limiter, resolve driven skin
-layers, and address free interfaces, realistic ends and transport/Hall validity.
+energy errors. Local complete-update fallback preserves distant interior
+accuracy; independent interface/energy error remains to resolve, along with
+driven skin layers, free interfaces, realistic ends and transport/Hall validity.
 The coil-driven Stage 2 entry point still raises an explicit `NotImplementedError`
 until the physical formation requirements are verified. The dynamic references
 are separately scriptable through `plasma_bench.mhd.AxisymmetricMHD` and
@@ -170,6 +176,10 @@ The original split reference is available directly as `coil_pulse(...)`.
 contains gas energy only; `from_split_initial` makes that conversion explicitly
 for unadvanced initial fixtures. The conservative solver's whole-space energy
 error is diagnosed, not forced to zero. See its [numerical contract](docs/CONSERVATIVE_COUPLING.md).
+The default `flux_limiter="local"` replaces shared fluxes around inadmissible
+cells and rechecks neighbors. `flux_limiter="global"` retains the earlier
+comparison, and `positivity_flux_limiting=False` retains unprotected failures.
+Neither mode repairs cell energy or guarantees every low-order proposal is valid.
 
 To reproduce the initialized strong-shock verification fixture:
 

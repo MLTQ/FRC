@@ -126,14 +126,35 @@ def test_invalid_boundary_update_leaves_accepted_state_and_budgets_intact():
     failed = False
     while solver.time < .02:
         old, before = solver.state.copy(), solver.diagnostics()
+        counts = solver.limiter_cell_counts.copy(), solver.limiter_troubled_counts.copy()
         try:
             solver.step(min(solver.timestep_limit(), .02-solver.time))
         except NonphysicalState:
             assert_allclose(solver.state.conserved, old.conserved, rtol=0, atol=0)
             assert_allclose(solver.state.induced_psi, old.induced_psi, rtol=0, atol=0)
             assert solver.diagnostics() == before
+            assert_allclose(solver.limiter_cell_counts, counts[0], rtol=0, atol=0)
+            assert_allclose(solver.limiter_troubled_counts, counts[1], rtol=0, atol=0)
             failed = True; break
     assert failed
+
+
+def test_original_fine_shock_local_limiting_preserves_distant_interior_and_budgets():
+    split, reference = standing_shock(96)
+    solver = from_split_initial(split)
+    solver.advance(.02)
+    d = solver.diagnostics()
+    assert d["limited_euler_stages"] > 0
+    assert 0 < d["maximum_limiter_cell_fraction"] < .001
+    assert d["maximum_limiter_iterations"] <= 2
+    interior = (solver.mesh.r[:, None] > .44)&(solver.mesh.r[:, None] < .66)&(abs(solver.mesh.z[None, :]) < .1)
+    assert not solver.limiter_cell_counts[interior].any()
+    q = solver._primitive(solver.state, solver.time)
+    assert np.mean(abs(q[..., 5]/reference.field_ratio-q[..., 0])[interior]) < 1e-10
+    assert abs(d["fluid_energy_balance_residual_j"]) < 1e-11
+    assert abs(d["mass_relative_change"]) < 1e-13
+    assert d["max_face_divergence_t_m"] < 1e-12
+    assert d["vacuum_relative_residual"] < 1e-10
 
 
 def test_coil_work_error_decreases_and_local_energy_flux_is_conservative():

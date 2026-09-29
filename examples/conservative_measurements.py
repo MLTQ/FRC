@@ -77,6 +77,19 @@ def measure(kind, cells, *, cfl=.2, extent=2, half_length=1, **overrides):
         row.update(completed=False, failure=str(error))
         history.append(solver.diagnostics())
     row.update(advance_seconds=perf_counter()-start, history=history, diagnostics=solver.diagnostics())
+    select = solver.limiter_cell_counts > 0
+    i, j = np.nonzero(select)
+    row["limiter_map"] = {
+        "encoding": "Sparse cell indices (radial, axial); omitted cells have zero counts",
+        "shape": [solver.mesh.nr, solver.mesh.nz], "indices": np.column_stack((i, j)).tolist(),
+        "affected_stage_counts": solver.limiter_cell_counts[select].tolist(),
+        "troubled_stage_counts": solver.limiter_troubled_counts[select].tolist(),
+        "r_m": solver.mesh.r.tolist(), "z_m": solver.mesh.z.tolist(),
+        "maximum_depth_from_gas_boundary_m": float(np.minimum(solver.mesh.radius-solver.mesh.r[i],
+                                                               solver.mesh.half_length-abs(solver.mesh.z[j])).max()) if i.size else 0.}
+    if reference:
+        window = (solver.mesh.r[:, None] > .44)&(solver.mesh.r[:, None] < .66)&(abs(solver.mesh.z[None, :]) < .1)
+        row["limiter_map"]["affected_reference_window_cell_stages"] = int(solver.limiter_cell_counts[window].sum())
     if reference:
         row["errors"], row["profile"] = shock_errors(solver, reference)
     elif kind in ("advection", "diffusion"):

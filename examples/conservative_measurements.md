@@ -17,3 +17,7 @@ Each case is saved when complete; explicit reuse requires identical package,
 measurement source and environment. Complete parameters, source waveforms,
 initial/final diagnostics, history and radial shock profiles are persisted.
 Failures must not be treated as final-time convergence points in the report.
+Sparse per-cell accepted limiter maps record affected and troubled Euler-stage
+counts, grid centers, maximum distance from a gas boundary and any direct
+limiting in the independent shock's reference window. Empty entries mean zero,
+not missing samples. Aggregate counts remain in every history diagnostic.

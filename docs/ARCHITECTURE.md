@@ -88,3 +88,13 @@ and coil flux without projecting them into the decaying basis. Diagnostics keep
 modal stationarity separate from actual vacuum current density. Independent
 asymmetric loop-integral and dynamic pulse checks are in `open_benchmarks` and
 the open-boundary report. Fixed-boundary comparisons remain selectable.
+
+`conservative_coupled` is the unsplit conservative/CT comparison using the same
+magnetic vacuum. `vacuum_flux` builds shared fluid faces and corner electric
+fields; `vacuum_trace` supplies exterior traction and explicit vanishing
+numerical interface diffusion. `flux_update` owns geometric flux assembly and
+shared local replacement. `flux_limiting` detects complete Euler admissibility,
+expands only the affected region, and retains a global comparison mode. Exact
+fluid energy-flux conservation and independently measured whole-space response
+error are separate contracts; neither pressure floors nor energy resets hide
+the latter. See the conservative coupling and local-limiter reports.

@@ -15,3 +15,8 @@ checks that interface electric fields also transport energy on adjacent interior
 faces; zero initial current must not create a spurious thermal-energy derivative.
 Subtracting the zero-electric baseline isolates that manufactured nonideal term
 from roundoff in differentiating the quadratic uniform-field flux.
+The original nr=96 shock activates local complete-update limiting; its measured
+affected region must remain small, exclude the central independent-reference
+window, and retain frozen B/rho, shared-fluid energy, mass, CT and vacuum
+constraints. Failure checks include unchanged cumulative limiter maps. Larger
+response-budget and fine-grid accuracy studies remain recorded measurements.

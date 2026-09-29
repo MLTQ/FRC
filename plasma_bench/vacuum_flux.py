@@ -5,9 +5,10 @@ from .mhd_mesh import MHDMesh
 from .mhd_reconstruction import Reconstruction, staggered_corner_fields
 from .mhd_flux import rusanov, ghost_cells
 from .mhd_induction import uct_electric
+from .flux_update import FluxUpdate
 
 
-def flux_rhs(mesh, q, psi, gamma, resistive_electric, boundary_field, interface_electric, spatial_order=2):
+def flux_components(mesh, q, psi, gamma, resistive_electric, boundary_field, interface_electric, spatial_order=2):
     """Shared reconstructed states for fluid fluxes and constrained induction.
 
     The reflected gas traces are boundary data, not exterior fluid unknowns.
@@ -58,9 +59,9 @@ def flux_rhs(mesh, q, psi, gamma, resistive_electric, boundary_field, interface_
     nonideal = resistive_electric+interface_electric
     fr[..., 3] += .5*(nonideal[:, :-1]+nonideal[:, 1:])*.5*(left[..., 5]+right[..., 5])/MU0
     fz[..., 3] -= .5*(nonideal[:-1]+nonideal[1:])*.5*(down[..., 4]+up[..., 4])/MU0
-    derivative = -np.diff(mesh.rf[:, None, None]*fr, axis=0)/mesh.radial_measure[:, None, None]
-    derivative -= np.diff(fz, axis=1)/mesh.dz
-    derivative[..., 1] += source[:, 2:-2]
-    outward_energy = 2*np.pi*(mesh.radius*mesh.dz*np.sum(fr[-1, :, 3])+
-                              np.sum(mesh.radial_measure*(fz[:, -1, 3]-fz[:, 0, 3])))
-    return derivative, -mesh.rf[:, None]*electric, float(outward_energy)
+    return FluxUpdate(fr, fz, electric, source[:, 2:-2])
+
+
+def flux_rhs(mesh, q, psi, gamma, resistive_electric, boundary_field, interface_electric, spatial_order=2):
+    return flux_components(mesh, q, psi, gamma, resistive_electric, boundary_field,
+                           interface_electric, spatial_order).rhs(mesh)

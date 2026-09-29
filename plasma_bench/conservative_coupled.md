@@ -25,14 +25,23 @@ retains the centered interface for comparison, including its boundary failures.
 `spatial_order=1` exposes the piecewise-constant conservative/CT reference for
 full-update admissibility studies; order 2 remains the default.
 If a complete second-order Euler proposal is inadmissible, the optional default
-`positivity_flux_limiting` blends all conservative fluxes, CT electric fields,
-metric sources and boundary-energy accounting with an admissible first-order
-proposal. One global convex weight is used, measured in diagnostics. Concavity
-of gas internal energy in (rho,momentum,E,B) makes the bisection admissible set
-convex; both SSP Euler stages are checked before their final convex average.
+`positivity_flux_limiting` selects conservative fluxes, CT electric fields,
+metric sources and boundary-energy accounting from an admissible first-order
+proposal. The default `flux_limiter="local"` replaces only shared entities
+incident to troubled cells, rechecking neighbors until the mixed update is
+admissible; `flux_limiting.md` documents its conditional termination argument.
+The explicit `"global"` comparison retains the previous convex bisection.
+Both SSP Euler stages are checked before their final convex average.
 No cell is clamped or energetically repaired. A nonphysical first-order proposal
-still raises atomically. Global limiting can reduce accuracy away from a troubled
-cell; activity and refinement must be reported, not hidden as full second order.
+still raises atomically. Diagnostics record affected/troubled cell-stage counts,
+maximum affected fraction, minimum high-order weight and iteration counts.
+Per-cell cumulative masks permit independent locality checks and plots.
+Counters commit only after the entire step validates. Physical/numerical eta and
+source power at a given state are order-independent; outward energy is computed
+from the actual mixed face fluxes. Limiting is order reduction and its activity
+must be reported, not hidden as full second order.
+Local conservation does not force the separately discretized full-space
+response budget exact or guarantee its monotonic error under refinement.
 
 Physical corner eta J uses induced-field stiffness and plasma-node dual areas;
 external analytic vacuum fields have no volume current in the fluid. Its

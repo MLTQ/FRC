@@ -298,14 +298,85 @@ This remains a fixed gas-filled chamber reference. Free plasma motion and
 actual end conditions, transport/ionization/Hall validity, converged formation
 and a dynamic experiment UI remain unfinished. Original Stage 2 stays gated.
 
+## Local complete-update limiter checkpoint
+
+This continuation is verified numerical progress, not completion of the FRC
+objective. The suite has **117 passing tests** (46.65 s). The default conservative
+solver now chooses first-order shared face/corner fluxes only around inadmissible
+Euler cells and rechecks newly troubled neighbors. Metric sources and actual
+boundary energy fluxes follow that same local choice. Every flagged cell has
+the independently checked low-order update, giving conditional finite
+termination without a hidden global fallback. No floors or thermal repairs
+were introduced; failed baseline proposals still raise atomically. The previous
+global convex limiter remains an explicit, freshly reproduced control.
+
+On the unchanged original shock, nr=192 B-profile L1 error decreases from
+0.0746278 globally to 0.0593295 locally, and pressure L1 from 0.368802 to
+0.334502 Pa. Frozen B/rho defect remains 8.06e-14. Only the two outermost radial
+cell layers are directly affected; maximum stage support is 0.8545% of cells,
+with zero direct replacements in the central independent-reference window.
+Local limiting occurs more often (320 stages) but leaves distant fluxes intact.
+The manufactured neighbor-chain test requires four successive detection passes;
+the original nr=192 case needs at most two. Mass, fluid energy-flux accounting,
+compatible divergence and vacuum stationarity remain near roundoff.
+
+This improvement exposes a separate accuracy limitation. The nr=192 local
+response-energy residual is +0.0140806 J (1.40031e-4 of initial response energy)
+versus -0.00288898 J globally. The local residual is also **5.22% of the net
+outward fluid energy**, a more demanding transfer scale, though that boundary
+transfer is not external source work. Halving CFL raises the local residual to
+0.0237089 J while central B/density profiles change only 0.001610% and pressure
+0.002069%. Thus the interface evolution/energy is not time-converged simply
+because the central shock is. Doubling chamber half-length at nr=96 changes
+central profiles below 9.01e-9; the independent response budget remains separate.
+
+The additional nr=384 run completes to the original 0.02 s end time: central
+B/density L1 decreases to 0.0306517, pressure L1 to 0.175216 Pa, frozen-ratio
+defect is 9.72e-13, and no reference-window cell is directly limited. Maximum
+affected support is 0.4286% of cells, with at most two replacement passes.
+However, response-energy error grows to **0.0575258 J, 30.20% of net outward
+fluid energy**, and numerical interface heat rises from 0.06331 to 0.09848 J
+between nr=192 and 384. The interface energy budget is therefore not converged.
+Minimum density reaches 0.000388047 kg/m³ without a floor; 1575 accepted steps
+take 2064 s after 101 s setup on the recorded CPU environment. The large-grid
+run finished; no numerical process remains pending at this checkpoint.
+All 21 case records (20 completed, one deliberately disabled-limiter failure)
+and both energy audits have been source-fingerprint checked, and the final
+scientific figure has been visually inspected.
+
+The same coil pulses, time/matching controls, and smooth advection/diffusion
+cases reproduce historical measured source work, response energy and analytic
+errors exactly, with no local limiting. The earlier 0.1021% pulse error relative
+to source work and unresolved peak-flow/skin-layer limitations remain.
+
+An instantaneous response-rate identity now separates outward fluid power,
+cell magnetic-energy rate and full-space nodal magnetic work. An independent
+symmetric perturbation completes the magnetic vacuum and differences response
+energy. It checks this diagnostic without changing any evolved state or budget.
+The best symmetric-difference errors across the five snapshots stay below
+2.62e-8 W at nr=96 and 3.65e-7 W at nr=192; probing leaves final diagnostics
+exactly unchanged. At the final nr=192 state, the high-order defect rate is
+-204.075 W, the first-order rate -2.83969 W, and the selected local rate
+-7.23180 W. Thus this wall-state discrepancy is present in the spatial update,
+well above diagnostic roundoff; its cumulative and timestep-sensitive behavior
+still needs a consistent interface treatment.
+The derivation is in `docs/INTERFACE_ENERGY_AUDIT.md`; measured rates, perturbation
+errors, full controls, limiter maps and source fingerprints are retained in
+`docs/LOCAL_LIMITER_VERIFICATION.md` and `outputs/local_limiter_verification/`.
+The next interface task is to use that decomposition to improve consistent
+vacuum/CT energy exchange without sacrificing local conservation or adding heat
+repairs. Stronger multidimensional shocks, cold rarefaction, free surfaces,
+actual ends, transport/ionization/Hall validity, formation and the dynamic
+experiment UI all remain in scope.
+
 ## Completion audit at this checkpoint
 
 | Requirement | Authoritative evidence | Status |
 |---|---|---|
 | Conservative dynamic core | mhd modules, independent tests, MHD/positivity reports | Implemented and verified for stated bounded reference; positive traces without cell floors; full-update robustness and cold-flow accuracy remain bounded by tests |
-| Physical source/plasma/vacuum coupling | Fixed-chamber split and conservative/CT references; COUPLED, OPEN_BOUNDARY and CONSERVATIVE verification reports; original Stage 2 guard still raises | Partial: magnetic/work/interface refinement measured; global flux limiter, source-layer resolution, moving free interface and actual end conditions remain |
+| Physical source/plasma/vacuum coupling | Fixed-chamber split and conservative/CT references; COUPLED, OPEN_BOUNDARY, CONSERVATIVE and LOCAL_LIMITER reports; original Stage 2 guard still raises | Partial: local limiting preserves interior accuracy; interface/energy and source-layer convergence, moving free interface and actual end conditions remain |
 | Regime-appropriate transport / Hall physics | Fixed eta/sigma only; beads frc-transport | Incomplete |
-| Full independent numerical verification | Waves, gas/perpendicular magnetic shocks, heating, advection, J×B, equilibrium, trace/full-update admissibility, rarefaction, interface traces, source budgets and infinite-exterior checks | Partial; conservative/CT removes tested frozen-flux defect, but global limiting and interface diffusion affect accuracy; cold-pressure/equilibrium, broader shocks and pulse-resolution requirements remain |
+| Full independent numerical verification | Waves, gas/perpendicular magnetic shocks, heating, advection, J×B, equilibrium, trace/local full-update admissibility, rarefaction, interface traces, source budgets, instantaneous energy-rate audit and infinite-exterior checks | Partial; local limiting restores distant shock profiles but exposes unresolved interface energy/time sensitivity; cold-pressure/equilibrium, broader shocks and pulse-resolution requirements remain |
 | Converged FRC formation | Only older stationary-conductor results, unconverged topology duration | Not demonstrated |
 | Reproducible experimental interface | Stage 0/1 CLI/playback; dynamic and coupled benchmark scripts, histories and metrics | Partial; no coupled dynamic experiment UI |
 

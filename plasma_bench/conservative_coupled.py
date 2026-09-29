@@ -3,9 +3,10 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.constants import mu_0 as MU0
 from .coupling_mesh import CouplingMesh
-from .mhd_state import MHDState, primitive, NonphysicalState
+from .mhd_state import MHDState, primitive
 from .mhd_flux import fast_speed
-from .vacuum_flux import flux_rhs
+from .vacuum_flux import flux_components
+from .flux_limiting import admissible_update
 from .vacuum_trace import tangential_field, interface_resistivity
 
 
@@ -20,6 +21,7 @@ class ConservativeParameters:
     interface_diffusion: bool = True
     spatial_order: int = 2
     positivity_flux_limiting: bool = True
+    flux_limiter: str = "local"
 
     def __post_init__(self):
         if not np.isfinite(self.gamma) or self.gamma <= 1:
@@ -36,6 +38,8 @@ class ConservativeParameters:
             raise ValueError("Spatial order must be 1 or 2")
         if not isinstance(self.positivity_flux_limiting, bool):
             raise ValueError("Flux admissibility switch must be boolean")
+        if self.flux_limiter not in ("local", "global"):
+            raise ValueError("Flux limiter must be local or global")
 
 
 @dataclass
@@ -66,6 +70,10 @@ class ConservativeVacuumMHD:
         self.source_work = self.ohmic_heat = self.outward_energy = 0.
         self.numerical_interface_heat = 0.
         self.limited_euler_stages, self.minimum_high_order_weight = 0, 1.
+        self.limiter_cell_counts = np.zeros((mesh.nr, mesh.nz), dtype=np.int64)
+        self.limiter_troubled_counts = np.zeros_like(self.limiter_cell_counts)
+        self.maximum_limiter_cell_fraction = 0.
+        self.limiter_iterations = self.maximum_limiter_iterations = 0
         self._primitive(self.state, 0.)
         u = self.mapping.interior(initial.induced_psi)
         ku = self.mapping.k@u
@@ -110,7 +118,7 @@ class ConservativeVacuumMHD:
         limit = float(p.cfl/(waves+diffusion))
         return limit if p.max_timestep is None else min(limit, p.max_timestep)
 
-    def _rhs(self, state, time, spatial_order=None):
+    def _fluxes(self, state, time, spatial_order=None):
         m, p = self.mapping, self.parameters
         q = self._primitive(state, time)
         ku = m.k@m.interior(state.induced_psi)
@@ -120,41 +128,24 @@ class ConservativeVacuumMHD:
         total = m.fluid_flux(full_total)
         numerical_eta = interface_resistivity(m, q, p.gamma) if p.interface_diffusion else np.zeros(m.node_count)
         numerical_electric = m.fluid_flux(m.full(numerical_eta*current))
-        conserved, dflux, outward = flux_rhs(self.mesh, q, total, p.gamma, electric, tangential_field(m, full_total),
-                                            numerical_electric, p.spatial_order if spatial_order is None else spatial_order)
+        fluxes = flux_components(self.mesh, q, total, p.gamma, electric, tangential_field(m, full_total),
+                                  numerical_electric, p.spatial_order if spatial_order is None else spatial_order)
         source_derivative = m.grid_vector(self.sources.at(time).dpsi_dt)
         source_power = -float((2*np.pi/MU0)*ku[m.active]@source_derivative[m.active])
         ohmic_power = float(2*np.pi*np.sum(p.resistivity*current**2*m.node_radius*m.node_area))
         numerical_power = float(2*np.pi*np.sum(numerical_eta*current**2*m.node_radius*m.node_area))
-        return conserved, dflux, outward, source_power, ohmic_power, numerical_power
+        return fluxes, (source_power, ohmic_power, numerical_power)
 
     def _forward_euler(self, state, time, total, dt):
-        """Blend complete conservative/CT fluxes, never repair cell energy."""
-        high = self._rhs(state, time)
-        def admissible(rhs):
-            try:
-                primitive(self.mesh, MHDState(state.conserved+dt*rhs[0], total+dt*rhs[1]), self.parameters.gamma)
-                return True
-            except NonphysicalState:
-                return False
-        if admissible(high):
-            return high, 1.
-        if not self.parameters.positivity_flux_limiting or self.parameters.spatial_order == 1:
-            raise NonphysicalState("Conservative Euler proposal is nonphysical; no flux fallback enabled")
-        low = self._rhs(state, time, spatial_order=1)
-        if not admissible(low):
-            raise NonphysicalState("First-order conservative Euler proposal is nonphysical; no state repair applied")
-        def blend(theta):
-            return tuple(a+theta*(b-a) for a, b in zip(low, high))
-        lower, upper = 0., 1.
-        for _ in range(40):
-            middle = .5*(lower+upper)
-            if admissible(blend(middle)):
-                lower = middle
-            else:
-                upper = middle
-        theta = .9*lower  # Stay inside the admissible set; no absolute state floor.
-        return blend(theta), theta
+        """Select shared face/corner fluxes before assembly; never repair energy."""
+        high, powers = self._fluxes(state, time)
+        p = self.parameters
+        mode = p.flux_limiter if p.positivity_flux_limiting and p.spatial_order == 2 else "off"
+        rhs, report = admissible_update(self.mesh, state.conserved, total, dt, high,
+                                        lambda: self._fluxes(state, time, spatial_order=1)[0], mode=mode)
+        # Current, physical/interface eta and analytic source power are independent
+        # of reconstruction order at this state; only outward flux is selected.
+        return (*rhs, *powers), report
 
     def _new_state(self, conserved, fluid_total_flux, time):
         m, mesh = self.mapping, self.mesh
@@ -172,9 +163,9 @@ class ConservativeVacuumMHD:
             raise ValueError(f"Time step must be positive and <= {limit:.6g} s")
         old = self.state
         total = self.mapping.fluid_flux(self.total_flux())
-        a, weight_a = self._forward_euler(old, self.time, total, dt)
+        a, report_a = self._forward_euler(old, self.time, total, dt)
         predictor = self._new_state(old.conserved+dt*a[0], total+dt*a[1], self.time+dt)
-        b, weight_b = self._forward_euler(predictor, self.time+dt, total+dt*a[1], dt)
+        b, report_b = self._forward_euler(predictor, self.time+dt, total+dt*a[1], dt)
         final = self._new_state(old.conserved+.5*dt*(a[0]+b[0]), total+.5*dt*(a[1]+b[1]), self.time+dt)
         # Both RK stages and exact vacuum completion validate before any commit.
         self.state = final
@@ -183,8 +174,14 @@ class ConservativeVacuumMHD:
         self.source_work += .5*dt*(a[3]+b[3])
         self.ohmic_heat += .5*dt*(a[4]+b[4])
         self.numerical_interface_heat += .5*dt*(a[5]+b[5])
-        self.limited_euler_stages += int(weight_a < 1)+int(weight_b < 1)
-        self.minimum_high_order_weight = min(self.minimum_high_order_weight, weight_a, weight_b)
+        for report in (report_a, report_b):
+            self.limited_euler_stages += int(report.minimum_weight < 1)
+            self.minimum_high_order_weight = min(self.minimum_high_order_weight, report.minimum_weight)
+            self.limiter_cell_counts += report.affected
+            self.limiter_troubled_counts += report.troubled
+            self.maximum_limiter_cell_fraction = max(self.maximum_limiter_cell_fraction, float(report.affected.mean()))
+            self.limiter_iterations += report.iterations
+            self.maximum_limiter_iterations = max(self.maximum_limiter_iterations, report.iterations)
         return dt
 
     def advance(self, end_time, *, max_steps=1_000_000):
@@ -208,6 +205,10 @@ class ConservativeVacuumMHD:
         result.update(time_s=self.time, steps=self.steps, source_work_j=self.source_work, ohmic_heat_j=self.ohmic_heat,
                       numerical_interface_heat_j=self.numerical_interface_heat,
                       limited_euler_stages=self.limited_euler_stages, minimum_high_order_weight=self.minimum_high_order_weight,
+                      affected_euler_cell_stages=int(self.limiter_cell_counts.sum()),
+                      troubled_euler_cell_stages=int(self.limiter_troubled_counts.sum()),
+                      maximum_limiter_cell_fraction=self.maximum_limiter_cell_fraction,
+                      limiter_iterations=self.limiter_iterations, maximum_limiter_iterations=self.maximum_limiter_iterations,
                       outward_fluid_energy_j=self.outward_energy, fluid_energy_balance_residual_j=fluid_residual,
                       response_energy_balance_residual_j=response_residual,
                       response_residual_over_source_work=response_residual/abs(self.source_work) if self.source_work else None,

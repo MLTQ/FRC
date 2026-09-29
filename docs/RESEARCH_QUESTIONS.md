@@ -48,9 +48,18 @@
   refinement, while distinguishing fluid conservation from full-space accuracy.
 - [x] Add a declared whole-update conservative flux blend when positive traces
   alone fail, preserving budgets and CT with no cell floor or energy reset.
-- [ ] Localize that flux limiter so a troubled cold boundary cell does not
-  downgrade the entire interior. Activity rises to 154/810 Euler stages at
-  nr=192 in the recorded shock and limits its fine-grid profile accuracy.
+- [x] Localize complete-update fallback by shared face/corner flux replacement,
+  rechecking newly invalid neighbors. Original nr=192 shock B error improves
+  about 20%, with <0.86% cells touched in any stage and none in the central
+  reference window; no cell floors or energy repairs.
+- [ ] Resolve the independent whole-space shock energy error exposed by local
+  limiting. Central profile accuracy improves but nr=192 response error grows
+  to 1.40e-4 of initial energy, then 5.72e-4 at nr=384 (30.20% of net outward
+  fluid energy); exact fluid conservation is insufficient.
+  Check finer meshes, time step, interface flux consistency and boundary effects.
+- [x] Derive and independently perturbation-check the instantaneous response
+  energy rate at common states, separating boundary fluid flux, cell magnetic
+  energy and full-space nodal work. The audit does not alter evolved diagnostics.
 - [ ] Refine and validate magnetic interface traction and numerical heating;
   conservative pulse response error is 0.1021% of source work at nr=64, but
   numerical interface heat and driven peak flow are still resolution-sensitive.

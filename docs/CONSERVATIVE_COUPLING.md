@@ -105,24 +105,47 @@ Explicit wave plus physical/numerical diffusion bounds limit the time step.
 Time integration is SSP RK2. Positive reconstructed traces alone do not guarantee
 positive updated pressure. Each full Euler proposal is checked before use.
 If a second-order proposal is inadmissible and the first-order proposal is
-admissible, one global weight theta blends their **complete** flux/EMF/source
-updates and the matching boundary energy flux. Density, momentum, total energy
-and flux receive the same weight. No cell value is clipped or independently reset.
+admissible, the default local limiter replaces high-order face fluxes and corner
+electric fields incident to every troubled cell, and that cell's metric source.
+The selected shared fluxes are assembled again, including the actual boundary
+energy rate. No cell value is clipped or independently reset.
+
+The mixed update can trouble neighbors. Every new invalid cell is added and its
+incident entities replaced, until the complete proposal is admissible. Already
+flagged cells have exactly the checked low-order update. Every unsuccessful
+pass adds at least one cell, giving finite termination conditional on a valid
+baseline; there is no iteration cap or hidden global fallback. A shared corner
+can affect four cells, so the reported affected region includes diagonal
+neighbors. Cells beyond that region retain the original high-order derivative.
+For translationally invariant radial flow, face/corner choices coincide and
+preserve initially constant Bz/rho. General 2-D flow requires separate checks.
+
+This is a local binary order reduction, not second-order evolution in troubled
+regions. It follows the conservative a posteriori flux replacement principle
+described, for different DG/subcell discretizations, by
+[Vilar and Abgrall](https://doi.org/10.1137/22M1542696). Our cylindrical FV/CT,
+metric and vacuum adaptation is separately implemented and checked; it does
+not inherit their algorithm or its theorems. MHD positivity depends on the
+particular discretization and divergence conditions; see the independent
+analysis of [Wu](https://arxiv.org/abs/1802.02278).
 
 For rho>0, internal energy
 `E - momentum²/(2 rho) - B²/(2mu0)` is jointly concave in (rho,momentum,E,B).
-Cell B is linear in corner psi. Thus the segment from an admissible low-order
-proposal has an interval of admissible weights. Bisection finds its limit and
-uses 0.9 of that weight to stay inside without an absolute pressure floor.
+Cell B is linear in corner psi. The retained comparison setting
+`flux_limiter="global"` uses the interval of admissible convex weights from the
+low-order proposal. Bisection finds its limit and uses 0.9 of that weight to
+stay inside without an absolute pressure floor.
 The two accepted Euler proposals then have an admissible SSP convex average.
 If the low-order proposal is also nonphysical, the step raises; no general
 positivity theorem for this plasma/vacuum interface is claimed.
 
-Diagnostics record limited Euler-stage count and minimum high-order weight.
-Global blending can reduce accuracy throughout the domain because of one
-boundary cell. It is deliberately exposed, and refinement/activity are measured.
-A local conservative limiter is a possible later improvement, not silently
-claimed here. Disabling the limiter retains the original cold-boundary failure.
+Diagnostics record limited Euler-stage count, minimum high-order weight,
+troubled/affected cell-stage counts, maximum affected fraction, replacement
+iterations and per-cell cumulative masks. The global comparison can reduce
+accuracy throughout the domain because of one boundary cell; local replacement
+removes that direct loss in distant cells. It does not guarantee monotonic
+whole-space response-energy error or eliminate indirect boundary influence.
+Disabling the limiter retains the original cold-boundary failure.
 Failure leaves accepted state, time and all cumulative budgets unchanged.
 
 ## Two different energy checks
@@ -154,4 +177,6 @@ Physical assumptions remain those of a fixed fluid-filled ideal-gas chamber with
 prescribed scalar eta. Moving plasma/vacuum interfaces, gas outflow, transport,
 ionization, neutrals and Hall/kinetic validity remain separate requirements.
 The original Stage 2 formation gate stays closed. See the measured report in
-[CONSERVATIVE_VERIFICATION.md](CONSERVATIVE_VERIFICATION.md).
+[CONSERVATIVE_VERIFICATION.md](CONSERVATIVE_VERIFICATION.md) for the historical
+global method and [LOCAL_LIMITER_VERIFICATION.md](LOCAL_LIMITER_VERIFICATION.md)
+for the local comparison and its remaining limitations.

@@ -16,3 +16,9 @@ for shock profiles and pulse observables.
 source has a separate fingerprint, allowing report edits without repeating the
 unchanged expensive solver measurements. Complete inputs and per-case progress
 remain available if a longer verification run is interrupted.
+
+This historical report now uses `conservative_reference_measurements`, which
+explicitly selects global limiting from the saved input manifest. Changing the
+solver default to local must not silently change the method described here.
+Its report text links the newer default-local study. Existing historical
+artifacts remain untouched until the user explicitly reruns this reference.
