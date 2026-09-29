@@ -187,3 +187,25 @@ not only plots. All 49 cylindrical and 16 parallel modes are complete. No
 vacuum boundary or thermal closure is inferred from these reference walls.
 LINEAR_HALL_NUMERICS and LINEAR_HALL_VERIFICATION define the contract; the next
 compressible conservative integration is TOROIDAL_INTEGRATION_PLAN.
+
+
+## Compressible toroidal extension
+
+`toroidal_state` defines an explicit six-variable state with conservative axial
+angular momentum and Btheta/r, retaining exact regular annular r² moments for
+rotation/magnetic energy. `toroidal_flux` and `toroidal_reconstruction` provide
+full three-component ideal fluxes, speed bounds and centrifugal/hoop stress.
+`toroidal_induction` pairs a compatible positive radial current mass with
+resistive Faraday, Poynting flux and heat; it includes the finite axis electric
+field. `toroidal_mhd` atomically advances the coupled nonlinear compressible
+state with SSPRK2. The old four-variable MHD API is unchanged, and the new
+zero-toroidal RHS agrees with it at both numerical orders.
+
+Independent references include exact finite-amplitude translating rotation and
+conducting Bessel decay. Physical-volume errors of the limited reconstruction
+are separate from cell-average comparisons. The complete 33-case records retain
+all conservative arrays, sources and numeric-column histories. The reference
+cylinder still has periodic z and conducting slip radial wall; it has no Hall,
+free-vacuum, neutral or separate species-thermal coupling. TOROIDAL_MHD_NUMERICS
+and TOROIDAL_MHD_VERIFICATION define the measured scope. NONLINEAR_HALL_PLAN
+specifies the next current/induction work pairing and finite-sound-speed oracle.

@@ -88,7 +88,12 @@ The [linear Hall study](docs/LINEAR_HALL_VERIFICATION.md) adds 49 cylindrical
 runs and 16 parallel-wave references, including both polarizations, finite
 electron mass, damping and mesh/time refinement. This component verifies the
 linear work pairing; nonlinear compressible and moving-boundary coupling remain
-incomplete. The full suite now passes 208 tests.
+incomplete. The full suite now passes 224 tests.
+The [nonlinear toroidal study](docs/TOROIDAL_MHD_VERIFICATION.md) adds
+compressible rotation, toroidal induction and conservative angular momentum,
+with 33 complete equilibrium/transport/wave/diffusion cases. Independent physical
+field errors and heat convergence are measured. Nonlinear Hall and physical
+free-edge coupling remain unfinished.
 
 ## Use the existing environment
 
@@ -102,6 +107,8 @@ incomplete. The full suite now passes 208 tests.
 .venv/bin/python -m examples.hall_wave_measurements
 .venv/bin/python -m examples.hall_parallel_measurements
 .venv/bin/python -m examples.verify_hall
+.venv/bin/python -m examples.toroidal_measurements
+.venv/bin/python -m examples.verify_toroidal
 .venv/bin/python -m examples.verify_mhd
 .venv/bin/python -m examples.verify_equilibrium
 .venv/bin/python -m examples.verify_positivity
@@ -157,6 +164,8 @@ python3 -m venv .venv
 .venv/bin/python -m examples.hall_wave_measurements
 .venv/bin/python -m examples.hall_parallel_measurements
 .venv/bin/python -m examples.verify_hall
+.venv/bin/python -m examples.toroidal_measurements
+.venv/bin/python -m examples.verify_toroidal
 ```
 
 Python 3.11+ is supported by the package; the exact delivered environment is

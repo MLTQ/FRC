@@ -11,9 +11,11 @@
 - [x] Implement and verify a controlled axisymmetric linear Hall/toroidal
   reference, both helicities, physical electron inertia, damping and independent
   cylindrical/parallel dispersion (49 cylinder cases, 16 parallel modes).
-- [ ] Integrate conservative toroidal field/angular momentum into the nonlinear
-  compressible core, then couple Hall, electron/ion thermal and current-energy
-  transport consistently to motion. See TOROIDAL_INTEGRATION_PLAN and
+- [x] Integrate conservative toroidal field/angular momentum into a nonlinear
+  bounded compressible core, with independent stresses, finite-amplitude
+  transport, waves and compatible scalar resistive work (33 complete cases).
+- [ ] Couple nonlinear Hall, electron/ion thermal and finite-current-energy
+  transport consistently to the dynamic state. See NONLINEAR_HALL_PLAN and
   EXTENDED_PLASMA_PLAN; the linear components alone do not supply a physical
   heated edge or a formation solver.
 - [ ] Connect gas pressure, ionization fraction, density and pre-ionization histories.

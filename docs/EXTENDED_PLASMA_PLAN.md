@@ -39,14 +39,16 @@ low-pressure sandbox requirement; any alternate regime must be labeled.
    robustness, then run formation from unreversed plasma with a reproducible
    experimental interface and independent topology/force/validity criteria.
 
-The controlled linear reference portion of step 1 is now implemented and
-verified in LINEAR_HALL_NUMERICS / LINEAR_HALL_VERIFICATION: 49 cylinder cases,
-16 parallel modes, physical finite electron mass and both helicities. The
-compressible/moving toroidal and nonlinear Hall degrees of freedom are still
-missing. The next bounded coding task is TOROIDAL_INTEGRATION_PLAN: add
-conservative angular momentum and toroidal induction to the compressible core,
-verify geometric stresses and ideal transport, then integrate Hall work. Steps 2–5 remain required;
-a successful wave test does not validate the heated plasma boundary.
+Step 1 now has a verified linear Hall/finite-mass reference (49 cylinder cases,
+16 parallel modes) and a nonlinear compressible toroidal MHD extension (33 cases,
+conservative angular momentum, full stress/energy and scalar resistive work).
+See LINEAR_HALL_VERIFICATION and TOROIDAL_MHD_VERIFICATION. Nonlinear Hall and
+moving finite-mass/thermal coupling remain missing. NONLINEAR_HALL_PLAN is the
+next bounded task: couple Hall current/curl/Poynting work to the new compressible
+state and verify finite-sound-speed cylindrical modes and nonlinear transfer.
+The older incompressible oracle cannot be treated as an exact compressible mode.
+Steps 2–5 remain required; neither wave nor nonlinear reference transport tests
+validate the heated plasma boundary or actual formation.
 
 The already implemented linear `MaterialCurrent` limit remains useful for
 coefficient, vacuum, source and electron-energy checks. Its 35-case records,

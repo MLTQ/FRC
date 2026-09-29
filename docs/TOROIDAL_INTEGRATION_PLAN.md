@@ -1,10 +1,14 @@
-# Next bounded integration: compressible toroidal degrees of freedom
+# Compressible toroidal integration contract
 
-The independent `LinearHallCylinder` now verifies axis regularity, Hall/finite-
+Status: the bounded compressible toroidal milestone is implemented and verified
+in TOROIDAL_MHD_NUMERICS / TOROIDAL_MHD_VERIFICATION (33 cases, 224 total tests).
+The equations below remain its design contract. NONLINEAR_HALL_PLAN defines the
+next integration; free-boundary and thermal requirements remain open.
+
+The independent `LinearHallCylinder` verifies axis regularity, Hall/finite-
 mass waves and the linear work pairing. Its uniform-density incompressible
-pressure projection is not a compressible solver. The next concrete task is to
-extend the bounded conservative MHD core with toroidal field and rotation while
-preserving the existing poloidal API and its verification records.
+pressure projection is not a compressible solver. This milestone extends the
+bounded conservative MHD core with toroidal field and rotation while preserving the existing poloidal API and its verification records.
 
 ## Conservative variables and contracts
 

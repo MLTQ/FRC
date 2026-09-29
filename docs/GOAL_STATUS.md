@@ -812,14 +812,66 @@ Heated edge physics, spatial coils, actual vacuum/ends, shocks/remapping,
 kinetic ordering, converged formation and experimental UI remain required.
 The full goal remains active, and Stage 2 remains guarded.
 
+## Nonlinear compressible toroidal checkpoint
+
+The full suite passes **224 tests (85.76 s)**. Six new production modules add a
+separate compressible state/solver with toroidal field, rotation, conservative
+axial angular momentum and full magnetic/centrifugal stresses. Exact annular
+r² moments enter pressure recovery and rotation/field energy, including the
+axis. Both first/second-order zero-toroidal RHS recover the existing poloidal
+solver, whose API and historical results remain unchanged. Failed final stages
+leave accepted state, time, heat and limiter accounting untouched.
+
+Scalar toroidal resistivity uses a positive compatible tridiagonal current mass
+and matched Faraday/Poynting/heat work. It exactly recovers the independently
+known 8Db diffusion of g=a+b r² at the axis and wall. Axis Ez is solved rather
+than incorrectly set to zero; the conducting outer wall still has Ez=0. No
+energy repair, current/density floor or hidden physical resistivity exists.
+Massless MHD and fully filled periodic/conducting reference boundaries are
+explicit; this is not nonlinear Hall or the free-vacuum formation interface.
+
+All 33 declared cases completed. Exact rotation, pinch and combined equilibria
+have maximum spurious radial RMS speed 3.99221e-16 m/s. A finite-amplitude
+rotating entropy wave tests actual nonlinear angular-momentum/energy transport;
+its nz=192 reconstructed density/rotation relative volume errors are
+0.000126545/0.000125193. Torsional-wave reconstructed rotation error is
+0.000462097; amplitude controls independently separate quadratic feedback from
+spatial error. Stronger contrast and first-order diffusion controls remain
+explicit, and no single stronger-contrast run is declared converged.
+
+Independent conducting-Bessel decay reaches nr=128 (6689 accepted steps):
+reconstructed toroidal field error 3.35910e-6, first-annulus g error magnitude
+1.15482e-6 and physical heat relative error 2.07328e-5. Cell-average error is
+separately recorded (1.95079e-6), not confused with field reconstruction error.
+Physical quadrature orders 6/10 change reported relative norms by at most
+8.21825e-17. Density time-halving ratios are 4.1723/3.9905 and angular momentum
+3.7153/4.3801 against a finer same-grid reference, with limiter effects explicit.
+Final mass/total-energy relative changes remain within 4.52346e-15/1.13086e-15.
+
+All cases were regenerated under the final fixture/measurement contract, which
+honors nondefault gamma and checks continuum fields between cell centers.
+Frozen production/measurement SHA256 is
+`24ce9b8cdb121167d78ab2ee75792bb9ace362695dd852cbc2384065f4dc69f2`.
+Complete source/config/archive/history checks and scientific visual inspection
+are recorded in TOROIDAL_MHD_VERIFICATION and `outputs/toroidal_verification`.
+All solver, measurement, test and report jobs are terminal at this checkpoint.
+
+Next implement NONLINEAR_HALL_PLAN: compatible nonlinear Hall induction and
+Poynting work on the new compressible state, using independently derived
+finite-sound-speed cylindrical modes and nonlinear transfer checks. Electron
+pressure/thermal and finite-mass current transport, heated-edge compatibility,
+spatial coil work, actual vacuum/chamber ends, shock/remapping robustness,
+kinetic ordering, converged formation and the experiment UI remain required.
+The full objective remains active and the original argon target is unchanged.
+
 ## Completion audit at this checkpoint
 
 | Requirement | Authoritative evidence | Status |
 |---|---|---|
-| Conservative dynamic core | mhd modules, independent tests, MHD/positivity reports | Implemented and verified for stated bounded reference; positive traces without cell floors; full-update robustness and cold-flow accuracy remain bounded by tests |
+| Conservative dynamic core | mhd and toroidal modules, independent tests, MHD/positivity and TOROIDAL_MHD_VERIFICATION reports | Bounded nonlinear poloidal/toroidal core implemented; positive traces without cell floors; full shock/update robustness and cold-flow accuracy remain bounded by tests |
 | Physical source/plasma/vacuum coupling | Fixed-chamber, boundary, moving/resistive and SURFACE_VERIFICATION reports; SURFACE_COMPATIBILITY audit; Stage 2 guard still raises | Partial: moving resistive free surface and explicit surface refinement are implemented; conditional heated-edge incompatibility, unresolved flow/current, spatial coils, mesh robustness and actual ends remain |
-| Regime-appropriate transport / Hall physics | Conditional Coulomb/local regime module, finite-current-inertia component and linear cylindrical Hall/toroidal reference; LINEAR_HALL_VERIFICATION and EXTENDED_PLASMA_PLAN | Partial: linear Hall/finite-mass waves verified; nonlinear compressible Hall/toroidal coupling, chosen formation closure, moving electron/ion thermal dynamics and physical edge/kinetic treatment remain incomplete |
-| Full independent numerical verification | Prior dynamic/shock/vacuum/surface/current studies; conditional Coulomb checks; new 49-case cylindrical Hall and 16-mode parallel study with independent species, time and physical-energy verification | Partial; 208 passing tests; known false reversal on unresolved current layer, substantial thin-layer B error, moving-flow/cold-pressure/shock robustness and physical surface closure remain |
+| Regime-appropriate transport / Hall physics | Conditional Coulomb/local regime module, finite-current-inertia component and linear cylindrical Hall/toroidal reference; LINEAR_HALL_VERIFICATION and EXTENDED_PLASMA_PLAN | Partial: linear Hall/finite-mass waves and nonlinear compressible toroidal MHD verified; nonlinear Hall coupling, chosen formation closure, moving electron/ion thermal dynamics and physical edge/kinetic treatment remain incomplete |
+| Full independent numerical verification | Prior dynamic/shock/vacuum/surface/current studies; conditional Coulomb checks; 49-case cylindrical Hall/16-mode parallel and 33-case nonlinear toroidal studies with independent species, transport, time and physical-field/energy verification | Partial; 224 passing tests; known false reversal on unresolved current layer, substantial thin-layer B error, moving-flow/cold-pressure/shock robustness and physical surface closure remain |
 | Converged FRC formation | Only older stationary-conductor results, unconverged topology duration | Not demonstrated |
 | Reproducible experimental interface | Stage 0/1 CLI/playback; dynamic and coupled benchmark scripts, histories and metrics | Partial; no coupled dynamic experiment UI |
 
