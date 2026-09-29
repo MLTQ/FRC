@@ -56,11 +56,21 @@ This component is not yet connected to the moving plasma solver.
 
 The [changing-density study](docs/VARIABLE_CURRENT_VERIFICATION.md) now extends
 it with physical variable-density current inertia and local energy derivatives,
-using the actual continuity rate. **351 tests pass**. Fourteen manufactured
+using the actual continuity rate. Its checkpoint passed 351 tests. Fourteen manufactured
 component cases show strong magnetic/current-energy convergence. The corrected
 species pressure-work pairing conserves its stated lumped energy, but the finest
 entropy-rate error remains about 6.35%, concentrated near the axis. A consistent
-higher-order thermal representation and full moving coupling remain next.
+higher-order thermal representation was the next target.
+
+The [physical thermal study](docs/LOG_THERMAL_VERIFICATION.md) now corrects that
+local axis defect in a separate component. **361 tests pass**, with 18 audited
+rate cases and nine full-transit prescribed-current transport cases. The matched
+near-axis entropy-rate error drops from about 39% in the old representation to
+8.85e-9 on the finest grid. Physical entropy and pressure work share the actual
+conservative density and physical integration metric. Uniform-temperature
+false magnetic response and full-electric-field precision remain measured
+limitations. Bulk motion and the full conservative energy coupling are next;
+these components have not yet replaced the nonlinear moving solver.
 
 ![Waveform comparison](outputs/comparison/comparison.png)
 

@@ -439,3 +439,29 @@ source/array archives, original-equation replay and plots live in separate
 separate strong field/energy convergence from the remaining entropy-rate error.
 Full moving thermal compression, velocity/vorticity, stress and complete energy
 flux must be derived and verified before changing the production state partition.
+
+## Physical log entropy and current-driven transport
+
+`entropy_scalar` supplies the number-weighted physical scalar metric using the
+same immutable conservative density map as `variable_compatible_current`.
+Its matrix-free solve reports the original load residual; a constant anchor
+preserves exact constant fields. `compatible_log_thermal` stores nodal specific
+log entropy and derives positive pressure, physical internal energy, current
+transport and its paired pressure electric field from that common metric.
+Density and entropy contributions to local energy remain separate. A compatible
+potential split protects weak induction rates while retaining the full E field
+and its measured reconstruction conditioning.
+
+`log_entropy_transport` is an atomic RK4 driver for a prescribed-current,
+fixed-density verification fixture. It is not a moving-plasma integrator.
+`examples/log_entropy_reference` supplies an independent sheared wave and exact
+integrals. Separate rate/transport protocols, independent physical norms,
+source archives, original-equation audits and a report are in the
+`examples/log_thermal_*` and `examples/log_entropy_*` modules.
+
+LOG_THERMAL_NUMERICS/VERIFICATION define the new state and measured correction
+of the old local axis defect. Physical logarithmic entropy conservation does
+not imply exact conservation of its exponential proxy or a shock entropy law.
+Two nodal log-entropy fields cannot simply replace the earlier cell total-energy
+partition: shared conservative bulk transport, momentum/pressure work and local
+total-energy flux need a common degree-of-freedom contract before adoption.

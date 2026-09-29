@@ -12,21 +12,22 @@ waves converge at order two. The tested hybrid waves retain measured time/energy
 errors; no FRC formation or GPU speedup claim is made. See ENGINE_COMPARISON.
 No production backend or Stage 2 gate changed.
 
-Latest custom checkpoint: **351 passing tests; 14 changing-density component
-cases independently audited**, following the 25 compatible linear cases and 25
-preserved rounded comparisons. Actual conservative n/n_t now enter the physical
-variable-density current inertia and local magnetic/current/density energy
-derivative. Finest manufactured B_t/J_t errors are 4.97e-10/4.65e-10; independent
-local-energy agreement is 4.57e-15. No physical mass or current is fitted.
-See VARIABLE_CURRENT_NUMERICS/VERIFICATION for the explicit component scope.
+Latest custom checkpoint: **361 passing tests; 18 physical thermal rate cases
+and nine full-transit prescribed-current transports independently audited**.
+The new log-entropy component uses the same conservative density and physical
+metric as variable-current inertia. Matched local axis log-rate error now
+converges to 8.85e-9 instead of the old bridge's ~39%. Finest continuous proxy-
+rate error is 1.31e-8. Physical entropy and pressure work pair consistently;
+proxy/energy drift, uniform-temperature false magnetic response and full-E
+reconstruction precision remain separately measured. See LOG_THERMAL_NUMERICS/
+VERIFICATION. All workers are terminal and the figure was inspected.
 
-The higher-order fields are still not adopted in nonlinear moving evolution.
-A common graph pressure-work bridge conserves its lumped energy but has 6.35%
-finest electron entropy-rate error; 99.8% of its squared error lies in the first
-four radial rows, whose local relative error does not converge (~39%). Next
-derive the common physical thermal metric/transport and resolve that axis defect,
-then velocity/vorticity and full stress/current/enthalpy/Poynting work before
-repeating full parent-species and trajectory checks. The earlier smooth solver's
+The new fields and thermodynamics are still not adopted in nonlinear moving
+evolution. Next derive a common moving state/energy contract: two nodal log-
+entropy fields cannot simply replace the old cell total-energy partition.
+Shared conservative bulk transport, velocity/vorticity, stress and complete
+pressure/current/enthalpy/Poynting work must precede independent parent-species
+and full wave/contact trajectory checks. The earlier smooth solver's
 31 rates/27 trajectories remain unchanged: fast-wave pi error 5.38315%,
 manufactured nr32 pi-change error 70.2663%, and slow nr64 B_t error 16.8431.
 Physical heated-edge/exact-vacuum, transport and formation requirements remain.
@@ -1628,3 +1629,60 @@ has not replaced SmoothFiniteMassMHD. Heated free edge/exact vacuum, physical
 transport/ionization, real end/coil coupling, shocks/entropy, kinetic validity,
 converged formation, three-dimensional stability/confinement and UI remain open.
 No remote exists; work and issue state are saved locally without publication.
+
+## Physical thermal metric and full-transit current transport checkpoint
+
+This continuation made verified component progress. The complete suite passes
+**361 tests in 121.42 s**. All 18 rate cases and nine prescribed-current
+transport cases completed, with original-equation, source/raw-array and independent
+physical audits. Every worker, audit and report process is terminal. The
+six-panel scientific figure was visually inspected.
+
+`EntropyScalar` supplies the physical number-weighted scalar metric on the same
+reconstructed conservative density as variable-current energy. The new nodal
+specific log entropy in `CompatibleLogThermal` gives positive representable
+pressure, a pressure field paired with physical thermal work and explicit
+density/entropy energy derivatives. Current transport conserves physical log
+entropy; its exponential proxy is a separately measured approximate invariant.
+No pressure floor, current/mass fitting or energy repair is introduced.
+
+Degree-5 electron first-four-row log-rate errors are 1.02400e-3, 2.96189e-5,
+5.42997e-7 and 8.84960e-9 at nr=8/16/32/64. The matched old bridge approaches
+0.390908 instead of converging. Finest continuous physical proxy-rate error is
+1.30658e-8 versus the old representation's 0.117630 in that same norm. Finest
+electron/ion pressure-E errors are 4.37e-8/4.21e-8. Independent local energy
+agrees within 6.83e-15; pressure work and declared bulk-energy exchange defects
+are at most 1.85e-14/1.37e-14. These conservation measures are not accuracy claims.
+
+Constant entropy has exactly zero stored current-driven entropy/magnetic rate.
+Uniform temperature at varying density is not exactly representable: its false
+B_t RMS converges 0.0416574, 0.000921031, 1.58422e-5, 2.53764e-7 T/s. Restoring
+the full rounded E in the finest case gives a Faraday replay difference of
+0.00242218 relative in the physical magnetic norm, or 6.15e-10 T/s RMS. Its raw
+coefficient-space relative difference is 0.0203616. These distinct conditioning
+limits remain explicit despite small original-equation backward errors.
+
+All nine transport fixtures last one complete axis transit, 1.20801 microseconds,
+with prescribed density/current and a sheared analytic entropy wave. Full-domain
+entropy-signal error is 0.0846755, 0.00203068, 9.31941e-5 at nr=8/16/32; physical
+first-annulus error decreases to 9.65e-9. Half-dt changes the nr16 final field
+by only 1.73e-8 of the signal. Physical entropy drift is at most 2.22e-16;
+proxy/internal-energy drift and initial projection error remain separate. The
+finest signed proxy/internal drifts are 3.61e-12/-1.47e-12. This is a prescribed-
+current transport verification, not a force-balanced or full moving plasma.
+
+Source b0dba42d2dd23742246776328413c3914ecfebaadf158e72d9b157c10d6485e7 and
+complete records are saved in outputs/log_thermal_verification and
+outputs/log_entropy_evolution. Original variable-current fc106dc1, compatible
+linear 8cfb1a2f and smooth nonlinear dd060015 identities remain unchanged.
+See LOG_THERMAL_NUMERICS/VERIFICATION and the hashed checkpoint for full limits.
+
+NEXT derive the common moving state and total-energy contract before adoption:
+shared conservative continuity and bulk entropy advection, true conservative
+velocity/vorticity, momentum/drift stress, density/pressure work and complete
+current/enthalpy/Poynting transport. Resolve the two-nodal-entropy versus old
+cell-energy partition explicitly; then verify independent parent-species rates
+and full nonlinear wave/contact trajectories. Keep frc-7mm, frc-accuracy and the
+overall goal open. Heated free edge/exact vacuum, physical transport/ionization,
+real ends/coils, shocks, kinetic validity, converged formation and UI remain.
+Work and issue state are local; there is no configured remote or publication.
