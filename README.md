@@ -34,10 +34,19 @@ finite-mass momentum/energy reduction and 19 varying-density induction-rate
 cases. The [conservative moving study](docs/FINITE_MASS_VERIFICATION.md) now
 couples density, momentum, both species temperatures and full finite-mass
 induction through an unsplit update. All 21 rate tests and 18 bounded trajectories
-are audited, with 328 passing tests. Global conservation is near roundoff, but
+were audited, with 328 passing tests at that checkpoint. Global conservation is near roundoff, but
 small ion-temperature changes and slow compressible modes remain inaccurate.
 The measured reconstruction error, time controls and higher-order diagnostic
 are retained; the physical plasma-vacuum edge and formation gates stay open.
+
+The [smooth transport study](docs/SMOOTH_FINITE_MASS_VERIFICATION.md) now audits
+31 rate cases and 27 trajectories, with **336 passing tests**. Shared transport
+reduces fast-wave ion-pressure error from about 60% to 5.4% at the same grid.
+Independent full-transit contacts include initial projection, continuous
+temperature, time-step and flow-direction checks. Slow magnetic response still
+fails because the velocity/current representations lose a delicate bulk/Hall
+cancellation. Improving that shared field representation is the next physics
+milestone; these results do not establish accurate formation.
 
 ![Waveform comparison](outputs/comparison/comparison.png)
 

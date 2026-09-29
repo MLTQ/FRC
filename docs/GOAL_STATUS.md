@@ -12,18 +12,20 @@ waves converge at order two. The tested hybrid waves retain measured time/energy
 errors; no FRC formation or GPU speedup claim is made. See ENGINE_COMPARISON.
 No production backend or Stage 2 gate changed.
 
-Latest custom checkpoint: **328 passing tests; 21 complete moving finite-mass
-rate cases and 18 coupled trajectories independently audited**. The unsplit
-update now includes conservative continuity/momentum, actual shared-flux n_t,
-drift stress, both species thermal evolution and full bulk/current/Poynting
-energy transport. All requested trajectories finish with positive species
-states and conservation near roundoff. Temperature accuracy remains inadequate:
-nr32 manufactured ion-pressure error is 0.36276% of full pressure but 78.358%
-of its actual change; fast-wave ion-pressure perturbation error is 59.5516%.
-Slow-mode rate errors are still much larger. See FINITE_MASS_NUMERICS and
-FINITE_MASS_VERIFICATION. Next derive consistent higher-order shared mass,
-momentum, enthalpy and kinetic transport, addressing the measured central-flux
-cancellation defect rather than only changing continuity or the timestep.
+Latest custom checkpoint: **336 passing tests; 31 complete smooth finite-mass
+rate cases and 27 coupled trajectories independently audited**. Shared cubic
+mass/momentum/enthalpy transport and conservative electron entropy reconstruction
+improve fast-wave ion-pressure error from 59.5516% to 5.38315%. All trajectories
+finish with positive species states and near-roundoff global conservation.
+Local accuracy remains inadequate: manufactured nr32 ion-pressure error is
+0.325299% of full pressure but 70.2663% of its actual change. Slow nr64 pi-rate
+error is .00883534, but magnetic-rate error is still **16.8431 times its signal**.
+The bulk-motion and Hall electric terms each have about 19200 times their net
+magnitude; their lower-order velocity/current representations spoil cancellation.
+See SMOOTH_FINITE_MASS_NUMERICS and SMOOTH_FINITE_MASS_VERIFICATION. Next derive
+and independently verify consistent higher-order velocity/current and compatible
+electromagnetic representations, retaining physical masses and actual initial
+fields. Exact-field substitution is only a diagnostic, not an adopted correction.
 Earlier 19 moving-rate and fixed-density studies retain their source identities.
 The original heated edge/exact vacuum, transport and formation remain incomplete.
 
@@ -1448,3 +1450,63 @@ original heated free edge and exact vacuum, actual gas ends/spatial coils,
 shocks/entropy/kinetic validity, converged formation and the experimental UI.
 frc-7mm and the overarching goal remain open; this is progress with a diagnosed
 accuracy limitation, not an external blocker or a completed formation simulator.
+
+## Shared smooth transport and magnetic cancellation checkpoint
+
+The full suite passes **336 tests in 118.11 s**. The separate SmoothFiniteMassMHD
+reference uses shared cubic conservative face transport, mean-preserving
+transverse quadrature and a consistent ratio of reconstructed dual U and n for
+entropy flux. The historical limited solver is unchanged. This central smooth
+method introduces no physical/artificial diffusivity, floors, hidden fallback
+or atmosphere. It has no shock/entropy/positivity theorem; invalid stages reject
+atomically. Exact vacuum is still an unfinished coupled-model requirement.
+
+All **31 rates and 27 trajectories** pass the independent source/field/history,
+parent-reference, physical component-energy/entropy and conservation audit.
+Energy-budget residual is at most 3.36e-16; normalized integral drift is at most
+4.97e-15. All measurement and audit processes are confirmed terminal. Source
+dd060015dc510d312f22a53588d2809ad806de02de1dadb4db956e8887ab4ead and its snapshot
+are in outputs/smooth_finite_mass_verification. Earlier finite-mass 3edae529...,
+moving-current d3984fb... and current/thermal 80fd45b... identities are unchanged.
+The first smooth attempt, original electric-kernel failure, serialization error
+and orphan fields remain preserved. All 49 old complete records and both orphan
+arrays reproduce exactly; new contact records supply the missing histories.
+
+At nr128, manufactured pi-rate error improves from .143364 to .0268603; its
+maximum now decreases to 3225.44 Pa/s. Slow nr32/64 pi rates improve from
+117.248/41.4570 to .0691434/.00883534. Full fast-wave nr32 pi error improves
+from .595516 to .0538315; magnetic error remains .0398052. Manufactured nr32
+pi error in its small physical change remains .702663. Exact global energy
+and accurate thermal rates do not establish accurate magnetic dynamics.
+
+Three unmagnetized two-temperature contacts finish a full 100-microsecond
+transit. Finest nz64 nodal pe/cell-mean pi errors are 6.63e-6/.000316986;
+continuous pe/pi errors are .0000750472/.0110717 and temperature errors
+.000498286/.0127339. Initial projection/representation errors, reverse flow,
+limited entropy and half-dt controls are explicit. Small false B/J drift is
+not monotonically convergent. Three magnetized contacts last only 50 ns and
+must not be described as full-transit magnetic verification. Physical entropy
+defects remain and reverse sign with flow in the contact control.
+
+The exact separable electric-kernel representation removes a contact roundoff
+rejection while preserving strict small-signal residuals and original full
+equation backward errors. The full recombined Faraday error relative to its
+tiny rate remains explicitly .016679 in the preserved example; there is no
+claim of well-conditioned full-array reconstruction or arbitrary-kernel support.
+
+Slow magnetic-rate errors remain 1004.98/263.069/66.8838/16.8431 at nr8→64;
+slow conserved-energy-rate errors remain 106.207/26.5782 at nr32/64. Exact
+velocity/current forcing controls identify incompatible lower-order field
+representations, amplified by roughly 19200-fold ideal/Hall cancellation.
+Neither mesh refinement alone nor fitted velocity from numerical current is an
+adequate resolution. Next derive shared higher-order velocity and magnetic/
+electric bases with physical Hodge/inertia quadrature and commuting curl.
+First verify independent polynomial fields, Ampere/current convergence, all
+wave branches and full original Ohm/Faraday/energy contracts, then repeat the
+complete smooth trajectories without changing their physical inputs.
+
+The numerical/physical requirements in frc-7mm, frc-accuracy, frc-transport,
+frc-vacuum and the overarching goal remain open. Continue collision/heating
+partition, conduction/ionization, heated free-edge exact vacuum, real ends/
+spatial coils, shocks and kinetic validity, converged formation and the UI.
+No FRC stability or particle-confinement claim follows from this checkpoint.

@@ -14,6 +14,12 @@ diagnostic only: FiniteMassMHD does not use it. Changing continuity alone would
 leave bulk enthalpy/kinetic/momentum work inconsistent, so full coupled transport
 must be derived and tested before adoption.
 
+The separate `SmoothFiniteMassMHD` now uses `radial_matrix` and `axial_samples`
+inside a complete shared mass/momentum/enthalpy transport. Transverse quadrature
+uses `annular_cell_polynomial` to preserve each cell average; this module's
+arbitrary-point shared-face stencil is not suitable for that role. The original
+`normal_momentum_flux` probe and historical solver remain unchanged.
+
 There is no slope limiter, numerical diffusion or positivity guarantee in this
 interpolator. Arbitrary input cell averages are not repaired; sharp profiles
 can overshoot. Polynomial exactness, smooth convergence and an independent

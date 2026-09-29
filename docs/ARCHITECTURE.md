@@ -362,7 +362,32 @@ modules. The 21 baseline rates preserve their original snapshot; 18 trajectories
 have an expanded measurement fingerprint with unchanged production sources.
 
 `annular_polynomial` is a separately verified diagnostic for nearly solenoidal
-mass-flux cancellation. It is not selected by the solver. Full shared momentum,
-enthalpy and kinetic work must be derived before adopting that reconstruction.
+mass-flux cancellation. The original FiniteMassMHD does not select it; the
+separate shared smooth transport described below uses its interpolation helpers.
 FINITE_MASS_NUMERICS/VERIFICATION retain pressure errors rather than treating
 global conservation as proof of accurate temperatures or formation physics.
+
+## Shared smooth finite-mass reference
+
+`annular_cell_polynomial` supplies transverse polynomials whose integrals recover
+the actual input averages. `smooth_finite_mass_flux` uses those with shared cubic
+face values for mass, momentum, enthalpy and kinetic transport; `smooth_bulk_entropy`
+advects conservative U using the ratio of separately reconstructed U and n with
+the actual mapped particle flux. `smooth_finite_mass_rhs` assembles the full
+unsplit derivative; `smooth_finite_mass_mhd` inherits the original RK4, positive
+stage checks and atomic budgets. The limited baseline remains a separate source.
+
+`kernel_induction` algebraically separates exact separable curl kernels and
+keeps the strict small-signal solve, restoring full E for work. Original full
+equation backward errors and descriptive rate-relative conditioning are distinct.
+This module does not supply a general Helmholtz decomposition or cure the
+slow-mode spatial cancellation defect in velocity/current representation.
+
+Independent contact parent equations, projection, continuous physical norms,
+slow-mode oracle controls, precision-failure records, measurement protocols,
+source archives, read-only audits and plots remain separate `examples` modules.
+All 31 rates/27 trajectories are preserved, including old failed serialization
+evidence. SMOOTH_FINITE_MASS_NUMERICS/VERIFICATION document improved pressure
+transport alongside unresolved magnetic/energy errors and entropy defects.
+No shock scheme, physical transport closure, exact-vacuum formation gate or
+3-D stability/confinement result is enabled by this smooth bounded reference.
