@@ -17,3 +17,10 @@ fixtures may instead supply independently integrated conservative variables.
 Diagnostics retain total angular momentum, physical toroidal flux (integral
 Btheta dr dz), all energy components and CT divergence. No energy reset, thermal
 floor, Hall or electron-current energy is included in this massless-MHD state.
+
+`magnetic_quadrature` is explicit state metadata, defaulting to the historical
+`cell` convention. `compatible` selects the curl-compatible poloidal energy;
+construction, copying, pressure recovery and all energy diagnostics preserve
+the choice. The compatible Hall solver requires it and rejects legacy energy
+states rather than silently reinterpreting their pressure. Scalar-resistive
+MHD and the prior tests retain their original default.

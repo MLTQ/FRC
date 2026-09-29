@@ -23,3 +23,8 @@ The compatible radial current mass recovers regular polynomial diffusion at
 the axis without sacrificing positive work. Remaining smooth/shock errors must
 be measured. Equations and verification: TOROIDAL_MHD_NUMERICS and
 TOROIDAL_MHD_VERIFICATION.
+
+RHS and trial states preserve the explicit magnetic-energy quadrature metadata.
+The historical default remains cell energy. HallMHD uses this ideal-fluid
+integrator with zero resistivity and compatible energy for the fluid half steps;
+its nonideal magnetic work is advanced separately by a matched midpoint solve.

@@ -17,13 +17,20 @@
 - [x] Derive and independently verify finite-sound-speed Hall modes and a
   finite-amplitude variable-density Hall/Poynting snapshot; record the complete
   42-case experimental spatial study with global work and local errors.
-- [ ] Correct the experimental Hall operator's nonvanishing first-annulus gdot
+- [x] Correct the experimental Hall operator's nonvanishing first-annulus gdot
   error (21.46% through nr128) with consistent regular-axis energy/current/
   electric moments, then verify local transport and stable actual evolution.
-- [ ] Couple nonlinear Hall, electron/ion thermal and finite-current-energy
-  transport consistently to the dynamic state. See NONLINEAR_HALL_PLAN and
-  EXTENDED_PLASMA_PLAN; the linear components alone do not supply a physical
-  heated edge or a formation solver.
+- [x] Couple nonlinear Hall to the compressible dynamic state with explicit
+  compatible magnetic energy, nonlinear midpoint and physical resistive heat;
+  verify three actual wave branches, time/mesh controls, nonlinear flow and
+  independent conducting Bessel decay (63 complete cases, 257 passing tests).
+- [ ] Improve physical magnetic representation accuracy: nr32 wave perturbation
+  errors remain about 4%, dominated by the initial lowest-order field space.
+- [ ] Add electron/ion thermal and finite-current-energy transport consistently
+  to the dynamic state. TWO_TEMPERATURE_PLAN first requires conservative charge
+  flux, pressure work and electron enthalpy transport; then warm waves, collision
+  exchange and finite-mass terms. Neither the linear components nor the new
+  cold-electron Hall solver supply a physical heated edge or formation model.
 - [ ] Connect gas pressure, ionization fraction, density and pre-ionization histories.
 - [ ] Validate electron-neutral and ion-neutral cross sections for argon and other gases.
 - [ ] Establish collisionality / kinetic limits with defensible mean free paths.

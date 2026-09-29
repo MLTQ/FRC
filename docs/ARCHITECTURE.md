@@ -210,7 +210,7 @@ free-vacuum, neutral or separate species-thermal coupling. TOROIDAL_MHD_NUMERICS
 and TOROIDAL_MHD_VERIFICATION define the measured scope. NONLINEAR_HALL_PLAN
 specifies the next current/induction work pairing and finite-sound-speed oracle.
 
-## Experimental nonlinear Hall spatial component
+## Historical experimental nonlinear Hall spatial component
 
 `hall_curl` differentiates the existing magnetic state energy and pairs its
 adjoint Faraday map with a common electric quadrature. `hall_induction` projects
@@ -227,3 +227,29 @@ gdot error. This explicitly prevents integration. HALL_WORK_NUMERICS and
 HALL_WORK_VERIFICATION describe the experimental stencil and failed gate;
 NONLINEAR_HALL_PLAN requires a consistent regular-axis energy/current/electric
 revision before local transfer and actual stable nonlinear wave evolution.
+
+## Compatible compressible Hall evolution
+
+`compatible_magnetic` owns an explicit positive poloidal energy for bilinear
+psi in x=r²/2,z; `hall_compatible` supplies matching electric/magnetic sampling
+with a commuting physical Faraday curl. `hall_matrices` builds the sparse
+magnetic Hessian, skew Hall and positive resistance forms. `compatible_poynting`
+integrates face work with the same axis moments. `hall_midpoint` solves their
+nonlinear midpoint equations with checked actual linear/nonlinear residuals.
+Its LU cache is a preconditioner, not an approximation substituted for the
+changing physical matrix. Failed trials leave physical input intact.
+
+`hall_fluid.HallMHD` composes ideal-fluid half steps and full implicit magnetic
+steps; all fluid momentum remains in the existing full Maxwell-stress flux.
+`ToroidalState.magnetic_quadrature` explicitly carries the energy convention
+through pressure, stages, copies and diagnostics; the legacy default stays
+unchanged. No state energy conversion, numerical atmosphere or Hall heat exists.
+
+Independent references, protocols, records, spatial/evolution measurements,
+supplemental controls, physical-energy audit, comparisons and figures are split
+among the `examples/compatible_hall_*` modules. All 54+9 cases have complete
+source/configuration/archive/history checks. The report separates global work,
+first-order physical field representation, actual mode damping/phase, local
+transfer, nonlinear mesh differences and second-order time convergence.
+COMPATIBLE_HALL_NUMERICS/VERIFICATION define this bounded reduction; the next
+charge/enthalpy and electron/ion thermal contract is TWO_TEMPERATURE_PLAN.

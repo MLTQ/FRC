@@ -42,21 +42,24 @@ low-pressure sandbox requirement; any alternate regime must be labeled.
 Step 1 now has a verified linear Hall/finite-mass reference (49 cylinder cases,
 16 parallel modes) and a nonlinear compressible toroidal MHD extension (33 cases,
 conservative angular momentum, full stress/energy and scalar resistive work).
-See LINEAR_HALL_VERIFICATION and TOROIDAL_MHD_VERIFICATION. Nonlinear Hall and
-moving finite-mass/thermal coupling remain missing. NONLINEAR_HALL_PLAN is the
-next bounded task: couple Hall current/curl/Poynting work to the new compressible
-state and verify finite-sound-speed cylindrical modes and nonlinear transfer.
+See LINEAR_HALL_VERIFICATION and TOROIDAL_MHD_VERIFICATION. Nonlinear Hall is
+now coupled and verified in COMPATIBLE_HALL_VERIFICATION (63 complete cases);
+moving finite-mass and separate species thermal coupling remain missing.
+TWO_TEMPERATURE_PLAN is the next bounded task: construct compatible charge flux,
+electron pressure work and electron enthalpy transport, then verify warm species
+dynamics and collisions. The current Hall solver has explicitly cold electrons.
 The older incompressible oracle cannot be treated as an exact compressible mode.
 Steps 2–5 remain required; neither wave nor nonlinear reference transport tests
 validate the heated plasma boundary or actual formation.
 
-The finite-pressure oracle and experimental nonlinear Hall spatial work pair
-now exist, with 42 complete instantaneous audits. Its first-annulus gdot error
-does not converge (21.46% at nr128), despite exact assembled work cancellation.
-It remains disconnected from the compressible solver. HALL_WORK_VERIFICATION
-retains this failed gate; NONLINEAR_HALL_PLAN first requires a regular-axis
-energy/current/electric correction, then local transport and actual wave/time
-verification. This diagnosis does not reduce the full closure/interface scope.
+The earlier 42-case Hall spatial operator failed its axis consistency gate
+(21.46% at nr128), despite exact assembled work cancellation. It remains as a
+historical control. The compatible successor corrects electric/energy spaces
+and reaches 0.00830% axis error, then evolves all three compressible branches
+and finite-amplitude variable-density flow with nonlinear implicit induction.
+HALL_WORK_VERIFICATION retains the failure; COMPATIBLE_HALL_VERIFICATION records
+the correction and actual time evolution. Neither reduces the required thermal,
+finite-mass, heated-edge, vacuum or formation scope.
 
 The already implemented linear `MaterialCurrent` limit remains useful for
 coefficient, vacuum, source and electron-energy checks. Its 35-case records,

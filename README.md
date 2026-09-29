@@ -15,10 +15,11 @@ physical surface/transport models and appropriate end conditions remain
 unfinished. Stability and particle confinement have not been established.
 A separate electron-current component now includes finite carrier inertia and
 its kinetic energy, with independent decay/screening references. Conditional
-Coulomb and local Hall/inertia diagnostics are available; the moving thermal
-and nonlinear Hall coupling still need implementation and verification. A new
-bounded linear Hall reference evolves toroidal fields and rotation, with
-independent cylindrical and parallel-wave verification.
+Coulomb and local Hall/inertia diagnostics are available. A bounded nonlinear
+compressible Hall solver now evolves toroidal fields, rotation, density and
+energy with compatible magnetic work and implicit Hall/resistive induction.
+Separate electron/ion thermal evolution and physical free-edge coupling remain
+unfinished; the cold-electron reduction is explicitly limited.
 
 ![Waveform comparison](outputs/comparison/comparison.png)
 
@@ -87,19 +88,28 @@ energy residual; this artifact and the remaining fine-grid error are explicit.
 The [linear Hall study](docs/LINEAR_HALL_VERIFICATION.md) adds 49 cylindrical
 runs and 16 parallel-wave references, including both polarizations, finite
 electron mass, damping and mesh/time refinement. This component verifies the
-linear work pairing; nonlinear compressible and moving-boundary coupling remain
-incomplete. The full suite now passes 244 tests.
+linear work pairing; its finite-mass extension to nonlinear moving flow remains
+incomplete. The full suite now passes 257 tests.
 The [nonlinear toroidal study](docs/TOROIDAL_MHD_VERIFICATION.md) adds
 compressible rotation, toroidal induction and conservative angular momentum,
 with 33 complete equilibrium/transport/wave/diffusion cases. Independent physical
-field errors and heat convergence are measured. Nonlinear Hall and physical
-free-edge coupling remain unfinished.
+field errors and heat convergence are measured. Physical free-edge coupling
+remains unfinished.
 
 The [Hall spatial study](docs/HALL_WORK_VERIFICATION.md) adds a verified
 finite-pressure wave reference and 42 nonlinear/current/work audits. The
 experimental operator conserves global Hall work but retains a 21.46% error
-in the first annulus's induction rate. It is not enabled in the fluid solver;
-correcting that axis error is the next integration gate.
+in the first annulus's induction rate. That earlier operator and its failed
+data remain available as a historical control.
+
+The [compatible Hall study](docs/COMPATIBLE_HALL_VERIFICATION.md) corrects that
+axis error and adds actual nonlinear compressible evolution. All 63 spatial,
+wave, nonlinear, time and resistive controls complete, with independent archive
+energy replay. The first-annulus error reaches 0.00830% at nr128. Physical
+magnetic reconstruction remains first order; fine wave errors are about 4%,
+despite much smaller toroidal-coefficient and phase errors. The
+[method](docs/COMPATIBLE_HALL_NUMERICS.md) states boundaries and reductions;
+[separate species thermal transport](docs/TWO_TEMPERATURE_PLAN.md) is next.
 
 ## Use the existing environment
 
@@ -117,6 +127,9 @@ correcting that axis error is the next integration gate.
 .venv/bin/python -m examples.verify_toroidal
 .venv/bin/python -m examples.hall_work_measurements
 .venv/bin/python -m examples.verify_hall_work
+.venv/bin/python -m examples.compatible_hall_measurements
+.venv/bin/python -m examples.compatible_hall_controls
+.venv/bin/python -m examples.verify_compatible_hall
 .venv/bin/python -m examples.verify_mhd
 .venv/bin/python -m examples.verify_equilibrium
 .venv/bin/python -m examples.verify_positivity

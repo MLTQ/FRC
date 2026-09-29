@@ -12,12 +12,15 @@ def energy_density(mesh, psi):
 
 
 def selected_energy(mesh, psi, quadrature="cell"):
+    if quadrature == "compatible":
+        from .compatible_magnetic import energy_density as compatible_energy
+        return compatible_energy(mesh, psi)
     if quadrature == "staggered":
         return energy_density(mesh, psi)
     if quadrature == "cell":
         br, bz = mesh.cell_fields(psi)
         return (br*br+bz*bz)/(2*MU0)
-    raise ValueError("Magnetic energy quadrature must be cell or staggered")
+    raise ValueError("Magnetic energy quadrature must be cell, staggered or compatible")
 
 
 def stiffness_action(mesh, psi):

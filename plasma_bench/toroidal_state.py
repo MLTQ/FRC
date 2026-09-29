@@ -10,9 +10,10 @@ from .magnetic_quadrature import selected_energy
 class ToroidalState:
     conserved: np.ndarray  # rho, mr, mz, E, L=r rho vtheta, g=Btheta/r
     psi: np.ndarray
+    magnetic_quadrature: str = 'cell'
 
     def copy(self):
-        return ToroidalState(self.conserved.copy(), self.psi.copy())
+        return ToroidalState(self.conserved.copy(), self.psi.copy(), self.magnetic_quadrature)
 
 
 def radius_squared(mesh):
@@ -30,22 +31,22 @@ def primitive(mesh, state, gamma):
     omega, g = u[..., 4]/(rho*radius_squared(mesh)), u[..., 5]
     br, bz = mesh.cell_fields(state.psi)
     kinetic = .5*rho*(vr**2+vz**2+radius_squared(mesh)*omega**2)
-    magnetic = selected_energy(mesh, state.psi, 'cell')+radius_squared(mesh)*g**2/(2*MU0)
+    magnetic = selected_energy(mesh, state.psi, state.magnetic_quadrature)+radius_squared(mesh)*g**2/(2*MU0)
     p = (gamma-1)*(u[..., 3]-kinetic-magnetic)
     if not np.isfinite(p).all() or np.any(p <= 0):
         raise NonphysicalState(f'Nonpositive toroidal pressure (minimum {p.min():.6g}); no energy repair applied')
     return np.stack((rho, vr, vz, p, br, bz, omega, g), axis=-1)
 
 
-def from_primitive(mesh, psi, density, pressure, vr=0., vz=0., omega=0., toroidal_over_radius=0., gamma=5/3):
+def from_primitive(mesh, psi, density, pressure, vr=0., vz=0., omega=0., toroidal_over_radius=0., gamma=5/3, magnetic_quadrature='cell'):
     if not np.isfinite(gamma) or gamma <= 1:
         raise ValueError('Finite gamma greater than one required')
     shape = (mesh.nr, mesh.nz)
     rho, p, vr, vz, omega, g = [np.broadcast_to(np.asarray(v, float), shape) for v in
                               (density, pressure, vr, vz, omega, toroidal_over_radius)]
     r2 = radius_squared(mesh)
-    e = p/(gamma-1)+.5*rho*(vr**2+vz**2+r2*omega**2)+selected_energy(mesh, psi, 'cell')+r2*g**2/(2*MU0)
-    state = ToroidalState(np.stack((rho, rho*vr, rho*vz, e, rho*r2*omega, g), axis=-1), np.asarray(psi, float).copy())
+    e = p/(gamma-1)+.5*rho*(vr**2+vz**2+r2*omega**2)+selected_energy(mesh, psi, magnetic_quadrature)+r2*g**2/(2*MU0)
+    state = ToroidalState(np.stack((rho, rho*vr, rho*vz, e, rho*r2*omega, g), axis=-1), np.asarray(psi, float).copy(), magnetic_quadrature)
     primitive(mesh, state, gamma)
     return state
 
@@ -55,7 +56,7 @@ def integrated_quantities(mesh, state, gamma):
     r2, volume = radius_squared(mesh), mesh.volumes
     kinetic = .5*q[..., 0]*(q[..., 1]**2+q[..., 2]**2+r2*q[..., 6]**2)
     toroidal = r2*q[..., 7]**2/(2*MU0)
-    magnetic = selected_energy(mesh, state.psi, 'cell')+toroidal
+    magnetic = selected_energy(mesh, state.psi, state.magnetic_quadrature)+toroidal
     return {'mass_kg': float(np.sum(volume*q[..., 0])),
             'axial_momentum_kg_m_s': float(np.sum(volume*state.conserved[..., 2])),
             'angular_momentum_kg_m2_s': float(np.sum(volume*state.conserved[..., 4])),

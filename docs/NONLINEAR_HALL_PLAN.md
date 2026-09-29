@@ -1,11 +1,11 @@
 # Next integration: nonlinear Hall work on the compressible toroidal state
 
-The bounded compressible toroidal solver is now implemented and independently
-verified. The next missing physics is Hall induction with the same current,
-field and source-work conventions. It must be coupled to this nonlinear state,
-not substituted by the earlier uniform-density linear wave solver.
+The bounded compressible Hall milestone is now implemented and independently
+verified in COMPATIBLE_HALL_NUMERICS and COMPATIBLE_HALL_VERIFICATION. This
+document retains its integration requirements and historical failed-axis gate.
+TWO_TEMPERATURE_PLAN is the next bounded task; full formation scope is unchanged.
 
-## Current integration gate
+## Historical integration gate and completed correction
 
 The new finite-pressure oracle and nonlinear variable-density manufactured
 reference are implemented (COMPRESSIBLE_HALL_REFERENCE). An experimental
@@ -23,10 +23,20 @@ pressure recovery, fluxes and diagnostics. Preserve the existing verified MHD
 path and rerun relevant equilibrium/transport tests. Do not enable Hall merely
 because its global work cancels or a shrinking-axis-volume norm converges.
 
-Then verify local energy transfer and a stable time integrator. Purely adding
+The compatible successor now passes that axis gate with an explicit new energy
+convention and a physical commuting curl. Local transfer, nonlinear midpoint,
+actual compressible waves and variable-density evolution are verified in 63
+completed cases; the old failed operator is preserved. First-annulus error is
+8.30089e-5 at nr128, and fixed-grid wave/nonlinear time errors fall near fourfold
+per halving. Physical magnetic representation remains first order. This satisfies
+the bounded cold-electron integration milestone, not thermal or vacuum closure.
+
+The original integrator requirement was to verify local energy transfer and a
+stable time integrator. Purely adding
 nondissipative Hall to the existing SSPRK2 step is not stable for imaginary
 wave eigenvalues. Actual nonlinear wave propagation, mesh/time refinement,
-variable-density transfer and finite-amplitude controls remain unimplemented.
+variable-density transfer and finite-amplitude controls are now implemented;
+see the newer report for their measured errors and durations.
 
 ## Current and electromagnetic work
 

@@ -17,3 +17,6 @@ initial-state construction, pressure recovery and admissibility changes.
 `selected_energy` retains the explicit historical `cell` convention and the
 new `staggered` convention; invalid selectors raise. State construction,
 pressure recovery, Euler admissibility and diagnostics must use the same choice.
+The explicit `compatible` selector delegates to compatible_magnetic's positive
+flux-interpolant energy. It does not change the historical defaults or silently
+convert the total energy of an existing state.

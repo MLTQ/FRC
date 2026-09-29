@@ -4,10 +4,12 @@ The goal is a numerically verified and physically justified simulation in which
 we can vary geometry, plasma and prescribed coil waveforms to investigate FRC
 formation. Passing the existing stationary-conductor tests is not completion.
 
-Latest checkpoint: **244 passing tests; 42 completed Hall spatial audits**.
-The experimental nonlinear Hall work pairing is not connected to the fluid
-solver because it has a persistent 21.46% first-annulus induction error.
-See HALL_WORK_VERIFICATION and NONLINEAR_HALL_PLAN for evidence and next action.
+Latest checkpoint: **257 passing tests; 63 completed compatible Hall cases**.
+The prior axis error is corrected, and a separate compressible Hall solver now
+evolves nonlinear flow/fields with implicit Hall/resistive induction and explicit
+compatible magnetic energy. Physical B representation remains first order;
+separate electron/ion thermal transport, finite-mass and vacuum/edge coupling
+remain incomplete. See COMPATIBLE_HALL_VERIFICATION and TWO_TEMPERATURE_PLAN.
 
 ## Completion evidence still required
 
@@ -869,7 +871,7 @@ spatial coil work, actual vacuum/chamber ends, shock/remapping robustness,
 kinetic ordering, converged formation and the experiment UI remain required.
 The full objective remains active and the original argon target is unchanged.
 
-## Completion audit at this checkpoint
+## Historical completion audit at the 224-test checkpoint
 
 | Requirement | Authoritative evidence | Status |
 |---|---|---|
@@ -936,3 +938,75 @@ heated-edge/vacuum/real-end closure, spatial coils, shock/remapping robustness,
 kinetic ordering, converged formation and interactive experiments remain open.
 No formation claim or original-argon target change is made. The full goal is
 active; this is progress rather than completion or an external blocker.
+
+## Compatible nonlinear Hall checkpoint: verified progress
+
+The full suite passes **257 tests (88.52 s)**. The corrected electric/magnetic
+spaces commute under physical Faraday in x=r²/2,z, with explicit compatible
+magnetic energy carried through pressure recovery, fluid stages and diagnostics.
+The old cell-energy path and failed Hall operator remain reproducible controls.
+There is no fitted axis coefficient, density/current floor, energy reset or
+extra Hall force. A nonlinear implicit midpoint couples Hall and positive
+resistivity to ideal compressible fluid half steps; failed trials are atomic.
+
+All **54 main plus 9 supplemental cases** completed. Axis gdot error falls
+0.0203290→0.00526712→0.00132551→0.000331905→0.0000830089 for nr8→128, replacing
+the historical nonzero 0.214581 limit. Uniform/strong-density, zero-component,
+quadrature and radial-only controls retain convergence. Global Hall work ratio
+is at most 4.41337e-18; independent physical energy replay is within 7.94556e-16
+of its absolute work scale. Local energy-transfer defect reaches 9.59915e-5
+relative and converges near second order, but is not zero or repaired as heat.
+
+The actual coupled solver reproduces all three finite-pressure Hall branches.
+At nr32, physical magnetic errors are 3.9960%/4.4048%/3.9631%; initial field
+representation already contributes 3.9807%/4.3985%/3.9631%. This is a remaining
+first-order spatial field limitation, not accurate-everywhere B inferred from
+small budgets. Slow/intermediate/fast velocity errors are
+1.0118%/0.2128%/0.2759%. Slow duration is 0.5 radian, the others a full period.
+Slow mode retained amplitude improves 0.6961→0.9679→0.9969, so coarse damping
+is substantial and explicit. A 100-fold smaller amplitude hardly changes its
+nr16 error. Both propagation signs, Hall-free, nonlinear amplitude and solver
+tolerance controls are archived; physical and coefficient errors stay separate.
+
+Fixed-grid time-halving magnetic error ratios are 3.94368/3.98028 for the wave
+and 3.94105/4.02325 for nonlinear evolution. The finite-amplitude 1-microsecond
+flow comparison against restricted nr64 has nr32 magnetic/momentum/density
+differences 0.2432%/0.3791%/1.2872% of the fine reference's **change**, rather
+than its large background. This does not make nr64 an exact continuum oracle.
+Independent conducting Bessel decay has nr64 field/axis/physical-heat errors
+1.21612e-5/9.87096e-6/1.33088e-4, with time controls separating spatial error.
+
+All evolved histories conserve total energy/mass to at most
+6.63912e-16/5.40031e-16 relative. Independent initial/final energy replay, actual
+terminal times, positivity, physical heat monotonicity, source/protocol identity
+and lossless archive hashes pass audit. Angular momentum uses an absolute
+normalization where its mean is zero. All three scientific figures were visually
+inspected. Frozen engine/reference/measurement source is
+`9c14e7c757b6d3a51bc0988faff5ff704cd58e2abb8b5ebaada646de7e4d4dd8`;
+supplemental protocol and report hashes are separately recorded. All numerical,
+report and test jobs are terminal. Details: COMPATIBLE_HALL_NUMERICS,
+COMPATIBLE_HALL_VERIFICATION and both `outputs/compatible_hall_*` directories.
+
+### Current completion audit and next action
+
+| Requirement | Current status |
+|---|---|
+| Nonlinear compressible Hall core | Implemented and independently verified in a bounded conducting periodic reference; first-order physical B representation and limited shock/update scope remain explicit |
+| Electron/ion thermal and finite-mass closure | Incomplete: cold massless electrons, single represented gas, prescribed eta; physical heating partition, electron pressure/enthalpy and nonlinear drift-energy terms still required |
+| Plasma-vacuum, edge, ends and sources | Earlier moving/free-vacuum references retained; heated-edge incompatibility, spatial coils, real ends and unresolved flow/mesh errors remain |
+| Converged FRC formation | Not demonstrated; initialized equilibria and waves are verification fixtures |
+| Interactive physical experiments | Existing Stage0/1 interface only; guarded Stage2 and dynamic experiment UI remain required |
+
+Next implement TWO_TEMPERATURE_PLAN's **discrete conservative charge flux and
+electron pressure/enthalpy pairing**, then warm electron/ion evolution and
+independent collision exchange. The weak work current is not automatically a
+pointwise divergence-free cell particle flux; its dual identity must be mapped
+and verified before thermal advection. The electron enthalpy drift is required
+alongside pressure Ohm/Poynting terms. Finite-mass convective current, drift
+energy and momentum stresses must follow from the same species equations.
+
+Return thereafter to original heated-edge/vacuum/real-end physics, spatial coil
+work, shock/remapping robustness, kinetic ordering and converged formation.
+No easier or colder fixture replaces the original argon target. Beads goal,
+transport, vacuum, accuracy and formation issues stay open. The full objective
+is **active**; this checkpoint is progress, not completion or an external block.

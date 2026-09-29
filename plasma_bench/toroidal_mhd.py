@@ -52,7 +52,7 @@ class ToroidalMHD:
         du[..., 1] += reconstruction.radial_source()
         du[..., 5] += dg
         electric = ideal_emf(mesh, reconstruction, br, bz, par.gamma, par.spatial_order)+er
-        return ToroidalState(du, -mesh.rf[:, None]*electric), heat+ohmic_power(mesh, er, par.resistivity), reconstruction.statistics
+        return ToroidalState(du, -mesh.rf[:, None]*electric, state.magnetic_quadrature), heat+ohmic_power(mesh, er, par.resistivity), reconstruction.statistics
 
     def rhs(self, state):
         derivative, heat, _ = self._rhs(state)
@@ -65,10 +65,10 @@ class ToroidalMHD:
             raise ValueError(f'Time step must be positive and <= {limit:.6g} s')
         old = self.state
         a, qa, sa = self._rhs(old)
-        predictor = ToroidalState(old.conserved+dt*a.conserved, old.psi+dt*a.psi)
+        predictor = ToroidalState(old.conserved+dt*a.conserved, old.psi+dt*a.psi, old.magnetic_quadrature)
         primitive(self.mesh, predictor, self.parameters.gamma)
         b, qb, sb = self._rhs(predictor)
-        new = ToroidalState(old.conserved+.5*dt*(a.conserved+b.conserved), old.psi+.5*dt*(a.psi+b.psi))
+        new = ToroidalState(old.conserved+.5*dt*(a.conserved+b.conserved), old.psi+.5*dt*(a.psi+b.psi), old.magnetic_quadrature)
         primitive(self.mesh, new, self.parameters.gamma)
         self.state = new
         self.time += dt
