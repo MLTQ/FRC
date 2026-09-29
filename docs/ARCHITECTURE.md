@@ -14,6 +14,13 @@ profiled local loops, and PETSc becomes attractive for larger implicit solves.
 None is required by a public interface. Revisit after measured profiling and the
 Stage 2 solver choice, on the actual target GPU operating system.
 
+The bounded [external-engine comparison](ENGINE_COMPARISON.md) now verifies an
+optional WarpX 26.09 CUDA installation on the remote RTX 4090. It is isolated
+from the core dependencies and is not a production backend. Experiment/source
+definitions and result diagnostics remain reusable; adopting kinetic dynamics
+still requires explicit model, vacuum/edge and output-conversion contracts.
+The current custom axisymmetric research path is retained.
+
 References: [SciPy cached factorization](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.factorized.html),
 [JAX supported installation platforms](https://docs.jax.dev/en/latest/installation.html).
 

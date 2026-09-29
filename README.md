@@ -32,6 +32,10 @@ Start with [the measured findings](docs/RESULTS.md),
 [architecture / stack decision](docs/ARCHITECTURE.md).
 
 The continued development is tracked in [the active goal](docs/GOAL_STATUS.md).
+The [external-engine comparison](docs/ENGINE_COMPARISON.md) records 17 audited
+WarpX GPU fixtures and a Gkeyll source review. The existing research path remains
+the core; the isolated WarpX installation is available for independent and
+future kinetic comparisons, with its measured limits retained.
 See [dynamic MHD verification](docs/MHD_VERIFICATION.md),
 [curved closed-flux equilibrium checks](docs/EQUILIBRIUM_VERIFICATION.md), and the
 [equations and boundary contract](docs/MHD_NUMERICS.md).

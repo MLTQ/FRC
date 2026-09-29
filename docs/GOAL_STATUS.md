@@ -4,7 +4,16 @@ The goal is a numerically verified and physically justified simulation in which
 we can vary geometry, plasma and prescribed coil waveforms to investigate FRC
 formation. Passing the existing stationary-conductor tests is not completion.
 
-Latest checkpoint: **293 passing tests; 58 main warm Hall cases audited**.
+Latest comparison checkpoint: **17 WarpX GPU cases audited**, with a working
+isolated RTX 4090 installation and a source-level Gkeyll fit review. Retain our
+existing bench and custom axisymmetric path; an external engine is not yet a
+verified shortcut around the physical plasma-vacuum edge. Full-Maxwell vacuum
+waves converge at order two. The tested hybrid waves retain measured time/energy
+errors; no FRC formation or GPU speedup claim is made. See ENGINE_COMPARISON.
+No production physics or Stage 2 gate changed. Next resume the pending
+finite-mass/current result audit and stationary-bias precision fix.
+
+Latest fully audited custom coupling checkpoint: **293 passing tests; 58 main warm Hall cases audited**.
 An experimental coupling now includes moving species, consistent magnetic
 traces and conservative current enthalpy/Poynting flux. Five supplemental cases
 finish and three fine-pressure replays reject a negative ion partition. Fast
