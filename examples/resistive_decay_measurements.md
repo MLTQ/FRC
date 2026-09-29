@@ -13,3 +13,7 @@ arrays are lossless and hashed. A separate independently diagonalized stiff
 low-mode control exposes raw midpoint false reversal despite exact bookkeeping
 and measures adaptive tolerance refinement. That control tests time integration,
 not a continuum spatial eigenvalue. Source hashes freeze the complete study.
+
+`decay_case` also accepts separately recorded radial grading and angular count
+for the subsequent surface-resolution study. Its original defaults remain the
+uniform mesh. Historical outputs retain their historical source fingerprints.

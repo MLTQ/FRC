@@ -30,3 +30,13 @@ with angular refinement. Only the distant matching surface is exactly curved.
 Quadrature, material/angular resolution, exterior spacing/modes and mesh
 distortion errors all require independent checks. This geometry alone does not
 claim a complete free-boundary MHD solver or a mesh-remapping capability.
+
+Optional `radial_grading` clusters both material and vacuum shells at their
+shared surface. Material radii use R[1-(1-xi)^p]; exterior offsets use
+(Rmatch-R)xi^p. The finite positive exponent p defaults to 1, retaining the
+original uniform shell coordinates exactly. p>1 resolves thin surface layers;
+it changes the mesh, never physical resistivity, initial density or cell heat.
+Nonfinite, nonpositive or floating-point-collapsed shells are rejected. Angular
+resolution, small center/axis elements and outer matching accuracy remain
+independent controls. Independent physical volume, force, expansion and magnetic
+decay checks must accompany use of a graded mesh.

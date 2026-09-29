@@ -37,12 +37,15 @@ class ResistiveCase:
     modes: int = 8
     quadrature: int = 5
     cfl: float = .15
+    radial_grading: float = 1.
+    angular_cells: int | None = None
 
     def build(self):
         if self.kind not in ("frc","source"):
             raise ValueError("Unknown moving resistive fixture")
         n=self.radial_cells
-        d=MovingDomain(n,2*n,matching_radius=self.matching_radius,
+        d=MovingDomain(n,2*n if self.angular_cells is None else self.angular_cells,
+                       matching_radius=self.matching_radius,radial_grading=self.radial_grading,
                        vacuum_layers=round(n*(self.matching_radius-1)),modes=self.modes,quadrature=self.quadrature)
         bias=np.sqrt(MU0) if self.kind=="frc" else Gaussian(np.sqrt(MU0),.04,.04)
         b=float(bias if np.isscalar(bias) else bias.value(0.))
@@ -52,7 +55,7 @@ class ResistiveCase:
             cfl=self.cfl,max_timestep=self.max_timestep)
 
     def configuration(self):
-        return {**asdict(self),"angular_cells":2*self.radial_cells,"radius_m":1.,
+        return {**asdict(self),"angular_cells":2*self.radial_cells if self.angular_cells is None else self.angular_cells,"radius_m":1.,
                 "vacuum_layers":round(self.radial_cells*(self.matching_radius-1)),"density_kg_m3":1.,
                 "gamma":5/3,"resistivity_ohm_m":self.diffusivity*MU0,
                 "initial_velocity_m_s":0.,"initial_a":"-3 B(0) (1-r^2-z^2)/4",

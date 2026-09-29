@@ -36,7 +36,7 @@ class Elements:
 class MovingDomain:
     """Q1 material cells inside a deformable sphere-like boundary; no exterior gas."""
     def __init__(self, radial_cells=8, angular_cells=16, *, radius=1., matching_radius=2.,
-                 vacuum_layers=None, modes=8, quadrature=5):
+                 vacuum_layers=None, modes=8, quadrature=5, radial_grading=1.):
         vacuum_layers = radial_cells if vacuum_layers is None else vacuum_layers
         for name, value, minimum in (("radial cells", radial_cells, 2), ("angular cells", angular_cells, 4),
                                      ("vacuum layers", vacuum_layers, 2), ("modes", modes, 1), ("quadrature", quadrature, 2)):
@@ -46,12 +46,20 @@ class MovingDomain:
             raise ValueError("Positive plasma radius must be inside the matching sphere")
         if modes > angular_cells:
             raise ValueError("Matching angular resolution must resolve the retained modes")
+        if not np.isscalar(radial_grading) or not np.isfinite(radial_grading) or radial_grading <= 0:
+            raise ValueError("Finite positive radial grading required")
         self.nr, self.nt, self.nv = radial_cells, angular_cells, vacuum_layers
         self.radius, self.matching_radius, self.modes = radius, matching_radius, modes
-        self.quadrature = quadrature
+        self.quadrature, self.radial_grading = quadrature, float(radial_grading)
         theta = np.linspace(0., np.pi, angular_cells+1)
         shells = np.r_[0., np.linspace(radius/radial_cells, radius, radial_cells),
                        np.linspace(radius, matching_radius, vacuum_layers+1)[1:-1]]
+        if radial_grading != 1.:
+            material = radius*(1-(1-np.linspace(0.,1.,radial_cells+1))**radial_grading)
+            exterior = radius+(matching_radius-radius)*np.linspace(0.,1.,vacuum_layers+1)[1:-1]**radial_grading
+            shells = np.r_[material,exterior]
+        if np.any(np.diff(np.r_[shells,matching_radius]) <= 0):
+            raise ValueError("Radial grading collapses shell spacing at floating-point precision")
         self.theta, self.shells = theta, shells
         self.ids = np.zeros((len(shells), angular_cells+1), int)
         self.ids[1:] = np.arange(1, 1+(len(shells)-1)*(angular_cells+1)).reshape(len(shells)-1, angular_cells+1)

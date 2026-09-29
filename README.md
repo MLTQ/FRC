@@ -8,10 +8,11 @@ heating in explicit verification domains. The coil-driven formation workflow
 now has a separate fixed-chamber coupling reference with moving gas, prescribed
 coils and an elliptic magnetic vacuum. A new material-mesh reference evolves a
 free plasma surface against a magnetic vacuum extending to infinity, with
-scalar resistive induction and positive local Ohmic heating. Its moving flow
-remains resolution-sensitive; spatial coil coupling, appropriate end conditions
-and physical transport remain unfinished. Stability and particle confinement
-have not been established.
+scalar resistive induction and positive local Ohmic heating. Surface-focused
+meshes now expose substantial spatial and time sensitivity and a conditional
+thermal incompatibility of the initialized heated edge. Spatial coil coupling,
+physical surface/transport models and appropriate end conditions remain
+unfinished. Stability and particle confinement have not been established.
 
 ![Waveform comparison](outputs/comparison/comparison.png)
 
@@ -61,6 +62,15 @@ spherical-decay, current, local-heat and stiff-time checks. Its
 [method](docs/RESISTIVE_MOVING_NUMERICS.md) defines adaptive diffusion control and
 atomic coupling to motion. The finest driven-flow comparison still differs by
 63.8% between meshes despite much smaller energy and time-integration errors.
+The [surface-resolution study](docs/SURFACE_VERIFICATION.md) adds independent
+graded-mesh references, local force/thermal profiles and common physical-volume
+comparisons. Its integrated velocity differences remain large; additional fine
+time controls change velocity by 5.40%, then 2.76%. These use a different norm
+from the historical 63.8% result. The [surface compatibility audit](docs/SURFACE_COMPATIBILITY.md)
+derives a conflict between initial edge heating and a smooth zero-pressure
+surface under the stated continuous-field assumptions. This restricts the
+interpretation of these stress fixtures and does not prove that every weak
+solution is impossible.
 
 ## Use the existing environment
 
@@ -88,6 +98,10 @@ atomic coupling to motion. The finest driven-flow comparison still differs by
 .venv/bin/python -m examples.resistive_decay_measurements
 .venv/bin/python -m examples.resistive_dynamic_measurements --reuse
 .venv/bin/python -m examples.verify_resistive_moving
+.venv/bin/python -m examples.surface_measurements --references
+.venv/bin/python -m examples.surface_measurements --reuse
+.venv/bin/python -m examples.surface_time_control
+.venv/bin/python -m examples.verify_surface
 ```
 
 The boundary verifier assembles completed boundary-study records. To regenerate its
@@ -97,8 +111,9 @@ modules. The separately recorded fine shock uses
 `examples.boundary_order_probe.run(384, .2, "outputs/boundary_verification/fine_shock")`.
 These fine-grid studies can take many minutes; partial records are not results.
 The moving measurement/assembly commands validate exact source/configuration and
-lossless field hashes before reusing completed cases. The last three commands
-reproduce the resistive extension. Historical studies retain their recorded
+lossless field hashes before reusing completed cases. The resistive commands
+reproduce the uniform extension; the final four reproduce the surface study.
+Historical studies retain their recorded
 source fingerprints; current production changes do not relabel old outputs.
 The finest material meshes also take several minutes.
 
@@ -200,8 +215,10 @@ remaining energy mechanisms. A fixed boundary strip improves shock energy but
 has a measured driven-flow accuracy cost. The new ideal material reference
 provides actual free-surface evolution and independent expansion/force checks.
 Its resistive extension verifies scalar diffusion and heating, but resolved
-driven flow, spatial coil coupling, realistic ends and transport/Hall validity
-remain required.
+driven flow, a defensible heated-edge model, spatial coil coupling, realistic
+ends and transport/Hall validity remain required. Surface grading preserves
+the uniform default and makes refinement explicit; it does not by itself
+resolve the flow or repair the conditional thermal incompatibility.
 The coil-driven Stage 2 entry point still raises an explicit `NotImplementedError`
 until the physical formation requirements are verified. The dynamic references
 are separately scriptable through `plasma_bench.mhd.AxisymmetricMHD` and
@@ -304,6 +321,10 @@ unreversed plasma. `ResistiveMovingPlasma` accepts explicit scalar resistivity i
 ohm m; its diffusion tolerance controls local field/current/heat estimates, not
 global physical accuracy. The [complete study](docs/RESISTIVE_MOVING_VERIFICATION.md)
 retains the large moving-flow mesh dependence and source/time/boundary controls.
+`ResistiveCase(..., radial_grading=2.0)` clusters initial material and magnetic
+vacuum shells at the shared surface. The default is `1.0`; the new uniform
+runs reproduce the historical saved state arrays exactly. See the
+[surface method](docs/SURFACE_NUMERICS.md) for its measured accuracy and limits.
 
 [Open physics and numerical questions](docs/RESEARCH_QUESTIONS.md) include the
 outer vacuum boundary, transport, pre-ionization, neutral effects, objective FRC

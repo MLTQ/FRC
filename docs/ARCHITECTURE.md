@@ -138,3 +138,16 @@ closure. Uniform bias is still the only moving-source geometry. The completed
 from the large remaining flow error; see RESISTIVE_MOVING_NUMERICS.md and
 RESISTIVE_MOVING_VERIFICATION.md. Neither this extension nor its local tolerance
 unlocks Stage 2 or replaces mesh, surface thermodynamics and regime validation.
+
+Optional radial grading in `MovingDomain` resolves material and magnetic-vacuum
+shells near their shared surface without changing physics; the default uniform
+coordinates are retained exactly. Angular resolution remains independent.
+`examples/surface_sampling` inverts the initial geometry to compare common
+physical material points. `material_overlap` intersects initial cells and uses
+positive quadrature, preserving discontinuities in the comparison rather than
+smoothing thermal fields. Cached paired-order integrations retain exact input
+and analysis hashes. Independent moments, gas expansion and sphere decay verify
+the added geometry/control, separately from actual surface-flow convergence.
+See SURFACE_NUMERICS.md and the conditional thermal trace audit in
+SURFACE_COMPATIBILITY.md; mesh refinement cannot by itself validate missing
+physical interface assumptions.

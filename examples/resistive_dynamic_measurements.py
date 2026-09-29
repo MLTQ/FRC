@@ -21,9 +21,9 @@ def protocol():
     return cases
 
 
-def measure(case,directory):
+def measure(case,directory,*,fingerprint=provenance):
     directory=Path(directory);directory.mkdir(parents=True,exist_ok=True)
-    source=provenance();start=perf_counter();s=case.build()
+    source=fingerprint();start=perf_counter();s=case.build()
     row={"name":case.name,"completed":False,"provenance":source,"configuration":case.configuration(),
          "initial":s.diagnostics(),"setup_seconds":perf_counter()-start,"history":[]}
     start=perf_counter();last=start;arrays={};times=[]
@@ -54,7 +54,7 @@ def measure(case,directory):
                  "pressure":"Pa","density":"kg/m^3","volume":"m^3","node_mass":"kg","cell_mass":"kg",
                  "pressure_invariant":"Pa m^(3 gamma)","current_over_radius":"A/m^3",
                  "current_quadrature":"A/m^2","quadrature_coordinates":"m, r/z","cell_ohmic_heat":"J","bias":"T"}}
-    if provenance()!=source:
+    if fingerprint()!=source:
         raise RuntimeError("Source changed during resistive measurement")
     write_record(directory/f"{case.name}.json",row);partial.unlink(missing_ok=True)
     print("Finished",case.name,"completed=",row["completed"],flush=True)

@@ -11,3 +11,7 @@ evolving entropy, flux labels and actual current. Partial/failure records stay
 explicitly incomplete and are never assembled as successful studies. Reuse
 requires matching full source/configuration and completed data. Disjoint named
 cases may run in separate processes; no two jobs should own the same output.
+
+`measure` accepts an explicit `fingerprint` callable for reuse by a distinct
+study. That study must include its protocol and additional measurement helpers
+in the fingerprint. The default preserves this module's provenance contract.

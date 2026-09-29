@@ -37,12 +37,16 @@ def diagnostics(o,a,heat,ref,time):
             "ohmic_heat_j":float(heat.sum()),"analytic_ohmic_heat_j":expected["ohmic_heat_j"]},u,q,j
 
 
-def decay_case(name,n,dt=.002,matching=2.,modes=8,quadrature=5,radial_mode=1,tolerance=1e-4):
+def decay_case(name,n,dt=.002,matching=2.,modes=8,quadrature=5,radial_mode=1,tolerance=1e-4,
+               radial_grading=1.,angular_cells=None):
     ref=SphericalDecay(mode=radial_mode)
-    d=MovingDomain(n,2*n,matching_radius=matching,vacuum_layers=round(n*(matching-1)),modes=modes,quadrature=quadrature)
+    nt=2*n if angular_cells is None else angular_cells
+    d=MovingDomain(n,nt,matching_radius=matching,vacuum_layers=round(n*(matching-1)),modes=modes,
+                   quadrature=quadrature,radial_grading=radial_grading)
     o=MaterialResistivity(d,d.fluid_reference,ref.diffusivity*MU0)
     a=ref.fields(*d.fluid_reference.T)["a"];heat=np.zeros(d.fluid_cell_count)
-    row={"name":name,"completed":True,"configuration":{"radial_cells":n,"angular_cells":2*n,"radius_m":1.,
+    row={"name":name,"completed":True,"configuration":{"radial_cells":n,"angular_cells":nt,"radius_m":1.,
+         "radial_grading":radial_grading,
          "matching_radius_m":matching,"vacuum_layers":round(n*(matching-1)),"modes":modes,"quadrature":quadrature,
          "physical_diffusivity_m2_s":ref.diffusivity,"physical_resistivity_ohm_m":ref.diffusivity*MU0,
          "central_initial_a_t":ref.central_a,"radial_mode":radial_mode,"outer_time_cap_s":dt,

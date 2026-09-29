@@ -113,26 +113,36 @@ measurements of their recorded source, not reruns with this different solver.
 
 ## Current development step
 
-The moving material reference now includes scalar physical resistivity, weak
-current recovery, positive per-cell Ohmic heating and adaptive diffusion accuracy
-control, with gas only inside its free surface and infinite magnetic vacuum
-outside. The full suite has **170 passing tests (62.11 s)**. All 13 stationary
-decay studies, stiff time controls and 20 moving cases are complete; production,
-configuration, field and separate report hashes are checked. Both figures were
-visually inspected. No numerical job remains live at this checkpoint.
+The moving resistive material reference now has optional initial radial grading,
+clustering plasma and true magnetic-vacuum cells at their shared surface. It
+adds no exterior fluid or artificial transport. The full suite has **179 passing
+tests (80.30 s)**. All 21 moving cases, 13 independent component cases and 18
+comparison pairs with separate integration-order checks are complete. Source,
+configuration, field, comparison and report hashes are checked; both final
+figures were visually inspected. No numerical job remains live at this checkpoint.
 
-Fixed-sphere current and local heat converge at about second order, but actual
-moving velocity differs by 63.821% between the finest driven meshes (nr=16/32,
-D=0.1 m²/s). Neither positive heat nor a small response-energy error establishes
-resolved flow. Inspect that spatial/surface error while adding spatially varying
-circular coils with the full geometric source-force derivative and independent
-source-work controls. RESISTIVE_MOVING_VERIFICATION.md gives the measured
-evidence; MOVING_COIL_PLAN.md specifies the next source-coupling reference.
-Material-mesh distortion, low-energy modes, shock capture/remapping, actual
-chamber/end conditions, transport/ionization/Hall applicability and converged
-formation remain required. The fixed-chamber references and their numerical
-limitations remain useful comparisons. `Experiment(stage=2)` stays gated and
-the overarching goal remains active.
+SURFACE_VERIFICATION.md reports large spatial differences and persistent fine
+time sensitivity: grade-2 nr=32 velocity changes 5.39874%, then 2.75800%, when
+CFL and step caps are successively halved. The new integrated physical-material
+velocity norm differs from the historical coarse-vertex norm, so its 34.1273%
+uniform nr=16/32 result must not be substituted for the older 63.821% number.
+
+SURFACE_COMPATIBILITY.md derives an additional conditional continuum defect:
+continuous B and a smooth zero-pressure material surface with bounded div(v)
+require zero edge Joule heating, whereas the initialized FRC has nonzero edge
+current at positive eta. This is not a general weak-solution nonexistence result
+and does not explain away numerical error. The immediate physical task is to
+specify a defensible current/thermal edge model and its species, collision, Hall
+and electron-inertia regime, and build an independent compatible heated-surface
+reference. Preserve the original stress cases and their full refinement evidence.
+
+Spatial circular coils remain the next source capability; MOVING_COIL_PLAN.md
+specifies its independent force/work checks. Neither that capability nor a
+smaller energy residual can validate the heated edge. Material distortion,
+low-energy modes, shock capture/remapping, actual chamber/end conditions,
+transport/ionization/Hall applicability, converged formation and an interactive
+dynamic experiment remain required. `Experiment(stage=2)` stays gated and the
+overarching goal remains active.
 
 ## Infinite magnetic exterior checkpoint
 
@@ -623,14 +633,79 @@ Shock capture/remapping, material distortion, physical transport/ionization/Hall
 regime, actual ends, converged formation and the experimental UI remain required.
 All overarching issues and the Stage 2 entry remain open.
 
+## Surface-resolution and thermal-compatibility checkpoint
+
+This continuation implements optional `radial_grading` in `MovingDomain` and
+records actual angular resolution in the resistive case contract. The default
+uniform implementation is preserved: all archived arrays in the new source
+nr=8/16/32 baselines are bitwise identical to the preceding checkpoint. The
+frozen production/shared-measurement fingerprint is
+`2749bf18bff1bdab93b1c338b7944ec7a6773d23c39076700f83a4faec9b90c8`.
+All 21 dynamic and 13 independent cases completed, including the supplemental
+finest quarter-time control (798 accepted motion steps). Analysis/render and
+supplemental reproduction helpers are separately hashed. Full configurations,
+lossless snapshots, histories, comparisons and figures are retained in
+`outputs/surface_verification`; see SURFACE_NUMERICS and SURFACE_VERIFICATION.
+
+Nine new independent tests bring the suite to **179 passing tests (80.30 s)**.
+Revolved-polygon moments check graded geometry; exact free-gas expansion and
+conducting-sphere decay check the actual kernels. Current/local heat remain
+approximately second order under refinement. Grade-2 nr=32 current and local
+heat relative errors are 0.000829269 and 0.00182061; Q1-gradient B error is
+0.0105070. Grading trades interior resolution for surface resolution and does
+not automatically improve the smooth free-gas reference.
+
+Material-field sampling now inverts the actual initial sector geometry instead
+of comparing equal normalized coordinates on different polygons. Exact convex
+cell intersections resolve discontinuous thermal fields before positive Gaussian
+integration. Independent affine field and geometric/indicator integrals verify
+this diagnostic. Across all 18 comparisons, increasing integration order 4→6
+changes reported relative norms by at most 3.38e-9 of the norm. This removes
+the observed diagnostic-quadrature uncertainty without smoothing evolved fields.
+The velocity norm integrates actual Q1 fields with initial physical mass;
+thermal fields are compared pointwise rather than conservatively averaged onto
+coarse cells. These definitions differ from the preceding report and are explicit.
+
+The new velocity differences are 34.1273% for uniform nr=16/32 and 55.2917%
+for grade-2 nr=16/32. Fine grade-2 angular doubling changes velocity 15.8362%.
+Successive fine time controls change it 5.39874%, then 2.75800%; the ratio near
+1.96 and nonmonotonic current differences do not establish asymptotic order.
+Boundary-speed differences remain 0.04457785 then 0.01810780 m/s. The finest
+quarter-time run has peak speed 0.5668651 m/s, minimum density 0.0555440 kg/m³,
+physical heat 0.2738125 J and response residual 1.97602e-6 J. No floor, energy
+repair or change of physical D is used. Spatial and time uncertainty remain.
+
+Saved-state force decomposition exposes cancellation between large pressure
+and magnetic surface accelerations. Recovered weak-current J cross B is a
+separate discrete diagnostic, not an exact continuum reference. Mass remains
+unchanged; maximum sampled resistive-stage energy and vacuum residuals are
+1.386e-13 J and 7.566e-13. These do not establish local boundary accuracy.
+
+The initial thermal-compatibility audit independently recovers the boundary
+current from one-sided Maxwell derivatives with relative error below 4.7e-11.
+The pressure equation gives positive equatorial initial p-dot of 3.75 Pa/s for
+the unforced FRC and 1.379547904 Pa/s for the source case; a persistent smooth
+p=0 trace under continuous-B/no-extra-stress assumptions would require zero.
+The exact conditions and primary sources are in SURFACE_COMPATIBILITY. Keep
+these initialized cases as stress tests, investigate a justified edge closure
+or verified nonsmooth expansion, and do not substitute arbitrary eta tapers,
+removed edge heat or easier fixtures for physical formation validation.
+
+Both final scientific figures were visually inspected; colliding logarithmic
+minor x-axis labels were corrected. The strict report serialization was fixed
+to write diagnostic arrays as numeric lists, then the complete assembly was
+rerun using all 18 verified comparison caches. All jobs are terminal. The goal
+and relevant beads issues remain open with physical surface closure and the
+independent spatial-coil force reference as concrete next work.
+
 ## Completion audit at this checkpoint
 
 | Requirement | Authoritative evidence | Status |
 |---|---|---|
 | Conservative dynamic core | mhd modules, independent tests, MHD/positivity reports | Implemented and verified for stated bounded reference; positive traces without cell floors; full-update robustness and cold-flow accuracy remain bounded by tests |
-| Physical source/plasma/vacuum coupling | Fixed-chamber references, boundary reports, MOVING_PLASMA_VERIFICATION and RESISTIVE_MOVING_VERIFICATION; Stage 2 guard still raises | Partial: actual resistive free-surface motion with infinite vacuum is implemented; spatial coils, surface thermodynamics, flow/current convergence, mesh robustness and actual ends remain |
-| Regime-appropriate transport / Hall physics | Fixed eta/sigma only; beads frc-transport | Incomplete |
-| Full independent numerical verification | Prior waves/shocks/skin/CT, vacuum and ideal motion; new independent sphere decay/current/local heat, stiff control, atomic resistive motion and source/time/matching studies | Partial; 170 passing tests and complete resistive controls; large moving-flow error, cold-pressure/equilibrium, broader shocks and physical surface closure remain |
+| Physical source/plasma/vacuum coupling | Fixed-chamber, boundary, moving/resistive and SURFACE_VERIFICATION reports; SURFACE_COMPATIBILITY audit; Stage 2 guard still raises | Partial: moving resistive free surface and explicit surface refinement are implemented; conditional heated-edge incompatibility, unresolved flow/current, spatial coils, mesh robustness and actual ends remain |
+| Regime-appropriate transport / Hall physics | Fixed eta/sigma only; conditional edge audit; beads frc-transport | Incomplete; current/thermal edge closure and collision/Hall/electron-inertia validity are immediate physical requirements |
+| Full independent numerical verification | Prior waves/shocks/skin/CT and moving studies; new graded volume/expansion/decay and common-material overlap checks, 21 dynamic/13 component records | Partial; 179 passing tests; large spatial and remaining time error, cold-pressure/equilibrium, broader shocks and physical surface closure remain |
 | Converged FRC formation | Only older stationary-conductor results, unconverged topology duration | Not demonstrated |
 | Reproducible experimental interface | Stage 0/1 CLI/playback; dynamic and coupled benchmark scripts, histories and metrics | Partial; no coupled dynamic experiment UI |
 

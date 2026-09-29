@@ -106,6 +106,20 @@
   D=1 changes the physics and still differs by 53.915%; it is not a numerical
   remedy. Inspect spatial modes, axis/interface forces and geometry before
   interpreting initialized reversal or improved global energy accounting.
+- [x] Add explicit radial grading on both sides of the material surface and
+  independent angular/time/tolerance/matching controls; retain the unchanged
+  uniform default and measure interior-resolution tradeoffs with exact gas
+  expansion and sphere-decay references.
+- [x] Compare differently graded states on common initial physical material
+  points, integrating exact cell intersections rather than missing discontinuous
+  cell edges. Check independent clipped moments/volume and quadrature order.
+- [ ] Resolve the conditional thermal compatibility defect in the heated sharp
+  interface. For continuous B and a smooth material p=0 trace with bounded
+  div(v), the model requires eta J²=0 at the surface; the initialized ideal FRC
+  has nonzero J there and violates this at the first time derivative. This is
+  not a proof about all weak solutions. Retain the original stress case, derive
+  physically justified edge/current/thermal assumptions, and verify the required
+  non-smooth dynamics or extended transport model. See SURFACE_COMPATIBILITY.md.
 - [ ] Couple spatial circular-coil sources to moving material coordinates,
   including geometric source derivatives and source-work controls; the new
   material solver currently supports only prescribed uniform axial bias.

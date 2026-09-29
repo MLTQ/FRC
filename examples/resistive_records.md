@@ -4,6 +4,9 @@
 bias-ramp fixtures, with physical scalar D and eta=mu0 D, full material/magnetic
 geometry, outer timestep and adaptive diffusion tolerance. These unit-scale
 inputs have no inferred species, temperature or transport validity.
+Optional `radial_grading` and `angular_cells` expose independent surface-normal
+and tangential resolution controls; defaults retain the uniform 2*nr mesh.
+Configuration records always include the actual angular count and grading.
 
 `snapshot` extends complete material archives with weak current Jtheta/r,
 current quadrature positions/values and cumulative per-cell Ohmic heat. Entropy
