@@ -168,3 +168,22 @@ as a named initial reference without changing conductivity. Zero-density
 vacuum has no transport state; invalid Coulomb closure is not floored. The
 next Hall/toroidal and electron/ion thermal integration contract is
 EXTENDED_PLASMA_PLAN. Stage 2 remains gated on full formation requirements.
+
+
+## Linear axisymmetric Hall reference
+
+`hall_parameters` defines immutable SI species coefficients and explicitly named
+massless comparison models. `hall_modes` owns the paired four-component linear
+magnetic/velocity dynamics with positive current-energy mass and implicit
+midpoint. `hall_cylinder` supplies numerical radial FE matrices, an odd periodic
+Fourier grid, regular poloidal/toroidal reconstruction and physical-volume
+quadrature. It evolves toroidal field and angular momentum in a bounded linear
+incompressible limit; these arrays are not compressible `MHDState` arrays.
+
+Independent Bessel/circular references, a separately constructed spatial
+exponential and reproducible measurement/report modules record continuum and
+time errors separately. The field archive includes every initial/final mode,
+not only plots. All 49 cylindrical and 16 parallel modes are complete. No
+vacuum boundary or thermal closure is inferred from these reference walls.
+LINEAR_HALL_NUMERICS and LINEAR_HALL_VERIFICATION define the contract; the next
+compressible conservative integration is TOROIDAL_INTEGRATION_PLAN.

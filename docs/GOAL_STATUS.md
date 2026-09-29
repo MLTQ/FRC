@@ -766,14 +766,60 @@ EXTENDED_PLASMA_PLAN defines the next Hall/toroidal wave reference and the
 remaining current-energy, thermal and edge integration requirements. The full
 goal remains active; a component milestone is not FRC formation validation.
 
+## Linear Hall / toroidal reference checkpoint
+
+The full suite now has **208 passing tests (78.87 s)**, including 16 independent
+Hall/finite-mass tests. `hall_parameters`, `hall_modes` and `hall_cylinder` add a
+bounded uniform-density incompressible reference with regular poloidal/toroidal
+fields and velocities. Exact center-of-mass/reduced-mass coefficients follow
+parent species momentum; drift energy, bulk/magnetic exchange and positive heat
+are paired. There is no exterior gas and no claim that its restricted periodic
+reference boundary is a real plasma/vacuum or perfect-conductor boundary.
+
+All 49 cylinder cases and 16 parallel modes (three time steps each) completed.
+Actual cylinder field errors decrease from approximately 5.2% at nr=8 to 0.626%
+at nr=64. Both helicities and prescribed scalar resistive damping are measured;
+physical finite mass recovers ion/electron cyclotron asymptotes in the parallel
+limit. A poloidal perturbation generates toroidal field and flow through Hall;
+the MHD control does not. Physical volume integrals independently verify all
+three energies, weak current and local midpoint heat; angular momentum is
+conserved in this reference. The original argon target has not been replaced
+by the separately labeled proton verification fixtures.
+
+Parallel time-halving ratios are 3.998876–3.999721. Initial interpolation in the
+slow cylindrical branch excites small fast secondary modes, giving nonmonotonic
+apparent projection damping at coarse time steps. An independent full-spatial
+helicity exponential and additional 2048/4096/8192-step controls resolve this:
+relative time errors decrease 1.58885e-7 → 3.97212e-8 → 9.93030e-9. Remaining
+spatial/projection error is explicitly separate. A one-step collisionless mode
+still has 21.46% phase error despite roundoff energy conservation; no energy-only
+accuracy claim is made.
+
+Maximum whole-run energy-plus-heat residual is 6.63520e-15 relative, equation
+backward error 2.38842e-17 and independent physical/modal energy disagreement
+5.12417e-14 of initial energy. Cylinder source fingerprint is
+`868ece2de1730a51d4aaf363652e3a19139c8289e046eda3188b57a0a45b0e3f`.
+Full source/config/archive/history checks pass; records and inspected scientific
+figures are in `outputs/hall_verification`. Equations and findings are in
+LINEAR_HALL_NUMERICS and LINEAR_HALL_VERIFICATION. All jobs are terminal.
+
+Next implement TOROIDAL_INTEGRATION_PLAN's conservative angular momentum and
+toroidal induction in the bounded compressible core, verify geometric rotation/
+pinch forces and nonlinear transport, then integrate Hall work and finite-mass
+thermal/current transport from the parent species equations. The current
+linear reference must not be inserted as an incomplete nonlinear closure.
+Heated edge physics, spatial coils, actual vacuum/ends, shocks/remapping,
+kinetic ordering, converged formation and experimental UI remain required.
+The full goal remains active, and Stage 2 remains guarded.
+
 ## Completion audit at this checkpoint
 
 | Requirement | Authoritative evidence | Status |
 |---|---|---|
 | Conservative dynamic core | mhd modules, independent tests, MHD/positivity reports | Implemented and verified for stated bounded reference; positive traces without cell floors; full-update robustness and cold-flow accuracy remain bounded by tests |
 | Physical source/plasma/vacuum coupling | Fixed-chamber, boundary, moving/resistive and SURFACE_VERIFICATION reports; SURFACE_COMPATIBILITY audit; Stage 2 guard still raises | Partial: moving resistive free surface and explicit surface refinement are implemented; conditional heated-edge incompatibility, unresolved flow/current, spatial coils, mesh robustness and actual ends remain |
-| Regime-appropriate transport / Hall physics | Conditional Coulomb/local regime module; independent finite-current-inertia component; CURRENT_VERIFICATION and EXTENDED_PLASMA_PLAN | Partial component progress; chosen formation closure, Hall/toroidal response, moving electron/ion thermal dynamics and physical edge/kinetic treatment remain incomplete |
-| Full independent numerical verification | Prior dynamic/shock/vacuum/surface studies; new Coulomb units, inertial decay/screening/variable profiles, independent time/energy checks and 35-case study | Partial; 192 passing tests; known false reversal on unresolved current layer, substantial thin-layer B error, moving-flow/cold-pressure/shock robustness and physical surface closure remain |
+| Regime-appropriate transport / Hall physics | Conditional Coulomb/local regime module, finite-current-inertia component and linear cylindrical Hall/toroidal reference; LINEAR_HALL_VERIFICATION and EXTENDED_PLASMA_PLAN | Partial: linear Hall/finite-mass waves verified; nonlinear compressible Hall/toroidal coupling, chosen formation closure, moving electron/ion thermal dynamics and physical edge/kinetic treatment remain incomplete |
+| Full independent numerical verification | Prior dynamic/shock/vacuum/surface/current studies; conditional Coulomb checks; new 49-case cylindrical Hall and 16-mode parallel study with independent species, time and physical-energy verification | Partial; 208 passing tests; known false reversal on unresolved current layer, substantial thin-layer B error, moving-flow/cold-pressure/shock robustness and physical surface closure remain |
 | Converged FRC formation | Only older stationary-conductor results, unconverged topology duration | Not demonstrated |
 | Reproducible experimental interface | Stage 0/1 CLI/playback; dynamic and coupled benchmark scripts, histories and metrics | Partial; no coupled dynamic experiment UI |
 

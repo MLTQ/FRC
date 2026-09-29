@@ -16,7 +16,9 @@ unfinished. Stability and particle confinement have not been established.
 A separate electron-current component now includes finite carrier inertia and
 its kinetic energy, with independent decay/screening references. Conditional
 Coulomb and local Hall/inertia diagnostics are available; the moving thermal
-and Hall coupling still needs implementation and verification.
+and nonlinear Hall coupling still need implementation and verification. A new
+bounded linear Hall reference evolves toroidal fields and rotation, with
+independent cylindrical and parallel-wave verification.
 
 ![Waveform comparison](outputs/comparison/comparison.png)
 
@@ -82,6 +84,12 @@ radius, so its parameters do not justify ignoring Hall physics. A coarse
 collisionless screening mesh also produces false reversal despite a small
 energy residual; this artifact and the remaining fine-grid error are explicit.
 
+The [linear Hall study](docs/LINEAR_HALL_VERIFICATION.md) adds 49 cylindrical
+runs and 16 parallel-wave references, including both polarizations, finite
+electron mass, damping and mesh/time refinement. This component verifies the
+linear work pairing; nonlinear compressible and moving-boundary coupling remain
+incomplete. The full suite now passes 208 tests.
+
 ## Use the existing environment
 
 ```sh
@@ -91,6 +99,9 @@ energy residual; this artifact and the remaining fine-grid error are explicit.
 .venv/bin/plasma-bench sweep --out outputs/my_sweep
 .venv/bin/plasma-bench view outputs/comparison/burst --gif
 .venv/bin/python -m pytest -q
+.venv/bin/python -m examples.hall_wave_measurements
+.venv/bin/python -m examples.hall_parallel_measurements
+.venv/bin/python -m examples.verify_hall
 .venv/bin/python -m examples.verify_mhd
 .venv/bin/python -m examples.verify_equilibrium
 .venv/bin/python -m examples.verify_positivity
@@ -143,6 +154,9 @@ computed fields. Edit configuration and rerun to change the experiment.
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements-lock.txt -e .
 .venv/bin/python -m pytest -q
+.venv/bin/python -m examples.hall_wave_measurements
+.venv/bin/python -m examples.hall_parallel_measurements
+.venv/bin/python -m examples.verify_hall
 ```
 
 Python 3.11+ is supported by the package; the exact delivered environment is

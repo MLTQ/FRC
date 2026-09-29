@@ -8,10 +8,14 @@
   mass, variable carrier/resistivity profiles and true magnetic vacuum. Verify
   continuum decay/screening, variable coefficients, current kinetic energy,
   positive heat and independent time order; retain coarse false-reversal evidence.
-- [ ] Implement the axisymmetric Hall/toroidal reference and verify independent
-  wave dispersion, then couple electron/ion thermal and current-energy transport
-  consistently to motion. See EXTENDED_PLASMA_PLAN; the linear current component
-  alone is not a physical heated edge or a formation solver.
+- [x] Implement and verify a controlled axisymmetric linear Hall/toroidal
+  reference, both helicities, physical electron inertia, damping and independent
+  cylindrical/parallel dispersion (49 cylinder cases, 16 parallel modes).
+- [ ] Integrate conservative toroidal field/angular momentum into the nonlinear
+  compressible core, then couple Hall, electron/ion thermal and current-energy
+  transport consistently to motion. See TOROIDAL_INTEGRATION_PLAN and
+  EXTENDED_PLASMA_PLAN; the linear components alone do not supply a physical
+  heated edge or a formation solver.
 - [ ] Connect gas pressure, ionization fraction, density and pre-ionization histories.
 - [ ] Validate electron-neutral and ion-neutral cross sections for argon and other gases.
 - [ ] Establish collisionality / kinetic limits with defensible mean free paths.

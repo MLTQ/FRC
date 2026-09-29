@@ -39,8 +39,13 @@ low-pressure sandbox requirement; any alternate regime must be labeled.
    robustness, then run formation from unreversed plasma with a reproducible
    experimental interface and independent topology/force/validity criteria.
 
-The immediate bounded coding task is step 1's axisymmetric Hall/toroidal
-reference and independent dispersion verification. Steps 2–5 remain required;
+The controlled linear reference portion of step 1 is now implemented and
+verified in LINEAR_HALL_NUMERICS / LINEAR_HALL_VERIFICATION: 49 cylinder cases,
+16 parallel modes, physical finite electron mass and both helicities. The
+compressible/moving toroidal and nonlinear Hall degrees of freedom are still
+missing. The next bounded coding task is TOROIDAL_INTEGRATION_PLAN: add
+conservative angular momentum and toroidal induction to the compressible core,
+verify geometric stresses and ideal transport, then integrate Hall work. Steps 2–5 remain required;
 a successful wave test does not validate the heated plasma boundary.
 
 The already implemented linear `MaterialCurrent` limit remains useful for
