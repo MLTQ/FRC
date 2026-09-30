@@ -1,6 +1,68 @@
 # Active objective: a credible experimental FRC simulation
 
-## Current checkpoint: cylindrical energy and angular transport (2026-09-30)
+## Current checkpoint: regular-axis mixed fluid transport (2026-09-30)
+
+This continuation found and resolved a physical representation defect in the
+previous fluid prototype. Mixed radial/axial/rotating flow revealed large
+between-point velocity spikes despite conserved grid energy. At degree 5,
+coarse old unforced grid/continuous energy gaps reached 0.06675, while a
+physical axis-metric eigenvalue reached 576461. A naive physical force bridge
+also failed the analytic f(r)=r test with nonconverging relative error 0.66543.
+The old solver and all fourteen comparison trajectories remain preserved.
+
+The new regular-coordinate state uses x=r²/2 and actual n,q=n*vr/r,
+l=n*vtheta/r,mz,Ce,Ci. True angular momentum is 2*x*l. Axis velocities are
+dependent regular traces with no zero-energy independent axis velocity slot.
+Derived geometric work and joint entropy-density fluxes conserve grid physical
+energy and angular momentum. The constant-density first-element velocity
+metric is also the exact continuous physical metric. No energy reset, force
+fit, artificial viscosity, radius/density floor or atmosphere was introduced.
+
+The full suite passes 398 tests in 181.18 s. Eight original-equation rate
+cases, eight complete acoustic spectra and fourteen mixed trajectories have
+source/raw hashes and bitwise/independent physical audits: thirty new records,
+plus fourteen preserved old comparison trajectories and three metric probes.
+New source is 06dfff4762b721a154d9b8522f935427da0a13f335ac74a69549a08cdc958e7e;
+old mixed source is a3d0b0c387bd4696fca958c20038d41ad7725746f4809d4052f80c36493e07b6.
+Ten earlier source closures and both current closures are verified unchanged.
+
+At degree 5 and 2/4/8/16 radial elements, manufactured continuous density
+errors decrease 1.82947e-5,3.62103e-7,7.05634e-9,1.64671e-10. Fixed central
+velocity RMS/c errors decrease 9.69768e-6 to 4.29509e-11. Unforced sampled
+speeds remain near 0.29646*c on every mesh; final grid/continuous energy gaps
+refine 5.72337e-8,5.16148e-9,3.63098e-10,1.70248e-11. Independent higher
+physical quadrature agrees within 2.76914e-16 across all saved new snapshots.
+
+Important limits remain measured, not concealed: unforced successive-mesh
+velocity differences converge only roughly second order, and the degree-3
+third sorted positive acoustic mode is not the third Bessel root. Higher
+manufactured order does not resolve either issue. Grid conservation is not
+exact continuous variable-density energy/angular conservation. The prior
+part of the accumulated manufactured-work ledger is not independently
+replayed; the last increment and every saved physical history are audited.
+See REGULAR_COORDINATE_NUMERICS/VERIFICATION and the inspected six-panel
+report in outputs/regular_euler_diagnostics. All new local jobs are terminal.
+
+The older frozen remote3f study remains 13/14 complete and audited. At
+2026-09-30T17:36:47.990170Z, its nr32 contact checkpoint is 1435/4116 accepted
+steps. Parent147751 and workers147839/147845/147852 remain in the original
+/home/m/Code/frc-tool-comparison/face-radial-20260930 directory on
+m@192.168.0.202. Status is saved in regular_euler_diagnostics/remote_status.json.
+Do not restart from an observation timeout. No GPU acceleration is claimed.
+
+NEXT frc-7mm.2: derive and independently test the current/magnetic bridge on
+the actual regular-coordinate density and velocity fields, with physical
+variable-current inertia, changing-density work and true angular torque.
+Start with arbitrary smooth force/torque and variable-density pullbacks; do
+not silently map the new point state to the old cell/face representation.
+frc-7mm.1 stays open for remaining transport limits; frc-5b5 awaits the final
+remote audit. Full stress and enthalpy/Poynting transport, heated moving
+exact-vacuum edge, physical closure/ionization, real boundaries, converged
+formation and 3-D stability/confinement remain unproved. No coupled production
+solver has been replaced. This is verified progress toward an active goal.
+All repository and issue state stays local; there is no Git remote/publication.
+
+## Previous checkpoint: cylindrical energy and angular transport (2026-09-30)
 
 This continuation makes verified component progress; the full FRC goal remains
 active. A separate cylindrical Gauss/SBP point state now jointly transports
