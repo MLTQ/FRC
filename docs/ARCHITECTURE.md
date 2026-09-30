@@ -514,3 +514,25 @@ The duplicated historical study drivers preserve exact replay while comparisons
 run; consolidate only after a verified adoption decision. Raw completed and
 failed states, all accepted histories and actual initial projection errors are
 retained. Remote numerical replay uses its original platform/library versions.
+
+## Common radial-face physical momentum
+
+`face_radial_kinematics` uses independent interior q=r n vr faces for the actual
+radial kinetic momentum and the same primitive field used by continuity. It
+avoids the rank-deficient lifted cell metric diagnosed by the independent
+polynomial probe. Cell axial/angular momenta remain conservative quantities.
+`face_radial_flux` supplies their shared physical face transport.
+
+`face_radial_fluid` projects original radial advection and centrifugal force in
+that true variable-density metric and subtracts physical thermal face work.
+It corrects the original near-axis force defect, while retaining the nonzero
+convective physical energy discrepancy. A diagnostic total-work correction is
+preserved but not evolved, because it degraded force accuracy. This remains a
+separate smooth fluid prototype, with no production adoption or edge claim.
+
+`examples/face_radial_*` provide independent initial data, root-product/Legendre
+physical sampling, original Euler rates, Bessel acoustic checks, complete
+history/energy audits and atomic accepted-state checkpoints. Interrupted runs
+resume only after source/hash and original-platform checks. See
+FACE_RADIAL_NUMERICS and FACE_RADIAL_VERIFICATION for equations, measured
+convergence, retained energy limitations and remaining coupling requirements.

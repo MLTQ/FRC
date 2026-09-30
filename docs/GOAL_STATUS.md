@@ -1,6 +1,76 @@
 # Active objective: a credible experimental FRC simulation
 
-## Ongoing self-consistent fluid integration (2026-09-29)
+## Current checkpoint: common radial physical momentum (2026-09-30)
+
+This continuation made verified component progress; the full FRC goal remains
+active. The complete regression suite passes **382 tests in 169.23 s**. Nine
+original two-dimensional Euler rate cases and five completed unforced local
+trajectories pass source/raw-array, bitwise replay and independent physical
+energy/history audits. Seven radial acoustic spectra and eight independent
+polynomial metric probes are retained. The six-panel scientific figure was
+visually inspected, including corrected mesh-axis labels.
+
+Independent interior radial faces now define the actual momentum field used by
+continuity, velocity and the physical kinetic metric. The old mixed cell/flux
+adjoint was inconsistent; replacing its metric alone would have been singular.
+The common radial-face method reduces degree5 first-annulus acceleration errors
+from the old4f sequence4.956/6.330/6.651/6.732 to
+1.75954e-5/1.91939e-7/3.08493e-9/1.19443e-10 atnr8/16/32/64.
+Whole-domain acceleration error reaches1.32683e-9. Actual pressure, centrifugal
+and advective components are separately checked near the axis. Their individual
+outer-wall constrained responses are not mislabeled as unrestricted forces.
+
+The intermediate exact radial total-work correction is preserved with its
+failed convergence test. The current prototype evolves physical centrifugal
+force and exact pressure/thermal work pairing, while retaining the convective
+energy discrepancy. Its scaled global energy-rate defect decreases from
+8.28819e-7 to3.51141e-12 under refinement but is not exactly zero. The nr8
+full-transit contact completes with n/Te errors2.90525e-5/5.15852e-5, physical
+energy drift−4.10015e-9, account drift4.35e-16 and finite-step remainder−7.41e-14.
+Acoustic and rotation nr8/16 also complete. No energy or temperature repair,
+artificial viscosity, density floor or exterior atmosphere is introduced.
+
+Source3f4120faf1b96ee2e94453339efe215399071fd632827aa6ae459cd9c5126737 is
+frozen in outputs/face_radial_rates and outputs/face_radial_pilot. The new
+equations, limits and measured results are in FACE_RADIAL_NUMERICS and
+FACE_RADIAL_VERIFICATION. Existing verified source closures remain unchanged.
+The prototype has not replaced the coupled moving plasma solver.
+
+Remote state checked at2026-09-30T15:34:58Z: detached parentPID147751 and
+workers147839/147845/147852 are running in
+/home/m/Code/frc-tool-comparison/face-radial-20260930 on m@192.168.0.202.
+Nine remaining protocol cases5,8,9,10,11,12,13,1,2 are assigned there. At the
+check, nr32 rotation was complete but unaudited; accepted checkpoints existed
+for nr32 acoustic90/208, nr8 quarter-step contact618/2060 and nr8 reverse
+contact510/1032. See outputs/face_radial_diagnostics/remote_status.json for
+the observation, not a claim that all requested cases have finished.
+The remote protocol uses its CPU/SciPy backend; no GPU acceleration is claimed.
+
+Long runs now save actual accepted state/history/energy checkpoints about every
+5percent. A nonlinear interrupted/restarted wave reproduces uninterrupted arrays
+bitwise. Resume only after proving the worker stopped; use --resume on its
+existing directory and original platform/source. Do not restart a live job or
+rerun terminal failed cases merely because an observation times out.
+All local numerical/test/audit/report jobs are terminal at this checkpoint.
+
+The previous remote4f worker59269 is terminal (SSH exit255/reset); subsequent
+/proc inspection found no Python worker in its original directory. Thirteen
+saved cases were audited on the original host and retrieved to
+outputs/radial_work_remote_recovered:12complete,1failed with its actual rejected
+step replayed. Case2, nr32contact, is explicitly interrupted/missing after a
+last log at75percent and7198.1s; it is not counted complete or silently rerun.
+No further hours are spent on this superseded force-inaccurate formulation.
+
+NEXT finish/audit the remaining checkpointed controls without editing their
+source. frc-5b5 remains open pending those trajectories. New frc-7mm.1 tracks
+joint conservative physical convective kinetic-energy/momentum transport;
+derive it without the already-disproved force-only translation correction.
+Then integrate full magnetic/current/Maxwell/drift and enthalpy/Poynting work.
+Heated free-edge exact vacuum, physical closures/ionization, real boundaries,
+converged formation and the full FRC objective remain open. Repository and
+issue state are local; no Git remote or public publication is introduced.
+
+## Previous self-consistent fluid checkpoint (2026-09-29)
 
 The new smooth fluid components now advance actual density, all momenta/angular
 momentum and both physical log entropies. True reconstructed kinetic energy and
@@ -30,8 +100,9 @@ The original larger-step failure remains archived. Eight local trajectory record
 and nine parent rates are independently audited. The inspected six-panel figure
 and LOG_FLUID_VERIFICATION report retain the local radial-force limitation.
 
-Current live research job: remote candidate59269 at
-/home/m/Code/frc-tool-comparison/log-fluid-20260929. Baseline15653 is terminal
+At that checkpoint remote candidate59269 was running at
+/home/m/Code/frc-tool-comparison/log-fluid-20260929. It has since stopped;
+the current recovery record above supersedes that live status. Baseline15653 is terminal
 (exit1: five failed contacts, nine complete cases). All14 records are audited on
 their original platform and retrieved to outputs/log_fluid_remote_baseline.
 All five actual rejected steps replay with unchanged accepted arrays. Their
@@ -49,8 +120,8 @@ kinetic-source relative errors6.44600/6.44732, while convection is2.15e-10.
 Track correction as frc-5b5; balanced rotating forces can hide these compensating
 errors. The five previous verification source identities remain unchanged.
 
-NEXT finish/audit the live fixed-source comparison without restarting it,
-then resolve the near-axis radial pressure/kinetic work adjoints before
+The next action at that checkpoint was to finish/audit the fixed-source
+comparison and resolve the near-axis radial pressure/kinetic work adjoints before
 full pressure/Maxwell/drift and current/enthalpy/Poynting coupling. The heated
 free edge/exact vacuum, physical closures, formation and full FRC goal stay open.
 

@@ -87,9 +87,17 @@ tests caught a radial acoustic instability; the preserved diagnostic figure
 shows the failure and a revised work pairing that completes a full contact
 transit with a smaller step. The [radial-work analysis](docs/RADIAL_WORK_NUMERICS.md)
 also exposes a remaining near-axis radial-force error, so this is still an
-experimental component. Larger remote comparisons are in progress; full moving
-magnetic coupling and formation are not verified.
+experimental component. The interrupted old remote comparison retains twelve
+complete cases, one numerical failure and one missing fine contact.
 [View the scientific diagnostics](outputs/log_fluid_diagnostics/report.png).
+
+The new [common radial momentum study](docs/FACE_RADIAL_VERIFICATION.md) fixes
+that near-axis force mismatch in a separate prototype. **382 tests pass**, nine
+two-dimensional rate cases and five completed trajectories are independently
+audited, and radial sound frequencies agree with the analytic cylindrical
+reference. Remaining physical energy-transport error is measured explicitly;
+finer checkpointed controls and full moving magnetic coupling remain ongoing.
+[View the new convergence figure](outputs/face_radial_diagnostics/report.png).
 
 [Explore the interactive 3D field showcase](outputs/frc_showcase/index.html)
 or view its [high-resolution poster](outputs/frc_showcase/poster.png). It shows
