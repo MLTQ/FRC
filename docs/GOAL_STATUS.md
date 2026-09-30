@@ -1,6 +1,66 @@
 # Active objective: a credible experimental FRC simulation
 
-## Current checkpoint: regular-axis mixed fluid transport (2026-09-30)
+## Current checkpoint: physical regular-fluid/current bridge (2026-09-30)
+
+The previous goal turn was verified progress: it preserved the failed Gauss-r
+representation and verified regular-axis mixed fluid transport. This turn
+connects that actual point density and physical velocity to compatible current
+and magnetic work. No cell-mean reinterpretation or alternate continuity was
+introduced. Force work, actual integrated axial force and angular torque use
+the derived physical adjoints. Physical current inertia and its density-energy
+pullback now use the same actual regular density and continuity derivative.
+
+The full suite passes 402 tests in183.03s. Sixteen degree/resolution/quadrature/
+density cases pass original-platform bitwise array/metric replay and independent
+root-polynomial/FFT physical integration. Frozen source is
+8c9339a6eaf0c88b88bffe108d5ca2c535a8bfbf33fa4bd11b0c0aaebba6c784.
+All twelve previous source closures are unchanged. All new local study, test,
+audit and reporting jobs are terminal. The six-panel report was inspected.
+
+Degree5 smooth-force errors at2/4/8/16 fluid elements decrease to radial
+9.10329e-10, azimuthal4.26004e-10 and axial8.67456e-12; first-element errors
+reach roundoff/quadrature limits. Force work, integrated force and torque agree
+within5.75e-16. Actual Ampere/Lorentz force is separately checked: finest global
+component errors7.44700e-8,2.06750e-7,1.04214e-6; first-element axial1.38035e-6.
+Manufactured magnetic-rate errors at8/16/32 field cells decrease4.62633e-4,
+1.58115e-5,5.05377e-7. Separate field/fluid-grid controls expose both sources
+of error. Actual continuity replaces analytic n_t in changing-density inertia.
+
+The ideal force/electric pair agrees within9.18e-16; Hall work within7.59e-17.
+The current-energy density pullback matches complex differentiation within
+4.36e-16. Original induction residuals remain below1e-10. Independent physical
+energy/work integration agrees closely; its largest relative discrepancy is
+3.68e-13 for a nearly cancelling coupled magnetic integral. See the full audit
+and REGULAR_COUPLING_NUMERICS/VERIFICATION for exact scopes and norms.
+
+IMPORTANT: this remains an instantaneous, incomplete moving pair. Its total
+energy rate contains integral mu*J²*n_t/(2e²*n²). At the finest matched fixture,
+measured total rate is−0.001498461177W versus derived exchange−0.001498461105W.
+The missing current-advection/drift-stress transport is explicitly retained,
+not relabeled heat or canceled with a force/energy repair. No complete coupled
+time evolution or formation claim follows from this component's successful audit.
+
+The older frozen remote3f study remains13/14 complete and audited. At
+2026-09-30T18:06:01.201528Z the nr32 contact is live at2050/4116 accepted steps.
+Parent147751 and workers147839/147845/147852 are still in the correct
+/home/m/Code/frc-tool-comparison/face-radial-20260930 directory on
+m@192.168.0.202. Saved status is regular_coupling_diagnostics/remote_status.json.
+Never restart from an observation timeout; no GPU acceleration is claimed.
+
+NEXT continue frc-7mm.2: derive the shared current-advection and drift-stress
+work using the actual regular continuity and cylindrical vector derivatives.
+The continuum cancellation identities are now explicit in REGULAR_COUPLING_NUMERICS
+and a candidate weak advection identity in REGULAR_CURRENT_TRANSPORT_DESIGN;
+a global fitted cancellation is insufficient. Complete physical species
+pressure/entropy and enthalpy/Poynting transport, then original parent-rate
+and unforced wave/contact evolution controls before adoption. Prior unforced
+fluid order and degree3 spectral limits remain recorded under frc-7mm.1.
+Heated moving exact vacuum, physical closure/ionization, real ends/coils,
+converged formation and3-D stability/confinement remain open. No production
+solver was replaced. Full goal remains active; state is local without a remote
+Git repository or publication.
+
+## Previous checkpoint: regular-axis mixed fluid transport (2026-09-30)
 
 This continuation found and resolved a physical representation defect in the
 previous fluid prototype. Mixed radial/axial/rotating flow revealed large
