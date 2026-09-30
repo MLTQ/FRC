@@ -99,6 +99,14 @@ reference. Remaining physical energy-transport error is measured explicitly;
 finer checkpointed controls and full moving magnetic coupling remain ongoing.
 [View the new convergence figure](outputs/face_radial_diagnostics/report.png).
 
+The [joint entropy/momentum transport study](docs/TWO_ENTROPY_VERIFICATION.md)
+now tests physical energy conservation through one shared flux. **385 tests
+pass**, with 12 audited original-equation rates and 13 audited axial trajectories.
+Both species remain accurate under refinement; remaining energy drift decreases
+with the time step. The physical energy theorem applies to the declared nodal
+integration, checked against denser continuous sampling. Cylindrical geometry
+and compatible magnetic/current coupling still require integration.
+
 [Explore the interactive 3D field showcase](outputs/frc_showcase/index.html)
 or view its [high-resolution poster](outputs/frc_showcase/poster.png). It shows
 archived current and magnetic fields from an initialized FRC verification case;

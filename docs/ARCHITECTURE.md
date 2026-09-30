@@ -536,3 +536,20 @@ history/energy audits and atomic accepted-state checkpoints. Interrupted runs
 resume only after source/hash and original-platform checks. See
 FACE_RADIAL_NUMERICS and FACE_RADIAL_VERIFICATION for equations, measured
 convergence, retained energy limitations and remaining coupling requirements.
+
+## Joint physical entropy-density transport
+
+`two_entropy_flux` derives one symmetric two-state flux for point n, three
+Cartesian momenta and two entropy densities C=n s. Its physical-energy gradient
+and pressure-work potential give a local conservative H flux; there is no
+independent energy account used to repair temperature. `two_entropy_axial`
+composes it with periodic order2/4/6 skew flux differencing and atomic RK4.
+
+This point state is explicitly different from the prior cell/face state.
+Physical H conservation is proved in the declared nodal integration norm;
+independent continuous reconstruction/quadrature and finite-time drift remain
+measured. `examples/two_entropy_*` retain original Euler/contact/wave references,
+source/array provenance, accepted histories, audits and separate species norms.
+See TWO_ENTROPY_NUMERICS/VERIFICATION. Cylindrical curvature/torque, axis/wall
+constraints, compatible field/current coupling and physical edge are unfinished;
+the new flux has not been adopted into the full moving plasma solver.

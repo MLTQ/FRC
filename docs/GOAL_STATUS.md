@@ -1,6 +1,72 @@
 # Active objective: a credible experimental FRC simulation
 
-## Current checkpoint: common radial physical momentum (2026-09-30)
+## Current checkpoint: joint physical energy transport (2026-09-30)
+
+The previous goal turn was verified progress: common radial momentum corrected
+the near-axis force mismatch and preserved the incomplete energy contract.
+This continuation derives a joint mass/momentum/two-species entropy-density
+flux that conserves actual physical energy in its declared nodal integration
+norm. It adds no energy reset or force-only correction. This is a new point
+state, not a silent reinterpretation of the existing cell/face state.
+
+The complete suite passes **385 tests in 164.90 s**. All 12 original axial Euler
+rate cases and 13 unforced full-transit/wave trajectories are independently
+audited, with bitwise state/rate/last-step/history replay. Independent 8x/16x
+physical integration agrees within 1.92e-16; nodal-versus-continuous physical
+energy discrepancy is separately retained, at most 6.70e-14 in saved states.
+The four-panel convergence/energy figure was visually inspected.
+
+At 128 points and order6, physical-energy-rate relative error is 6.01370e-9;
+electron/ion pressure-rate errors are 4.01490e-10/1.19765e-8. Independent local
+H_t matches conservative energy-flux divergence within 2.13e-14; its global
+rate defect is at most 1.02e-16. Actual nodal mass, three Cartesian momenta and
+both entropy-density histories conserve within 1.79e-15. This is not yet a
+cylindrical angular-momentum theorem.
+
+Finest contact/wave continuous density errors are 1.09227e-9/3.15956e-10;
+their density-perturbation errors are 5.26361e-9/4.48378e-9. At fixed 32 points,
+contact energy drift decreases from −2.46222e-11 to −1.52514e-12 to −9.40984e-14
+under step halving, approximately fourth order. Continuous physical-energy
+integration confirms the same trend. Reverse/time controls, separate species
+errors and initial representation differences remain in the records.
+Global entropy conservation does not give exact local isentropy: the analytic
+isentropic wave acquires specific-entropy errors that refine from 1.15e-6 at
+16 points to about 9.96e-12 at 128. This limitation is explicitly retained.
+
+New frozen source is
+924a586a84df69c28fe1493bf73e285efcecc02e63b6825926f5be232f94170d in
+outputs/two_entropy_verification. Equations, state contracts and remaining
+scope are in TWO_ENTROPY_NUMERICS/VERIFICATION. Existing source closures and
+the running 3f4120fa radial prototype are unchanged. All new local computation,
+test, audit and report jobs are terminal. No production plasma adoption occurred.
+
+Seven additional remote radial-face controls completed and passed their
+original-platform audits, then were retrieved to outputs/face_radial_remote_controls.
+Combined with the five local cases, 12 of 14 are complete/audited. Finest nr32
+acoustic n/Te errors are 1.69024e-8/1.12770e-8. The nr8 quarter-step contact
+retains −4.10007e-9 physical energy drift with only −2.53e-15 finite-step
+remainder, confirming that separate prototype's spatial transport defect.
+
+Remote worker state is verified at 2026-09-30T16:00:33Z: parent PID147751 and
+workers147839/147845/147852 remain in the correct study directory
+/home/m/Code/frc-tool-comparison/face-radial-20260930. Saved accepted checkpoints
+are nr16 contact721/2060 and nr32 contact205/4116. The other assigned cases
+are complete. See outputs/face_radial_remote_controls/remote_status.json.
+Never restart from an observation timeout; use existing checkpoints only after
+authoritative evidence that a worker stopped. No GPU speedup is claimed.
+
+NEXT frc-7mm.1 must extend joint transport to the actual cylindrical state:
+true radial kinetic/thermal metric, regular-axis force, conservative angular
+momentum, geometric torque and impermeable-wall response. Verify the same full
+two-dimensional original equations and radial modes before adoption. Then
+derive/verify the common variable-density current/magnetic and full species
+enthalpy/Poynting work; no unproved nodal-to-cell/face bridge is allowed. Audit
+the two remaining remote contacts when terminal without editing their source.
+Full heated-edge/exact-vacuum, physical closure/ionization, real boundaries,
+converged FRC formation and experiment requirements remain open. This is
+verified component progress, not completion or an external blocker.
+
+## Previous checkpoint: common radial physical momentum (2026-09-30)
 
 This continuation made verified component progress; the full FRC goal remains
 active. The complete regression suite passes **382 tests in 169.23 s**. Nine
