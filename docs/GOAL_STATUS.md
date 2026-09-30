@@ -12,27 +12,43 @@ waves converge at order two. The tested hybrid waves retain measured time/energy
 errors; no FRC formation or GPU speedup claim is made. See ENGINE_COMPARISON.
 No production backend or Stage 2 gate changed.
 
-Latest custom checkpoint: **361 passing tests; 18 physical thermal rate cases
-and nine full-transit prescribed-current transports independently audited**.
-The new log-entropy component uses the same conservative density and physical
-metric as variable-current inertia. Matched local axis log-rate error now
-converges to 8.85e-9 instead of the old bridge's ~39%. Finest continuous proxy-
-rate error is 1.31e-8. Physical entropy and pressure work pair consistently;
-proxy/energy drift, uniform-temperature false magnetic response and full-E
-reconstruction precision remain separately measured. See LOG_THERMAL_NUMERICS/
-VERIFICATION. All workers are terminal and the figure was inspected.
+Latest custom checkpoint: **370 passing tests (126.72 s), 14 bulk thermal
+rates and 10 changing-density trajectories independently audited**, plus six
+bitwise-replayed diagnostic pressure probes and 24 linear face controls.
+One conservative particle flux now advances density and both physical species
+log entropies under prescribed bulk flow. The initial unstable normal-face fit
+was diagnosed, preserved and corrected with centered faces, without added
+viscosity or density floors. Finest full-transit density/electron-temperature
+errors are 8.34e-9/6.57e-9; finest compression errors are 1.37e-6/8.27e-7.
+Physical work and entropy identities, finite-step drift and initial projection
+errors remain distinct. See BULK_THERMAL_NUMERICS/VERIFICATION and the inspected
+six-panel report. Source a74e877fe9dd2030a6957d717d87dc1a1e96c4866fdb92ba29e5b76c157fcd2b.
+All scientific workers and audits are terminal. The storage-error interruption
+was recovered by recomputing only five missing cases under unchanged source.
 
-The new fields and thermodynamics are still not adopted in nonlinear moving
-evolution. Next derive a common moving state/energy contract: two nodal log-
-entropy fields cannot simply replace the old cell total-energy partition.
-Shared conservative bulk transport, velocity/vorticity, stress and complete
-pressure/current/enthalpy/Poynting work must precede independent parent-species
-and full wave/contact trajectory checks. The earlier smooth solver's
-31 rates/27 trajectories remain unchanged: fast-wave pi error 5.38315%,
-manufactured nr32 pi-change error 70.2663%, and slow nr64 B_t error 16.8431.
-Physical heated-edge/exact-vacuum, transport and formation requirements remain.
-Earlier 19 moving-rate and fixed-density studies retain their source identities.
-The original heated edge/exact vacuum, transport and formation remain incomplete.
+The user explicitly authorized transfer to the GPU host after automatic review
+initially rejected it. A first copy of 956,639,669 bytes of source, tests, docs,
+issue export, configurations and outputs completed successfully at
+m@192.168.0.202:/home/m/Code/frc-tool-comparison/recovery-bulk-a74e877-20260929/.
+No Git remote was configured and no research was publicly published.
+The user-requested 3D showcase is complete: an offline interactive viewer and
+a visually inspected 2800×1900 current/flux-density poster from source_g1_32.
+All three saved times, fixed scales, synchronized rotation and export were
+checked. See SHOWCASE_3D. This initialized resistive FRC fixture is separate
+from the new bulk thermal component. Only its localhost preview remains live
+(session 11395, port 8778); it is not a scientific worker.
+
+Full nonlinear adoption is still incomplete. Next derive conservative momentum
+and angular-momentum evolution with the true physical kinetic metric,
+velocity/vorticity, pressure/Maxwell/drift stresses and complete
+current/enthalpy/Poynting work, then independent parent rates and full nonlinear
+wave/contact trajectories. The diagnostic pressure force converges but is not
+an exact thermal-work adjoint; it has not been adopted. The earlier smooth
+solver retains fast-wave pi error 5.38315%, manufactured nr32 pi-change error
+70.2663%, and slow nr64 B_t error 16.8431. Previous log-thermal, variable-current,
+compatible-wave and smooth-moving source identities remain unchanged.
+Heated-edge/exact-vacuum, physical transport, formation and accurate interactive
+experiment requirements remain open. This is progress, not goal completion.
 
 ## Completion evidence still required
 

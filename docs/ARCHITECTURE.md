@@ -465,3 +465,24 @@ not imply exact conservation of its exponential proxy or a shock entropy law.
 Two nodal log-entropy fields cannot simply replace the earlier cell total-energy
 partition: shared conservative bulk transport, momentum/pressure work and local
 total-energy flux need a common degree-of-freedom contract before adoption.
+
+
+## Shared bulk continuity and physical thermal transport
+
+`normal_momentum_faces` reconstructs centered conservative particle-momentum
+faces; `particle_flux_basis` supplies a continuous normal-flux primitive whose
+divergence matches the existing conservative density reconstruction.
+`compatible_particle_flux` owns this single continuity law, physical flux and
+adjoints. `compatible_bulk_thermal` uses the common number-weighted entropy
+metric to derive bulk transport and its generalized pressure face work.
+`bulk_entropy_transport` advances actual density and both log entropies with
+atomic RK4 in explicitly prescribed-flow fixtures. It does not advance momentum,
+magnetic field or current. Its independent characteristic reference, norms,
+audits and failure-preserving protocols are in `examples/bulk_*`.
+
+The thermal face-work coefficient is not a momentum force. The independent
+pressure-work probe measures a conservative candidate's converging discrepancy
+against the true kinetic metric; it has not been adopted. Full conservative
+momentum/angular momentum, velocity/vorticity, Maxwell/drift stress and local
+enthalpy/Poynting work remain the next contract. See BULK_THERMAL_NUMERICS and
+BULK_THERMAL_VERIFICATION. No old full-moving state or source was replaced.

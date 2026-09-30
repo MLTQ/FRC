@@ -63,7 +63,7 @@ entropy-rate error remains about 6.35%, concentrated near the axis. A consistent
 higher-order thermal representation was the next target.
 
 The [physical thermal study](docs/LOG_THERMAL_VERIFICATION.md) now corrects that
-local axis defect in a separate component. **361 tests pass**, with 18 audited
+local axis defect in a separate component. Its checkpoint passed **361 tests**, with 18 audited
 rate cases and nine full-transit prescribed-current transport cases. The matched
 near-axis entropy-rate error drops from about 39% in the old representation to
 8.85e-9 on the finest grid. Physical entropy and pressure work share the actual
@@ -71,6 +71,20 @@ conservative density and physical integration metric. Uniform-temperature
 false magnetic response and full-electric-field precision remain measured
 limitations. Bulk motion and the full conservative energy coupling are next;
 these components have not yet replaced the nonlinear moving solver.
+
+The [bulk thermal study](docs/BULK_THERMAL_VERIFICATION.md) now advances actual
+changing density and both species entropies through one conservative particle
+flux. **370 tests pass**, with 14 audited rates and ten audited compression and
+full-transit trajectories. Finest translation density/temperature errors fall
+below 1e-8; compression errors are around 1e-6. An initial face instability is
+preserved and corrected. Conservative mechanical pressure work, full moving
+magnetic coupling and the original heated-edge/formation requirements remain
+unfinished; the prescribed-flow tests do not establish a complete plasma model.
+
+[Explore the interactive 3D field showcase](outputs/frc_showcase/index.html)
+or view its [high-resolution poster](outputs/frc_showcase/poster.png). It shows
+archived current and magnetic fields from an initialized FRC verification case;
+[the visualization notes](docs/SHOWCASE_3D.md) explain its data and limits.
 
 ![Waveform comparison](outputs/comparison/comparison.png)
 
