@@ -1,6 +1,26 @@
-# Active objective: a credible experimental FRC simulation
+# Paused objective: a credible experimental FRC simulation
 
-## Current checkpoint: physical regular-fluid/current bridge (2026-09-30)
+## User-requested pause and handoff (2026-09-30)
+
+Paused for next week to conserve credits. See [NEXT_SESSION.md](NEXT_SESSION.md)
+for the exact restart point, ordered beads and remote-study observation.
+The overarching goal remains open. No new research study was launched for
+this handoff; no remote job was stopped or restarted.
+
+Beads **frc-7mm.3**, **frc-7mm.4**, **frc-7mm.5** track current-transport audit,
+remaining species coupling and moving-vacuum/formation validation respectively.
+The saved transport candidate passes **4 focused tests in 1.66s**; it has no
+full regression or frozen 16-case audit yet. Its study CLI still requires the
+records/provenance module. Keep it distinct from the **402-test / 16-case**
+verified coupling baseline below. No production solver was replaced.
+
+The updated viewer, poster and camera-orbit movie are in
+`outputs/frc_showcase_checkpoint/`, using frozen verified coupling case 07.
+They show actual saved vector fields in a filled periodic cylinder, not a
+new formation result. Camera motion is not physical time evolution.
+
+
+## Last fully verified checkpoint: physical regular-fluid/current bridge (2026-09-30)
 
 The previous goal turn was verified progress: it preserved the failed Gauss-r
 representation and verified regular-axis mixed fluid transport. This turn
@@ -57,7 +77,7 @@ and unforced wave/contact evolution controls before adoption. Prior unforced
 fluid order and degree3 spectral limits remain recorded under frc-7mm.1.
 Heated moving exact vacuum, physical closure/ionization, real ends/coils,
 converged formation and3-D stability/confinement remain open. No production
-solver was replaced. Full goal remains active; state is local without a remote
+solver was replaced. Full goal remains open and is now paused; state is local without a remote
 Git repository or publication.
 
 ## Previous checkpoint: regular-axis mixed fluid transport (2026-09-30)
