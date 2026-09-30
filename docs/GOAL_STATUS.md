@@ -1,5 +1,59 @@
 # Active objective: a credible experimental FRC simulation
 
+## Ongoing self-consistent fluid integration (2026-09-29)
+
+The new smooth fluid components now advance actual density, all momenta/angular
+momentum and both physical log entropies. True reconstructed kinetic energy and
+its changing-density work remain separate from a conservative energy account.
+The latest complete regression run passes **376 tests in 151.46 s**.
+No old verified current/thermal/bulk source closure was modified.
+
+Longer tests exposed a radial acoustic instability in the first conservative
+pressure stencil. Baseline source 0aa417e5 is preserved, including failed contact
+states. Seven spectra with original-RHS difference and matrix-exponential/time
+controls prove spatial growth. Nine uniform-translation controls also prove
+that a pressure-force-only exact-energy correction would add net momentum.
+
+Separate radial thermal/kinetic work pairing removes the growing linear modes
+and strongly improves rotating force balance. Its nine 2-D parent-rate cases
+and independent component audit nevertheless reveal a nonconverging relative
+radial acceleration error in the first annulus (about 6.7 at nr64). Thus it is
+experimental and not adopted in the coupled plasma solver. See LOG_FLUID_NUMERICS
+and RADIAL_WORK_NUMERICS. Candidate source 4f0c824a662e581dc78ddfbd81a2c9cc06342fb85d19d62fda44d0fb709ab3a9.
+
+The revised nr8 contact completes a full transit at half the original step:
+density/Te relative L2 2.90525e-5/5.15852e-5, physical energy drift −4.10015e-9,
+conservative account drift −1.45e-16 and separated finite-step energy defect
+−7.36e-14. The quarter-step run also completes: final density/Te differences from
+half step are6.29e-11/8.79e-11; remaining finite-step energy defect is−2.67e-15.
+The original larger-step failure remains archived. Eight local trajectory records
+and nine parent rates are independently audited. The inspected six-panel figure
+and LOG_FLUID_VERIFICATION report retain the local radial-force limitation.
+
+Current live research job: remote candidate59269 at
+/home/m/Code/frc-tool-comparison/log-fluid-20260929. Baseline15653 is terminal
+(exit1: five failed contacts, nine complete cases). All14 records are audited on
+their original platform and retrieved to outputs/log_fluid_remote_baseline.
+All five actual rejected steps replay with unchanged accepted arrays. Their
+already unstable last states expose quadrature errors up to1.05e-3, with higher
+quadrature still changing the worst by1.73e-4; this warning and the original audit
+rejection are preserved, not marked converged. Both audit workers50776/40535 are
+terminal. All local numerical/audit/report jobs are confirmed terminal.
+Original preview11395 remains available at port8778, separate from computation.
+No remote exists for Git. User-approved SSH data transfer has resumed; no public
+publication occurred. Mac disk pressure was relieved by removing only66.97MB
+of regenerable .venv bytecode, with about410MB free at the last check.
+
+Four additional force-term probes isolate nr64 first-annulus pressure and
+kinetic-source relative errors6.44600/6.44732, while convection is2.15e-10.
+Track correction as frc-5b5; balanced rotating forces can hide these compensating
+errors. The five previous verification source identities remain unchanged.
+
+NEXT finish/audit the live fixed-source comparison without restarting it,
+then resolve the near-axis radial pressure/kinetic work adjoints before
+full pressure/Maxwell/drift and current/enthalpy/Poynting coupling. The heated
+free edge/exact vacuum, physical closures, formation and full FRC goal stay open.
+
 The goal is a numerically verified and physically justified simulation in which
 we can vary geometry, plasma and prescribed coil waveforms to investigate FRC
 formation. Passing the existing stationary-conductor tests is not completion.

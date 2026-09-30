@@ -486,3 +486,31 @@ against the true kinetic metric; it has not been adopted. Full conservative
 momentum/angular momentum, velocity/vorticity, Maxwell/drift stress and local
 enthalpy/Poynting work remain the next contract. See BULK_THERMAL_NUMERICS and
 BULK_THERMAL_VERIFICATION. No old full-moving state or source was replaced.
+
+## Experimental self-consistent fluid and radial work pairing
+
+`conservative_kinematics` and `momentum_derivatives` evaluate physical velocity,
+curl, K and exact n/m derivatives from actual conservative momentum means.
+`log_fluid_flux` supplies shared finite-volume momentum/enthalpy fluxes and the
+cylindrical hoop source. `log_fluid` evolves density, momentum/angular momentum,
+two log entropies and a separate conservative energy account with atomic RK4.
+No physical temperature is inferred or reset from that account. The original
+pressure stencil has a preserved long-contact/radial-acoustic instability;
+passing short tests is not grounds for production adoption.
+
+`radial_pressure_metric` solves the true variable-density radial kinetic metric.
+The separate `radial_pressure_fluid` diagnostic replaces radial pressure and
+centrifugal sources by the thermal/convective-work adjoint while preserving
+conservative axial/angular fluxes. It removes the growing linear modes and
+improves rotating balance, but original 2-D parent rates expose a nonconverging
+relative first-annulus radial acceleration error. Neither fluid candidate is
+adopted by the full moving plasma solver. Fields/current and physical edge remain
+separate requirements. See LOG_FLUID_NUMERICS and RADIAL_WORK_NUMERICS.
+
+`examples/log_fluid_*` preserve the baseline, independent exact references,
+physical samplers, spectra and translation obstruction. `examples/radial_work_*`
+retain a separate frozen protocol/audit closure for the derived force candidate.
+The duplicated historical study drivers preserve exact replay while comparisons
+run; consolidate only after a verified adoption decision. Raw completed and
+failed states, all accepted histories and actual initial projection errors are
+retained. Remote numerical replay uses its original platform/library versions.

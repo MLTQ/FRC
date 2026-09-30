@@ -74,12 +74,22 @@ these components have not yet replaced the nonlinear moving solver.
 
 The [bulk thermal study](docs/BULK_THERMAL_VERIFICATION.md) now advances actual
 changing density and both species entropies through one conservative particle
-flux. **370 tests pass**, with 14 audited rates and ten audited compression and
+flux. That checkpoint passed **370 tests**, with 14 audited rates and ten audited compression and
 full-transit trajectories. Finest translation density/temperature errors fall
 below 1e-8; compression errors are around 1e-6. An initial face instability is
 preserved and corrected. Conservative mechanical pressure work, full moving
 magnetic coupling and the original heated-edge/formation requirements remain
 unfinished; the prescribed-flow tests do not establish a complete plasma model.
+
+The new [self-consistent fluid integration](docs/LOG_FLUID_NUMERICS.md) advances
+momentum and both physical temperatures, with **376 passing tests**. Longer
+tests caught a radial acoustic instability; the preserved diagnostic figure
+shows the failure and a revised work pairing that completes a full contact
+transit with a smaller step. The [radial-work analysis](docs/RADIAL_WORK_NUMERICS.md)
+also exposes a remaining near-axis radial-force error, so this is still an
+experimental component. Larger remote comparisons are in progress; full moving
+magnetic coupling and formation are not verified.
+[View the scientific diagnostics](outputs/log_fluid_diagnostics/report.png).
 
 [Explore the interactive 3D field showcase](outputs/frc_showcase/index.html)
 or view its [high-resolution poster](outputs/frc_showcase/poster.png). It shows
