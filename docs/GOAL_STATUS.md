@@ -1,6 +1,73 @@
 # Active objective: a credible experimental FRC simulation
 
-## Current checkpoint: joint physical energy transport (2026-09-30)
+## Current checkpoint: cylindrical energy and angular transport (2026-09-30)
+
+This continuation makes verified component progress; the full FRC goal remains
+active. A separate cylindrical Gauss/SBP point state now jointly transports
+density, physical radial momentum, **actual angular momentum**, axial momentum
+and both species entropy densities. Its derived centrifugal/pressure work pairs
+with actual physical kinetic/thermal energy in the declared grid quadrature.
+No energy reset, force fitting, viscosity, density/radius floor or atmosphere
+was introduced. Existing coupled plasma solvers were not silently replaced.
+
+The full suite passes391 tests in165.29s; six focused tests pass again after a
+reporting-only correction. Seventeen full2-D original Euler rate cases, six
+independent Bessel/acoustic spectra and seventeen unforced trajectories pass
+source/raw hashes and original-platform bitwise/independent physical audits.
+New frozen source is14223ded4171ee70b3b790323913b1ff302d994df98a13c6328522273ebcf6ef.
+All nine earlier source closures are verified unchanged.
+
+Degree5 first-element radial acceleration errors decrease3.09383e-4,8.64907e-6,
+1.24677e-6,9.05808e-8,5.87185e-9 at2/4/8/16/32 radial elements. Finest maximum
+pointwise relative axis error remains2.63e-7, separately exposed. Full errors
+reach9.92e-10. Degree7's fixed128-axial floor is confirmed by256-point controls,
+which reach1.29e-11; its finest axis errors become nonmonotonic near1e-11.
+These element counts are not equivalent to earlier face-momentum mesh counts.
+
+Grid physical-energy rate defects are <=6.68e-15; state-rate conservation
+<=8.74e-15. Each radial element's energy balances its interface flux in tests.
+Full-contact density errors decrease2.37e-4/4.26e-6/6.92e-8 at16/32/64 axial
+points. Fixed32-point energy drift decreases−1.50030e-11/−9.30478e-13/−5.79737e-14
+under step halving. History invariants conserve within3.39e-15. Actual nonlinear
+radial waves complete a full period; amplitude controls distinguish physical
+nonlinear departure from their linearized Bessel target. Rotation runs span one
+radial sound-crossing, not a complete rotation or plasma stability experiment.
+
+Independent continuous fields use even polynomials in r² for n,mz,Ce,Ci,mr/r,
+L/r², so the axis is regular and kinetic energy finite. This differs from the
+SBP differentiation polynomial in r. Grid conservation is not exact continuous
+energy/angular conservation. Across saved trajectory snapshots, higher physical
+quadrature agrees within4.35e-16, while grid/continuous energy differs by up to
+8.83e-11. Rotating continuous angular drift refines1.40e-9→3.71e-12→1.84e-13.
+All measured differences remain in the evidence, not repaired away.
+
+The first reporting attempt is preserved in cylindrical_entropy_before_velocity_norm:
+relative velocity error was undefined at a zero-velocity turning point. Correct
+RMS/sound-speed normalization changes no solver array;153 shared raw files replay
+bitwise. Final evidence and visually inspected six-panel figure are in
+outputs/cylindrical_entropy_verification and cylindrical_entropy_diagnostics.
+See CYLINDRICAL_ENTROPY_NUMERICS/VERIFICATION for equations and limitations.
+
+The older remote3f nr16 contact has completed2060 steps, passed its original-
+platform audit and been retrieved. Together with prior local/remote cases,
+13 of14 are complete/audited. Its continuous density/Te errors are1.918e-7/
+8.584e-7. Only nr32 contact remains live: at2026-09-30T16:47:37Z its accepted
+checkpoint is820/4116, parentPID147751 and workers147839/147845/147852 remain
+in /home/m/Code/frc-tool-comparison/face-radial-20260930 on m@192.168.0.202.
+See outputs/face_radial_remote_controls/remote_status.json. Do not restart a
+live worker from an observation timeout; no GPU acceleration is claimed.
+
+NEXT frc-7mm.1: verify fully mixed nonlinear r/z evolution with mesh/time
+controls, then derive the variable-current/magnetic bridge on this actual
+common state. No unproved nodal-to-cell/face conversion may be adopted.
+Full species/Maxwell/drift stresses and enthalpy/Poynting work, heated free-edge
+exact vacuum, physical transport/ionization, real ends/coils, shocks/kinetic
+validity and converged formation all remain open. Audit the one remaining
+remote trajectory when terminal without changing its source. Work/issue state
+is local, with no Git remote or publication. This is verified progress, not a
+completed goal or external blocker.
+
+## Previous checkpoint: joint physical energy transport (2026-09-30)
 
 The previous goal turn was verified progress: common radial momentum corrected
 the near-axis force mismatch and preserved the incomplete energy contract.
