@@ -1,4 +1,47 @@
-# New thread: read THREAD_HANDOFF.md first
+# Continue from the verified regular species checkpoint
+
+The user resumed on 2026-10-04 and supplied a provisional lab envelope; research
+is active and all ten previously unfinished beads remain open. **416 tests pass**.
+Read the latest section of GOAL_STATUS.md, REGULAR_SPECIES_NUMERICS.md and
+REGULAR_SPECIES_VERIFICATION.md. The species component is now implemented;
+the earlier instruction below to begin that component is historical.
+
+Frozen source `45a71e5b59cbcab6bb8556d531510d68da8389b16abcc82e1e61c0bc3237b78d`
+has 24 bitwise-replayed cases, independent continuous audits, a local enthalpy
+audit and eight full-transit fixed-current entropy trajectories. Actual moving
+fluid/current evolution has not yet adopted it. Fifteen earlier calculation
+sources are unchanged, and every job from this continuation is terminal.
+
+## Immediate next action — frc-7mm.4 remains open
+
+1. Read companions for regular_species, species_projection,
+   regular_species_transport, regular_coordinate_fluid, regular_current,
+   current_transport and kernel_induction before assembling a new coupled module.
+2. Use the actual n,q,l,mz,Ce,Ci state and one common density derivative. Add
+   species fluid_rate to bulk/current-stress rates; add **reduced_forcing** to
+   induction, restoring **potential_electric** afterward for the full original
+   electric/Ohm diagnostic. Do not numerically curl a large compatible gradient.
+3. Verify independent original parent rates and complete unforced compressible
+   wave/contact trajectories, retaining physical masses, local temperatures,
+   axis/wall/max norms, time/mesh refinement and atomic failure. Derive the
+   coupled time-step/implicit method for the actual fast electron/current modes;
+   fixed-current RK4 stability does not select a safe coupled time step.
+4. Close the local physical enthalpy/Poynting interface budget. The new graph
+   transport is conservative and globally supported; it does not prove exact
+   geometric face currents. The piecewise strong enthalpy divergence retains
+   distributional jumps, and continuous energy remains separate from grid work.
+5. Retain original fluid accuracy/spectral limitations and proceed to heated
+   exact vacuum, physical closures, actual coil/end conditions and converged
+   formation only after the coupled numerical gates pass. Keep frc-goal open.
+
+The user's prospective 1 m quartz tube, 10–20 cm diameter, selectable gas,
+0.1–100 mTorr neutral fill and adjustable Helmholtz-like bias are recorded in
+RESEARCH_QUESTIONS.md. The verification fixture is not a selected lab experiment.
+There is no Git remote. Preserve the user's modified outputs/frc_showcase/poster.png.
+
+---
+
+# Historical new-thread handoff
 
 The user stopped this thread on 2026-10-04. The complete portable handoff is
 [THREAD_HANDOFF.md](THREAD_HANDOFF.md), including all ten unfinished beads,

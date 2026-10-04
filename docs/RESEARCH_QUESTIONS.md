@@ -1,5 +1,27 @@
 # Research queue
 
+## User experiment envelope (2026-10-04)
+
+The user proposes a long quartz tube, approximately **1 m long and 10–20 cm
+diameter**, with dimensions open to revision. Gas species is selectable; the
+user has several gases and pumping options. The proposed **neutral fill
+pressure is 0.1–100 mTorr** (about 0.0133–13.3 Pa), not an electron or ion
+number density. Gas temperature and ionization fraction remain independent
+inputs; for an ideal gas n_neutral=p/(k_B*T_gas), while carrier density depends
+on ionization and charge state. Existing smaller argon verification fixtures
+are not recommendations for this experiment.
+
+The bias field will be built for the experiment; a Helmholtz-like coil
+arrangement is preferred if suitable. No field magnitude is fixed. Compare
+prescribed coil fields/waveforms and their spatial uniformity across the
+selected plasma region before selecting a field range. The 1 m tube length
+does not imply a 1 m uniformly magnetized or fully ionized plasma column.
+Do not infer a validated gas, pressure, pulse or hardware design from this
+envelope: model validity, attainable reversal/topology and numerical convergence
+must determine the useful region of parameter space. Hardware stays abstract.
+
+## Open and completed research
+
 - [ ] Choose a formation-time conductivity closure; test anisotropy and Hall terms.
 - [x] Add independently checked conditional Coulomb coefficients and local
   Hall/electron-inertia/Debye, drift and collisionality diagnostics; retain

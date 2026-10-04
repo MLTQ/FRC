@@ -1,4 +1,63 @@
-# Paused in this thread: a credible experimental FRC simulation
+# Active research: a credible experimental FRC simulation
+
+## Verified regular species component and lab envelope (2026-10-04)
+
+The user resumed work toward an experiment-design sandbox. The next species
+component is now implemented and independently verified. **416 tests pass in
+210.84 s**. All 24 cases (14 original pressure/entropy rates, 8 full-transit
+fixed-current evolutions, 2 frozen spectra/discontinuous controls) replay arrays
+and numerical metrics bitwise; independent physical quadrature uses orders
+16 and 20. Source:
+`45a71e5b59cbcab6bb8556d531510d68da8389b16abcc82e1e61c0bc3237b78d`.
+See REGULAR_SPECIES_NUMERICS.md and REGULAR_SPECIES_VERIFICATION.md, raw evidence
+in outputs/regular_species_verification and inspected report in
+outputs/regular_species_diagnostics/convergence.png (also PDF).
+
+The handoff's point-transfer proposal has growing frozen modes; naive skew
+symmetrization instead has order-unity local error. Both failures are retained.
+A common physical L2 scalar projection gives a consistent skew current/entropy
+operator and its paired pressure adjoint on actual n,q,l,mz,Ce,Ci. It preserves
+physical species masses, local temperatures, common density, grid entropy and
+thermal/current work, without global energy subtraction or added heat/diffusion.
+Compatible pressure gradients are separated analytically before induction.
+
+At 32 degree-five elements, independent electron/ion entropy-rate errors are
+1.30090e-6/1.23178e-6 and pressure-electric errors 9.79306e-7/1.04547e-6.
+Axis/wall/max errors converge. Work backward error is <=1.32826e-16; induced
+grid thermal+current+magnetic power backward error <=2.45753e-12. Degree-three
+continuous electron thermal/work defect refines from -6.95401e-9 to
+-2.73774e-14 W; it is not asserted identically zero. The separate original
+local enthalpy audit refines to electron/ion relative defects
+2.12690e-6/2.98064e-6, while retaining actual strong div(J) and the unresolved
+distributional interface budget. Audit source 4c6f6653, evidence in
+outputs/regular_species_enthalpy.
+
+One full prescribed-current shear transit has signal errors 5.78249e-2,
+1.87973e-3, 3.05425e-5 at 4/8/16 elements. Time ratios are 15.99985/15.99998;
+both physical species and reversed current are controlled. The finest physical
+quadratic drift is -3.51823e-13, separately from grid drift -1.78565e-15.
+This establishes bounded fixed-current entropy transport, not nonlinear moving
+plasma stability or collisionless laboratory lifetime. All 15 earlier source
+closures are unchanged. A final input-dtype guard also replays all 24 numerical
+cases bitwise; its initial archive is preserved. All jobs launched here are
+terminal. No remote operation or publication occurred; the repository is local.
+
+The user supplied a provisional lab envelope: approximately 1 m long quartz
+tube, 10–20 cm diameter, selectable gas and 0.1–100 mTorr neutral fill pressure;
+bias field is undecided, with a Helmholtz-like arrangement preferred if suitable.
+Gas temperature and ionization remain independent density inputs. These are
+design variables, not validated experimental recommendations. Details are in
+RESEARCH_QUESTIONS.md; existing smaller numerical fixtures are separate.
+
+NEXT under **frc-7mm.4**: assemble the verified bulk fluid, current advection/
+drift stress, species pressure/entropy and magnetic terms using the same actual
+continuity; verify full independent parent equations and complete unforced
+wave/contact trajectories with time/mesh controls and local physical
+enthalpy/Poynting interface budgets. The issue remains open, as do frc-7mm.1/.2,
+frc-7mm and the full FRC goal. Earlier fluid order/spectral accuracy, heated
+moving exact vacuum, regime-appropriate transport/ionization, actual coil/end
+boundaries, converged formation, experiment UI and 3-D stability/confinement
+remain unproved. NEXT_SESSION.md is the current continuation entry point.
 
 ## New-thread handoff (2026-10-04)
 

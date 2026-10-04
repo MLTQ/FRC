@@ -1,5 +1,12 @@
 # Next species-pressure and entropy contract — 2026-10-04
 
+**Update:** The original proposal below is now a retained comparison. It exposed
+growing frozen modes; its naive skew version had nonconverging local errors.
+The implemented physical L2 projection/skew pair is independently verified in
+REGULAR_SPECIES_NUMERICS.md and REGULAR_SPECIES_VERIFICATION.md (416 tests,
+24 cases). Full moving integration remains under frc-7mm.4. The historical
+probe and candidate below are preserved unchanged as scientific evidence.
+
 This is a derived contract and measured diagnostic, not an implemented species
 integrator. Continue frc-7mm.4. The current-transport component is independently
 verified; complete thermodynamic and moving evolution are still open.

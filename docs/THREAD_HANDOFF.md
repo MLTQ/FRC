@@ -1,5 +1,17 @@
 # FRC virtual plasma bench — new-thread handoff
 
+**Continuation update, 2026-10-04:** The user has resumed research in the new
+chat. The regular species component is now implemented, with 416 passing tests,
+24 bitwise-replayed cases and independent physical/local-enthalpy audits.
+Read the latest GOAL_STATUS.md and NEXT_SESSION.md for the authoritative next
+step: complete coupled moving trajectories and physical interface work under
+frc-7mm.4. REGULAR_SPECIES_VERIFICATION.md records the new source and limits.
+The user's provisional lab envelope is in RESEARCH_QUESTIONS.md. The original
+handoff below is preserved as historical context; its "not implemented" species
+status and instruction to start that component have been superseded.
+
+---
+
 Prepared 2026-10-04 at the user's request to stop this thread and continue in a
 new one. **Do not continue research in the old thread.** The overall project
 is incomplete; no completion claim is made. Resume only from the user's new

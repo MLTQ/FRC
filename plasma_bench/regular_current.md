@@ -21,3 +21,8 @@ time integrator or a formation model.
 
 Physical masses and density must match the fluid; no adjustable electron mass,
 frozen density, temperature reset, diffusion or numerical vacuum is introduced.
+
+`RegularSpecies` now pairs actual species entropy-density rates with additional
+pressure forcing on this model. It provides a reduced induction forcing and a
+separate compatible electric potential. See REGULAR_SPECIES_VERIFICATION for
+its bounded component scope; full moving adoption remains unimplemented.

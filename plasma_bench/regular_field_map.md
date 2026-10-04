@@ -24,3 +24,7 @@ the same linear scalar map and its pullback to variable-current inertia.
 
 All arrays must be finite, point and sampled densities positive. There is no
 positivity floor, viscosity, vacuum treatment or magnetic evolution here.
+
+`SpeciesProjection` and `RegularSpecies` now use this same scalar sampler and
+weighted adjoint for the isolated species pressure/entropy pair. Their physical
+potential projection does not change this module's density or velocity contract.
