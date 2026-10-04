@@ -117,3 +117,20 @@ Then integrate magnetic/current/drift stresses and complete species enthalpy/
 Poynting work, followed by the original heated-edge/exact-vacuum requirements,
 physical transport/ionization and converged formation. Neither these bulk tests
 nor an axisymmetric closed-flux fixture establish 3-D stability or confinement.
+
+## Final remote contact completed and audited (2026-10-04)
+
+The original frozen source 3f4120fa completed nr32 contact: 4116/4116 steps
+in 16726.15 seconds. The remote audit replays its initial state/rate and final
+accepted RK4 step bitwise, rechecks all saved snapshots/history, and integrates
+physical fields independently at order 18. Maximum local energy disagreement
+is 3.04540e-15. Final relative L2 errors are n=3.01138e-9, Te=1.38881e-8 and
+velocity=2.81298e-9. Relative physical-energy drift is -1.15947e-15.
+
+All 14 protocol trajectories are now complete and audited (five earlier local
+cases and nine remote cases). Retrieved evidence and source/raw verification:
+`outputs/face_radial_remote_completion/`. The earlier partial audit is retained.
+No live run was restarted or changed. This closes the old near-axis force
+verification issue, not the broader moving-fluid adoption/formation requirements;
+its convective energy limitations and the later regular-fluid studies remain
+explicit in their own records.

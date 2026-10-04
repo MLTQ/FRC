@@ -14,3 +14,8 @@ No epsilon displacement of a physical boundary or radius floor is used.
 `RegularDifferential` differentiates the actual velocity quotient, including
 the density dependence of axial velocity. Its `stress_rate` is the volume
 gradient adjoint only; shared face tractions must be added by the caller.
+
+The transport study now independently reconstructs these fields and their
+physical derivatives with root-product polynomials and Fourier coefficients.
+Sixteen cases and analytic derivative checks passed; source 2f682eec preserves
+the calculation for replay. No derivative implementation changed on resumption.

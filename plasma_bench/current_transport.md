@@ -19,3 +19,11 @@ Physical equation consistency, near-axis/wall rates and interface quadrature
 must be verified separately from the algebraic work identities. This candidate
 must not replace a verified source until those gates pass. No diffusion or
 energy repair is introduced.
+
+## Verified component scope (2026-10-04)
+
+The unchanged candidate now has sixteen frozen cases, bitwise replay and an
+independent continuous-field audit. See docs/CURRENT_TRANSPORT_VERIFICATION.md
+for convergence, local/axis/wall errors, charge defects and the measured grid/
+continuous energy difference. Full species transport and coupled trajectories
+remain open; this component has not replaced a production formation solver.

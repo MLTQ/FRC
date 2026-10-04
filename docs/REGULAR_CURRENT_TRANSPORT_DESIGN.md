@@ -1,4 +1,9 @@
-# Next current-transport derivation: candidate, not implemented
+# Historical current-transport derivation
+
+The candidate below has now been implemented as a separate extension. See
+CURRENT_TRANSPORT_NUMERICS.md and CURRENT_TRANSPORT_VERIFICATION.md for its
+actual discrete contract and measured scope. The derivation below is retained
+as the pre-implementation checkpoint.
 
 The regular coupling checkpoint verifies actual fields and force/work adjoints.
 The following continuous weak identity suggests a compatible next implementation;

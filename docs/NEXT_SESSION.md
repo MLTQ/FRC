@@ -1,75 +1,68 @@
-# Resume here next week
+# Continue from the 2026-10-04 checkpoint
 
-Research paused at the user's request on 2026-09-30 to conserve credits.
-Do not launch further studies until the user resumes. The overarching FRC goal
-is open, not complete. This is a local repository with no configured Git remote;
-issue state and research checkpoints are saved locally.
+The user resumed on October 4. The overarching FRC goal remains open; this is
+verified component progress, not a completed formation simulator. This repository
+has no configured remote. Research and issue state are saved locally.
 
-## What is verified
+## Verified now
 
-Commit `267ae93` is the last fully verified solver checkpoint: physical
-regular-fluid/current/magnetic coupling, 402 full-suite tests and 16 audited
-coupling cases. Frozen calculation source:
-`8c9339a6eaf0c88b88bffe108d5ca2c535a8bfbf33fa4bd11b0c0aaebba6c784`.
-See `REGULAR_COUPLING_NUMERICS.md`, `REGULAR_COUPLING_VERIFICATION.md` and
-`outputs/regular_coupling_verification/`. This verifies an instantaneous
-component, not complete moving-species evolution or FRC formation.
+- Current advection, drift stress, stretching and self-drift: 16 frozen cases,
+  bitwise replay, independent order-16/20 continuous-field audit. **408 full
+  tests passed in 228.47 seconds.** Source `2f682eece854d54b3b0d33026709f8d34617cc4633d8b3875a0f3e2b8e0d9540`.
+  The study CLI is complete; the missing records/audit modules from the prior
+  pause have been implemented. frc-7mm.3 is closed. Read CURRENT_TRANSPORT_NUMERICS
+  and CURRENT_TRANSPORT_VERIFICATION for exact scopes and measured limits.
+- The old remote source-3f nr32 contact finished all 4116 steps and passed its
+  original-platform final-step/physical audit. All 14 face-radial trajectories
+  are complete and audited; frc-5b5 is closed. Evidence is in
+  `outputs/face_radial_remote_completion/`. No restart occurred.
+- Four species-pressure/entropy charge-compatibility probes, both quadrature
+  orders replayed bitwise. Source c6a23e1a, `outputs/species_charge_probe/`.
+  This diagnostic is separate from the 408-test solver baseline. It is not an
+  implemented species transport operator.
+- All 13 preceding calculation source closures are unchanged. Do not mutate
+  their archived source definitions or rerun into existing immutable records.
 
-## Ordered work in beads
+## Next action: frc-7mm.4
 
-1. **frc-7mm.3 — finish and audit the current-transport candidate.** The new
-   `plasma_bench/physical_derivatives.py` and `current_transport.py`, independent
-   `examples/current_transport_reference.py`, study and tests are saved as an
-   unfinished candidate. Four focused tests passed in 1.66 seconds; the full
-   suite has NOT been rerun with these changes. The 16-case transport study is
-   NOT frozen or audited. `run_case()` works, but the study CLI imports the
-   **not-yet-written `examples/current_transport_records.py`**. First read the
-   companion docs and `REGULAR_CURRENT_TRANSPORT_DESIGN.md`, implement the
-   records/provenance and independent audit, then freeze source and run the
-   degree/resolution/quadrature/density protocol including 32 elements. Check
-   local, first-element and maximum errors, true continuity and current jumps,
-   omitted-face negative controls, energy, axial force and angular torque.
-   Preserve the initial failed arbitrary 5x negative-control assertion and its
-   correction in `outputs/current_transport_diagnostics/`; no solver was changed
-   to obtain that focused-test pass. Full regression and independent physical
-   integration are required before adoption.
-2. **frc-7mm.4 — complete species pressure/current-entropy coupling.** Work with
-   the actual regular n,q,l,mz,Ce,Ci state, separate species temperatures and
-   enthalpy/Poynting fluxes. Verify original parent-equation rates and unforced
-   coupled evolution; do not use energy resets or fitted cancellation. Continue
-   the existing fluid order/spectral limitations under **frc-7mm.1** and coupling
-   work under **frc-7mm.2**.
-3. **frc-7mm.5 — full moving-plasma and formation validation.** After the above,
-   validate trajectories, heated moving exact vacuum, physical transport and
-   ionization, ends/coils and converged formation. Preserve exactly zero plasma
-   outside; no conducting/massive atmosphere. Hardware is prescribed waveforms.
-   Closed flux or an axisymmetric equilibrium does not establish 3-D stability
-   or particle confinement.
+Read `REGULAR_SPECIES_COUPLING_DESIGN.md` and the relevant module companions.
+Derive the shared current/particle flux and both species entropy updates using
+the actual regular n,q,l,mz,Ce,Ci state and physical h_e,h_i energy gradients.
+The identity grad(p)/n=grad(gamma*h)-h*grad(s) exposes the required charge-flux
+pairing. Compatible potential gradients annihilate current work, but their local
+approximation error is nonzero and must converge; a global cancellation alone
+is insufficient. Do not silently change density continuity or repair heat.
 
-## Existing remote study — inspect before doing anything
+First implement and verify original local pressure and entropy rates with
+nonuniform density, independently varying species temperatures and nonmatching
+element traces. Measure axis/wall/max errors, species entropy, charge/particle
+continuity, torque and physical versus grid energy. Then combine the verified
+components and run unforced complete-parent wave/contact trajectories, including
+enthalpy/Poynting boundaries and convergence. The lower-order continuous-energy
+and earlier fluid order/spectral limitations remain recorded under frc-7mm.1.
+frc-7mm.2 remains open for full coupling; frc-7mm.5 covers later adoption/formation.
 
-The older frozen 3f study under **frc-5b5** was last observed at
-2026-09-30T18:06:01.201528Z: 13/14 cases complete and audited, final nr32 contact
-2050/4116 accepted steps. Host `m@192.168.0.202`, directory
-`/home/m/Code/frc-tool-comparison/face-radial-20260930`, parent 147751 and workers
-147839/147845/147852. This is CPU NumPy/SciPy on the GPU machine; no GPU speedup
-is claimed. Status is historical, not a fresh liveness check.
+## Later formation gates
 
-No stop or restart was issued for the pause. On resumption, inspect terminal
-records, process command/cwd and saved checkpoints first. Never restart a live
-job or infer failure from an observation timeout. Retrieve and audit the final
-case if finished. The user has already authorized transfers to this machine.
-Saved observation: `outputs/regular_coupling_diagnostics/remote_status.json`.
+Preserve exactly zero exterior plasma in heated moving-vacuum runs. Physical
+transport/ionization, ends/coils and converged formation remain required.
+Hardware stays abstract prescribed waveforms. Closed flux or axisymmetric
+equilibrium does not establish 3-D stability or particle confinement.
 
-## Updated presentation
+## Machine and presentation
 
-`outputs/frc_showcase_checkpoint/index.html` is a self-contained 3-D viewer;
-`poster.png` and `orbit.mp4` are the still and camera-orbit exports. Rebuild/serve
-with `.venv/bin/python -m examples.showcase_checkpoint --serve --port 8779`, then
-open http://127.0.0.1:8779/. This presentation uses frozen verified coupling
-case 07, not the unfinished transport candidate. It samples all three current
-and magnetic components, includes toroidal magnetic field in the streamlines,
-and preserves the 35 mm radius / 240 mm length proportions. Display interpolation,
-opacity and streamline seed spacing are illustrative. The animation changes
-only the camera, not the plasma state. The older initialized-FRC showcase and
-the user's existing poster remain available unchanged by this update.
+The authorized remote host is `m@192.168.0.202`; the completed old study is in
+`/home/m/Code/frc-tool-comparison/face-radial-20260930`. The original PIDs were
+absent on resumption and terminal evidence was audited/retrieved. No remaining
+remote run is expected from that study; revalidate actual process identity
+before any future action. Existing host authorization includes data transfer.
+It was CPU NumPy/SciPy work, not a GPU-accelerated solver.
+
+The six-panel convergence report is in
+`outputs/current_transport_diagnostics/convergence.png` and `.pdf`.
+The earlier interactive field presentation is preserved in
+`outputs/frc_showcase_checkpoint/` (HTML, poster, MP4). It still depicts the
+saved coupling case 07, with camera orbit only, and its historical status label
+is from the previous checkpoint. Rebuild/serve via
+`.venv/bin/python -m examples.showcase_checkpoint --serve --port 8779`.
+The user's modified `outputs/frc_showcase/poster.png` remains outside our commits.

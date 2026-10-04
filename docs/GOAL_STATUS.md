@@ -1,6 +1,51 @@
-# Paused objective: a credible experimental FRC simulation
+# Active objective: a credible experimental FRC simulation
 
-## User-requested pause and handoff (2026-09-30)
+## Resumed checkpoint: verified current transport (2026-10-04)
+
+The user resumed research. The saved current-transport candidate now has a
+complete immutable 16-case degree/resolution/quadrature/density study, original-
+platform bitwise replay, and independent physical reconstruction at orders
+16 and 20. Full regression: **408 tests passed in 228.47 s**. Frozen source:
+`2f682eece854d54b3b0d33026709f8d34617cc4633d8b3875a0f3e2b8e0d9540`.
+All 13 previous calculation source closures were checked unchanged.
+
+Current advection pairs the formerly missing density-energy exchange; drift
+stress pairs stretching work; self drift has zero current work to roundoff.
+Original electric and physical force errors decrease with refinement, including
+axis and wall. At 32 degree-five fluid elements, continuous force component
+errors are 2.55272e-8, 1.72774e-6, 1.00102e-5. Grid total-power backward error
+is <=3.04005e-14. The independent continuous energy derivative is also measured:
+coarse degree-three error is 2.35289e-5 W and refines to 3.72857e-11 W; do not
+confuse grid conservation with exact continuous conservation. See
+CURRENT_TRANSPORT_NUMERICS.md and CURRENT_TRANSPORT_VERIFICATION.md.
+
+The older remote source-3f nr32 contact completed all 4116 steps and passed its
+original-platform bitwise final-step and independent order-18 audit. All 14
+face-radial trajectories are now complete and audited. Retrieved raw/source
+hashes match; evidence is outputs/face_radial_remote_completion. frc-5b5 is
+closed. No job was restarted. Remote execution was CPU NumPy/SciPy, not GPU
+acceleration.
+
+frc-7mm.3 is complete as a component audit. frc-7mm.4 is now in progress:
+a four-resolution species pressure/entropy diagnostic shows why nonlinear
+enthalpy gradients and entropy transport must share the discrete charge-flux
+contract. Its compatible-potential comparison reduces the work mismatch to
+roundoff while retaining a measured, convergent local interpolation error.
+Both quadrature orders replay bitwise. Probe source c6a23e1a; complete source
+and result hashes are in outputs/species_charge_probe. This is not an
+implemented species integrator. See REGULAR_SPECIES_COUPLING_DESIGN.md.
+
+NEXT derive and verify that common current/entropy flux with the actual regular
+state and both species energy gradients; test original local pressure/entropy
+rates before complete unforced coupled trajectories. The older fluid order/
+spectral limits under frc-7mm.1 remain. Exact heated moving vacuum, physical
+closures/ionization, boundary models, formation and 3-D stability/confinement
+remain open. No production solver was replaced. All new study/test/audit jobs
+are terminal; the project remains local with no Git remote or publication.
+See NEXT_SESSION.md for the concrete continuation entry point.
+
+
+## Previous user-requested pause and handoff (2026-09-30)
 
 Paused for next week to conserve credits. See [NEXT_SESSION.md](NEXT_SESSION.md)
 for the exact restart point, ordered beads and remote-study observation.
