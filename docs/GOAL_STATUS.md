@@ -1,4 +1,15 @@
-# Active objective: a credible experimental FRC simulation
+# Paused in this thread: a credible experimental FRC simulation
+
+## New-thread handoff (2026-10-04)
+
+The user explicitly stopped this thread to restart in a new one. Research here
+is paused; the project and its ten unfinished beads remain open. Start the new
+thread from [THREAD_HANDOFF.md](THREAD_HANDOFF.md), which lists all remaining
+issues, verified evidence, original scope and the concrete next implementation.
+Latest research commit: `7b3c8b2`. The interrupted continuation only read files;
+no new species implementation or simulation was started. The new-thread handoff
+also preserves the original user brief in ORIGINAL_PROJECT_REQUEST.md.
+
 
 ## Resumed checkpoint: verified current transport (2026-10-04)
 

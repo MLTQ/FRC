@@ -1,3 +1,14 @@
+# New thread: read THREAD_HANDOFF.md first
+
+The user stopped this thread on 2026-10-04. The complete portable handoff is
+[THREAD_HANDOFF.md](THREAD_HANDOFF.md), including all ten unfinished beads,
+original scope, verified checkpoint, execution details and remaining gates.
+No species implementation was started after research commit `7b3c8b2`.
+
+The previous continuation note below is retained as historical context.
+
+---
+
 # Continue from the 2026-10-04 checkpoint
 
 The user resumed on October 4. The overarching FRC goal remains open; this is
