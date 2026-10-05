@@ -1,4 +1,76 @@
-# Continue from verified coupled moving-plasma progress
+# Continue from implicit verification and exposed contact-growth gate
+
+The full experiment-sandbox goal remains active, with twelve unfinished beads.
+Read the newest GOAL_STATUS.md section, IMPLICIT_PLASMA_NUMERICS.md and
+IMPLICIT_PLASMA_VERIFICATION.md. **432 tests passed in 227.47 s.** All jobs from
+this checkpoint are terminal, including deliberately stopped inaccurate
+contact candidates. No local or remote job needs continuation/restart.
+
+## Current evidence
+
+- Midpoint/Gauss/Radau advance the actual full physical-mass plasma equations
+  with unchanged original induction bounds, fixed physical coordinate scales,
+  strict nonlinear equations and atomic rejection. A fixed-background block
+  preconditioner plus optional matrix-free Newton solves the equations without
+  substituting the background into evolution. Dense coupling storage is only
+  suitable for bounded verification, not large formation grids.
+- Eleven full waves replay all arrays/non-time metrics bitwise; independent
+  quadrature16/20 includes full E, both temperatures and physical energy.
+  Time ratios: midpoint3.975482; Gauss15.967079/15.991775;
+  Radau7.975201/7.994196. Radau has declared measured numerical temporal damping.
+  Source feeb358468dfd0074e61effcca9af8dcb727748f113907d22b4e0e74e958c8ef
+  (Gauss/midpoint),445623fdadd9f0825ae5441dc4c3fe26e92859e5c5d53564d5639949c9bb4240
+  (Radau). Report: outputs/implicit_plasma_report/convergence.png and PDF.
+- Three long Gauss contacts and one Radau contact developed large errors and
+  were stopped, with terminal records and saved accepted states. Do not claim
+  an accurate full100us transit. Initial chord-only failed pilots remain frozen;
+  the captured ninth-step Gauss failure now has a passing Newton regression.
+- A 360-coordinate stationary-contact spatial Jacobian has real growth
+  854532.963/s at epsilon1e-5 versus854532.845/s at1e-4. The uniform rest control
+  has maximum real4.28e-9/s. All matrices replay bitwise. Full source
+  b82a7bf386a9d591e67699db71c9a5326e35c4bf709a30364b208645edd2449f.
+  The uniform null-mode relative mixed error is ill-conditioned; separate
+  nonzero independent rest-operator comparisons are <=4.403e-12.
+- Paired species-pressure/current-entropy feedback is needed for rapid growth
+  in saved-matrix ablations. Removing it is a diagnostic, not a solver fix.
+- A separate continuum Fourier/Bessel operator imports no production spatial
+  solver, verifies three uniform wave branches and has slower growing contact
+  modes. First-mode axial refinement converges to8763.749254/s; higher sampled
+  Bessel modes give about12,000/s. Eight matrices replay bitwise. Audit source
+  b7dde0bbad1b307e752bc2a9b441e158dd7c790dd88728c684782667aee647a2.
+  **The radial spaces differ: no matched-mode or numerical/physical cause has
+  been established.** Spectral growth alone is not a laboratory stability claim.
+
+## Immediate next action — frc-7mm.7
+
+1. Read companions for contact_linear_probe, stationary_contact_continuum,
+   stationary_contact_audit, regular_species, species_projection, regular_plasma
+   and the relevant independent physical sampling code. Saved production modes
+   and continuum matrices contain everything needed for the next comparison.
+2. Reconstruct the production leading eigenvector as physical density, velocity,
+   both entropy/pressure fields, B/J and local charge/face jumps. Compare its
+   matched radial/axial subspace against the independently linearized parent
+   equations. Consider an explicitly divergence-free continuum magnetic basis
+   to reduce nullspace conditioning; the current full-field divergence residual
+   is measured, not assumed zero. Independently evolve small perturbations and
+   refine mesh/amplitude/time to distinguish physical growth from spatial error.
+3. Fix only a demonstrated numerical defect. Do not suppress growing modes by
+   dropping species feedback, fitting E/B/pressure, weakening residuals, adding
+   artificial mass or repairing heat/energy. A stable uniform spectrum or fixed
+   current species test does not certify the coupled heterogeneous state.
+4. Repeat full contact and other unforced parent trajectories; close local
+   enthalpy/Poynting interfaces. Then continue heated moving exact vacuum,
+   transport/ionization, actual ends/coils, converged formation and experiment UI.
+   Keep frc-7mm.4/.6/.7, frc-7mm and frc-goal open until their actual gates pass.
+
+All previous source archives remain intact. No remote or publication; preserve
+the user's modified outputs/frc_showcase/poster.png. Older sections below are
+historical. This checkpoint made substantial new progress; it is not a blocked
+goal and must not be resumed by resetting its scope or rerunning old remote jobs.
+
+---
+
+# Previous coupled moving-plasma checkpoint
 
 The user made the full experimental-sandbox objective an active goal. Read the
 new top section of GOAL_STATUS.md, REGULAR_PLASMA_NUMERICS.md and

@@ -1,5 +1,51 @@
 # Active research: a credible experimental FRC simulation
 
+## Implicit wave methods verified; nonuniform-contact growth exposed (2026-10-04)
+
+The full user goal remains active. **432 tests pass in 227.47 s.** All jobs from
+this checkpoint are terminal. Read IMPLICIT_PLASMA_NUMERICS.md and
+IMPLICIT_PLASMA_VERIFICATION.md; the inspected six-panel PNG/PDF is in
+outputs/implicit_plasma_report. This is bounded filled-periodic verification,
+not a completed formation simulator or a selected laboratory experiment.
+
+Physical block preconditioning and full-equation midpoint/Gauss/Radau now have
+eleven complete bitwise-replayed waves, independent quadrature16/20, original
+strict induction checks and atomic time-step rejection. Physical B time ratios
+are 3.975482, 15.967079/15.991775 and 7.975201/7.994196, respectively. Radau's
+intentional temporal damping is measured, not called physical resistivity;
+Gauss/midpoint weak-energy diagnostics retain their measured precision floor.
+A captured chord-only contact failure is recovered with a Newton correction
+under its unchanged original tolerance. All earlier verified physics sources
+remain unchanged; initial failed candidate source archives are preserved.
+
+**The long contact is still not validated.** Three Gauss controls and a Radau
+control were stopped after large deviations from the exact solution developed.
+Their terminal records preserve saved accepted checkpoints; three Gauss states
+have independent physical field/energy audits. No 100-microsecond accurate
+transit is claimed. The issue is not only time integration: a stationary
+nonuniform-contact spatial Jacobian has a positive real mode 8.5453296e5 /s,
+stable under finite-difference amplitude refinement, while uniform rest does
+not have comparable growth. All three matrices replay bitwise. Paired species
+pressure/current entropy feedback is necessary for the rapid mode in block
+ablation controls; those incomplete controls are not physical evolution models.
+
+An independently derived original-equation Fourier/Bessel operator verifies all
+three uniform wave branches and also has slower growing nonuniform-contact
+modes. Eight matrices replay bitwise; the first radial mode converges to
+8763.749254 /s with axial refinement. Its radial space differs from production,
+so this is not a matched-mode comparison or proof of a numerical/physical cause.
+Read the explicit limitations before interpreting the spectra.
+
+NEXT: **frc-7mm.7** is in progress. Reconstruct the production leading mode,
+compare matched continuum subspaces and independent perturbation evolution,
+measure mesh refinement and resolve any demonstrated coupling defect. Keep
+local enthalpy/Poynting interface and weak-pressure precision gates open; then
+repeat complete long contacts. Heated moving exact vacuum, transport/ionization,
+coil/end boundaries, converged formation and experiment UI remain required.
+The user's 1 m tube / 10–20 cm diameter / 0.1–100 mTorr neutral-fill / selectable
+gas / flexible Helmholtz-like bias remains the exploration envelope. No remote
+or publication. NEXT_SESSION.md is the current continuation entry point.
+
 ## Coupled moving plasma and strict residual refinement (2026-10-04)
 
 The user explicitly made the full experiment-sandbox objective an active goal.
