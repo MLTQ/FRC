@@ -1,4 +1,61 @@
-# Continue from the verified regular species checkpoint
+# Continue from verified coupled moving-plasma progress
+
+The user made the full experimental-sandbox objective an active goal. Read the
+new top section of GOAL_STATUS.md, REGULAR_PLASMA_NUMERICS.md and
+REGULAR_PLASMA_VERIFICATION.md. The older isolated-species entry below is now
+historical. The parent goal and eleven unfinished beads remain open.
+**425 tests pass in 219.19 seconds.** Every job from this continuation is terminal;
+there is no local or remote simulation to resume. Continue from saved evidence.
+
+## Current evidence
+
+- Actual fluid/current/two-species/magnetic RHS and full simultaneous RK4:
+  25 frozen cases, complete bitwise replay, independent quadrature 16/20.
+  Source 19f68fb08f949c4526bc1347d18652fb1eeb22d720d483a2074d6a71f7f40358.
+- Seven full fast-wave periods; time-refinement ratios 15.999437/15.999863.
+  Finest B/J signal errors 2.35089e-6/2.59599e-6; density/pressure 5.6764e-4.
+  Contact has convergent original instantaneous rates only, not a full transit.
+- Seven independent stable physical-energy audits, replayed at both quadratures;
+  six slow-branch amplitude controls retain a weakest-pressure precision floor.
+- The old full coordinate-matrix attempt's rejection was captured/replayed.
+  **It is a localized near-axis toroidal magnetic perturbation, not the initial
+  pressure-only hypothesis.** Inner physical and outer coefficient norms differ.
+- Opt-in RefinedRegularPlasma tightens only the inner induction solve until all
+  original unchanged outer residuals pass. Two full 360-coordinate matrices
+  replay; independent linear errors 2.04814e-9/2.20696e-11. A complete coarse wave
+  exactly matches the original. Source bc562813c4df25bb032e693b4e59adf0782aa9e92ee29f1233a36b34a1a2cd3f.
+- Seventeen earlier calculation closures remain unchanged. All archives include
+  complete source, arrays and metrics; do not overwrite or mutate frozen sources.
+
+## Immediate next action
+
+1. Read companions for regular_plasma, regular_plasma_step,
+   refined_kernel_induction and refined_regular_plasma. Use the **opt-in refined
+   class** for new work; original RegularPlasma remains the frozen baseline.
+2. Complete a full exact FiniteMassContact transit on actual moving state with
+   physical masses, both temperatures and full E. Derive a stiff time method or
+   justify the explicit fast-mode cost; the contact transit is 100 microseconds,
+   far longer than the 116.5 nanosecond fast-wave fixture. No rate clipping,
+   artificial mass, field/pressure fit, heat or energy correction.
+3. Preserve strict original residuals and atomic rejection across all stages;
+   refine time/mesh and measure point/sampled positivity, initial/final physical
+   norms and grid versus continuous conservation. frc-7mm.6 remains open until
+   broader moving robustness/adoption is supported.
+4. Close the original local enthalpy/Poynting budget with reconstructed face
+   jumps. Integrated energy and nonlocal entropy graph work do not prove it.
+   Inspect constant-potential gauge/EOS difference precision for very weak slow
+   pressure signals; amplitude 0.001 controls retain a measured accuracy floor.
+5. Only then continue heated moving **exact vacuum**, physical transport/
+   ionization, actual coil/end boundaries, converged formation and experiment UI.
+   Keep the original full goal open, including stability/confinement limitations.
+
+There is no remote or publication. Preserve the user's modified
+outputs/frc_showcase/poster.png. Existing study figures are verification reports,
+not a proposed laboratory experiment. No old remote job requires continuation.
+
+---
+
+# Previous regular species checkpoint
 
 The user resumed on 2026-10-04 and supplied a provisional lab envelope; research
 is active and all ten previously unfinished beads remain open. **416 tests pass**.

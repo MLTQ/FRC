@@ -25,5 +25,7 @@ energy repair is introduced.
 The unchanged candidate now has sixteen frozen cases, bitwise replay and an
 independent continuous-field audit. See docs/CURRENT_TRANSPORT_VERIFICATION.md
 for convergence, local/axis/wall errors, charge defects and the measured grid/
-continuous energy difference. Full species transport and coupled trajectories
-remain open; this component has not replaced a production formation solver.
+continuous energy difference. RegularPlasma now combines this unchanged component
+with both species and magnetic evolution; full fast-wave periods have independent
+verification. Long contact, local interface budgets and formation remain open;
+see REGULAR_PLASMA_VERIFICATION. No production formation solver was replaced.

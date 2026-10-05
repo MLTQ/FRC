@@ -25,4 +25,8 @@ frozen density, temperature reset, diffusion or numerical vacuum is introduced.
 `RegularSpecies` now pairs actual species entropy-density rates with additional
 pressure forcing on this model. It provides a reduced induction forcing and a
 separate compatible electric potential. See REGULAR_SPECIES_VERIFICATION for
-its bounded component scope; full moving adoption remains unimplemented.
+its bounded component scope. New RegularPlasma now assembles the complete moving
+fluid/current/species RHS and verifies full fast-wave periods, with an opt-in
+RefinedRegularPlasma for strict full-residual refinement. See
+REGULAR_PLASMA_VERIFICATION; long contact, physical interface energy and vacuum
+formation remain open. This component's frozen source is unchanged.

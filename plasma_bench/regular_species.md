@@ -3,7 +3,9 @@
 ## Purpose
 An isolated bounded instantaneous operator on the existing actual regular state.
 It pairs physical electron/ion pressure work with their entropy-density rates.
-It is not yet a complete moving integrator or a vacuum/formation model.
+It is not itself a complete moving integrator or a vacuum/formation model.
+New RegularPlasma composes it with fluid/current/magnetic evolution and verifies
+bounded complete fast-wave periods; see REGULAR_PLASMA_VERIFICATION for scope.
 
 ## Components
 `SpeciesPotential` samples n*f and n at field nodes, averages both conservative

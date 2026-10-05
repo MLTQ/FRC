@@ -1,5 +1,58 @@
 # Active research: a credible experimental FRC simulation
 
+## Coupled moving plasma and strict residual refinement (2026-10-04)
+
+The user explicitly made the full experiment-sandbox objective an active goal.
+**425 tests pass in 219.19 seconds.** All new simulation, replay, energy,
+refinement, reporting and test jobs are terminal.
+The actual regular fluid/current/two-species/magnetic equations now evolve
+together. The bounded filled-periodic-cylinder study has **25 cases**, all
+arrays/non-time metrics replayed bitwise, with independent quadrature 16/20:
+16 original parent rates, seven full fast-wave periods and two separate full
+stationary spectra. Source `19f68fb08f949c4526bc1347d18652fb1eeb22d720d483a2074d6a71f7f40358`.
+Read REGULAR_PLASMA_NUMERICS.md and REGULAR_PLASMA_VERIFICATION.md; raw evidence
+is outputs/regular_plasma_verification and the inspected six-panel PNG/PDF is
+outputs/regular_plasma_diagnostics/convergence.
+
+At 16 elements, a full physical-mass wave period has relative density/pressure
+error about 5.6764e-4, velocity 1.52793e-5, B 2.35089e-6 and J 2.59599e-6, with
+explicit axis/wall/max and initial representation norms. Time-refinement ratios
+are 15.999437/15.999863. Finest contact instantaneous density/electron/ion-pressure
+errors are 4.04333e-10/5.65129e-10/9.10035e-9; its full E error 1.82313e-5.
+The complete nonlinear contact transit has **not** been run on this assembly.
+
+Seven additional independently reconstructed energy audits replay at both
+quadratures; stable conservative-change evaluation preserves weak signals.
+Finest continuous energy drift divided by wave energy is -2.97506e-8, distinct
+from grid drift -2.99866e-8. Six slower-branch amplitude/mesh cases retain the
+finite-amplitude nonlinear floor and an explicit weakest-pressure precision
+limit; not every tiny signal converges monotonically to the continuum reference.
+All 17 earlier calculation source closures are unchanged.
+
+The initial full coordinate-Jacobian attempt is preserved with its rejection.
+Captured input disproved the pressure-only hypothesis: a localized near-axis
+toroidal magnetic perturbation passed the inner physical residual but failed
+the full coefficient backward residual. New opt-in RefinedRegularPlasma and
+RefinedKernelInduction tighten only the inner solve until **every unchanged
+original outer residual** passes. Both full 360-coordinate matrices now finish
+and replay bitwise; independent linear-operator errors are 2.04814e-9/2.20696e-11.
+One complete reference wave is bitwise unchanged. Refinement source
+`bc562813c4df25bb032e693b4e59adf0782aa9e92ee29f1233a36b34a1a2cd3f`.
+frc-7mm.6 tracks full moving adoption/robustness; the original frozen class is
+not silently replaced. No tolerance weakening, field fitting or energy repair.
+
+NEXT: use the opt-in refined assembly for a complete unforced nonlinear contact
+transit, with a derived stiff time method or justified explicit cost and genuine
+time/mesh/positive-state controls. Close local physical enthalpy/Poynting
+interface budgets. Earlier fluid accuracy limits, heated moving exact vacuum,
+transport/ionization, actual coil/end boundaries, converged formation and the
+experimental UI remain required. Keep frc-7mm.4/.6 and frc-goal open. This is
+axisymmetric verification, not a stability/confinement or formation result.
+The user's provisional 1 m tube / 10–20 cm diameter / variable gas / 0.1–100 mTorr neutral
+fill / Helmholtz-like bias envelope remains recorded in RESEARCH_QUESTIONS.md.
+The project has no remote; work and issue state remain local. NEXT_SESSION.md
+is the current continuation entry point.
+
 ## Verified regular species component and lab envelope (2026-10-04)
 
 The user resumed work toward an experiment-design sandbox. The next species

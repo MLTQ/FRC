@@ -187,3 +187,12 @@ docs/THREAD_HANDOFF.md and docs/GOAL_STATUS.md, then inspect bead frc-7mm.4.
 Preserve the full original scope and verified archives. Implement and verify
 the remaining species pressure/entropy coupling before complete moving-plasma
 validation. Keep the overarching FRC goal open until its full evidence gates pass.
+# Current continuation entry point
+
+The user resumed and explicitly made the full FRC sandbox an active goal.
+The newer coupled moving-plasma checkpoint supersedes the stopped-thread state
+below. Read NEXT_SESSION.md and the top of GOAL_STATUS.md first, then
+REGULAR_PLASMA_NUMERICS/VERIFICATION.md. Bounded full-wave coupling and strict
+induction refinement now have frozen evidence; long nonlinear contact, physical
+interface energy budgets and exact-vacuum formation remain open. The historical
+handoff and original brief below are retained for scope and evidence continuity.
