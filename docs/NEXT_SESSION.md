@@ -1,3 +1,89 @@
+# Continue from the radial near-grid response failure
+
+The complete FRC experiment-sandbox goal remains open. Read the newest
+GOAL_STATUS.md, PHYSICAL_INTERFACE_AUDIT_DESIGN.md and
+PHYSICAL_INTERFACE_VERIFICATION.md. **457 tests pass in254.80s.** No production
+physics/time-solver code was edited. New source closures are opt-in diagnostics.
+
+## All jobs terminal
+
+Both larger-grid60-step/100us primary runs and complete reruns finished; every
+accepted state/stage and non-runtime metric compares bitwise. Their verification
+records are outputs/matched_mode_guarded_ne4_z64_t60_plus_verification and the
+corresponding minus_verification. Former worker sessions10675/67242 exited0 and
+were collected; do not restart or poll them. The coarse120-step pair, both full
+reruns, every physical audit, history, interface, extracted-mode diagnostic and
+regression are also terminal. No job was killed or accepted with relaxed bounds.
+All59 new source archives are verified;61 preceding and32 older archives plus22
+earlier verified source closures remain unchanged. See the full checkpoint in
+outputs/physical_interface_diagnostics/checkpoint.json.
+
+## New evidence
+
+- Four additional complete100us signed runs, coarse120 steps and medium60steps.
+  Medium F4/64,B16/64 intended projection improves to2.40217, but final J error
+  is.0431611 and Bz.00496073. This is a failed accuracy gate; no mesh convergence.
+- Coarse30/60/120 controls do not establish fourth-order time convergence.
+  Representative uniform spectra have omega*dt118/318 at60steps on coarse/
+  medium grids. Phase underresolution is a risk, not the sole diagnosed cause.
+- Full physical histories replay every saved checkpoint atq12/16, matching the
+  separate finalq16 audit. Medium extra current grows~71682/s after cancellation
+  of the independent slow reference; direct actual spatial RHS projects~71426/s.
+  Probe amplitude1e-4/1e-5 current rate difference1.57e-6; q16/20 agrees.
+- Extracted current is97.83% azimuthal, B98.07% axial; axial Fourier1 dominates.
+  Radial Bessel15/16 dominate density/Bz on16 field cells.32 modes capture~94%
+  of density/Bz. Weak J versus strong volume curl(B)/mu0 differs.599823; this
+  excludes distributional face terms. Independent matched continuum action has
+  large radial/induction discrepancies; no validated physical eigenmode.
+- Exact fluid subdivision to8/16 elements preserves fields<7e-14 and leaves
+  current rate nearly unchanged, but changes momentum rate dramatically. It is
+  a separate diagnostic, not an established repair. All three extracted-mode
+  studies fully replay every array and non-runtime metric.
+- Eight actual original physical face/volume budget cases and axis/wall audits
+  replay bitwise atq16/20. Energy cell L2 defect.60485 ->.00017354; final
+  particle/current/eentropy/ientropy defects1.306e-7/3.791e-7/9.741e-5/4.022e-8.
+  Energy absolute trace jumps5.19e-4 ->1.84e-7 W. Max quadrature norm discrepancy
+  9.64e-10. These are rate consistency results, not full nonlinear acceptance.
+- Initial conservative energy Hessian is independently verified against70digit
+  original EOS differentiation and analytic derivatives. Actual total-energy
+  drift/initial perturbation scale<=6.42e-7 across five signed pairs; the scale
+  is not an independently conserved free energy. All energy audits replay.
+- Inspected report: outputs/physical_interface_report/verification.png and PDF.
+  New full regression: outputs/physical_interface_diagnostics/pytest_final.log.
+
+## Required next work
+
+1. Resolve the near-grid radial branch using independently matched fluid/field
+   radial spaces and fixed-physical-wavenumber refinement, retaining exact
+   physical masses, full species/current/work coupling and all wall constraints.
+   Concrete first control: the independent radial16,N64 mode is already frozen
+   in outputs/stationary_contact_audit/continuum_07.npz (SHA256
+   f9c92d8d94be18b10955fdde1f20868e2d3f0fafcc58a7157eca3e318258f6c6),
+   with growth12307.156241/s. Add an opt-in reference/fixture that accepts this
+   archived mode without changing continuum_contact_mode or matched_mode_fixture.
+   Compare actual full rates on field radial16/32/64 (axial64 then128), varying
+   fluid elements4/8/16 separately and keeping the same physical radial16 mode.
+   Preserve exact initial representation, full E/J, strong and face errors and
+   epsilon1e-4/1e-5 controls; refine the independent axial reference separately.
+   A comparison that simply follows a different largest eigenvalue as the grid
+   changes is insufficient. Include strong/weak/face consistency and uncaptured
+   norms; no fitted eigenmode, filter, artificial mass or energy repair.
+2. Repeat complete growing signed trajectories with genuine mesh/time/amplitude/
+   residual convergence. Keep small-signal energy and actual local interfaces.
+   Source for current guarded evolution remainsf255a576; extracted diagnostics
+   do not change the accepted trajectory solver or physical model.
+3. Continue heated moving exact vacuum (never an atmosphere), transport and
+   ionization validity, real coil/end boundaries, prescribed-waveform formation,
+   experiment controls/UI. Keep frc-goal and all current acceptance beads open.
+
+Preserve outputs/frc_showcase/poster.png, which was already user-modified. No
+remote is configured and no research data was published. The user's~1m quartz
+tube,10–20cm diameter,0.1–100mTorr neutral fill, selectable gas and adjustable
+Helmholtz-like bias remain exploration inputs. No laboratory formation,
+three-dimensional stability or particle-confinement claim follows.
+
+---
+
 # Continue from matched growing-response verification
 
 The full user goal remains active. Read the newest GOAL_STATUS.md,

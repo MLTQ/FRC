@@ -1,5 +1,45 @@
 # Active research: a credible experimental FRC simulation
 
+## Local budgets verified; radial response accuracy fails (2026-10-05)
+
+The full experimental sandbox goal remains open. **457 tests pass in254.80s.**
+Read PHYSICAL_INTERFACE_AUDIT_DESIGN.md and PHYSICAL_INTERFACE_VERIFICATION.md.
+No production evolution source, physical mass, strict tolerance or accepted
+state changed. Every new diagnostic and physical audit replays bitwise.
+Four new100us signed trajectories and all four full evolution reruns are
+complete. **Every accepted state/stage and non-runtime metric replays bitwise;
+all jobs are terminal.** Earlier sections are historical.
+
+Eight independent original-equation cell/one-sided-face audits show energy
+defect.604850 -> .0453847 -> .00281026 -> .000173539 with refinement; current,
+particles and both species entropy also improve. All raw face/cell/jump arrays,
+axis/wall norms and quadrature16/20 controls replay. Small net energy power does
+not certify local balance. New thermal-Hessian tests give a physical initial
+perturbation energy scale; actual total-energy drift is<=6.42e-7 of that scale
+over five signed pairs. The scale is not a separate conserved free energy.
+
+**Full growing-response mesh/time convergence still fails.** At F4/64,B16/64,
+the intended mode projection is more accurate, but J/Bz errors rise to
+.0431611/.00496073. Coarse30/60/120 steps do not show fourth-order convergence.
+Saved-history extraction gives unwanted current growth71682/s; direct actual
+stationary spatial RHS gives71426/s with amplitude controls. Independent radial
+projection locates it near Bessel modes15/16, on16 radial field cells. Strong
+volume curl(B)/mu0 differs from weak J by.599823; interface distributions and
+uncaptured radial norm remain explicit. Exact fluid-only subdivision preserves
+fields but strongly changes momentum rates; it is not a demonstrated repair.
+Representative uniform spectra also expose unresolved fast temporal phase,
+which does not explain away the directly measured spatial contribution.
+
+NEXT: independently matched radial/field/fluid and fixed-physical-wavenumber
+controls, then complete signed time/mesh/residual convergence. Keep frc-7mm.7/.6/
+.4 and the full goal open. Heated moving exact vacuum, transport/ionization,
+physical coil/end boundaries, converged formation and experiment UI remain.
+The lab envelope remains provisional. Inspected six-panel PNG/PDF:
+outputs/physical_interface_report. All59 new source archives are verified;
+61 preceding archives,32 older archives and22 earlier source closures remain
+unchanged. Full checkpoint: outputs/physical_interface_diagnostics/checkpoint.json.
+Preserve the user's poster; no remote/publication.
+
 ## Matched continuum rates and complete signed response (2026-10-05)
 
 The full experiment-sandbox goal remains active. **446 tests pass in 234.86 s.**

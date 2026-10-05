@@ -1,5 +1,13 @@
 # Virtual plasma bench
 
+Current research status: **457 tests pass**, with new independent local
+energy/current/species face-budget verification. Full growing-response accuracy
+still fails on a larger grid: unresolved radial structure raises current error
+to4.3%. The sandbox is not yet validated for choosing a laboratory formation
+experiment. Read the [latest measured results](docs/PHYSICAL_INTERFACE_VERIFICATION.md),
+[current handoff](docs/NEXT_SESSION.md), and [verification figure](outputs/physical_interface_report/verification.png).
+The older component summaries below retain their original scope and limits.
+
 A scriptable, verified axisymmetric research sandbox. It currently implements
 analytic vacuum electromagnetics and stationary resistive plasma induction with
 a coupled nonconducting exterior. A developmental conservative MHD kernel now
