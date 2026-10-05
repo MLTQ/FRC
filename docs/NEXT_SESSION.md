@@ -1,3 +1,60 @@
+# Continue from the wall-space correction and matched continuum gate
+
+The full experiment-sandbox goal remains active. Read the newest GOAL_STATUS.md,
+STRONG_WALL_DESIGN.md and STRONG_WALL_VERIFICATION.md. **436 tests passed in
+232.03 s.** All new simulation, full replay and regression-test jobs are terminal.
+No local or remote run needs continuation or restart.
+
+## Current evidence
+
+- Original rapid mode is localized near the outer wall with incompatible
+  normal flow/Btheta/current traces. Independent physical reconstruction and
+  radial/Fourier projections retain uncaptured norm and coarse background error.
+- New explicit wall Galerkin curl Fw=P F, inactive wall-normal fluid momentum,
+  admissible magnetic Krylov vectors and nonlinear Gauss stage coordinates.
+  Strict new equations, full old raw-curl defect and zero reaction work are
+  explicit. Original source classes and archived failures are preserved.
+- Actual 344-coordinate contact growth 9203.373408/s matches the separately
+  restricted original Jacobian. Three full matrices and all physical/projection
+  arrays replay bitwise. Source ded3bac43979f5bde181c2eb6989d6af28b57f1d64bca09dd3f94413b7203a9a.
+- Five new complete 100-microsecond contacts and six full waves; source
+  d7a422b0f3e147e84e1acbb5b3db5c17b4eb162eab5d2d55845d829e18ebbc96.
+  Wave time ratios 15.967079/15.991774; contact 15.883252. Contact energy drift
+  decreases fourth order. Finest contact n error 9.97995e-7, pressures ~3.8e-6,
+  E 5.00415e-4; unwanted B 1.00896e-13 T retained. All arrays/non-time metrics
+  replay bitwise, with quadrature 16/20 audits.
+- Independent original-continuum growing mode rate comparisons at mesh 1/2/4/8/16,
+  quadrature 16/20 and amplitude 1e-4/1e-5: all 12 cases replay bitwise. Source
+  c100c3eea05acbb767c65887bf692335ff88b788d884eef3839aaf7e5b0ec4fb.
+  Finest full E rate comparison error 0.00648538, radial velocity 0.002272;
+  radial-B/current rate errors remain 0.547444/0.480471. Do not claim adoption.
+- 22 prior verified source closures and 32 previous-checkpoint archives unchanged.
+  All 32 new source archives verified. Inspected scientific report PNG/PDF:
+  outputs/strong_wall_report; checkpoint: outputs/strong_wall_diagnostics.
+  Preserve user's modified outputs/frc_showcase/poster.png; no remote/publication.
+
+## Immediate next action — frc-7mm.7 remains open
+
+1. Read companions for continuum_contact_mode, continuum_wall_probe,
+   strong_wall_geometry/plasma/induction, wall_induction_core and Gauss coordinates.
+2. Refine radial and axial field meshes separately for the independent continuum
+   mode. Current fixture couples default field resolution to fluid elements;
+   generalize in a new explicitly frozen protocol, retaining analytic state,
+   full physical rates/E/J, initial error and axis/wall/max/quadrature diagnostics.
+   Slow magnetic response requires cancellation accuracy far beyond a B-field
+   representation or fast-wave check. Do not suppress the residual mode.
+3. Independently evolve small continuum perturbations with time/amplitude/mesh
+   controls; compare physical fields/growth, not differing largest eigenvalues.
+   Complete local charge/enthalpy/Poynting interface budgets including jumps.
+4. Then continue heated moving exact vacuum, transport/ionization, actual coil/end
+   boundaries, converged formation and experiment UI. Keep the complete goal and
+   numerical acceptance beads open until their actual criteria pass.
+
+This is substantial progress, not a blocked goal or a reduced objective. Older
+sections below are historical; do not restart old terminated inaccurate jobs.
+
+---
+
 # Continue from implicit verification and exposed contact-growth gate
 
 The full experiment-sandbox goal remains active, with twelve unfinished beads.

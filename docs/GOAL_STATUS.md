@@ -1,5 +1,47 @@
 # Active research: a credible experimental FRC simulation
 
+## Wall-space correction; complete contact transits (2026-10-04)
+
+The full experimental sandbox goal remains active. **436 tests pass in
+232.03 s.** Read STRONG_WALL_DESIGN.md and STRONG_WALL_VERIFICATION.md. The
+new calculations, full replays and regression tests are terminal. Every
+trajectory has independent quadrature 16/20 and complete bitwise replay. This
+is bounded periodic verification, not formation. Earlier sections below are
+checkpoint history; this newest section governs.
+
+Independent reconstruction localizes the old 854533/s mode at the outer wall,
+where normal flow and toroidal B violate the intended physical traces. A new
+explicit Galerkin boundary space reduces that coarse rapid branch to 9203/s;
+its actual full-RHS matrix agrees with the independently restricted old matrix
+to 1.12125e-11. All physical-mode arrays, three matrices and matched continuum
+rate cases replay bitwise. Every nonlinear stage and induction Krylov vector
+satisfies the constraints directly; no accepted-state projection, damping,
+artificial mass or energy/heat repair is used. The original raw Faraday defect
+is separately measured, never mislabeled a passing original-incidence check.
+
+Five new full 100-microsecond contact transits and six full fast waves are complete.
+Time-difference ratios are 15.967079/15.991774 for wave B and 15.883252 for contact
+density; contact energy drift decreases from 3.04416e-8 to 1.19159e-10 with time
+refinement. Finest contact density/pressure errors are about 9.97995e-7 and
+3.8e-6, full E error 5.00415e-4. Old frozen failures and successful pilot evidence
+are retained. Source d7a422b0; diagnostic ded3bac4; continuum comparison c100c3ee.
+
+**The growing-mode accuracy gate remains open.** An independently derived
+nonuniform continuum mode gives decreasing rate errors with mesh refinement,
+but the finest sampled radial-B/current rate errors remain 0.547444/0.480471.
+Good unperturbed contact transit and fast-wave time convergence do not certify
+that slow response. Current/enthalpy/Poynting interface budgets also remain open.
+
+NEXT: refine field directions separately on the independent growing mode and
+evolve small physical perturbations with mesh/time/amplitude controls. Then
+complete local budgets, heated moving exact vacuum, transport/ionization, actual
+coil/end boundaries, converged formation and experimental controls. Keep all
+current numerical acceptance beads and frc-goal open. The user's prospective
+geometry/gas/neutral fill/bias are exploration inputs, not lab recommendations.
+Measured report: outputs/strong_wall_report/convergence.png and PDF. All 32 new
+source archives are verified; outputs/strong_wall_diagnostics/checkpoint.json
+records the complete checkpoint and twelve unfinished beads.
+
 ## Implicit wave methods verified; nonuniform-contact growth exposed (2026-10-04)
 
 The full user goal remains active. **432 tests pass in 227.47 s.** All jobs from
