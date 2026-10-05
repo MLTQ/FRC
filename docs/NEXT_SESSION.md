@@ -1,3 +1,65 @@
+# Continue from matched growing-response verification
+
+The full user goal remains active. Read the newest GOAL_STATUS.md,
+MATCHED_MODE_SOLVER.md and MATCHED_MODE_VERIFICATION.md. **446 tests pass in
+234.86 s.** All new jobs are terminal. All six signed trajectories replay every
+array and non-runtime metric bitwise. See outputs/matched_mode_diagnostics/checkpoint.json
+for archive and final verification details. No running job needs continuation.
+The overall scope has not changed.
+
+## New evidence
+
+- Eight independent field-direction rate cases, all arrays/physical fingerprints
+  and both quadratures bitwise replayed. Final Br/Jt errors0.000244246/0.000219551
+  at field64/128, fluid16/128; source 7bb77514. The old0.55/0.48 gate is resolved
+  as an instantaneous accuracy study, not full fine-grid trajectory validation.
+- Modal uniform physical block inverse and physical uniform current-inertia
+  preconditioner preserve all actual equations, full Fourier modes and strict
+  bounds. Focused independent operator/stage/atomic tests and full regression.
+- Six full 100 us signed runs on coarse fluid 4/32 and field 8/32: 30/60 steps at
+  epsilon 1e-4 plus30 steps at2e-4. Source f255a576. Three complete independent
+  physical audits and two physical time/amplitude comparisons replay bitwise.
+- At60 steps n/Br/J/E errors 0.001011/0.001937/0.002748/0.008678. Growth projections
+  near 2.402 agree with independent 2.402175837, but initial representation is
+  explicit and this alone is not convergence or a confinement result.
+- Half-dt changes E by 0.00136156; double amplitude changes all measured responses
+  <=2.07e-6. Energy normalized by total background is near roundoff, not a
+  small-signal conservation proof. Full physical quadrature 16/20 norms agree.
+- GuardedModalGauss bounds unproductive proposal work without changing acceptance.
+  Prior slower pilot algorithms and one failed negative trajectory are preserved.
+  Eleven pilot accepted stages/endpoints have fresh independently replayed audits.
+  A stale-import postprocessor failed before producing physical audit output;
+  its frozen on-disk source limitation is explicit in its termination.json.
+- Report PNG/PDF visually inspected. All 22 old verified calculation closures and
+  all 32 preceding checkpoint archives unchanged. Preserve user's modified
+  outputs/frc_showcase/poster.png. No remote or publication.
+
+## Immediate next action — frc-7mm.7 remains open
+
+1. Complete full response mesh/time refinement. Start with
+   examples.guarded_mode_evolution.run on spec
+   dict(elements=4,points=64,field_nr=16,field_nz=64), both epsilon +/-1e-4,
+   duration1e-4 and60 steps. Then independent matched_mode_audit and full
+   matched_mode_replay. Every step has an immutable accepted checkpoint.
+   Finer target: field32/128, matching fluid axial128, with radial element
+   refinement. Fine rate results do not replace actual nonlinear trajectories.
+2. Add a 120-step coarse pair to quantify temporal convergence; use the physical
+   comparison, not merely a fitted amplitude. Test tighter residuals separately
+   and preserve any rejection. The original extra-tight1e-14 prototype rejected;
+   never silently relax bounds or claim it passed. Measure initial small-signal
+   energy scaling before interpreting background-normalized roundoff drifts.
+3. Close actual local current/enthalpy/Poynting interface and jump budgets.
+   Continue heated moving exact vacuum (no numerical atmosphere), transport/
+   ionization and model validity, physical ends/coils, converged formation and
+   experimental controls/UI. Keep all acceptance beads and frc-goal open.
+
+All analysis is fully ionized bounded periodic verification. The user's roughly
+1m quartz tube, 10–20cm diameter, 0.1–100mTorr neutral fill, selectable gas and
+Helmholtz-like adjustable bias are provisional exploration variables. Closed
+flux or axisymmetric response does not establish 3-D stability/confinement.
+
+---
+
 # Continue from the wall-space correction and matched continuum gate
 
 The full experiment-sandbox goal remains active. Read the newest GOAL_STATUS.md,

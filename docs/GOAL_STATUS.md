@@ -1,5 +1,47 @@
 # Active research: a credible experimental FRC simulation
 
+## Matched continuum rates and complete signed response (2026-10-05)
+
+The full experiment-sandbox goal remains active. **446 tests pass in 234.86 s.**
+Read MATCHED_MODE_SOLVER.md and MATCHED_MODE_VERIFICATION.md. New numerical
+methods remain opt-in and preserve all original physical equations and strict
+acceptance bounds. All new jobs are terminal. Every array and non-runtime metric
+of all six signed trajectories replays bitwise. Earlier sections below are historical.
+
+Eight separately refined continuum rate cases replay every coefficient,
+physical fingerprint and non-runtime metric bitwise, with independent
+quadrature 16/20. Field nr32/nz32 -> nr64/nz128 reduces radial-B/current rate
+errors from 0.547444/0.480471 to 0.000244246/0.000219551. Source 7bb77514.
+A scalable modal Gauss inverse and uniform physical current-inertia inner
+inverse preserve all modes, physical masses and actual changing density.
+
+Six complete 100-microsecond signed nonlinear trajectories on the explicitly
+coarse nr8/nz32 / fluid4/32 mesh have three paired physical audits: 30/60 steps
+at epsilon 1e-4, plus doubled amplitude at 30 steps. Source f255a576. The full
+independent reference grows by 2.402175837; measured component projections at 60
+steps range 2.401218278–2.402203516. Density/radial-B/current/full-E relative errors
+are 0.001010704/0.001936514/0.002747908/0.008678388. Halving dt changes full E by
+0.001361556; doubling epsilon changes no audited whole-domain physical response
+by more than 2.07e-6. Initial representation and axis/wall/max norms are retained.
+All three physical audits and two time/amplitude comparisons replay bitwise.
+Stable continuous energy drift divided by the full background energy is at most
+3.823e-17; that normalization does not certify small-signal energy accuracy.
+
+Slow proposal variants and an unguarded negative-run rejection are retained.
+Bounded proposals complete both signs without weakening residuals. Eleven
+performance-pilot stages/endpoints have independently replayed equation audits.
+A failed stale-import postprocessor has an explicit source-identity limitation;
+fresh corrected audits are complete. The inspected scientific report is in
+outputs/matched_mode_report. All 22 earlier verified closures and 32 preceding
+archives remain unchanged. No remote or publication; preserve the user's poster.
+
+NEXT: full growing-response mesh refinement and further time/residual controls,
+then local current/enthalpy/Poynting interfaces, heated moving exact vacuum,
+transport/ionization, actual coil/end boundaries, converged formation and the
+experiment UI. Keep frc-7mm.7 and the full goal open. The lab geometry/gas/fill/
+bias remains an exploration envelope; these are verification fixtures, not
+laboratory formation or confinement predictions. NEXT_SESSION.md is current.
+
 ## Wall-space correction; complete contact transits (2026-10-04)
 
 The full experimental sandbox goal remains active. **436 tests pass in
