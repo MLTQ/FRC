@@ -1,3 +1,92 @@
+# Continue from fixed radial16 accuracy and strict solve recovery
+
+The complete FRC experiment-sandbox goal remains open. Read GOAL_STATUS.md,
+RADIAL_MODE_DESIGN.md and RADIAL_MODE_VERIFICATION.md first. **462 tests pass
+in 230.35 s.** The active new entry point is examples.balanced_radial_rates.run
+for further instantaneous studies; do not silently change guarded trajectories.
+Older handoff sections below are historical, including their old next actions.
+
+All jobs from this continuation are terminal and collected. Seven full bitwise
+verification groups and23 new source archives are verified. The59 preceding,
+61 older matched and32 older wall archives are byte-unchanged, and22 earlier
+verified source closures still match. No worker needs resuming. The full
+checkpoint is outputs/radial16_diagnostics/checkpoint.json.
+
+## Current scientific evidence
+
+- Fixed independent radial16 reference at N128, checked against N256. Growth
+  12307.15614451037/s; full physical/J/E component shape differences <6.9e-9.
+  Raw reference outputs/radial16_reference/continuum_01.npz SHA256
+  3b142fe986aca23d340b1739c17ec83b5b94e04574cff2a661fe1b0a8527ef08.
+- The original N64 archive remains bitwise unchanged but has a .003251 off-grid
+  curl/current mismatch from its real-Nyquist convention. Do not use it as a
+  resolved high-radial reference. New N128 independent curl checks pass.
+- Separate fluid/field/axial meshes show large full-RHS refinement effects.
+  F16/128,B64/128 vr/Br/Jt errors3.86912/.129238/5.10160 improve to
+  .1088365/.0519380/.0875688 at F32/128,B128/128. **Btheta error .383069**
+  remains; this is not an accepted spatial accuracy or formation gate.
+  Wall-region vr/Btheta/Jt errors .576775/1.154478/.438075 identify a concrete
+  next diagnostic target; these normalize to the local reference norm.
+- Initial final n/vr errors~1.05e-5, Bz .000116518, weak J .000266164;
+  radial normal-J/tangential-B jumps .000320212/.000323249. Axial jumps
+  remain9.93422e-5/.000126339. Strong Ampere .000982571 uses strong J norm,
+  excludes distributions and differs from the old extracted-mode denominator.
+- The original F32/B128 minus solve strictly rejects at operator1.39069e-10
+  versus1e-10. Its raw input SHA256 is
+  e7a3cf637ceff0f3201a88f12ddd84b593f28d23f898406915c8d040a3eac755.
+  BalancedWallCore proposes the mean of operator/physical dual corrections
+  when the operator bound fails. Both original residual paths then pass;
+  worst7.72779e-11. All physics, tolerances and refinement budgets unchanged.
+  Exact saved-input recovery and baseline bitwise equivalence are recorded.
+- Independent analytic cylindrical B/J/E and work tests pass on6/12/24 cells;
+  iteration failure is atomic. Full actual power cancellation on the saved
+  input is2.696e-9 relative to absolute terms, separately measured.
+- Amplitude1e-4/1e-5 gives nearly the same physical error norms; centered
+  coefficient Jt differs .000773103 relatively. Keep that limitation explicit.
+  Volume quadrature16/20 norms differ <=3.05e-11 relatively. The largest
+  axis relative discrepancy belongs to7.84e-11 error and is1.12e-15 absolute.
+- Inspected scientific PNG/PDF: outputs/radial16_report/verification.
+  Full inventory: outputs/radial16_diagnostics/checkpoint.json.
+
+## Concrete next actions
+
+1. Read companions for archived_contact_mode, radial_contact_fixture,
+   balanced_radial_rates, radial_mode_interfaces, balanced_wall_core,
+   balanced_wall_induction and balanced_wall_plasma. These are opt-in; all
+   earlier source closures and current accepted trajectories remain frozen.
+2. Hold the same radial16,N128 reference fixed. Next compare axial refinement
+   dict(elements=32,points=256,field_nr=128,field_nz=256,epsilon=1e-4)
+   separately from radial-field refinement
+   dict(elements=32,points=128,field_nr=256,field_nz=128,epsilon=1e-4), then
+   refine fluid elements to64. Account for quadrature20 memory before launching
+   concurrent large cases. Every destination must be new and immutable.
+3. Localize remaining vr/Btheta/Jt rate error by original pressure/current/work
+   contributions and physical wall/interface regions. Retain actual inputs,
+   signed rates, full E/J, independent quadrature, amplitude, strong/weak/face
+   errors and exact rejection. Do not fit fields or remove species feedback.
+4. Once spatial accuracy supports it, repeat complete signed100us response
+   mesh/time/residual controls with local budgets and small-signal energy scale.
+   The old evolution source is stillf255a576 and has not adopted balanced
+   induction. Previous medium final J error .0431611 and unestablished time
+   order remain active limitations; rate tests do not supersede them.
+5. Continue full heated moving exact vacuum, transport/ionization, real coil/end
+   boundaries, prescribed-waveform formation and experiment UI. All12 unfinished
+   beads, including frc-goal, remain open until actual acceptance evidence.
+
+Use the repository .venv with PYTHONDONTWRITEBYTECODE=1,
+VECLIB_MAXIMUM_THREADS=1, MPLCONFIGDIR=/private/tmp/plasma-bench-mpl,
+MPLBACKEND=Agg. New rates use examples.balanced_radial_rates.run; repeat from
+scratch and verify with examples.wall_diagnostic_replay.verify. Do not modify
+any imported source of a running or frozen calculation. Use bd --no-daemon;
+sync issue state locally. No remote is configured; no publication is authorized.
+
+Preserve the user's modified outputs/frc_showcase/poster.png. The proposed lab
+remains~1m quartz tube,10–20cm diameter,0.1–100mTorr neutral fill, selectable gas
+and adjustable Helmholtz-like bias. No lab design,3-D stability or confinement
+has been established. This remains useful ongoing research, not a blocked goal.
+
+---
+
 # Continue from the radial near-grid response failure
 
 The complete FRC experiment-sandbox goal remains open. Read the newest

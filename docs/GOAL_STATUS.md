@@ -1,5 +1,52 @@
 # Active research: a credible experimental FRC simulation
 
+## Fixed radial wavelength and recovered strict solve (2026-10-09)
+
+The full laboratory FRC sandbox goal remains open. **462 tests pass in 230.35 s.**
+Read RADIAL_MODE_DESIGN.md and RADIAL_MODE_VERIFICATION.md. A new opt-in
+balanced dual-residual induction solver changes only iterative refinement.
+Every original equation, physical mass, boundary, residual bound and refinement
+budget remains; no old calculation source or trajectory solver was changed.
+
+All jobs from this continuation are terminal and collected. Seven full bitwise
+verification groups and23 new source archives are verified. The59 preceding,
+61 older matched and32 older wall archives are byte-unchanged, and22 earlier
+verified source closures still match. No worker needs resuming. The full
+checkpoint is outputs/radial16_diagnostics/checkpoint.json.
+
+The independent radial16 reference now has N64/128/256 axial controls. Its
+N64 growth was nearly converged but off-grid curl/current disagreed by .325%.
+The resolved N128 reference agrees with N256 physical/J/E shapes within 6.9e-9
+and passes independent finite-difference curl controls. All mesh comparisons
+hold this one physical wavelength and reference fixed.
+
+Separate fluid/field refinements reduce full current-rate error from 5.10160
+at F16/128,B64/128 to .0875688 at F32/128,B128/128. Radial velocity improves
+from 3.86912 to .108837; Br remains .051938 and Btheta .383069. Initial
+representation and exact one-sided face jumps improve much faster. The physical
+accuracy gate remains open; this is an instantaneous bounded periodic fixture.
+
+The old finest solve rejected the exact saved input at operator residual
+1.39069e-10 versus the unchanged 1e-10 limit. Balanced correction proposals
+make all original residuals pass, worst 7.72779e-11, with bitwise exact replay.
+Independent analytic polynomial B/J/E and work controls pass on three grids;
+iteration exhaustion is atomic. The old successful baseline remains bitwise
+identical. Amplitude1e-4/1e-5 errors nearly agree, with explicitly retained
+coefficient-vector differences. Volume quadrature16/20 norms differ at most
+3.05e-11 relatively; tiny axis errors and their absolute scales are documented.
+
+Next separate axial refinement F32/256,B128/256 from radial-field refinement
+F32/128,B256/128, then fluid64. Localize the remaining pressure/current/work
+and wall/interface rate defect before repeating complete signed trajectory
+mesh/time/residual convergence. Preserve moving exact vacuum, physical transport,
+coil/end boundaries, formation and experimental UI as unfinished full-goal work.
+The user lab envelope remains provisional; no lab experiment is selected.
+
+The inspected scientific figure is outputs/radial16_report/verification.png
+and PDF. The final source/replay/worker inventory is recorded in
+outputs/radial16_diagnostics/checkpoint.json. Older sections below are historical.
+
+
 ## Local budgets verified; radial response accuracy fails (2026-10-05)
 
 The full experimental sandbox goal remains open. **457 tests pass in254.80s.**

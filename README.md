@@ -1,11 +1,12 @@
 # Virtual plasma bench
 
-Current research status: **457 tests pass**, with new independent local
-energy/current/species face-budget verification. Full growing-response accuracy
-still fails on a larger grid: unresolved radial structure raises current error
-to4.3%. The sandbox is not yet validated for choosing a laboratory formation
-experiment. Read the [latest measured results](docs/PHYSICAL_INTERFACE_VERIFICATION.md),
-[current handoff](docs/NEXT_SESSION.md), and [verification figure](outputs/physical_interface_report/verification.png).
+Current research status: **462 tests pass**. A fixed-wavelength study now
+separates fluid, magnetic-grid and axial errors. An opt-in solver refinement
+recovers a saved failure under every unchanged residual bound. The finest
+short-wavelength case still has 8.76% current-rate and 38.3% toroidal-field-rate
+error, so the sandbox is not yet validated for choosing a laboratory formation
+experiment. Read the [latest measured results](docs/RADIAL_MODE_VERIFICATION.md),
+[current handoff](docs/NEXT_SESSION.md), and [verification figure](outputs/radial16_report/verification.png).
 The older component summaries below retain their original scope and limits.
 
 A scriptable, verified axisymmetric research sandbox. It currently implements
