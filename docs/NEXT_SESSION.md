@@ -1,3 +1,77 @@
+# Continue from directional term accuracy and strict arithmetic recovery
+
+The full FRC experiment-sandbox goal and all12 acceptance beads remain open.
+**470 tests passed in233.11s. Every worker is terminal and collected.** Read the
+newest GOAL_STATUS.md, DIRECTIONAL_TERM_DESIGN.md and
+DIRECTIONAL_TERM_VERIFICATION.md before changing code. No local or remote job
+needs continuation or restart.
+
+## Current evidence
+
+- Same physical radial16,N128 reference, growth12307.1561445/s; original reference
+  array SHA3b142fe986aca23d340b1739c17ec83b5b94e04574cff2a661fe1b0a8527ef08.
+  Axial doubling improves Br .051938 to .00231942 but leaves J .0847343.
+- Radial field128->256 at fluid32/128 lowers vr .1088365->.0309084 and
+  J .0875688->.0337504. Br .051625 and Btheta .279381 remain large.
+  Fluid32->64 alone improves pressure error31.53-fold but leaves magnetic-force
+  error. Refine the two approximations independently rather than attributing
+  the full error to one term from a single net residual.
+- Independent original pressure/Lorentz and ideal/Hall/pressure/inertia terms:
+  full captured fluid sum bitwise matches saved rates; physical terms/curls
+  checked independently. Hall/pressure toroidal norms ~24000 times net response.
+  Inertia includes numerical-current feedback. Raw errors, cross integrals,
+  strong/projected curls, fixed physical wall bands and q16/20 norms remain.
+- Original radial256 solve failed with operator2.60e-10 and dual2.83e-10 under
+  1e-10. Original failure and exact input77e43521... remain preserved. HT
+  association was ruled out; mass-inverse distributivity dominates opposing
+  residuals. Independent reconstruction retains7.06% vector remainder.
+- Opt-in SplitInverseWallPlasma/Core uses E=M^-1f+M^-1(IJt), sharing forcing
+  inverse with original RHS. Every original equation, physical mass, actual
+  density, boundary, operator, bound and budget remains. Full exact input passes
+  at5.27777e-11, bitwise replayed. Polynomial full B/J/E/work and atomic tests pass.
+  Full power defect3.99063e-9 and restored full Faraday rate-relative2.722e-7
+  remain explicit; solving accepted equations does not certify physical accuracy.
+- Three full signed split-inverse pairs replay bitwise: baseline, radial256
+  eps1e-4, radial256 eps1e-5. Physical errors nearly agree across amplitudes;
+  centered current coefficient difference .00108516 is retained. The old/new
+  baseline inputs and full fluid rates match bitwise; J coefficient change
+  5.86e-10. The guarded trajectory sourcef255a576 remains unchanged/unadopted.
+- Thirteen complete replay groups,42 new source archives verified;23/59/61/32
+  preceding archives byte-unchanged and22 earlier source closures unchanged.
+  Full checkpoint: outputs/radial16_directional_diagnostics/checkpoint.json.
+  Visually inspected report: outputs/radial16_directional_report_v2 PNG/PDF.
+
+## Immediate next action: frc-7mm.7 and frc-7mm.6
+
+1. Read companions for split_inverse_wall_core/induction/plasma,
+   split_inverse_radial_rates, radial_parent_terms, radial_term_capture/audit,
+   radial_drive_capture/audit and radial_error_localization. All now have frozen
+   source closures; do not edit code imported by archived or live calculations.
+2. Run a fresh combined-grid comparison F32/256,B256/256 and F64/256,B256/256,
+   retaining fixed independent radial16,N128 reference and physical masses.
+   Use both signed amplitudes1e-4 and1e-5 where possible, q16/20, strict original
+   residuals and explicit failed records; full fresh replay is required. Separate
+   initial representation, complete rates, pressure/Lorentz cancellation,
+   current and one-sided face errors. Never make a rejected state look accepted.
+3. Localize any remaining pressure/current/wall error before adopting the new
+   arithmetic into complete growing-response trajectories. Then repeat actual
+   signed100us mesh/time/residual convergence and continuous conservation/local
+   enthalpy/Poynting/charge face budgets. Old time order remains unestablished.
+4. Continue heated moving exact vacuum, transport/ionization and validity,
+   physical ends/coils, converged formation and experimental controls/UI.
+   No atmosphere, filtering, artificial mass, heat or energy repair.
+
+The roughly1m quartz tube,10-20cm diameter, selectable gas,0.1-100mTorr neutral
+fill and adjustable Helmholtz-like bias remain provisional lab variables.
+The current smaller argon filled-periodic case is a numerical verification
+fixture, not an experiment recommendation. Axisymmetric closed flux does not
+establish three-dimensional stability or particle confinement.
+
+No remote is configured; all research and issue state stay local. Preserve
+outputs/frc_showcase/poster.png (SHAa783f7cda0f4a249cc4c23ead61debbdf89d356436a2a3dab2189029c6d5deca).
+
+---
+
 # Continue from fixed radial16 accuracy and strict solve recovery
 
 The complete FRC experiment-sandbox goal remains open. Read GOAL_STATUS.md,

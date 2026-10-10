@@ -1,12 +1,15 @@
 # Virtual plasma bench
 
-Current research status: **462 tests pass**. A fixed-wavelength study now
-separates fluid, magnetic-grid and axial errors. An opt-in solver refinement
-recovers a saved failure under every unchanged residual bound. The finest
-short-wavelength case still has 8.76% current-rate and 38.3% toroidal-field-rate
-error, so the sandbox is not yet validated for choosing a laboratory formation
-experiment. Read the [latest measured results](docs/RADIAL_MODE_VERIFICATION.md),
-[current handoff](docs/NEXT_SESSION.md), and [verification figure](outputs/radial16_report/verification.png).
+Current research status: **470 tests pass**. Independent term audits separate
+pressure, magnetic-force and induction cancellation errors. An opt-in change
+to mass-inverse arithmetic recovers an exact saved failed solve while retaining
+every original residual bound. Radial-field refinement reduces current-rate
+error from 8.76% to 3.38% and radial-velocity-rate error from 10.9% to 3.09%, while
+toroidal-field-rate error remains 27.9%. The sandbox is not yet validated for
+choosing a laboratory formation experiment. Read the
+[latest measured results](docs/DIRECTIONAL_TERM_VERIFICATION.md),
+[current handoff](docs/NEXT_SESSION.md), and
+[verification figure](outputs/radial16_directional_report_v2/verification.png).
 The older component summaries below retain their original scope and limits.
 
 A scriptable, verified axisymmetric research sandbox. It currently implements

@@ -1,5 +1,60 @@
 # Active research: a credible experimental FRC simulation
 
+## Directional error separated; strict arithmetic recovered (2026-10-10)
+
+The full experimental FRC sandbox goal remains open. **470 tests pass in233.11s.**
+Read DIRECTIONAL_TERM_DESIGN.md and DIRECTIONAL_TERM_VERIFICATION.md. All new
+workers are terminal and collected:13 complete bitwise verification groups,
+42 verified source archives. No worker needs resuming. The23 preceding radial16,
+59 physical-interface,61 matched and32 wall archives are byte-unchanged;22
+older source closures still match. No previously tracked Python source changed.
+
+At the fixed radial16,N128 reference, independent axial refinement reduces
+Br-rate error .051938 to .0023194. Independent radial-field refinement reduces
+vr/J-rate errors .1088365/.0875688 to .0309084/.0337504; Btheta remains .2793811
+and Br .051625. Fluid-only doubling improves radial pressure error31.53-fold,
+but leaves the dominating magnetic-force error. Physical accuracy remains open.
+
+Original parent-term audits expose Hall/pressure toroidal induction norms about
+24000 times their small net response. All signed original fluid terms reproduce
+the full archived rate bitwise. Fixed physical outer-wall-band momentum-error
+fractions fall from89.11% to2.263% under field refinement, but rise to96.60% with
+fluid-only refinement. Driving-only audits preserve the old failed full-solve
+status and never invent an inertia or accept a magnetic/current derivative.
+
+The exact radial256 old solver failure remains preserved and fully replayed.
+Observation rules out the initial HT-association hypothesis. Mass-inverse
+floating-point distributivity explains the dominant dual residual gap, retaining
+7.06% unexplained vector remainder. A new opt-in split-inverse arithmetic computes
+E=M^-1f+M^-1(IJt) while preserving the original equation, masses, actual density,
+boundary space, operator, every residual definition/bound and all budgets.
+The exact captured full input now passes at5.27777e-11 under1e-10 and replays
+bitwise. Independent full power defect is3.99063e-9 of exchanged powers
+(absolute2.50e-19W); full Faraday rate-relative2.722e-7 remains separately visible.
+Analytic full cylindrical B/J/E/work and atomic-failure controls pass.
+
+Three new full signed pairs, their full reruns, amplitude/baseline/quadrature
+comparison and all term diagnostics are terminal and bitwise verified. The
+same-grid original fluid rates remain bitwise identical; magnetic/current
+coefficients change only4.39e-11/5.86e-10 relatively under new arithmetic.
+Amplitude1e-4/1e-5 physical errors nearly agree, while their current coefficient
+difference .00108516 is explicitly retained. The frozen full trajectory solver
+has not adopted the new arithmetic. No diffusion, filter, atmosphere or repair
+was introduced.
+
+NEXT compare F32/256,B256/256 with F64/256,B256/256 using the unchanged independent
+radial16,N128 reference, fresh archives, both signs and amplitude/quadrature/
+strict-residual controls. Then establish complete signed trajectory mesh/time/
+residual convergence and local face budgets. Moving heated exact vacuum,
+transport/ionization, actual ends/coils, formation and experiment UI remain open.
+The user's lab envelope is provisional; this filled-periodic verification study
+is not a selected experiment and proves neither3-D stability nor confinement.
+
+Inspected PNG/PDF: outputs/radial16_directional_report_v2. Full inventory:
+outputs/radial16_directional_diagnostics/checkpoint.json. Preserve the user's
+poster. Research/issue state are local; no remote/publication. Older sections
+below are historical.
+
 ## Fixed radial wavelength and recovered strict solve (2026-10-09)
 
 The full laboratory FRC sandbox goal remains open. **462 tests pass in 230.35 s.**
