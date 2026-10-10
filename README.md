@@ -1,16 +1,21 @@
 # Virtual plasma bench
 
-Current research status: **470 tests pass**. Independent term audits separate
-pressure, magnetic-force and induction cancellation errors. An opt-in change
-to mass-inverse arithmetic recovers an exact saved failed solve while retaining
-every original residual bound. Radial-field refinement reduces current-rate
-error from 8.76% to 3.38% and radial-velocity-rate error from 10.9% to 3.09%, while
-toroidal-field-rate error remains 27.9%. The sandbox is not yet validated for
-choosing a laboratory formation experiment. Read the
-[latest measured results](docs/DIRECTIONAL_TERM_VERIFICATION.md),
+Current research status: complete signed 100 μs trajectories and their entire
+saved stage/state histories replay exactly. Combined field/fluid refinement
+reduces fixed-mode current-rate error to 0.0879%, radial-velocity rate error
+to 0.183%, and toroidal-field rate error to 0.548%. Complete spatial reruns and
+independent physical quadrature audits agree. A tenfold smaller perturbation
+retains these improvements; a tighter solver bound rejects its first state.
+Both outcomes replay exactly. Direct physical comparison exposes 3.01%
+amplitude sensitivity in the small radial-current component, despite a much
+smaller total-current difference. Verification uses end-to-end workflows;
+no unit tests were added or run in this continuation. The sandbox is not yet
+validated for choosing a laboratory formation experiment. Read the
+[latest measured results](docs/JOINT_E2E_VERIFICATION.md),
 [current handoff](docs/NEXT_SESSION.md), and
-[verification figure](outputs/radial16_directional_report_v2/verification.png).
-The older component summaries below retain their original scope and limits.
+[verification figure](outputs/joint_e2e_report/verification.png).
+Older component summaries and unit-test counts below retain their historical
+scope and limits.
 
 A scriptable, verified axisymmetric research sandbox. It currently implements
 analytic vacuum electromagnetics and stationary resistive plasma induction with

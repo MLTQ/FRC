@@ -1,5 +1,71 @@
 # Active research: a credible experimental FRC simulation
 
+## Combined refinement, full replay and resolved amplitude metrics (2026-10-10)
+
+The full FRC goal and all 12 acceptance beads remain open. User policy:
+**end-to-end workflows only; do not create or run unit tests.** No unit tests
+were added or run. All workers are terminal and collected. Read
+JOINT_E2E_DESIGN.md and JOINT_E2E_VERIFICATION.md. Older counts below are historical.
+
+At the fixed radial16, N128 independent reference, F32/256, B256/256 gives
+radial velocity / radial B / toroidal B / current-rate physical errors
+0.0308854 / 0.000982554 / 0.0494785 / 0.0259173. F64/256 on the same field grid
+improves these to 0.00183143 / 0.000979624 / 0.00547509 / 0.000878993.
+Both full signed cases and fresh reruns match every coefficient, physical
+fingerprint and non-runtime metric. Original strict bounds remain; worst
+residual is 6.4614e-11 under 1e-10. Quadrature 16/20 differences are at most
+5.00e-15 absolute; a 10.44% relative axis-density outlier is an error near 4e-14.
+
+The finest epsilon 1e-5 case and full replay also pass. Current/velocity errors
+are 0.000885440 / 0.00183390. Centered current coefficients differ by 0.00947096
+in their Euclidean norm. A new independent physical reconstruction reproduces
+all original current/E fingerprints and fully replays. The actual vector
+current difference is 0.000107450 relative to the continuum reference, but the
+small radial component changes 0.0301482 relative to its own reference; axial
+current changes 0.00126286. Full E changes 7.14889e-8. The total current norm
+therefore hides a 3.01% radial-component sensitivity. Quadrature controls agree.
+
+The tighter 1e-11 bound rejects the identical minus input. Its complete rerun
+reproduces every failure message and saved array. Dual Faraday residual stays
+near 5.89e-11 after all original budgets; no rate is accepted for that case.
+The two evaluated residual paths differ by at least 2.499e-11 at the recorded
+final iterates. This is a lower bound, not an identified cause or proof that
+another iterate cannot pass. Tighter-residual convergence remains open.
+
+Separately, both radial1, N64 signed 100 us / 60-step trajectories and full
+reruns match every accepted stage/state: 62 NPZ files per sign. Independent
+physical, conservation, old/new and signal-energy audits fully replay. Final
+current/E errors are 0.00274791 / 0.00867839; old/new final fields agree exactly.
+Energy drift is at most 3.636e-7 of initial physical perturbation energy, which
+is a normalization scale rather than an asserted conserved free energy.
+
+All earlier Python sources remain unchanged. Opt-in streamed audits, reused
+axial bases, omission of an immediately discarded LU and immutable geometry
+reuse preserve the recorded physical calculations. Complete original/new
+comparisons and adopted-variant replays verify these changes. All interrupted
+parent batches and partial replays remain preserved. The 20 verified groups
+include full simulations, explicit rejection replay, physical postprocessors
+and completed-case selection; they are not 20 distinct successful experiments.
+All 71 new source archives, 217 preceding archives and 22 earlier source
+closures are verified. Final source union: 128 files, SHA
+8a97cac82e67e4aa62eeea9f5c80edfd1c982529a158edd6fac0512d9f56e457.
+Full inventory: outputs/radial16_joint_diagnostics/checkpoint.json.
+The scientific PNG/PDF is outputs/joint_e2e_report; the PNG is visually checked.
+
+NEXT capture the exact tighter-bound split-inverse residual vectors and locate
+the radial-current amplitude sensitivity. Then continue full signed trajectory
+mesh/time/residual convergence and local budgets. The finest trajectory's
+retained dense modal arrays alone require an estimated 15.414 GiB, excluding
+field operators and workspaces; budget this separately from rate calculations.
+A smaller F8/64, B32/64 full-transit comparison is specified in NEXT_SESSION.
+
+Heated moving exact vacuum, transport/ionization, actual ends/coils, converged
+formation and experiment UI remain open. Lab dimensions, gas, neutral fill and
+bias remain provisional. These filled-periodic fixtures establish neither
+three-dimensional stability nor confinement. The user's poster is unchanged.
+Research and issue state remain local; no remote or publication. Older sections
+below are historical.
+
 ## Directional error separated; strict arithmetic recovered (2026-10-10)
 
 The full experimental FRC sandbox goal remains open. **470 tests pass in233.11s.**

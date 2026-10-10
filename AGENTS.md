@@ -30,6 +30,13 @@ locally; record any repository-state limitation and continue scientific work.
 7. Update companion docs, measured results, issues and goal status after changes.
 8. At a continuation boundary, leave concrete evidence and the next action.
 
+## Verification preference (user, 2026-10-10)
+
+Use end-to-end simulation runs, independent physical comparisons, convergence
+and conservation measurements, and complete replays for new verification.
+Do not add unit tests or run the existing unit-test suite unless the user
+explicitly changes this preference. Historical test results remain historical.
+
 No sub-agent delegation is required by this repository. Hardware remains abstract
 prescribed waveforms. Neither closed flux nor an axisymmetric equilibrium proves
 three-dimensional stability or particle confinement.

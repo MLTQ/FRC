@@ -1,3 +1,86 @@
+# Continue from complete joint refinement and physical amplitude sensitivity
+
+Read the newest GOAL_STATUS, JOINT_E2E_DESIGN and JOINT_E2E_VERIFICATION.
+User policy: no unit tests; use complete workflows, independent physical
+comparisons, convergence/conservation measurements and full replays.
+**All workers are terminal and collected. No job needs resuming.**
+All 12 full-goal beads remain open, especially frc-7mm.6 and frc-7mm.7.
+
+## Verified evidence
+
+- Fixed radial16, N128 reference SHA
+  3b142fe986aca23d340b1739c17ec83b5b94e04574cff2a661fe1b0a8527ef08.
+  Full F32/256 and F64/256 signed cases on B256/256 and full reruns pass.
+  Finest physical rate errors: vr 0.00183142646, Br 0.00097962351,
+  Btheta 0.00547509477, Jt 0.00087899301, E 0.00000456807405.
+- Finest epsilon 1e-5 success and complete replay give Jt 0.00088543967.
+  The centered current coefficient difference is 0.00947096, while actual
+  physical vector difference is 0.000107450107. Radial/axial current-component
+  physical differences are 0.0301482272 / 0.00126286432 relative to their own
+  references. E difference is 7.148893e-8. The independent reconstruction
+  reproduces original physical fingerprints and fully replays at q16/20.
+- The tighter 1e-11 case rejects the identical minus input and reproduces its
+  rejection bitwise. No failed rate exists. Saved raw input:
+  outputs/radial16_finest_controls/case_01.npz, SHA
+  ce34210139b000f4c2746dfde664ba1dd188d5e2485572a364e184bf12c4d999.
+  Dual Faraday residual stays near 5.89e-11; scalar norms imply residual-path
+  mismatch at least 2.499e-11 at the recorded final iterates. This does not
+  identify the cause or prove impossibility at other iterates.
+- Both separate radial1, N64 signed 100 us / 60-step trajectories, every saved
+  stage/state and all physical/conservation audits replay exactly. Actual
+  energy drift is at most 3.636e-7 of initial physical signal-energy scale.
+  These coarse integrations do not establish refined time/mesh convergence
+  or remove the previously observed near-grid growing branch.
+- 20 complete replay groups (including postprocessing, rejected cases and
+  completed-case selection), 137 raw-file comparisons and 71 source archives
+  verified. The preceding 42/23/59/61/32 archives and 22 older source closures
+  remain unchanged. See outputs/radial16_joint_diagnostics/checkpoint.json.
+
+## Next concrete actions
+
+1. Reconstruct the exact rejected input with its current split-inverse and
+   direct-metric setup, enforcing bitwise input identity. Capture the actual
+   operator/dual residual vectors and individual mass-inverse actions without
+   changing the arithmetic or acceptance. An observation-only copy must
+   reproduce the original first-attempt rejection exactly before interpreting
+   its decomposition. The old balanced WallRoundoffCore is different arithmetic
+   and cannot be used as a drop-in observation of this failure. Preserve every
+   original bound, physical mass, actual density and refinement budget.
+2. Investigate the radial-current amplitude sensitivity in physical component
+   norms, including near-axis/wall structure, and reconstruct fluid/magnetic
+   difference fields as needed. The existing current/E audit measures these
+   fields directly; close total error norms alone do not certify sensitivity.
+3. Continue full signed radial1 trajectories on F8/64, B32/64 against preserved
+   F4/64, B16/64 results, keeping the independent reference and physical inputs
+   fixed. Require full 100 us runs, physical field/conservation audits, complete
+   replays and time controls. Preserve failures and growth. This candidate grid
+   is not presumed accurate. Budget memory first: source-derived retained dense
+   modal storage is 0.0579 GiB here, but 15.414 GiB on F64/256, B256/256, before
+   field matrices, sparse factors, nonlinear/Krylov and audit workspaces.
+4. After those gates, continue local current/enthalpy/Poynting budgets, heated
+   moving exact vacuum, transport/ionization, actual coil/end conditions,
+   converged formation and the experiment UI. Keep the full FRC goal open.
+
+## Preservation and local state
+
+All calculation code used here is now frozen, including the 14 new opt-in
+modules listed in source_preservation.json. Read companions before extending
+it; use new modules rather than editing archived sources. The final 128-file
+source union is archived under radial16_joint_diagnostics/final_source.
+Earlier interrupted batches and partial replays stay intact; completed-case
+selection explicitly preserves the incomplete parent status. The finest
+control disk guard did not trigger. No unit tests were added or run.
+
+Scientific figure: outputs/joint_e2e_report/verification.png, visually inspected;
+PDF is alongside it. User poster SHA
+ a783f7cda0f4a249cc4c23ead61debbdf89d356436a2a3dab2189029c6d5deca.
+Do not include that preexisting poster change in research commits. Work and
+beads are local with no configured remote or publication. The provisional lab
+envelope is not a selected experiment; no 3-D stability or confinement claim.
+Older entries below are historical.
+
+---
+
 # Continue from directional term accuracy and strict arithmetic recovery
 
 The full FRC experiment-sandbox goal and all12 acceptance beads remain open.
