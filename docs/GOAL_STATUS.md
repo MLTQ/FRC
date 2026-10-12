@@ -1,5 +1,56 @@
 # Active research: a credible experimental FRC simulation
 
+## Axial refinement halves radial-current error (2026-10-12)
+
+All workers are terminal and collected. No unit tests were added or run. Read
+WORKSPACE_MEMORY_DESIGN.md and WORKSPACE_MEMORY_VERIFICATION.md. The full
+original FRC sandbox goal and all12 acceptance beads remain open.
+
+Two opt-in workspace changes preserve complete original coarse/fine physical
+workflows bitwise: release expired quadrature temporaries, then detach completed
+density models from cached geometry templates and collect unreachable inertia
+cycles after each full rate. All four original/new comparisons and their replays
+pass, and all complete candidate runs have fresh all-array replays. Default
+geometry, old sources and time integrators remain unchanged.
+
+The lifetime-only fine run/replay peak6.873/7.430GiB; cache detachment peaks
+6.446/7.056GiB. This supports a modest guarded field-axial increment256→288
+at fixed fluid64/256 and radial field256, independent radial16,N128 reference,
+epsilon1e-4 and original tolerance1e-10. The new signed run and full fresh
+replay both pass, at7.268/7.408GiB; no guard triggers. Doubled/radial-grid
+feasibility remains unproved. Peak observations are not memory bounds.
+
+Independent q16/20 physical component and magnetic-curl audits reproduce all
+original fingerprints and replay completely. Jr error drops5.96939%→3.05317%;
+strong-curl Jr error5.94247%→3.03377%. Weak/strong difference slightly grows
+0.110758%→0.120095%, so improvement also lies in the actual magnetic response.
+Br error0.0979624%→0.0491827%; Btheta0.547509%→0.363014%. Jz remains1.11402%
+and the full-current vector error0.0817008% still hides weaker components.
+Two grids establish neither convergence order nor full time/amplitude accuracy.
+
+Worst refined original residual6.63361e-11 remains below1e-10. Largest
+instantaneous power defect3.111e-9 of exchanged powers; no local/time budget
+claim. Quadrature component norms agree within4.76e-16 absolute, physical rate
+norms within1.30e-15; curl error decomposition closes4.23e-16 relatively.
+Eleven replay groups comprise five complete signed calculation replays, four
+whole-workflow comparison replays and two independent curl-audit replays.
+Nine new modules have companions;42 new archives,355 preceding archives and22
+older source closures verify. Final156-file source SHA:
+7e89bbaac2a377a3abe1d2a6fab0b0641381dbd777ae04a903a5c86e8c32e918.
+Checkpoint: outputs/workspace_memory_diagnostics/checkpoint.json.
+Scientific PNG/PDF: outputs/workspace_refinement_report_layout; PNG inspected.
+
+NEXT reschedule independent gradient construction after stress evaluation to
+reduce peak live tensors, retaining every expression and all original checks;
+verify full original/new signed workflows and replays before larger axial/radial
+refinement. Add refined-grid amplitude/residual and local-budget controls.
+Full trajectories, heated moving exact vacuum, transport/ionization, real
+prescribed coils/ends, converged formation and experiment UI remain open.
+All scientific evidence/partial attempts and the user's poster are preserved;
+byte-identical completed replays share immutable storage with manifests. Lab
+inputs remain provisional. No3-D stability/confinement claim or publication.
+Older sections below are historical.
+
 ## Separable mass inverse verified; field refinement awaits lower peak memory (2026-10-12)
 
 All workers are terminal and collected. No unit tests were added or run. Read

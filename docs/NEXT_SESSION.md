@@ -1,3 +1,100 @@
+# Continue from fully replayed axial refinement and workspace verification
+
+All workers are terminal and collected. No handle needs resuming. No unit tests
+were added or run; continue with full end-to-end physical workflows, independent
+comparisons, convergence, conservation and complete replays. The full original
+FRC goal and all12 acceptance beads remain open. This turn and5a60b36 both
+made verified progress.
+
+Read newest GOAL_STATUS, WORKSPACE_MEMORY_DESIGN/VERIFICATION, and
+outputs/workspace_memory_diagnostics/checkpoint.json. Scientific PNG/PDF:
+outputs/workspace_refinement_report_layout; PNG visually inspected.
+
+## Verified evidence
+
+- Releasing expired current-workspace temporaries and detaching completed
+  density models from geometry cache templates preserves every original coarse/
+  fine input, rate, face array, solver metric and independent q16/20 norm bitwise.
+  Four original/new whole-workflow comparisons and fresh candidate replays pass.
+  Original functions, default geometry and time integrators remain unchanged.
+- Finest baseline remains F64/256,B256/256 on independent radial16,N128,
+  epsilon1e-4,tolerance1e-10. The detached-cache baseline and full replay peak
+  6.446/7.056GiB; lifetime-only6.873/7.430GiB shows resource variability.
+- New F64/256,B256/288 full signed case and exact complete replay pass all
+  original checks, worst6.63361e-11 under1e-10. Peaks7.268/7.408GiB obey the
+  unchanged8GiB/256MiB guard; no guard fires. Do not infer doubled-grid feasibility.
+- Independent current-component and actual magnetic-rate curl audits reproduce
+  original fingerprints and replay fully. Jr error5.96939%→3.05317%; strong-curl
+  Jr5.94247%→3.03377%. Weak/strong difference0.110758%→0.120095%. Thus the
+  actual magnetic response improves, without a repaired weak Ampere identity.
+  Jz remains1.11402%; full-J error0.0817008% hides weak components. Br error
+  halves to0.0491827%; Btheta improves to0.363014%. Two grids are not an order.
+- Refined instantaneous power defect<=3.111e-9 of exchanged powers. Largest
+  q16/20 current-norm change4.76e-16 absolute; physical rate norms1.30e-15.
+  Strong curl excludes distributional jumps; local/time budgets remain open.
+- All11 replay groups and7 raw-file comparisons pass;9 new modules have
+  companions;42 new source archives,355 earlier archives and22 older closures
+  verify. Final156-file source SHA7e89bbaac2a377a3abe1d2a6fab0b0641381dbd777ae04a903a5c86e8c32e918.
+
+## Concrete next action: memory and directional accuracy
+
+1. Inspect released_current_transport.py/.md, physical_derivatives.py/.md,
+   detached_metric_wall_plasma.py/.md and WORKSPACE_MEMORY_DESIGN. The released
+   pair still constructs its full velocity-gradient tensor before constructing
+   and evaluating the full stress tensor. These independent evaluations retain
+   both9-component tensors together. In a NEW opt-in subclass, move gradient
+   construction until after stress_rate completes and stress is released. Keep
+   each arithmetic expression, state, density, returned term, face contribution,
+   physical mass and original check. This changes call scheduling, so do not
+   reuse the earlier del-only AST-identity claim. Verify full coarse/fine old/new
+   physical workflows and exact replays, and measure actual peak storage.
+2. If rescheduling is insufficient, evaluate stress/gradient contractions by
+   component or stream exact quadrature batches in another frozen-source variant.
+   Preserve all cylindrical connections and force/work adjoints. Any changed
+   floating-point reductions require actual physical component/work comparisons,
+   not an assumption of equivalence or a relaxed bound. No floors or repairs.
+3. Budget axial320+ and independent radial refinement. Radial field cells must
+   subdivide the fixed64 fluid elements, so320 is the next admissible radial
+   increment; it also increases the dense uniform metric more than axial
+   refinement. Retain the improved self-terminating guard pattern and one large
+   solver process at a time. The completed256→288 axial step does not replace
+   doubled grids. Old B256/512 resource-interrupted attempt stays untouched.
+4. Require full signed cases, independent q16/20 physical norms, each current
+   component and actual Bt strong curl, face/local budgets and fresh full replay.
+   Add amplitude and residual controls on new grids before declaring convergence;
+   epsilon1e-5 sensitivity/raw-curl cancellation is not solved by these memory
+   changes. Further fixed-field fluid refinement may be needed; current results
+   do not separate every source of remaining Jz/radial-fluid error.
+5. Continue full signed trajectory mesh/time/residual convergence and local
+   budgets, then heated moving exact vacuum, transport/ionization/validity,
+   actual prescribed coils and physical ends, converged formation and the UI.
+   The radial1F8/64,B32/64 full100us control is still pending; near-grid growth
+   in old trajectories is unresolved. Do not adopt new rate-only evidence as
+   time stability, confinement or a laboratory experiment recommendation.
+
+## Practical continuation
+
+All current new files are frozen after calculation. Extend them rather than
+editing a used Python source. Complete physical source identity for the detached
+workflow is f2402996f3cdf2aca408a538ffaac8e850fea0ba964d7fb6ac8d1f385b1c43ae.
+Baseline outputs: detached_current_fine; refined: detached_axial288; independent
+current audits: detached_baseline_curl and detached_axial288_curl, all under
+outputs/. Existing guarded_detached_refinement fixes F64/256 and accepts field
+--nr/--nz; --original verifies a fresh same-source replay, not an algorithm change.
+Use streamed_audit_comparison for whole-workflow bitwise old/new comparisons.
+
+Two new manifests share496702418 nominal duplicate bytes from completed,
+verified, byte-identical archived NPZs. Preserve all paths/hashes and never
+modify either shared path in place. Check actual disk headroom before new runs;
+no system-wide storage cause is asserted. No unrelated file was deleted.
+Preserve outputs/frc_showcase/poster.png (user hash a783f7cda0f4a249cc4c23ead61debbdf89d356436a2a3dab2189029c6d5deca).
+Use bd --no-daemon and local sync --flush-only. No remote/publication. Provisional
+lab envelope remains~1m quartz tube,10–20cm diameter,selectable gas,0.1–100mTorr
+neutral fill and adjustable Helmholtz-like bias. Hardware stays prescribed
+waveforms; none of these fixtures establishes3-D stability or confinement.
+
+---
+
 # Continue from verified tensor mass inverse and measured resource limits
 
 All workers are terminal and collected; no tool handle needs resuming. The full

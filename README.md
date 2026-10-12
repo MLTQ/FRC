@@ -1,16 +1,15 @@
 # Virtual plasma bench
 
-Current research status: an opt-in separable mass inverse now passes complete
-coarse and fine signed physical workflows, independent component comparisons
-and exact fresh replays. The **~6% radial-current rate error persists**.
-The attempted larger axial grid exhausted its execution resources before
-producing a rate; that partial evidence is preserved. Full replayed resource
-observations identify the next memory costs to reduce before further refinement.
+Current research status: a complete axial-grid refinement reduces radial-current
+rate error from **5.97% to 3.05%**. Independent differentiation of the magnetic
+response shows the same improvement, and the full signed calculation and
+physical audits replay exactly. Verified workspace changes enable this modest
+refinement; larger grids and full spatial/time accuracy remain unfinished.
 No unit tests were added or run. The sandbox is not yet validated for selecting
 a laboratory formation experiment. Read the
-[latest measured results](docs/FIELD_COMPONENT_REFINEMENT_VERIFICATION.md),
+[latest measured results](docs/WORKSPACE_MEMORY_VERIFICATION.md),
 [current handoff](docs/NEXT_SESSION.md), and
-[earlier component-error figure](outputs/curl_spectrum_report_layout/verification.png).
+[scientific figure](outputs/workspace_refinement_report_layout/verification.png).
 Older summaries and test counts retain their historical scope and limits.
 
 A scriptable, verified axisymmetric research sandbox. It currently implements
