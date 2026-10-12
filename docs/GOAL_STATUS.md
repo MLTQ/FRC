@@ -1,5 +1,57 @@
 # Active research: a credible experimental FRC simulation
 
+## Separable mass inverse verified; field refinement awaits lower peak memory (2026-10-12)
+
+All workers are terminal and collected. No unit tests were added or run. Read
+FIELD_COMPONENT_REFINEMENT_DESIGN.md and FIELD_COMPONENT_REFINEMENT_VERIFICATION.md.
+The full original FRC sandbox goal and all 12 acceptance beads remain open.
+
+A new component audit of existing F32/256, B256/256 full signed data replays
+bitwise. Fluid refinement to F64 on the same field grid reduces radial current
+error 11.6635% to 5.96939%, axial current 36.1204% to 1.18700%, and azimuthal
+current 0.135383% to 0.0190466%. Strong-curl comparisons reproduce saved fields.
+
+The unchanged B256/512 initialization was resource-interrupted before any
+signed input or derivative existed. Own peak RSS reached 11.230 GiB; disk guard
+crossed 256 MiB. Approved termination was collected as exit 143. Partial records
+remain preserved; this is neither numerical rejection nor an accuracy result.
+Source storage estimates exclude large LU fill and workspaces and are not peak
+bounds. No system-wide disk cause or exact slow function is established.
+
+An opt-in exact tensor-product mass inverse replaces global 2-D mass LU with
+separate radial/axial solves, retaining original assembled physical equations,
+all modes, actual masses/density, quadrature, boundaries and strict checks.
+Complete coarse original/new signed workflows capture identical actual operator
+fingerprints and replay their archived pilots. Full fine signed F64/256,
+B256/256 runs and fresh all-array replays pass. Worst residual 6.4967e-11 under
+1e-10; instantaneous power defect <=8.75e-9 of exchanged powers. Independent
+component audits reproduce original fingerprints and replay completely.
+Fine old/new radial-current physical difference is 1.04097e-5 of reference,
+while its error stays 5.96939%. This is not a spatial-accuracy repair.
+
+Fine baseline/replay peaks are 7.420/7.150 GiB. A complete read-only resource
+observation replay peaks at 7.432 GiB with identical scientific results. First
+current transport raises cumulative peak 4.829 to 6.558 GiB; the second signed
+electromagnetic evaluation raises it 7.061 to 7.432 GiB. These nested high-water
+intervals are not exclusive/live allocation measurements. No new guard fires.
+Default geometry and time integrators remain unchanged. Larger-grid feasibility
+is not established. Every source/data/partial result and user poster survives;
+byte-identical completed replay NPZs share storage with explicit manifests.
+
+Seven new modules have companions. All 37 new source archives, 318 preceding
+archives and 22 older source closures verify. Final 147-file source SHA:
+8ae692975fec4c2fac1345f723b13bb428c1bb1affa2c72557f527d476c8b332.
+Full checkpoint: outputs/field_component_diagnostics/checkpoint.json.
+
+NEXT reduce measured temporary quadrature storage without changing equations,
+then full same-grid physical/work comparisons and complete replays before
+retrying independent field-axial/radial refinement. Keep individual current
+norms and actual Bt derivatives. Complete trajectories/local budgets, heated
+moving exact vacuum, transport/ionization, real prescribed coils/ends,
+converged formation and experimental UI remain open. Lab inputs are provisional;
+no formation, 3-D stability or confinement claim. Local only, no publication.
+Older sections below are historical.
+
 ## Curl arithmetic separated from persistent component error (2026-10-12)
 
 All workers are terminal and collected. No unit tests were added or run.

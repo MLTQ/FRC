@@ -1,18 +1,17 @@
 # Virtual plasma bench
 
-Current research status: full signed amplitude controls and independent
-component audits separate numerical noise from persistent **~6% radial-current
-rate error**. The error also appears when independently differentiating the
-actual magnetic response. Exact raw-curl arithmetic explains the strict solver
-discrepancy; simple factoring does not repair it. Five complete verification
-workflows replay bitwise. No solver repair or formation adoption is claimed.
-Verification uses end-to-end workflows, with no unit tests added or run.
-The sandbox is not yet validated for selecting a laboratory formation experiment.
-Read the [latest measured results](docs/CURL_EVALUATION_VERIFICATION.md),
+Current research status: an opt-in separable mass inverse now passes complete
+coarse and fine signed physical workflows, independent component comparisons
+and exact fresh replays. The **~6% radial-current rate error persists**.
+The attempted larger axial grid exhausted its execution resources before
+producing a rate; that partial evidence is preserved. Full replayed resource
+observations identify the next memory costs to reduce before further refinement.
+No unit tests were added or run. The sandbox is not yet validated for selecting
+a laboratory formation experiment. Read the
+[latest measured results](docs/FIELD_COMPONENT_REFINEMENT_VERIFICATION.md),
 [current handoff](docs/NEXT_SESSION.md), and
-[scientific figure](outputs/curl_spectrum_report_layout/verification.png).
-Older component summaries and unit-test counts below retain their historical
-scope and limits.
+[earlier component-error figure](outputs/curl_spectrum_report_layout/verification.png).
+Older summaries and test counts retain their historical scope and limits.
 
 A scriptable, verified axisymmetric research sandbox. It currently implements
 analytic vacuum electromagnetics and stationary resistive plasma induction with

@@ -1,3 +1,78 @@
+# Continue from verified tensor mass inverse and measured resource limits
+
+All workers are terminal and collected; no tool handle needs resuming. The full
+original FRC goal and all 12 acceptance beads remain open. No unit tests added
+or run: continue with complete end-to-end physical workflows, independent
+comparisons, convergence, conservation and full replays.
+
+Read the newest GOAL_STATUS, FIELD_COMPONENT_REFINEMENT_DESIGN/VERIFICATION,
+and outputs/field_component_diagnostics/checkpoint.json. The preceding09b9363
+checkpoint and this continuation both made verified progress.
+
+## Current evidence
+
+- Full original/new fine baseline and component comparisons pass with fresh
+  complete replays. Tensor inverse changes only factorization evaluation;
+  original equations, masses, quadrature, boundaries and checks remain.
+  Default geometry/time integrators remain unchanged. Coarse full workflows
+  capture identical actual assembled operators; fine physical inputs agree.
+- Radial current error persists at 5.96939%, despite tiny vector error.
+  Fine original/tensor Jr difference is 1.04097e-5 of its reference norm.
+  Worst strict residual 6.4967e-11 under1e-10; power defect <=8.75e-9 of
+  exchanged powers. This is an instantaneous verification fixture, not formation.
+- Existing fluid32/64 same-field comparison now resolves each current component:
+  Jr errors11.6635%/5.96939%, Jz36.1204%/1.18700%. Full audit replays bitwise.
+- Original B256/512 initialization ended with resource interruption, no signed
+  input/rate. Worker36206 exit143 was collected. Never resume/restart from its
+  partial summary alone or relabel that preserved run as a numerical failure.
+- Tensor full fine baseline/replay peaks7.420/7.150GiB; observation replay7.432.
+  CurrentTransport.pair first-sign cumulative peak4.829→6.558GiB; second signed
+  electromagnetic pair7.061→7.432GiB. Nested high-water intervals are not
+  exclusive/live storage. See tensor_resource_observation/calls.json and full
+  verified replay. All successful tensor guards remained untriggered.
+- Storage estimates3.094GiB forB256/512 and5.098GiB forB512/256 exclude large
+  factor/workspace peaks. Do not infer doubled-grid feasibility from them.
+- All37 new archives,318 preceding archives and22 older closures are verified;
+  147-file source SHA8ae692975fec4c2fac1345f723b13bb428c1bb1affa2c72557f527d476c8b332.
+  All historical calculation Python files and the user's poster are unchanged.
+
+## Next actions: frc-7mm.6 and frc-7mm.7
+
+1. Reduce actual temporary quadrature storage in a new opt-in module. Inspect
+   current_transport.py and regular_current.py companions and the source before
+   modifying anything. CurrentTransport.pair retains full velocity-gradient and
+   stress tensors beyond their last use; advection also forms full gradient
+   arrays. The second signed electromagnetic evaluation sets the observed
+   global peak, so transport alone is not established as sufficient. Profile
+   before/after using own-worker resources and unchanged physical checks.
+   Do not edit frozen calculation modules; add a separate variant.
+2. Require complete original/new signed coarse and fine workflows, identical
+   physical inputs/operators where applicable, independent physical components,
+   work, q16/20 and fresh full replays. Arithmetic changes need measured actual
+   differences, not assumed bitwise equivalence. Keep all original failures,
+   physical masses/density, basis modes, bounds and numerical budgets.
+3. Retry fixed-reference F64/256 separate axial B256/512 then radial B512/256
+   only with justified memory/disk headroom. Use the new self-terminating guard
+   pattern; the old SIGINT-only guard failed to promptly stop native work.
+   Require complete both-sign rates, component/strong-curl comparisons and full
+   fresh replays. Never substitute total-current norm for Jr accuracy.
+4. Continue full signed trajectory mesh/time/residual convergence and local
+   budgets, then heated moving exact vacuum, transport/ionization, real prescribed
+   coils/ends, converged formation and experimental UI. The radial1F8/64,B32/64
+   full100us control remains pending; old near-grid growth is unresolved.
+
+Shared-storage manifests cover only byte-identical completed archived replay
+NPZs. Both paths now share immutable bytes: never modify either in place. No
+research evidence was deleted. Check actual free disk before new allocations;
+host-wide changes are not attributed to a particular process without evidence.
+Preserve outputs/frc_showcase/poster.png (user hash a783f7cda0f4a249cc4c23ead61debbdf89d356436a2a3dab2189029c6d5deca).
+Use bd --no-daemon and local sync --flush-only. No remote/publication. Provisional
+lab envelope remains~1m tube,10–20cm diameter, selectable gas,0.1–100mTorr neutral
+fill and adjustable Helmholtz-like bias; hardware remains prescribed waveforms.
+These fixtures establish neither 3-D stability nor confinement.
+
+---
+
 # Continue from separated curl arithmetic and current-component error
 
 Read the newest GOAL_STATUS and CURL_EVALUATION_DESIGN/VERIFICATION.
