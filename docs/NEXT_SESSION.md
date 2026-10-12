@@ -1,3 +1,82 @@
+# Continue from separated curl arithmetic and current-component error
+
+Read the newest GOAL_STATUS and CURL_EVALUATION_DESIGN/VERIFICATION.
+**All workers are terminal and collected. No job needs resuming.**
+Use complete workflows, independent physical comparisons, convergence,
+conservation and full replays. Do not create or run unit tests. The complete
+original FRC sandbox goal and all 12 acceptance beads remain open.
+
+## Verified current evidence
+
+- Original strict-rejection vectors reproduce bitwise. Simple projected-curl
+  factoring is not a repair. Exact raw products/sums plus addition-low accounting
+  leave 2.97e-15/RHS distributivity error, but actual dual Faraday remains
+  5.62e-11 against 1e-11 on that saved iterate. No solver change is adopted.
+- Full physical component spectra at epsilon 1e-3/1e-4/1e-5 reproduce original
+  fields and replay completely. Jr errors 5.9751%/5.9694%/6.6721%; high-band
+  norm errors 0.02750%/0.27966%/2.78699% approximately scale as 1/epsilon.
+  The dominant |k|20 spatial-error hump persists. Above |k|64 contains 86.672%
+  of the 1e-4 versus 1e-5 amplitude-difference energy, but only 0.2195% of
+  the 1e-4 squared error. No accepted state was filtered. These are cell modes,
+  not unaliased continuous harmonics. Full original integrals/Parseval verified.
+- Differentiating the actual centered magnetic rate independently gives 5.9425%
+  radial-current error versus 5.9694% in Jt, with 0.1108% weak/strong difference.
+  This is an inside-cell volume comparison excluding distributional face jumps.
+  Signed cross terms close the error identity to 2.16e-16. Both amplitudes replay.
+- New complete signed epsilon 1e-3 F64/256,B256/256 rates pass every original
+  check, max 1.91046e-11 under 1e-10. Full q16/20 physical audits and exact fresh
+  replay pass. Increasing amplitude slightly worsens velocity/toroidal-field
+  errors: numerical-noise reduction is not an accuracy or formation gate.
+
+## Next actions: frc-7mm.6 and frc-7mm.7
+
+1. Budget independent field-axial and field-radial refinement at the fixed
+   radial16,N128 reference and fixed fluid representation. Measure each current
+   component, actual Bt derivatives and local budgets. Do not adopt the tiny
+   total-current norm as evidence for Jr accuracy. Use the epsilon 1e-4 baseline
+   alongside amplitude controls; 1e-3 visibly changes nonlinear responses.
+   Finest-mesh memory and sparse-factor storage need explicit accounting.
+2. Investigate accurate raw-curl and electric-sum representation. Applying C
+   then P alone did not solve the original rejection. Keep original physical
+   masses/density, real equations, adjoints/work, kernel terms, all residuals
+   and bounds. A proposed arithmetic implementation needs complete exact-input,
+   physical-power/field comparisons and signed full replays before adoption.
+3. Continue complete signed radial1 F8/64,B32/64 100us trajectory controls
+   against preserved F4/64,B16/64 when accuracy gates justify adoption, including
+   time/mesh/residual and independent local conservation. Near-grid growth is
+   unresolved; do not treat new instantaneous rate audits as time convergence.
+4. Continue heated moving exact vacuum, transport/ionization and validity,
+   physical prescribed coils/ends, converged formation and experimental UI.
+   The user's ~1 m tube, 10-20cm diameter, variable gas, 0.1-100mTorr neutral fill
+   and adjustable bias remain provisional. Hardware stays abstract waveforms.
+
+## Evidence and preservation
+
+- outputs/curl_evaluation_probe and its _replay/_verification: all four original
+  iterates, alternative full actions and final exact raw reference.
+- outputs/component_axial_spectrum and its _larger variant, both with complete
+  _replay/_verification: full physical component spectra and amplitude effects.
+- outputs/current_rate_curl_comparison and _replay/_verification: independent
+  magnetic/current-rate decomposition, q16/20 and actual field fingerprints.
+- outputs/radial16_amplitude_larger and _replay/_verification: new full signed
+  physical rate workflow. Every coefficient/face array and metric replays.
+- outputs/curl_spectrum_report_layout/verification.png: visually inspected.
+  Original report layout also preserved. No PDF generated in this continuation.
+- outputs/curl_evaluation_diagnostics/checkpoint.json: complete source, input,
+  worker and replay inventory. No disk guard triggered. Large geometry builds
+  and replays used separate processes.
+
+Five verified groups comprise four diagnostics and one full signed rate
+calculation. Six new Python modules are frozen, each with its companion.
+18 new archives, 300 earlier archives and 22 earlier closures verified.
+Final 140-file source SHA b0ee5f17e5baf0fa4fc564d3fe40437173b05479d16210e2ef040f0a1d0ce922.
+No old calculation source changed. Preserve user poster SHA
+ a783f7cda0f4a249cc4c23ead61debbdf89d356436a2a3dab2189029c6d5deca
+outside research commits. All work remains local; no remote/publication.
+Older handoffs below are historical.
+
+---
+
 # Continue from component accuracy and split-residual path diagnosis
 
 Read the newest GOAL_STATUS and SPLIT_RESIDUAL_PATH_DESIGN/VERIFICATION.

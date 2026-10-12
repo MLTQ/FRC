@@ -1,15 +1,16 @@
 # Virtual plasma bench
 
-Current research status: independent component audits expose unresolved
-**5.97–6.67% radial-current rate error**, despite the previously measured
-0.0879% total-current error. Complete reconstructions and exact-input solver
-observations replay bitwise. The tighter solver rejection is dominated by
-curl arithmetic; no numerical repair or formation adoption is claimed.
+Current research status: full signed amplitude controls and independent
+component audits separate numerical noise from persistent **~6% radial-current
+rate error**. The error also appears when independently differentiating the
+actual magnetic response. Exact raw-curl arithmetic explains the strict solver
+discrepancy; simple factoring does not repair it. Five complete verification
+workflows replay bitwise. No solver repair or formation adoption is claimed.
 Verification uses end-to-end workflows, with no unit tests added or run.
 The sandbox is not yet validated for selecting a laboratory formation experiment.
-Read the [latest measured results](docs/SPLIT_RESIDUAL_PATH_VERIFICATION.md),
+Read the [latest measured results](docs/CURL_EVALUATION_VERIFICATION.md),
 [current handoff](docs/NEXT_SESSION.md), and
-[scientific figure](outputs/split_precision_report/verification.png).
+[scientific figure](outputs/curl_spectrum_report_layout/verification.png).
 Older component summaries and unit-test counts below retain their historical
 scope and limits.
 

@@ -1,5 +1,55 @@
 # Active research: a credible experimental FRC simulation
 
+## Curl arithmetic separated from persistent component error (2026-10-12)
+
+All workers are terminal and collected. No unit tests were added or run.
+Read CURL_EVALUATION_DESIGN.md and CURL_EVALUATION_VERIFICATION.md. The prior
+checkpoint 398f9a3 made verified progress; this continuation preserves it.
+The full experimental FRC goal and all 12 acceptance beads remain open.
+
+Every original residual/lift vector is reproduced bitwise on the captured
+strict rejection. Factoring the projected curl alone does not fix it. Exact
+raw products/sums plus addition-low accounting reduce the distributivity gap
+from 4.55e-11 to 2.97e-15 of RHS. The actual saved iterate still has dual residual
+5.62e-11 against 1e-11. No solver, equation, bound or accepted state changed.
+The full observation workflow and fresh reconstruction replay match bitwise.
+
+Complete physical cell-mode audits at epsilon 1e-3/1e-4/1e-5 reproduce original
+field/reference fingerprints and fully replay. All 120 previous component
+integrals match exactly; Parseval closes to 2.03e-16. Radial-current errors are
+5.9751%/5.9694%/6.6721%. Above-reference-band norm errors are 0.02750%/0.27966%/
+2.78699%; dimensionless high-band norm times epsilon is nearly 2.75-2.80e-7.
+This is consistent with a numerical noise floor amplified by differencing,
+while roughly 6% in-band error persists. The |k|20 error hump is shared by all
+amplitudes. No field or state is filtered; cell modes fold continuous aliases.
+
+Independent differentiation of the actual magnetic rate yields 5.9425% radial
+current error at epsilon 1e-4, close to Jt's 5.9694%. Weak/strong difference is
+0.1108% of the reference. Signed cross terms close the error decomposition to
+2.16e-16; strong curl excludes distributional face jumps. This directs work
+toward magnetic-response accuracy, without declaring the weak Ampere law wrong.
+
+The full signed epsilon 1e-3 F64/256,B256/256 rate calculation and independent
+q16/20 audits complete and fully replay, including every coefficient and face
+array. Worst original residual 1.91046e-11 remains below 1e-10. Larger amplitude
+slightly increases velocity/toroidal-field error; it is not a convergence fix.
+Five verified groups comprise one full signed rate workflow and four diagnostics,
+not time trajectories or formation experiments. Six new modules have companions;
+18 new archives, 300 preceding archives and 22 older source closures verified.
+Final 140-file source SHA b0ee5f17e5baf0fa4fc564d3fe40437173b05479d16210e2ef040f0a1d0ce922.
+Full checkpoint: outputs/curl_evaluation_diagnostics/checkpoint.json.
+Figure: outputs/curl_spectrum_report_layout/verification.png, visually inspected.
+
+NEXT budget separate axial/radial field refinement on the same independent
+radial16,N128 reference, comparing individual current components and actual
+magnetic-rate derivatives. Investigate accurate raw curl/electric representation
+with independent original equations, adjoints/work and full strict replays;
+current diagnostics are not a repair. Then complete full signed trajectories,
+local budgets, heated moving exact vacuum, transport/ionization, prescribed
+physical coils/ends, converged formation and the experimental sandbox UI.
+Provisional lab inputs remain exploratory. No 3-D stability or confinement
+claim. User poster unchanged; no remote/publication. Older sections follow.
+
 ## Component errors exposed and strict residual paths isolated (2026-10-12)
 
 The full FRC goal and all 12 acceptance beads remain open. No unit tests were
