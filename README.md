@@ -1,15 +1,18 @@
 # Virtual plasma bench
 
-Current research status: a complete axial-grid refinement reduces radial-current
-rate error from **5.97% to 3.05%**. Independent differentiation of the magnetic
-response shows the same improvement, and the full signed calculation and
-physical audits replay exactly. Verified workspace changes enable this modest
-refinement; larger grids and full spatial/time accuracy remain unfinished.
-No unit tests were added or run. The sandbox is not yet validated for selecting
-a laboratory formation experiment. Read the
-[latest measured results](docs/WORKSPACE_MEMORY_VERIFICATION.md),
+Current research status: separately refining the field directions reduces
+radial-current error from **5.97% to 1.76%** with axial refinement, and axial-current
+error from **1.19% to 0.735%** with radial refinement. Independent magnetic-curl
+comparisons support both results. Complete signed simulations and physical
+audits replay exactly; componentwise stress evaluation lowers fine-workflow
+memory while preserving the original results bitwise.
+
+No unit tests were added or run. Amplitude, residual and full spatial/time
+accuracy controls remain unfinished, and the sandbox is not yet validated for
+selecting a laboratory formation experiment. Read the
+[latest measured results](docs/SCHEDULED_WORKSPACE_VERIFICATION.md),
 [current handoff](docs/NEXT_SESSION.md), and
-[scientific figure](outputs/workspace_refinement_report_layout/verification.png).
+[scientific figure](outputs/directional_workspace_report/verification.png).
 Older summaries and test counts retain their historical scope and limits.
 
 A scriptable, verified axisymmetric research sandbox. It currently implements

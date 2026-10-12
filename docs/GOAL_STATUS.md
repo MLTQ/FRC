@@ -1,5 +1,55 @@
 # Active research: a credible experimental FRC simulation
 
+## Separate field refinements verified with lower workspace memory (2026-10-12)
+
+All workers are terminal and collected. No unit tests were added or run.
+The full original FRC sandbox goal and all 12 acceptance beads remain open.
+Read SCHEDULED_WORKSPACE_DESIGN.md and SCHEDULED_WORKSPACE_VERIFICATION.md.
+
+Complete coarse/fine signed workflows and fresh replays establish bitwise
+original/new fidelity for scheduling and componentwise drift-stress evaluation.
+The unchanged stress adjoint receives each original component expression on
+request, retaining multiplication association and all physical checks. Fine
+peak memory drops from scheduling's 6.481/6.476 GiB to 5.342/5.516 GiB.
+Default solvers/time integrators and old calculation sources remain unchanged.
+
+At fixed F64/256, radial16/N128 reference, epsilon 1e-4 and tolerance 1e-10,
+independent axial B256/320 and radial B320/256 signed calculations, physical
+audits and full fresh replays pass. Axial refinement reduces Jr error from
+5.96939% through 3.05317% at axial288 to 1.76199%; independent strong curl gives
+1.73644%. Br error falls to 0.0266691%. Radial refinement instead reduces Jz
+error from 1.18700% to 0.734849%, and radial-velocity error from 0.183143% to
+0.0983390%; Jr stays near 5.9%. Separate directions address different errors.
+The modest increments do not establish asymptotic or amplitude/time convergence.
+
+New maximum residuals 6.82535e-11/8.96429e-11 obey 1e-10. Instantaneous work
+closure is within 4.343e-9 of exchanged powers; local/time budgets remain open.
+New physical q16/20 rate norms differ by at most 1.39e-15, component norms by
+2.64e-16; curl decompositions close within 2.30e-16. Strong curl excludes face
+distributions. No field, mode, state or strict acceptance bound was changed.
+
+Axial primary/successful replay peak 6.901/7.162 GiB; radial 7.161/7.037 GiB.
+An earlier axial replay was disk-guard interrupted and collected as exit130;
+its full partial evidence remains. A fresh standalone replay passes. All
+successful final resources satisfy 8 GiB RSS / 256 MiB disk guards. Verified
+byte-identical completed NPZs share immutable storage; every path/hash survives.
+
+Twelve replay groups: six full signed simulations, four implementation
+comparisons, two independent curl audits; eight raw-file comparisons. Eight new
+modules have companions; 49 new archives, 397 preceding archives and 22 older
+active closures verify. Final 164-file source SHA:
+a7022b5b4d1a8f5b598c431e71f6865d51c178ca61eed43a33ef230cfaeeabf5.
+Checkpoint: outputs/scheduled_workspace_diagnostics/checkpoint.json.
+Scientific PNG/PDF: outputs/directional_workspace_report; PNG visually checked.
+
+NEXT add amplitude/residual controls on the two refined grids, then resource-
+budget combined/further mesh refinement with component/actual-curl norms.
+Full signed trajectories/local budgets, heated moving exact vacuum, physical
+transport/ionization, prescribed coils/ends, formation and UI remain open.
+User poster and all evidence preserved; no remote/publication. Lab inputs stay
+provisional; these filled-periodic fixtures prove neither 3-D stability nor
+particle confinement. Older sections below are historical.
+
 ## Axial refinement halves radial-current error (2026-10-12)
 
 All workers are terminal and collected. No unit tests were added or run. Read

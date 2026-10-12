@@ -1,3 +1,96 @@
+# Continue from independently refined field directions
+
+All workers are terminal and collected. No process or session needs resuming.
+This continuation from a67d240 made verified progress. No unit tests were added
+or run; continue with complete end-to-end physical workflows, independent
+comparisons, convergence/conservation measurements and fresh full replays.
+The full original FRC sandbox goal and all 12 acceptance beads remain open.
+
+Read newest GOAL_STATUS, SCHEDULED_WORKSPACE_DESIGN/VERIFICATION and
+outputs/scheduled_workspace_diagnostics/checkpoint.json. Scientific PNG/PDF:
+outputs/directional_workspace_report; PNG visually inspected.
+
+## Verified evidence
+
+- Scheduling alone preserves coarse/fine physical results bitwise but peaks
+  6.481/6.476 GiB. A read-only full replay identifies a second transport peak
+  during full stress construction. ComponentDriftStress supplies original
+  ((m_reduced/e**2)*J_i)*J_j/n entries to the unchanged stress adjoint, retaining
+  arithmetic association and independent off-diagonal entries. Complete
+  original/new coarse/fine comparisons and all candidate replays are bitwise.
+  Fine primary/replay peak 5.342/5.516 GiB; defaults/time integrators unchanged.
+- Fixed F64/256, independent radial16/N128 reference, epsilon1e-4, bound1e-10.
+  New B256/320 axial and B320/256 radial signed workflows and full fresh replays
+  pass every original check and independent q16/20 physical/face audit.
+- Axial refinement Jr errors: 5.96939% (256), 3.05317% (288), 1.76199% (320).
+  Independent strong-curl Jr at320 is1.73644%; weak/strong difference0.131541%
+  slightly grows. Br error falls to0.0266691%. Modest-grid log slopes5.692/5.218
+  do not prove asymptotic convergence or resolve amplitude/cancellation error.
+- Radial320 instead gives Jz0.734849% versus1.18700%, strong-curl Jz0.599842%
+  versus1.00320%, and weak/strong Jz0.210047% versus0.345296%. Jr stays5.90438%.
+  Radial-velocity error improves0.183143% to0.0983390%. Total-J0.0552027%
+  still hides weaker components. Strong curl excludes face distributions.
+- New maximum residuals6.82535e-11/8.96429e-11 stay below1e-10. Largest
+  instantaneous power defect4.343e-9/exchanged powers; local/time budgets open.
+  New q16/20 component differences<=2.64e-16; physical rate norms<=1.39e-15.
+- Axial primary/replay peak6.901/7.162 GiB; radial7.161/7.037 GiB. An earlier
+  axial replay hit the disk guard (262144000 free bytes), exit130 collected.
+  Partial physical/source/control records are preserved; no solver rejection.
+  Fresh standalone replay succeeds. Final successful guards all obey8GiB and
+  256MiB limits; do not run a large solver alongside a diagnostic audit.
+- Twelve replay groups: six complete signed simulations, four implementation
+  comparisons, two independent curl audits. All8 raw comparisons,49 new archives,
+  397 preceding archives and22 older active source closures verify. Eight new
+  modules have companions. Final164-file source SHA:
+  a7022b5b4d1a8f5b598c431e71f6865d51c178ca61eed43a33ef230cfaeeabf5.
+
+## Concrete next action: refined controls, then joint accuracy
+
+1. Read component_stress_transport, guarded_component_stress, current_rate_curl_audit
+   companions and previous amplitude/curl/residual verification. All used Python
+   files are frozen. Existing guarded_component_stress accepts nr/nz but fixes
+   epsilon1e-4 and tolerance1e-10. Add a NEW explicitly sourced opt-in protocol
+   for epsilon1e-3/1e-5 and tighter residual controls on B256/320 and B320/256.
+   Keep both signed full rates, exact actual inputs, every original residual,
+   q16/20 physical/face norms, component differences and full fresh replays.
+   The preceding 1e-11 rejection and raw-curl arithmetic evidence remain valid;
+   do not loosen a bound or assume refinement repairs that cancellation.
+2. Preserve component and actual magnetic-curl norms. Separate amplitude
+   differences from continuum error; the small total-J norm can conceal Jr/Jz.
+   Keep point/axis/wall and initial face diagnostics distinct from evolved
+   local charge/enthalpy/Poynting balances. No filters, atmosphere or repairs.
+3. Budget combined B320/320 and further independent refinement only after
+   measured resource headroom. Radial field count must subdivide64 fluid cells.
+   The unchanged8GiB/256MiB guard must include final observations. A combined
+   run's feasibility is unproved. If storage is limiting, profile the component
+   variant in a required full replay before choosing another workspace change;
+   original UniformWallMetric modal factors grow roughly as nr^2*nz.
+4. Continue full signed trajectory mesh/time/residual convergence and local
+   budgets. The radial1 F8/64,B32/64 full100us control remains pending. Rate-only
+   fidelity does not establish time stability or permit formation adoption.
+   Then resume heated moving exact vacuum, transport/ionization/model validity,
+   real prescribed coil and physical-end boundaries, converged formation and UI.
+
+## Data and execution
+
+New physical source:000fd344b524568a655485308fb72d754aa8c144d26cf3a8e04c4d947ffb53ef.
+Fine baseline: outputs/component_stress_fine; axial: component_axial320;
+radial: component_radial320. Successful axial replay is suffixed _replay_serial,
+not the preserved interrupted _replay. Each curl audit has _curl, _curl_replay
+and _curl_verification directories. Diagnostics include complete source/replay
+inventories, directional metrics, interruption and verified storage manifests.
+
+All byte-identical shared NPZ paths are immutable; never overwrite any in place.
+A cross-study inventory rehashed1776 completed paths before/after sharing852
+additional duplicate inodes. No scientific content/path or user file was lost.
+Do not delete partial attempts or retry into an existing destination. All old
+source/evidence and the user's modified outputs/frc_showcase/poster.png survive.
+No remote or publication. Provisional lab dimensions, gas, neutral fill and bias
+remain exploration inputs; no3-D stability or particle-confinement claim.
+Older handoffs follow as historical records, not active worker instructions.
+
+---
+
 # Continue from fully replayed axial refinement and workspace verification
 
 All workers are terminal and collected. No handle needs resuming. No unit tests
