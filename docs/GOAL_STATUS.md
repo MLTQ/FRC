@@ -1,5 +1,58 @@
 # Active research: a credible experimental FRC simulation
 
+## Component errors exposed and strict residual paths isolated (2026-10-12)
+
+The full FRC goal and all 12 acceptance beads remain open. No unit tests were
+added or run. All workers are terminal and collected. Read
+SPLIT_RESIDUAL_PATH_DESIGN.md and SPLIT_RESIDUAL_PATH_VERIFICATION.md.
+The previous turn made verified progress; this continuation preserves it.
+
+A new complete physical audit reproduces every archived rate/E/current/reference
+fingerprint and fully replays. At fixed radial16, N128 and F64/256, B256/256,
+radial current-rate errors are 5.9694% / 6.6721% at amplitudes 1e-4 / 1e-5.
+Axial-current errors are 1.1870% / 1.1936%; azimuthal-current error is 0.01905%.
+The previous 0.0879% total-current error remains correct but hides these weaker
+components. Actual radial-current amplitude difference is 3.0148% of its own
+reference, with 88.674% of squared difference in the interior, 11.115% in the
+outer 5% radius and 0.210% in the inner 5%. Radial-current error is about 6%
+across all bands. By contrast, 58.08% of axial-current squared error and 72.05%
+of radial-velocity squared error lie in the wall band. Error and sensitivity
+fractions remain distinct. Whole-domain q16/20 norm changes are <=3.44e-15;
+small masked-band quadrature differences are explicitly retained.
+
+An observation-only exact-input workflow reproduces the archived tighter-bound
+first-attempt rejection. The actual opposing residual-vector gap is 6.87234e-11
+of the RHS after three corrections. Electric curl distributivity accounts for
+that vector to a remainder of 0.4245%; H/T association and inertia-path gaps
+are much smaller. All seven observed contributions leave only 5.41e-17 of RHS
+unexplained. An independent Decimal audit verifies all 786432 electric-addition
+coefficients exactly, but addition-loss propagation alone leaves 66.21% of the
+gap. Curl arithmetic must therefore remain separate from electric addition.
+No solver arithmetic, physical equation, bound or accepted state was changed.
+
+The first in-process observation replay was stopped by its disk guard. Original
+and partial outputs are preserved. A fresh standalone replay completed and
+matches every array, iterate and non-runtime metric; its guard did not trigger.
+The independent arithmetic audit and component audit also fully replay. Three
+verification groups and 12 new source archives are checked; 288 preceding
+archives and 22 earlier closures remain unchanged. Six new modules have
+companions. Final 134-file source union:
+150dc2f3e7614eed5da58d314b6ff3e8cf804b641c1f9fec9f91b738e4712745.
+Full checkpoint: outputs/split_residual_diagnostics/checkpoint.json.
+Scientific PNG/PDF: outputs/split_precision_report; PNG visually inspected.
+
+NEXT compare assembled projected curl with curl followed by projection on the
+exact captured vectors, without relaxing checks or claiming a repair before
+full physical verification. Separately establish component-wise current-rate
+spatial/amplitude convergence; their relationship to this arithmetic failure
+is not yet established. Then resume full signed trajectory convergence and
+local budgets, heated moving exact vacuum, transport/ionization, physical
+ends/coils, converged formation and the interactive experimental sandbox.
+The lab envelope remains provisional. These fixtures establish neither
+3-D stability nor confinement. User poster unchanged; no remote/publication.
+Older sections below are historical.
+
+
 ## Combined refinement, full replay and resolved amplitude metrics (2026-10-10)
 
 The full FRC goal and all 12 acceptance beads remain open. User policy:

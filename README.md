@@ -1,19 +1,15 @@
 # Virtual plasma bench
 
-Current research status: complete signed 100 μs trajectories and their entire
-saved stage/state histories replay exactly. Combined field/fluid refinement
-reduces fixed-mode current-rate error to 0.0879%, radial-velocity rate error
-to 0.183%, and toroidal-field rate error to 0.548%. Complete spatial reruns and
-independent physical quadrature audits agree. A tenfold smaller perturbation
-retains these improvements; a tighter solver bound rejects its first state.
-Both outcomes replay exactly. Direct physical comparison exposes 3.01%
-amplitude sensitivity in the small radial-current component, despite a much
-smaller total-current difference. Verification uses end-to-end workflows;
-no unit tests were added or run in this continuation. The sandbox is not yet
-validated for choosing a laboratory formation experiment. Read the
-[latest measured results](docs/JOINT_E2E_VERIFICATION.md),
+Current research status: independent component audits expose unresolved
+**5.97–6.67% radial-current rate error**, despite the previously measured
+0.0879% total-current error. Complete reconstructions and exact-input solver
+observations replay bitwise. The tighter solver rejection is dominated by
+curl arithmetic; no numerical repair or formation adoption is claimed.
+Verification uses end-to-end workflows, with no unit tests added or run.
+The sandbox is not yet validated for selecting a laboratory formation experiment.
+Read the [latest measured results](docs/SPLIT_RESIDUAL_PATH_VERIFICATION.md),
 [current handoff](docs/NEXT_SESSION.md), and
-[verification figure](outputs/joint_e2e_report/verification.png).
+[scientific figure](outputs/split_precision_report/verification.png).
 Older component summaries and unit-test counts below retain their historical
 scope and limits.
 

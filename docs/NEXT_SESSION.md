@@ -1,3 +1,90 @@
+# Continue from component accuracy and split-residual path diagnosis
+
+Read the newest GOAL_STATUS and SPLIT_RESIDUAL_PATH_DESIGN/VERIFICATION.
+**All workers are terminal and collected; no job needs resuming.**
+No unit tests: use complete workflows, independent physical references,
+convergence/conservation measurements and full replays. Keep all 12 acceptance
+beads and the overarching FRC goal open.
+
+## Current evidence
+
+- The original finest tighter-bound failure is reproduced with unchanged input,
+  equations, residuals and budgets. New observations show final opposing-vector
+  gap 6.87234e-11 of RHS. Electric curl distributivity leaves only 0.4245% of that
+  gap; H/T and current/inertia paths do not dominate. All-term remainder is
+  5.41e-17 of RHS. The complete fresh standalone observation replay is bitwise.
+- Exact Decimal sums verify 786432 actual electric coefficients, with zero
+  mismatches and a complete postprocessing replay. Propagating addition loss
+  alone leaves 66.21% of the gap unexplained. Do not conflate addition rounding
+  with the full curl-action discrepancy or infer an accepted solver repair.
+- Complete independent physical component audit/replay on F64/256, B256/256,
+  fixed radial16, N128 reproduces every original field/reference fingerprint.
+  Jr-rate errors are 0.05969389 / 0.06672077 at epsilon 1e-4 / 1e-5. Jz errors
+  are 0.01187001 / 0.01193623; Jtheta error is 0.0001904658. The total J error
+  0.000878993 therefore does not certify these smaller physical components.
+- Radial-current amplitude difference is 0.03014823 of its own continuum norm.
+  88.674% of its squared difference is interior and 11.115% in the outer 5% R.
+  Radial-current error itself is about 6% in each band. Axial-current and radial-
+  velocity squared errors are more wall-localized (58.08% and 72.05% there).
+  All nine fluid/magnetic and all E/J components are measured; q16/20 norm and
+  masked-band differences are recorded. Band integrals mask original nodes,
+  rather than subdividing cells at the two fixed physical band edges.
+
+## Next actions: frc-7mm.6 and frc-7mm.7
+
+1. Inspect original `StrongWallGeometry.faraday = projection @ original.faraday`.
+   On the exact captured original iterates, compare assembled action with raw
+   curl followed by the same projection, and isolate product/sum rounding.
+   Keep actual electric terms and the independently verified addition low part.
+   Do not replace a rejected full rate with a diagnostic vector. Any proposed
+   arithmetic change must independently verify the original full equations,
+   physical fields and work, preserve strict checks/budgets, and fully replay
+   complete signed workflows. The observations are not a repair.
+2. Determine whether component errors arise from representation, axial/radial
+   differentiation, nonlinear amplitude effects or arithmetic. Use physical
+   component norms and fixed independent radial16, N128 reference. Axial-mode
+   diagnostics or separate directional refinement can guide the next grid;
+   do not infer a cause merely from the dominant total-current norm. A causal
+   link to the strict residual-path mismatch remains unproven. Any Fourier
+   analysis is diagnostic only and must not filter accepted states.
+3. Continue complete signed radial1 trajectories at F8/64, B32/64 against the
+   preserved F4/64, B16/64 runs when the accuracy gates justify adoption. Require
+   100 us, time/mesh/residual controls, local budgets and independent physical
+   conservation. The prior near-grid growing branch remains unresolved.
+4. Continue heated moving exact vacuum, defensible transport/ionization and
+   validity diagnostics, real prescribed coils/ends, converged formation and
+   the experiment UI. Keep original lab inputs provisional and distinguish
+   reversal, closed flux, equilibrium, 3-D stability and confinement.
+
+## Artifacts and resource constraints
+
+- `outputs/split_residual_probe`: original full exact-input observation.
+- `outputs/split_residual_probe_replay_v2` and `_verification`: passing complete
+  standalone replay. The older `_replay` directory is partial and preserved.
+- `outputs/split_residual_arithmetic_audit` and component_amplitude_localization:
+  original audits plus their `_replay` and `_verification` directories.
+- `outputs/split_precision_report/verification.png`: visually inspected
+  scientific figure, with a PDF alongside. PDF not separately inspected.
+- `outputs/split_residual_diagnostics/checkpoint.json`: source/input/worker
+  inventory, resource guards and preserved interruption.
+
+Run large original/replay geometry builds in separate processes. The earlier
+in-process replay was interrupted when free disk fell below 256 MiB; no global
+cause is asserted and no unrelated files were deleted. The standalone replay
+completed with the same physical calculation and guard. Source-derived finest
+trajectory modal storage still exceeds 15 GiB before field/work arrays.
+
+All six new modules and old calculation sources are frozen; read companions
+and extend via separate modules. Final 134-file source union:
+150dc2f3e7614eed5da58d314b6ff3e8cf804b641c1f9fec9f91b738e4712745.
+Three complete replay groups and 12 new archives verified; 288 preceding
+archives and 22 older source closures unchanged. User poster SHA
+ a783f7cda0f4a249cc4c23ead61debbdf89d356436a2a3dab2189029c6d5deca.
+Preserve it outside research commits. Beads and research remain local; no
+remote or publication. Older handoffs below are historical.
+
+---
+
 # Continue from complete joint refinement and physical amplitude sensitivity
 
 Read the newest GOAL_STATUS, JOINT_E2E_DESIGN and JOINT_E2E_VERIFICATION.
