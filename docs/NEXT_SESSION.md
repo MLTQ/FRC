@@ -1,3 +1,87 @@
+# Continue from complete refined amplitude controls
+
+All workers are terminal and collected. No session needs resuming. No unit
+tests were added or run; retain the user's end-to-end-only preference.
+The full FRC goal and all12 acceptance beads remain open. This continuation
+from cd66ec5 made verified progress.
+
+Read the newest GOAL_STATUS, REFINED_CONTROL_DESIGN/VERIFICATION and
+outputs/refined_control_diagnostics/checkpoint.json. Scientific PNG/PDF:
+outputs/refined_control_report; PNG visually inspected. The old live snapshots
+under refined_control_diagnostics are historical; physical_completion.json and
+the final checkpoint supersede them. Do not restart those finished jobs.
+
+## Verified results and limits
+
+- Four accepted amplitudes: epsilon1e-5/1e-3 on B256/320 and B320/256, fixed
+  F64/256 and independent radial16/N128 reference, original tolerance1e-10.
+  Every full signed workflow and fresh separate-process replay passes.
+- Both grids at epsilon1e-4/tolerance1e-11 strictly reject on minus after all
+  five outer attempts; final dual-Faraday6.14598e-11/8.29280e-11. Complete
+  rejection replays match all input arrays and metadata. Saved rejected inputs
+  equal the baseline in shape/dtype/bytes, not a post-call immutability proof.
+- Four component, two spectrum and two magnetic/current-curl audits replay.
+  Axial-grid Jr error1.76199% becomes4.17506% for epsilon1e-5; strong curl
+ 1.73644% becomes3.19274%. Radial-grid Jr5.90438% becomes6.70354%. Actual
+  amplitude differences3.83376%/3.19588% are hidden by small total-J errors.
+  Larger amplitudes slightly worsen radial/axial current and total-J errors;
+  azimuthal current barely changes. No amplitude-convergence claim.
+- Above cell mode|k|64, Jr error grows9.9952x/9.7616x as epsilon shrinks10x.
+  That band holds93.7982%/87.2576% of squared amplitude difference. This fits
+  numerical noise amplified by differencing but establishes no cause. Lower-
+  band errors persist. Cell spectra fold aliases; strong curl omits face jumps.
+- All240 spectrum/component and48 current/component-curl integrals match.
+  Volume component quadrature differences<=3.440e-15; band differences reach
+ 4.968e-5. Parseval/curl decomposition defects<=3.150e-16. Instantaneous
+  work defect<=3.983e-8/exchanged powers; local and time budgets remain open.
+- Maximum physical peak7.574GiB, minimum physical disk605.469MiB satisfy all
+ 8GiB/256MiB guards including final extrema. Audit resource checks occur at
+  stage boundaries only. All shared completed replay paths remain immutable.
+- Fourteen replay groups /14 raw comparisons;58 new archives,446 preceding
+  archives,164 preceding sources,228 prior evidence files and22 active older
+  source closures verify. Four new modules have companions. Final168-file SHA:
+ 5deb5dc6c4a3229d60d13d33b2a182716aadd61fcd1fcfa1fa5264ef6dff4966.
+
+## Concrete next action: complete trajectory refinement
+
+1. Read JOINT_E2E_DESIGN.md, PHYSICAL_INTERFACE_VERIFICATION.md and companions
+   for matched_mode_fixture, matched_mode_evolution, split_mode_evolution and
+   split_mode_audit. Used Python sources are frozen; add a new guarded opt-in
+   orchestration module if necessary, with explicit dynamic source seeds.
+2. Use the unchanged split_mode_evolution full nonlinear protocol on
+   elements8,points64,field_nr32,field_nz64, retaining the existing radial1/N64
+   reference and original physical settings. Run both signed epsilon1e-4
+   perturbations for100us with60 and120 Gauss steps, original stage/endpoint/
+   induction bounds and complete saved stage/state records. Preserve failures;
+   a partial run cannot pass the full-duration gate. Run one large job at once.
+3. Compare to preserved F4/64,B16/64 trajectories
+   outputs/matched_mode_guarded_ne4_z64_t60_minus and _plus, keeping physics,
+   duration, reference and amplitude fixed. A solver-arithmetic difference must
+   be explicitly audited, not called a bitwise cross-implementation match.
+   Fresh full replays of each new trajectory, independent q16/20 field/pressure/
+   current/electric/energy/particle/entropy audits and time differences are
+   required. The older4.31611% final-current error and fast near-grid branch
+   remain unresolved; refining is not presumed to repair them.
+4. Source-derived retained dense modal storage0.0579GiB and60-step secant
+   history0.0397GiB are lower estimates, not peak limits. Keep actual8GiB RSS
+   and256MiB disk guards and final-extrema checks; budget all saved states,
+   replays and Git evidence. The finest instantaneous grid is not a feasible
+   trajectory simply because its signed rates fit memory.
+5. Keep refined-grid noise/strict1e-11 rejection and joint B320/320 resource/
+   accuracy controls open. Any compensated arithmetic or expanded electric
+   representation requires unchanged real equations/adjoints/bounds and full
+   physical controls. No filters, floors, artificial mass or repairs. Continue
+   local budgets, heated moving exact vacuum, transport/ionization/validity,
+   prescribed real coils/ends, converged formation and experimental UI.
+
+Preserve every archive and the user-modified outputs/frc_showcase/poster.png,
+SHA a783f7cda0f4a249cc4c23ead61debbdf89d356436a2a3dab2189029c6d5deca.
+No remote or publication; local issue export only. Provisional tube/gas/fill/
+bias inputs are not validated laboratory recommendations. No3-D stability or
+particle-confinement claim. Older handoffs below are historical.
+
+---
+
 # Continue from independently refined field directions
 
 All workers are terminal and collected. No process or session needs resuming.

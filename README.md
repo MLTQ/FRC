@@ -1,18 +1,19 @@
 # Virtual plasma bench
 
-Current research status: separately refining the field directions reduces
-radial-current error from **5.97% to 1.76%** with axial refinement, and axial-current
-error from **1.19% to 0.735%** with radial refinement. Independent magnetic-curl
-comparisons support both results. Complete signed simulations and physical
-audits replay exactly; componentwise stress evaluation lowers fine-workflow
-memory while preserving the original results bitwise.
+Current research status: refined-grid amplitude controls expose small-signal
+sensitivity hidden by total-current norms. On the axially refined grid,
+reducing the perturbation tenfold raises radial-current **rate** error from
+**1.76% to 4.18%**; independent magnetic-curl and spectral audits reproduce the
+sensitivity. Four accepted signed-rate workflows and two strict tighter-bound
+rejections have complete replays, as do all eight independent audits.
 
-No unit tests were added or run. Amplitude, residual and full spatial/time
-accuracy controls remain unfinished, and the sandbox is not yet validated for
-selecting a laboratory formation experiment. Read the
-[latest measured results](docs/SCHEDULED_WORKSPACE_VERIFICATION.md),
+No unit tests were added or run. These are instantaneous rate checks; full
+trajectory accuracy, local conservation, vacuum coupling and formation remain
+unfinished. The sandbox is not yet validated for selecting a laboratory
+formation experiment. Read the
+[latest measured results](docs/REFINED_CONTROL_VERIFICATION.md),
 [current handoff](docs/NEXT_SESSION.md), and
-[scientific figure](outputs/directional_workspace_report/verification.png).
+[scientific figure](outputs/refined_control_report/verification.png).
 Older summaries and test counts retain their historical scope and limits.
 
 A scriptable, verified axisymmetric research sandbox. It currently implements

@@ -1,5 +1,63 @@
 # Active research: a credible experimental FRC simulation
 
+## Refined amplitude and residual controls complete (2026-10-12)
+
+All workers are terminal and collected. No unit tests were added or run.
+This continuation from cd66ec5 made verified progress; the full FRC goal and
+all12 acceptance beads remain open. Read REFINED_CONTROL_DESIGN.md and
+REFINED_CONTROL_VERIFICATION.md. Final checkpoint:
+outputs/refined_control_diagnostics/checkpoint.json.
+
+On each independently refined field grid, the full epsilon1e-5 and1e-3 signed
+workflows pass the unchanged1e-10 original checks and fresh complete replays.
+Both epsilon1e-4 / tolerance1e-11 controls strictly reject on minus after all
+five outer attempts, then reproduce their complete rejection protocols.
+Final dual-Faraday residuals are6.14598e-11 and8.29280e-11. Each rejected case's
+five saved input arrays match the accepted baseline in shape, dtype and bytes;
+this does not establish post-call in-memory immutability. No failed rate is used.
+
+Four component, two spectrum and two actual magnetic-rate curl audits fully
+replay and reproduce original physical/reference/weight fingerprints. On
+B256/320, Jr error rises1.76199% to4.17506% at the smaller amplitude; independent
+strong curl gives1.73644% to3.19274%. On B320/256, Jr rises5.90438% to6.70354%.
+Actual small/baseline Jr differences are3.83376% and3.19588%; total-J norms hide
+them. The larger amplitude slightly worsens radial/axial current, velocity and
+azimuthal-field errors. No amplitude-convergence or selected-waveform claim.
+
+Above cell mode|k|64, radial-current error grows9.9952x and9.7616x as epsilon
+shrinks10x. That band holds93.7982% and87.2576% of squared amplitude difference.
+This is consistent with numerical noise amplified by differencing, without
+identifying its source. Significant lower-band error remains. Cell modes fold
+aliases; strong curl excludes face distributions. No state or mode is filtered.
+
+All240 independent component/spectrum integrals and48 component/curl integrals
+match bitwise. Volume component q16/20 norms agree within3.440e-15, while
+band-norm differences reach4.968e-5 and remain separately reported. Parseval
+and curl decomposition defects stay below3.150e-16. Instantaneous exchanged-
+power closure is within3.983e-8; local/time-integrated budgets are still open.
+
+All12 physical protocols satisfy8GiB/256MiB guards including final extrema;
+maximum peak7.574GiB, minimum free disk605.469MiB. Audit observations are1.464GiB
+peak and294.531MiB minimum at stage boundaries, not continuous guards. No
+interruption occurred. All byte-identical shared replay paths remain immutable.
+
+Fourteen replay groups and14 raw-file comparisons are complete. Four new
+modules have companions;58 new archives,446 preceding archives,164 preceding
+sources,228 earlier evidence files and22 older active closures verify. Final
+168-file source SHA:5deb5dc6c4a3229d60d13d33b2a182716aadd61fcd1fcfa1fa5264ef6dff4966.
+Scientific PNG/PDF: outputs/refined_control_report; PNG visually inspected.
+Original physics/defaults/time integrators and user poster are preserved.
+
+NEXT resume full signed radial1/N64, F8/64,B32/64 100us trajectories with60/120
+steps, independent physical/conservation audits and complete stage/state replays,
+against the preserved F4/64,B16/64 controls. Budget resources and retain any
+failure or fast-growing response. This is separate from the radial16 rate study.
+Keep amplitude noise/strict residual arithmetic and joint B320/320 feasibility
+open. Local budgets, heated exact vacuum, transport/ionization/validity, real
+prescribed coils/ends, converged formation and UI remain required. Lab inputs
+stay provisional; no3-D stability or particle-confinement claim. No remote or
+publication. Earlier completed sections below retain their historical scope.
+
 ## Separate field refinements verified with lower workspace memory (2026-10-12)
 
 All workers are terminal and collected. No unit tests were added or run.
