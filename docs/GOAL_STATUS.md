@@ -1,5 +1,72 @@
 # Active research: a credible experimental FRC simulation
 
+## Active trajectory rejection replay (2026-10-12, after c912fdc)
+
+Latest completed work: independent density localization and its fresh full
+replay reproduce all216 original density/error fingerprints and all3 derived
+raw files bitwise. From13.333us onward more than99.7% of the refined squared
+density error is in low axial cell modes abs(k)<=4. Final error spans radius;
+first-interface jump is2.27545% in background-normalized surface L2, sampled
+maximum4.69502%. Localization does not identify a cause or prove local flux
+failure. Initial tiny-error partitions are quadrature-sensitive. Read the new
+TRAJECTORY_REFINEMENT_VERIFICATION section and inspected scientific report in
+outputs/trajectory_rejection_report. No extra physical trajectory was launched.
+
+After the complete failed-trajectory replay, the proposed next diagnostic is
+the full unchanged spatial RHS along the saved early error direction, with
+amplitude and independent-mode controls. Read TRAJECTORY_TANGENT_PROBE_DESIGN.md;
+this probe is not implemented or executed. Opposite-sign, same-grid arithmetic,
+time and complete physical/conservation controls remain required.
+
+The refined F8/64,B32/64 negative100us/60-step attempt rejected step18 after
+17 accepted steps (28.333333us). Newton GMRES failed with info=5. The original
+stage1e-12/relative1e-10 bounds remain. Session36840/PID89880 is terminal,
+exit0 collected through the driver's recorded numerical-failure path. Its
+4.439148GiB peak/390.625MiB minimum free disk pass the8GiB/256MiB guards.
+This is a failed full-duration gate, not a resource interruption or success.
+
+Independent density-only observations through all17 accepted steps, quadrature
+16/20, fully replay every time-series byte and physical fingerprint. At the
+last endpoint, the refined density departs16.0233% at a stored node; its L2
+error is790.258 times the growing independent linear density signal. Older
+medium/coarse controls have relative errors5.700e-5/3.898e-4 at the same time.
+Integral quadrature agreement is close; sampled maxima are less resolved.
+Single-sign density evidence does not establish causality or full physical
+accuracy. Read TRAJECTORY_REFINEMENT_VERIFICATION.md and the companion for
+examples.trajectory_density_prefix. Stored terminal initial/final state and
+magnetic arrays match the initial/last accepted arrays in dtype, shape and bytes.
+
+LIVE: parent unified session40737/PID93211, replay child PID93212. Parent record:
+outputs/trajectory_rejection_campaign/summary.json. It runs only the full
+negative rejection replay, with original initial data, equations and strict
+checks. Latest snapshot:12 accepted replay steps, not completed verification.
+The one-job plan is outputs/trajectory_refinement_diagnostics/rejection_replay_plan.json.
+The old seven-job plan is preserved but was NOT launched. The controller and
+new density observer are now used/frozen; do not edit their Python sources.
+
+NEXT poll the actual parent40737, without restarting or launching another heavy
+job. Collect its terminal exit and verify all initial/final/state/stage files,
+non-runtime solver/failure metrics and exact failed step before claiming a
+reproduced rejection. Reproduced failure still fails100us. Inspect the result
+before selecting opposite-sign, same-grid arithmetic and120-step controls;
+retain full requested durations. Do not launch the obsolete seven-job plan as
+is, because its first replay is already active. Original preserved medium
+controls use older induction arithmetic, so a same-grid split control is needed.
+Full signed field/current/E, pressure, conservation/history/energy audits and
+mesh/time controls remain open. Resource-budget each later job and preserve
+all failures; full remaining campaign storage is not presumed available.
+
+No unit tests. The full goal/all12 acceptance beads remain open. Completed
+source and evidence form a local progress checkpoint; evolving live replay
+outputs remain outside that completed evidence set.
+All168 old sources,251 prior evidence files,504 prior source archives and the
+user's poster were rechecked unchanged. Active173-file source:
+8dc9d2e9557b53a27351c973e71762c0577837e4b0024bab1c718f7b209066d8.
+See localization_preservation.json and active_source_v2 for the new closure.
+See primary_terminal_preservation.json, primary_exit.json and live_progress.json
+under outputs/trajectory_refinement_diagnostics. Earlier all-workers-terminal
+statements below are historical. This is progress, not a blocked or complete goal.
+
 ## Refined amplitude and residual controls complete (2026-10-12)
 
 All workers are terminal and collected. No unit tests were added or run.

@@ -1,19 +1,20 @@
 # Virtual plasma bench
 
-Current research status: refined-grid amplitude controls expose small-signal
-sensitivity hidden by total-current norms. On the axially refined grid,
-reducing the perturbation tenfold raises radial-current **rate** error from
-**1.76% to 4.18%**; independent magnetic-curl and spectral audits reproduce the
-sensitivity. Four accepted signed-rate workflows and two strict tighter-bound
-rejections have complete replays, as do all eight independent audits.
+Current research status: a finer-grid100µs contact trajectory develops rapid
+density growth and rejects step18 after28.33µs. Independent density observations
+and spatial localization replay exactly: from13.3µs onward more than99.7% of
+squared density error lies in low axial cell modes, and internal
+radial density traces separate substantially. The cause remains unresolved.
+The complete failed trajectory is being replayed separately.
 
-No unit tests were added or run. These are instantaneous rate checks; full
-trajectory accuracy, local conservation, vacuum coupling and formation remain
-unfinished. The sandbox is not yet validated for selecting a laboratory
-formation experiment. Read the
-[latest measured results](docs/REFINED_CONTROL_VERIFICATION.md),
+No unit tests were added or run. Full trajectory accuracy, local conservation,
+vacuum coupling and formation remain unfinished. The sandbox is not yet
+validated for selecting a laboratory formation experiment. Read the
+[latest measured results](docs/TRAJECTORY_REFINEMENT_VERIFICATION.md),
 [current handoff](docs/NEXT_SESSION.md), and
-[scientific figure](outputs/refined_control_report/verification.png).
+[scientific figure](outputs/trajectory_rejection_report/verification.png).
+The preceding [instantaneous rate controls](docs/REFINED_CONTROL_VERIFICATION.md)
+retain their separate amplitude-sensitivity and strict-residual findings.
 Older summaries and test counts retain their historical scope and limits.
 
 A scriptable, verified axisymmetric research sandbox. It currently implements
