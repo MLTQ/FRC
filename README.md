@@ -11,11 +11,13 @@ The complete failed trajectory now replays exactly. A full spatial-RHS probe
 also reproduces rapid amplification of the saved error direction; its cause
 remains unresolved. See the [completed tangent study](docs/TRAJECTORY_TANGENT_VERIFICATION.md).
 
-Updated display: [interactive 3D viewer](outputs/trajectory_display/index.html)
-and [current-state 3D image](outputs/trajectory_display/current_state_3d.png).
+Updated display: [interactive 3D viewer](outputs/current_state_display_v2/index.html)
+and [current-state 3D image](outputs/current_state_display_v2/current_state_3d.png).
 They show actual saved fields through 28.33 µs, with the failed-duration status,
 physical units, complete B vector and full current magnitude. Read
-[display verification and limitations](docs/TRAJECTORY_DISPLAY.md).
+[display verification and limitations](docs/CURRENT_STATE_DISPLAY.md).
+Camera presets and the latest audit status are included; no newer evolved state
+exists. The PNG is visually checked and both outputs replay byte-identically.
 
 No unit tests were added or run. Full trajectory accuracy, local conservation,
 vacuum coupling and formation remain unfinished. The sandbox is not yet

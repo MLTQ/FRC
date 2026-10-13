@@ -1,5 +1,16 @@
 # Active continuation: trajectory rejection
 
+## Requested display update (2026-10-12, after d4cff11)
+
+Current visualization: outputs/current_state_display_v2/index.html and
+current_state_3d.png. The PNG is inspected and full HTML/PNG/manifest generation
+replays byte-identically. New latest-audit status, camera presets and keyboard
+controls use the same four saved states ending at step 17, 28.3333 µs. No solver
+was run or advanced. Browser interaction remains unchecked because the Mac was
+locked. Read CURRENT_STATE_DISPLAY.md for evidence and display limits.
+The full scientific next action remains SPECIES_INTERFACE_DIAGNOSTIC_DESIGN.md;
+do not restart completed physical workers. All acceptance beads remain open.
+
 ## Latest continuation: physical spatial contributions and current flux (2026-10-12)
 
 Progress from fa597fc: the complete original RHS is now decomposed and freshly

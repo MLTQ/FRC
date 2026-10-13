@@ -1,5 +1,18 @@
 # Active research: a credible experimental FRC simulation
 
+## Requested display update (2026-10-12, after d4cff11)
+
+The current 3D viewer and inspected PNG are now in
+outputs/current_state_display_v2. Read CURRENT_STATE_DISPLAY.md. The final
+accepted state remains step 17 at 28.3333 µs; later audits have not advanced it.
+New camera presets, keyboard controls and latest audit status accompany the
+unchanged saved B/J data. Complete builds and their fresh-process replays are
+byte-identical; no unit tests or solver runs. Browser inspection remains
+unavailable while the Mac is locked. The first clipped-camera PNG and all older
+sources/posters remain preserved; the delivered v2 has unclipped geometry.
+The full research goal and all acceptance beads remain open. Next scientific
+action remains SPECIES_INTERFACE_DIAGNOSTIC_DESIGN.md below.
+
 ## Latest continuation: physical spatial contributions and current flux (2026-10-12)
 
 Progress from fa597fc: the complete original RHS is now decomposed and freshly
