@@ -131,27 +131,24 @@ was visually inspected: all four panels, axes, legends and limits are legible.
 The PDF uses the same figure and was not separately inspected. Source, original
 failed trajectory, independent observations and replays remain immutable.
 
-## Active next action
+## Completed rejection replay and next action
 
-The full original rejected protocol is now replaying in a fresh process, with
-all original tolerances, initial data and stage/state recording:
-`outputs/trajectory_rejection_campaign`. Parent unified session40737/PID93211,
-child PID93212. Plan: `rejection_replay_plan.json` in the diagnostics directory.
-This is a one-job plan; the earlier seven-job plan was not launched.
+The full original rejected protocol finished its fresh replay. All19 raw files,
+17 accepted stages/states, initial/final arrays and non-runtime failure metrics
+match bitwise, including step18's Newton GMRES info=5 rejection. All actual
+worker exits are collected. The one-job rejection plan is complete; the older
+seven-job plan was never launched and must not duplicate that replay.
 
-Poll the actual parent and collect its terminal exit; never restart on an
-observation timeout. Confirm the same failed step, all17 state/stage files,
-initial/final arrays and all non-runtime failure metrics before claiming a
-reproduced rejection. A reproduced rejection is still a failed100us gate.
-Then probe the original spatial RHS along the complete saved early error
-direction, with amplitude controls and an independent-mode control, as specified
-in TRAJECTORY_TANGENT_PROBE_DESIGN.md. This proposed probe is not implemented or
-executed yet. Its purpose is to test whether the actual spatial derivative
-amplifies the observed direction without using a time stepper. Opposite-sign,
-same-grid arithmetic and time controls remain required. Do not lower bounds or
-shorten the requested physical duration to obtain an apparent pass.
+The complete original spatial tangent probe and its independent physical audit
+also finished with fresh complete replays. Read TRAJECTORY_TANGENT_VERIFICATION.md
+for directional projections, continuum-control errors, amplitude sensitivity,
+resource records and limits. These results expose rapid spatial amplification
+without identifying its cause. No source, physical bound or duration changed.
 
-Full signed field/current/E, pressure, conservation and perturbation-energy
-audits remain unfinished, along with local budgets, heated exact vacuum,
-transport/ionization, real prescribed coil/end boundaries, converged formation
-and the experimental UI. No3-D stability or particle-confinement claim follows.
+The updated 3D view of this actual saved trajectory is documented in
+TRAJECTORY_DISPLAY.md. A display is not a physical acceptance gate.
+Next diagnose unchanged RHS contributions and continuum/interface consistency.
+Full opposite-sign, same-grid arithmetic, time, field/current/E, pressure,
+conservation and perturbation-energy audits remain unfinished, along with local
+budgets, heated exact vacuum, transport/ionization, real prescribed coil/end
+boundaries, converged formation and experimental UI. All12 goal gates remain.

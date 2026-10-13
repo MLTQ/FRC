@@ -5,7 +5,15 @@ density growth and rejects step18 after28.33µs. Independent density observation
 and spatial localization replay exactly: from13.3µs onward more than99.7% of
 squared density error lies in low axial cell modes, and internal
 radial density traces separate substantially. The cause remains unresolved.
-The complete failed trajectory is being replayed separately.
+The complete failed trajectory now replays exactly. A full spatial-RHS probe
+also reproduces rapid amplification of the saved error direction; its cause
+remains unresolved. See the [completed tangent study](docs/TRAJECTORY_TANGENT_VERIFICATION.md).
+
+Updated display: [interactive 3D viewer](outputs/trajectory_display/index.html)
+and [current-state 3D image](outputs/trajectory_display/current_state_3d.png).
+They show actual saved fields through 28.33 µs, with the failed-duration status,
+physical units, complete B vector and full current magnitude. Read
+[display verification and limitations](docs/TRAJECTORY_DISPLAY.md).
 
 No unit tests were added or run. Full trajectory accuracy, local conservation,
 vacuum coupling and formation remain unfinished. The sandbox is not yet

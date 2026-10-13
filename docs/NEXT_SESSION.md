@@ -1,5 +1,39 @@
 # Active continuation: trajectory rejection
 
+## Latest continuation: completed replays and updated field display (2026-10-12)
+
+All physical trajectory, tangent-probe and tangent-audit workers are terminal;
+actual exits have been collected. Do not poll or restart session40737 or any
+probe worker. The 19-file full trajectory rejection replay, 26-file tangent
+probe replay and one-file physical audit replay all match byte identically.
+Read TRAJECTORY_TANGENT_VERIFICATION.md. Saved-error spatial projection is
+about950741/s, with physical density projection950294/s; these are directional
+diagnostics, not certified eigenvalues or an identified physical instability.
+
+At the user's request, the latest evolved fields now have a separate 3D
+presentation: outputs/trajectory_display/index.html and current_state_3d.png.
+The PNG was inspected. Four real saved times end at28.3333us, accepted step17;
+step18 rejected. The display is a filled periodic verification cylinder,
+70mm diameter and240mm long, with5mT bias, not a formed FRC or lab design.
+Final display-sampled peak|J| is835178A/m² and minimumBz is+4.92882mT.
+All four raw display files, metrics and JSON reproduce exactly in a fresh
+process. Read TRAJECTORY_DISPLAY.md for independent sampling, interpolation
+errors and source records. No physics source or accepted state was changed.
+
+The only live session is the localhost presentation server74537 at127.0.0.1:8786.
+It runs no solver. Browser inspection is pending because the Mac was locked;
+static PNG visual inspection is complete. The viewer is also standalone offline.
+All173 preceding frozen sources and the user's earlier poster remain unchanged.
+No unit tests were added or run. Full goal/all12 acceptance beads remain open.
+
+NEXT scientific action: decompose actual spatial-RHS amplification along the
+saved early error with unchanged full-sum and wall-reaction checks, then compare
+independent continuum and interface terms. Opposite-sign, same-grid arithmetic,
+time refinement, full physical/local conservation, heated exact vacuum,
+transport/ionization, real coil/end boundaries and converged formation remain.
+Do not launch the obsolete seven-job plan unchanged: its first replay is done.
+The prior live-worker sections below are historical and superseded here.
+
 ## Active trajectory rejection replay (2026-10-12, after c912fdc)
 
 Latest completed work: independent density localization and its fresh full
@@ -15,7 +49,7 @@ outputs/trajectory_rejection_report. No extra physical trajectory was launched.
 After the complete failed-trajectory replay, the proposed next diagnostic is
 the full unchanged spatial RHS along the saved early error direction, with
 amplitude and independent-mode controls. Read TRAJECTORY_TANGENT_PROBE_DESIGN.md;
-this probe is not implemented or executed. Opposite-sign, same-grid arithmetic,
+its three modules are prepared but have not been executed. Opposite-sign, same-grid arithmetic,
 time and complete physical/conservation controls remain required.
 
 The refined F8/64,B32/64 negative100us/60-step attempt rejected step18 after

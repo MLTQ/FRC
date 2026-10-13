@@ -1,8 +1,10 @@
 # Next spatial probe after the complete rejection replay
 
-Status: design only, not implemented or executed. First collect the live
-rejection campaign and verify its entire accepted-prefix/failure protocol.
-Do not run this large calculation concurrently with that worker.
+Status: completed, with full fresh probe and physical-audit replays. The complete
+trajectory rejection replay also finished. All solver/probe/audit worker exits
+have been collected. Read TRAJECTORY_TANGENT_VERIFICATION.md for measured results
+and remaining limits. The following records the implemented design, not a
+pending launch plan. The three modules and their scientific source are frozen.
 
 The density observations locate a developed low-axial-mode departure spread
 across radius, with internal trace separation. They do not identify a spatial
