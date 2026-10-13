@@ -1,5 +1,45 @@
 # Active research: a credible experimental FRC simulation
 
+## Latest continuation: physical spatial contributions and current flux (2026-10-12)
+
+Progress from fa597fc: the complete original RHS is now decomposed and freshly
+replayed on all12 saved signed tangent states. All96 separated induction solves
+pass the original1e-10 bound. Full native fluid sums match bitwise; numerical
+superposition errors in magnetic/current responses remain explicitly measured.
+Independent physical q16/20 and continuum-term audits replay completely.
+Read SPATIAL_PARTS_VERIFICATION.md and SPATIAL_PARTS_DESIGN.md.
+
+Electron pressure drives the saved-error Btheta response (+1.61542e6/s physical
+directional contribution), partly opposed by Hall (-6.64587e5/s). These are
+signed component projections, not eigenvalues or an established cause. The
+smooth independent mode exposes large cancellation among accurate individual
+responses; its existing net-current error remains visible.
+
+The fresh one-sided current audit reproduces all4 raw records and verifies
+cellwise physical Gauss identities to5.3891e-16 relative to absolute face flux.
+Saved-error R||divJ||/||J||=0.50247 and normalized radial jumps=0.05605, versus
+0.00037794 and2.06491e-8 for the independent mode. Normal wall current is near
+roundoff. Global cancellation does not establish local charge consistency.
+Strong interior entropy/density discrepancies are about55%; omitted interface
+terms prevent a causal conclusion. No term or state has been repaired.
+
+All scientific jobs are terminal, actual exits0 collected, full replays passed.
+Guarded peak4.0872GB/minfree6.22592GB; charge audit stage observations are separate.
+Report outputs/spatial_parts_figure_v2/verification.png was visually inspected;
+PDF uses the same figure, not separately inspected. Earlier presentation
+variants and every physical source/evidence set remain preserved.
+No unit tests were added/run. Full goal and all12 acceptance beads remain open.
+The requested earlier 3D viewer and user's original poster remain unchanged.
+
+NEXT read SPECIES_INTERFACE_DIAGNOSTIC_DESIGN.md, then complete the independent
+weak species-entropy interface budget, including
+one-sided normal-current jumps, potential projection/adjoint and the actual
+fluid mass metric. Measure potential/current representation of the fast direction
+before any field-refined control; retain explicit B/current transfer errors.
+Then pursue the original signed/time/arithmetic, local energy, vacuum, physical
+transport/ionization/validity, prescribed-coil/end and converged formation gates.
+No solver session needs restarting. The prior status sections below are historical.
+
 ## Latest continuation: completed replays and updated field display (2026-10-12)
 
 All physical trajectory, tangent-probe and tangent-audit workers are terminal;

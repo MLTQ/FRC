@@ -1,5 +1,7 @@
 # Virtual plasma bench
 
+Latest physics progress: [full spatial contributions and local current flux](docs/SPATIAL_PARTS_VERIFICATION.md) now have complete fresh replays. The fast error direction has substantial internal radial current jumps and local divergence; its cause and a consistent interface entropy budget remain unresolved. The [scientific figure](outputs/spatial_parts_figure_v2/verification.png) shows the measured signed contributions and independent controls. No physical solver or acceptance bound was changed.
+
 Current research status: a finer-grid100µs contact trajectory develops rapid
 density growth and rejects step18 after28.33µs. Independent density observations
 and spatial localization replay exactly: from13.3µs onward more than99.7% of

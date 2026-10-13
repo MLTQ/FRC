@@ -1,5 +1,9 @@
 # Completed full rejection replay and spatial tangent — 2026-10-12
 
+The subsequent complete term decomposition and one-sided current-flux audit
+are recorded in SPATIAL_PARTS_VERIFICATION.md. The next-action paragraph below
+records this tangent checkpoint's original handoff and is superseded there.
+
 The negative F8/64, B32/64 trajectory's entire original protocol now replays:
 17 accepted steps through 28.333333 µs, followed by step-18 Newton GMRES info=5
 rejection. All 19 raw initial/final/state/stage files and non-runtime metrics
