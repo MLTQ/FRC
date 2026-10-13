@@ -1,5 +1,27 @@
 # Active continuation: trajectory rejection
 
+## Latest continuation: completed entropy budget and scalar-space refinement
+
+Read SPECIES_INTERFACE_VERIFICATION.md. All workers are terminal with actual
+exits0 collected; 26 raw files and all scientific metrics/report PNG fully replay.
+The whole weak entropy identity is now accounted for to1.78627e-12 relative.
+Most of the saved strong-source discrepancy comes from unresolved fluid-space
+representation, with a smaller mass-map effect. Holding current fixed, original
+electron source error falls55.0%→8.97%→0.0292% on F8→F16→F32. This does not
+demonstrate a coupled growth cure. All original physical sources/states/bounds
+and the user poster are preserved; no unit tests or solver changes.
+
+Final preservation record: outputs/species_budget_diagnostics/checkpoint_v2.json
+(complete 200-source union; prior aggregate record retained).
+
+NEXT COUPLED_FLUID_REFINEMENT_DESIGN.md specifies complete unchanged-RHS controls
+after exact subdivision and independent verification of the full archived
+directions, including dependent-axis transverse fields and both species. Keep
+B/current fixed and the original normalization, use both signs/three amplitudes,
+retain failed original checks, and complete full fresh replays. Then select full
+time evolutions and local energy controls. All goal gates remain open; do not
+restart old jobs or replace the solver mass with a diagnostic matrix.
+
 ## Requested display update (2026-10-12, after d4cff11)
 
 Current visualization: outputs/current_state_display_v2/index.html and

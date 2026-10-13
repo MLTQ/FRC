@@ -1,5 +1,39 @@
 # Active research: a credible experimental FRC simulation
 
+## Latest continuation: entropy budget and fluid-space resolution (2026-10-12)
+
+Verified progress from 1146f0b. Read SPECIES_INTERFACE_VERIFICATION.md and the
+inspected outputs/species_budget_report/verification.png. The whole-vector
+independent weak entropy identity matches within 1.78627e-12 relative, including
+all one-sided faces and projection adjoints. Its original production comparison,
+analytic control, both species, both directions and q12/16/20 fully replay.
+Large interface/transfer terms cancel; they cannot individually explain growth.
+
+Independent physical mass diagnostics leave most of the 55% strong-source error
+as an unresolved representation remainder. With original B32/64 current fixed,
+F8/F16/F32 refinement reduces original electron source error
+0.5500115 → 0.0897494 → 0.000292433; ion behavior is similar. Exact-mass vectors
+remain diagnostics only. This is scalar-source convergence, not a demonstrated
+repair or coupled growth/trajectory convergence. The complete 128-row actual
+q16/20 field comparison has maximum full-rate-relative difference 1.93384e-12.
+
+All eight calculation/report workers are terminal; actual exits0 collected.
+The 9+4+12+1 raw files, complete metrics and report PNG replay exactly. Six
+guarded jobs peak at 696647680 bytes and retain at least 5939200000 free bytes;
+report stage observations are separate. No unit tests or physical solver change.
+Both display versions, frozen sources, original states and user poster remain.
+Full goal and all acceptance beads remain open.
+
+Final complete 200-source preservation record:
+outputs/species_budget_diagnostics/checkpoint_v2.json.
+
+NEXT execute COUPLED_FLUID_REFINEMENT_DESIGN.md: exactly subdivide both full
+diagnostic directions onto F16/64,F32/64, verify all physical transfers, and
+evaluate the unchanged complete signed RHS with original residual bounds and
+amplitude controls. Then choose full signed/time/arithmetic trajectories and
+local budgets before vacuum/transport/coils/ends/formation gates. No old physical
+worker should be restarted. Earlier status sections below remain historical.
+
 ## Requested display update (2026-10-12, after d4cff11)
 
 The current 3D viewer and inspected PNG are now in

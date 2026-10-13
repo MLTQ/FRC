@@ -1,5 +1,10 @@
 # Next complete weak species-entropy interface diagnostic
 
+Completed 2026-10-12: read SPECIES_INTERFACE_VERIFICATION.md. The complete
+identity, independent mass audit and fixed-current space refinement now have
+fresh full replays. Next action is COUPLED_FLUID_REFINEMENT_DESIGN.md. The
+original proposal below is preserved as the protocol definition.
+
 Start from the completed SPATIAL_PARTS_VERIFICATION evidence, not a restarted
 trajectory. All physical workers are terminal. The fast direction has large
 interior div(J) and radial normal-current jumps, with negligible wall normal

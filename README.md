@@ -1,5 +1,13 @@
 # Virtual plasma bench
 
+Latest progress: the [complete species-entropy budget](docs/SPECIES_INTERFACE_VERIFICATION.md)
+now accounts for volume, interface, potential-transfer and mass effects with
+full independent replays. At fixed magnetic/current fields, refining the fluid
+space reduces the saved-direction electron source error from55.0% to0.0292%.
+The [inspected figure](outputs/species_budget_report/verification.png) summarizes
+the result. This has not yet established coupled trajectory accuracy or cured
+the growing mode. [Next complete-operator control](docs/COUPLED_FLUID_REFINEMENT_DESIGN.md).
+
 Latest physics progress: [full spatial contributions and local current flux](docs/SPATIAL_PARTS_VERIFICATION.md) now have complete fresh replays. The fast error direction has substantial internal radial current jumps and local divergence; its cause and a consistent interface entropy budget remain unresolved. The [scientific figure](outputs/spatial_parts_figure_v2/verification.png) shows the measured signed contributions and independent controls. No physical solver or acceptance bound was changed.
 
 Current research status: a finer-grid100µs contact trajectory develops rapid
