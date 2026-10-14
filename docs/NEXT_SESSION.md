@@ -2,41 +2,41 @@
 
 ## Current simulation boundary (2026-10-14)
 
-This turn made solver and physical-simulation progress. New opt-in
-ResistiveWallPlasma adds prescribed scalar eta*J and locally paired Joule
-heating to the complete moving finite-mass equations. Two full nonlinear
-Bessel-decay runs completed all40 steps over five decay times (5.260160724us).
-Independent final Bz errors improve3.22082e-5→2.60917e-6 of the remaining
-analytic signal at nr8→16. Actual sessions44111/18880 exited0. Read
-RESISTIVE_WALL_RESULTS.md and the two new module companions. No unit tests,
-new verification framework, automatic replay or experimental match.
+Concrete solver progress: the opt-in HyperdiffusiveWallPlasma adds sixth-order
+numerical magnetic/current damping with paired numerical electron heat. Read
+HYPERDIFFUSIVE_CONTACT_RESULTS.md and the new model/solver companions.
+All original terms and solver tolerances remain. Physical resistivity is separate.
+The independent continuum calculation predicts only1.82e-7 relative density
+signal distortion over100us. This is a candidate, not a validated physical closure.
 
-The F32/64,B32/64 collisionless contact was deliberately stopped after its
-independent density comparison worsened: error0.0482122 of the predicted
-perturbation at13.333us, versus0.000659527 in the earlier F8/64 run. Early
-agreement did not persist. Final saved progress is39 steps,16.25us, of the
-requested100us. It is not a full-duration pass or a stage-solver rejection.
-Actual parent81190 exited130; its own child37106 returned-2 after SIGINT.
-Read outputs/trajectory_fluid32_t240_minus/scientific_stop.json. Campaign and
-resource control are terminal; the unmodified physical summary retains its
-last live terminal=false flag. Do not mistake that preserved snapshot for a
-running job or restart it. Peak ownRSS5.555GB; no resource guard triggered.
+Actual worker session40062/PID41757 remains active: F8/64,B32/64,epsilon=-1e-4,
+100us/60 steps, outputs/hyperdiffusive_contact_f8_b32_s025 and adjacent _control.
+Latest observed progress22 accepted steps,36.667us, peak ownRSS4.749GB,
+minimum free disk10.363GB. Poll the actual session; do not restart it.
+Independent density observer through19 steps/31.667us gives error6.42403e-5
+of the predicted perturbation. At18.333us it was3.30690e-5 versus original
+undamped0.0696199 (about2105x lower). The original run failed after28.333us.
+This improvement has not yet been evaluated at the full requested duration.
 
-The prefix3 and prefix32 density observers are complete, exits0 collected
-(sessions81265 and39542). Prefix32 covers every saved endpoint through13.333us.
-All accepted trajectory states, sources and solver histories are preserved.
-No scientific worker remains active. The earlier60/120-step failures and
-short-radial continuum scan are already complete; do not rerun them.
+Existing independent energy helpers at step11/18.333us give total-energy
+change-2.03296e-18J, or-1.23013e-7 of the initial perturbation energy. q16/20
+agree closely. Observers24167,75938,3393,24536 all exited0 and were collected.
+No new unit tests, automatic replay or verification framework. One heavy worker.
+Code and immutable evidence through step19 are saved; newer live output and
+its live summaries remain pending until terminal collection. Preserve user poster.
 
-NEXT improve the unresolved pressure/current coupling in the moving contact
-solver, judging a concrete change with the existing independent continuum
-comparison and actual trajectories. The new resistive force/heating can now
-be used for nonuniform moving resistive cases; its passed decay run does not
-cure the collisionless problem or establish a gas/temperature-dependent closure.
-Do not expand replay/reporting infrastructure as the default next milestone.
-Exact vacuum, physical coil/end boundaries, transport/ionization, formation and
-the full original sandbox goal remain open. Earlier status blocks below are
-historical and superseded by this boundary.
+NEXT collect session40062, use existing trajectory_density_prefix on the full
+accepted history, and apply matched_mode_physical.changes and
+matched_mode_energy_scale.measure to the terminal state. Report actual complete
+success or failure, energy drift and all limits. Do not claim damping is a cure
+without duration/refinement evidence; consider the next concrete physical solver
+change rather than expanding replay/reporting infrastructure.
+
+Earlier collisionless F32 worker is terminal (scientifically stopped after39
+steps/16.25us). Earlier resistive Bessel runs are complete; read
+RESISTIVE_WALL_RESULTS.md. Exact vacuum, physical coil/end boundaries,
+transport/ionization, formation and the full FRC goal remain open. Earlier
+sections below are historical and superseded by this boundary.
 
 ## Current simulation run (2026-10-14)
 
