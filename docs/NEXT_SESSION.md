@@ -1,5 +1,50 @@
 # Active continuation: finite coil and axial end coupling
 
+## Current boundary: finite coils and sealed finite ends (2026-10-14)
+
+This goal turn made physical simulation progress beyond23b5d08. The full
+finite-mass moving plasma now couples to actual circular coils through a
+magnetic-only exterior surrounding the side and both ends of a finite tube.
+No periodic axis or periodic coil array; exterior has exactly no matter or
+conductivity. Full current inertia, Hall, transport/stress, species, heat,
+mutual magnetic energy and prescribed-source linked-flux work remain.
+No unit tests, new verification framework, floors, numerical diffusion, energy
+repair or residual relaxation. Hardware remains prescribed waveforms.
+
+Read FINITE_CYLINDER_RESULTS.md and the visually inspected
+outputs/finite_coil_comparison/finite_coil_response.png. Five full acoustic
+periods, four static dipole comparisons and seven full24us coil pulses finish.
+Actual scientific sessions10140,15748,37631,59968,48323,98433,71975,74225
+are terminal with exits0 collected (first vacuum case direct execution0).
+Initial coil observer setup9947 exited1 before stepping and is preserved;
+figure observer69616 exited0. No worker remains live. Do not restart them.
+
+Weak-conductivity independent current error falls3.35%→0.183% with field
+refinement; time halving improves energy/work error16-fold. Full10uT Spitzer
+runs on8/16,16/32,24/48 fields retain actual motion and both temperatures.
+The last refinement changes peak current0.3314% and heat0.000993%; mean-field
+change is4.34e-7 of imposed center peak. Finest peak J2081.11A/m2,heat0.554688uJ,
+peak speed0.02019m/s. At6us mean plasma B is28.79% of coil-only B averaged
+over the same volume. The100uT case crosses weak-field/drift review thresholds;
+10uT cases stay below them, which is not complete transport validation.
+Fixed exterior12-cell/8-mode linkage discrepancy remains~0.075%, not jointly
+converged by plasma refinement alone. Sealed end caps omit open-end/sheath loss.
+
+frc-vacuum.2 is complete for the bounded finite-coil/sealed-end model and its
+measured comparisons. The full goal and parent frc-vacuum stay open. NEXT:
+frc-vacuum.3, a physical moving plasma edge retaining this complete current/
+species model. Read SURFACE_COMPATIBILITY.md and MOVING_PLASMA.md first. A
+smooth continuous-B,p=0 edge with finite eta J² has incompatible thermal traces;
+select and justify an actual carrier/thermal edge model. Do not remove edge
+heat, taper eta, add an atmosphere/floors, or substitute an older incomplete
+solver. Implement an actual moving-interface trajectory against an independent
+expansion/traction baseline, then finite-coil compression. No new framework.
+Transport/ionization, strong-field applicability, long-contact accuracy and
+converged formation remain. No experimental calibration,FRC formation,3D
+stability or confinement is established. The older3D viewer remains its old
+contact snapshot. Preserve the user's modified outputs/frc_showcase/poster.png.
+Earlier boundary blocks below are historical and superseded.
+
 ## Current boundary: magnetic vacuum coupling implemented (2026-10-14)
 
 The previous goal turn made progress: commit 49b0102 completed the driven-wall

@@ -10,11 +10,17 @@ from .gauss_secant import GaussSecant
 class DrivenModalGauss(LiftedModalGauss):
     field_type = HarmonicMagnetic
 
+    def source_value(self,field):return field.axial_bias
+
+    def make_field(self,packed,time):
+        psi,g=self.system.geometry.unpack(packed)
+        return self.field_type(self.system.geometry.mesh,psi,g,self.system.field_value(time))
+
     def step(self, state, field, dt, *, when):
         if not np.isfinite(dt) or dt <= 0: raise ValueError('Positive finite implicit time step required')
         c = self.coordinates; system = self.system; state = np.asarray(state, float)
         system.fluid.fields(state)
-        if not np.isfinite(when) or field.axial_bias != system.field_value(when):
+        if not np.isfinite(when) or self.source_value(field) != system.field_value(when):
             raise ValueError('Input field must match its finite source time')
         initial_magnetic = field.packed_increment(system.geometry)
         stored = getattr(self, '_magnetic_coordinates', None)
@@ -32,8 +38,7 @@ class DrivenModalGauss(LiftedModalGauss):
             return c.unpack(magnetic_coordinates(change))[1]
 
         def field_at(packed, time):
-            psi, g = system.geometry.unpack(packed)
-            result = self.field_type(system.geometry.mesh, psi, g, system.field_value(time))
+            result = self.make_field(packed,time)
             result.packed_increment(system.geometry)
             return result
 

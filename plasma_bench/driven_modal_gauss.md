@@ -37,3 +37,6 @@ VacuumGauss reuses this exact stage/endpoint/source-work algorithm with an expli
 VacuumMagnetic field_type and free-flux coordinates. The default remains
 HarmonicMagnetic; all nonlinear controls and arithmetic are unchanged. Frozen
 source archives preserve earlier prescribed-flux runs.
+
+FiniteCoilGauss overrides source_value/make_field for spatial coil fields in
+amperes. Default harmonic behavior and complete stage algorithm are unchanged.

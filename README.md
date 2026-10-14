@@ -1,22 +1,27 @@
 # Virtual plasma bench
 
-The latest simulation couples the moving plasma to a magnetic-only exterior
-and lets its enclosed flux evolve. Five complete pulse runs include spatial/time
-refinement and evolving resistance. At the source peak, the plasma mean field
-reaches 52–58% of the applied field; evolving resistance changes the heating by
-+8.8% in this configuration. Read the
-[measured results](docs/VACUUM_CYLINDER_RESULTS.md),
-[response plot](outputs/vacuum_pulse_comparison/vacuum_coupled_response.png), and
-[current handoff](docs/NEXT_SESSION.md). Finite coils and physical axial ends
-are next; the present source and axial boundaries are idealized.
+The latest simulation drives a moving, two-temperature plasma with finite
+circular coils around a **finite tube with sealed end caps**. The magnetic
+vacuum surrounds its side and both ends, with exactly no exterior plasma or
+conductivity. Actual current inertia, Hall force, heating, species exchange and
+coil/plasma mutual energy are retained. Complete 24 µs pulses establish field
+penetration, induced current, motion and heat. Read the
+[finite-cylinder results](docs/FINITE_CYLINDER_RESULTS.md) and
+[current handoff](docs/NEXT_SESSION.md).
 
-The preceding full runs establish [moving thermal relaxation](docs/ADVECTED_COULOMB_RESULTS.md)
-and [magnetic decay with evolving resistance](docs/SPITZER_DECAY_RESULTS.md)
-within their stated model limits. The sandbox is still a research prototype;
-exact moving vacuum coupling, physical coil/end boundaries and credible FRC
-formation remain unfinished. It is not yet validated for choosing a laboratory
-formation experiment. Work uses actual simulations and mathematical baselines;
-no unit tests are added or run under the current preference.
+Independent acoustic, dipole and weak-conductivity comparisons accompany the
+actual runs. Spatial refinement reduces the weak-conductivity current error
+from 3.35% to 0.183%; time halving improves energy/work error about 16-fold.
+The 100 µT evolving-resistance pulse crosses transport review limits. Lower
+10 µT controls stay below those thresholds and show substantial shielding. The
+last spatial refinement changes peak current by0.33% and heating by0.001%.
+See the [actual field/current figure](outputs/finite_coil_comparison/finite_coil_response.png).
+These are model comparisons, not an experimental calibration.
+
+The sandbox remains a research prototype. A physical moving plasma edge,
+transport/ionization validity and converged FRC formation remain unfinished.
+It is not yet validated for selecting a laboratory formation experiment.
+No unit tests are added or run under the current simulation-first preference.
 
 The [interactive 3D viewer](outputs/current_state_display_v3/index.html) still
 shows the earlier nonuniform contact through 28.33 µs. It is a snapshot of that

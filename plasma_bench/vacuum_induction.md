@@ -17,3 +17,6 @@ evolved auxiliary mode or prescribed E/eta replacement.
 Five complete coupled runs and measured spatial/time/model comparisons are in
 docs/VACUUM_CYLINDER_RESULTS.md. This bounded periodic coupling is complete;
 finite coils/ends, moving free surfaces and formation remain open.
+
+FiniteInduction supplies finite-axis lift/kernel maps through separate_kernel;
+the strict solve and all residual bounds are shared unchanged.

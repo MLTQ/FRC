@@ -32,11 +32,14 @@ class VacuumInduction(SplitInverseWallCore):
         # uses uniform density; every physical inertia action uses actual n.
         self.factor=_UniformFactor(self.uniform_factor)
 
+    def separate_kernel(self, electric):
+        return separate(self.model.geometry,electric)
+
     def solve(self, forcing):
         model=self.model; geo=model.geometry; f=np.asarray(forcing,float)
         if f.shape != (model.mass.shape[0],) or not np.isfinite(f).all():
             raise ValueError('Finite full weak electric forcing required')
-        electric0=self.mass_inverse(f); small,kernel=separate(geo,electric0)
+        electric0=self.mass_inverse(f); small,kernel=self.separate_kernel(electric0)
         weak=model.mass@small; relative=lambda a,b:float(np.linalg.norm(a)/max(np.linalg.norm(b),np.finfo(float).tiny))
         attempts=[]
         for refinement in range(5):
