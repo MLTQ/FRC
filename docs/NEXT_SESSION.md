@@ -1,32 +1,42 @@
-# Active continuation: driven plasma and wall current
+# Active continuation: magnetic vacuum coupling
 
-## Current physical change: evolved driven-wall current (2026-10-14)
+## Current boundary: driven component complete; vacuum coupling next (2026-10-14)
 
-Read WALL_CURRENT_RESULTS.md and the visually inspected
-outputs/wall_current_comparison/wall_current_response.png. The prior goal turn made progress (ccb5b2e):
-three full pulses exposed missing wall current. New opt-in WallCurrentGeometry,
-Model,Plasma,Gauss now evolve it with physical inertia and the same current in
-all forces, heat, species terms and source work. An exact actual-density Schur
-elimination reuses the strict induction solve; complete Ohm remains checked.
-No numerical diffusion, floors, compensating heat, unit tests or new framework.
+Previous goal turn bf56f1e made physical progress by evolving the missing wall
+current and completing two pulses. This turn completed the full16-cell spatial
+comparison and corrected Spitzer pulse. Read WALL_CURRENT_RESULTS.md and the
+visually inspected outputs/wall_current_comparison/wall_current_refinement.png.
+All scientific workers are terminal; actual sessions14381/65413 exited0, as did
+plotting observer97286. Do not restart these completed trajectories.
 
-Completed outputs/wall_current_fixed_r8_t160 and wall_current_fixed_r8_t320;
-actual sessions5146/51847 exited0. First run reduces space-time current error
-28.06%→0.01512%, heating error-7.87%→+0.002600%, wall-power discrepancy
-0.131842→0.000372219W. Time refinement reduces energy drift15.9919-fold to
-4.73071e-6 of peak field energy. Final heat difference is+7.30e-8 relative,
-but possible error cancellation prevents treating this as an accuracy bound.
-Current error does not time-converge: additional early-time samples increase
-its norm to0.02048% and peak6.91A/m²; spatial refinement must resolve this.
+Four full24µs runs now retain physical wall-current inertia and the same current
+in all forces, heat and source work. Fixed eta on8→16 cells at320 steps reduces
+space-time current error5.992-fold to0.003419%, peak Bz error6.831-fold to
+4.10337e-5 of drive, and wall-power discrepancy15.329-fold to2.58659e-5W.
+160→320 time steps reduce energy drift15.9919-fold. Global pulse norms are not
+uniform accuracy: the first75ns current RMS error remains1.26% of its small
+instantaneous reference; no pointwise current time-convergence claim is made.
 
-LIVE finer full pulse: outputs/wall_current_fixed_r16_t320, actual session14381;
-last observed117/320. Poll that exact handle and collect its actual terminal
-exit. Do not restart or change its source closure. Next finish that physical
-comparison, then run the corrected evolving-Spitzer pulse. Keep frc-goal.1 in
-progress. The full FRC goal and vacuum/coil/end/transport/formation gates remain
-open; these are filled periodic rigid-cylinder cases, not formation experiments.
-Preserve frozen evidence, the user's poster, and the active uncommitted output.
-Earlier live-worker notes below are historical.
+The complete corrected Spitzer run increases eta38.3182→74.0081µΩm, gives
+8.295722µJ thermal gain (17.38% below fixed eta), final maxJ0.73555 versus
+52.11797A/m², and peak speed0.04929m/s. These are physical control differences,
+not numerical errors. Weak-field/drift ratios pass review thresholds, not full
+closure validity. No unit tests, new framework, numerical diffusion or repairs.
+frc-goal.1 is complete for its bounded prescribed-flux component only.
+
+NEXT physical solver work is frc-vacuum.1: replace fixed outer flux with an
+evolved magnetic vacuum/source interface. Exterior gets no fluid density or
+conductivity. Existing exterior machinery uses different traces, so couple
+its actual field/work maps consistently; do not merely splice representations.
+Free outer flux also makes the harmonic/increment cross energy nonzero; retain
+it and source work. Begin the fixed-footprint coupled pulse, then continue the
+parent's free interface, finite coils and physical end boundaries. This step
+has not been implemented yet. Avoid another reporting/replay milestone.
+
+Full FRC goal, transport/ionization/validity and frc-7mm.7 long-contact accuracy
+remain open. Filled periodic rigid-cylinder results do not prove formation,
+3D stability or particle confinement. Preserve frozen evidence and user poster.
+Earlier live-worker notes below are historical and obsolete.
 
 ## Current simulation: prescribed flux and evolving resistance (2026-10-14)
 

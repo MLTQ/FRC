@@ -1,91 +1,121 @@
-# Evolving the current at the driven boundary
+# Driven-wall current: completed bounded pulse component
 
-The missing wall-current component is now part of the physical state. Two
-complete 24 µs pulse runs finish. On the same eight-cell grid, the space-time
-current error falls from 28.06% to 0.01512% of the independent reference RMS,
-and the thermal-energy discrepancy changes from -7.87% to +0.002600%.
-The finer spatial calculation is still running; this is progress on the driven
-component, not completion of the laboratory FRC goal.
+Four complete24µs simulations now evolve the missing wall current, including
+its physical inertia, force, heating and source work. Spatial refinement reduces
+full-pulse current error to0.003419% of the independent continuum reference RMS.
+Time refinement reduces the energy error15.99-fold. The evolving-resistance
+case also completes, with17.38% less heat than its fixed-resistance control.
+This completes frc-goal.1 within its filled-cylinder scope; the full experimental
+FRC goal remains open.
+
+The [refinement and collisional-response figure](../outputs/wall_current_comparison/wall_current_refinement.png)
+is visually inspected. The preceding [wall-current correction figure](../outputs/wall_current_comparison/wall_current_response.png)
+retains the original/coarse comparison; its pending-spatial caption is historical.
 
 ## Physical change
 
-The former azimuthal current basis forced Jtheta(R)=0, although the prescribed
-loop voltage requires a nonzero boundary current. Add chi=phi_wall-P0 phi_wall,
-where P0 is the physical L2 projection into the original interior current space.
-Then chi(R)=1 and chi is orthogonal to the interior electric functions. Evolve
+The old current basis forced Jtheta(R)=0 despite a nonzero applied loop voltage.
+Add chi=phi_wall-P0 phi_wall, with P0 the physical L2 projection into the old
+interior theta space. Then chi(R)=1 and chi is orthogonal to interior electric
+functions. The actual current is J=J0(B)+chi*y(z). The new y evolves with physical
+mu/(n e²) inertia; it is not replaced by an instantaneous E/eta value.
 
-    J = J0(B) + chi y(z).
-
-The wall current y has its physical mu/(n e²) inertia. It is not replaced by an
-instantaneous E/eta value. Lorentz force, current advection/stress, species
-transport, Joule heat, current kinetic energy and source work all use the same
-full J. No compensating heat, floor, atmosphere or numerical diffusion is added.
-All old implementations and their recorded sources remain unchanged.
-
-The full Ohm equation separates into interior and wall blocks:
+All Lorentz, current-advection/stress, species, Joule, kinetic-energy and source-
+work terms use the same full current. The full weak Ohm equations are
 
     M0 E0 = I00 J0_t + C y_t + f0,
     0 = C.T J0_t + D y_t + fchi.
 
-Eliminating y_t gives Ieff=I00-C D^-1 C.T and feff=f0-C D^-1 fchi. The original
-strict induction solver acts on this reduced system. Its full current rate is
-then reconstructed and the complete unreduced Ohm equation checked at the
-unchanged tolerance. Actual nonuniform density enters C and D at every stage.
-The time integrator evolves y together with every fluid and magnetic variable.
-See the wall_current_geometry/model/plasma/gauss companion documents.
+Eliminating y_t gives Ieff=I00-C D^-1 C.T and feff=f0-C D^-1 fchi. The unchanged
+strict induction solver acts on this system; reconstruction restores the full
+current rate and checks the unreduced Ohm equation. Actual density enters C/D
+at every stage. Gauss stages evolve all variables together at actual source
+times. No numerical diffusion, floors, atmosphere, compensating heat or relaxed
+acceptance bounds. Old code and recorded sources remain unchanged.
 
-## Complete end-to-end evidence
+## Complete fixed-resistance simulations
 
-Physical conditions and independent Bessel baseline are identical to
-[DRIVEN_FLUX_RESULTS.md](DRIVEN_FLUX_RESULTS.md): R35mm,L240mm,Ar+,n1e21/m³,
-initial Te/Ti5/1eV, prescribed mean-field amplitude0.1mT,12µs sin² pulse plus
-12µs relaxation, fixed eta38.3182µΩ m. The magnetic field, current, motion and
-heating are evolved in the full moving model. The reference is linear and
-constant-eta; it omits the nonlinear fluid response retained in the simulation.
+All cases use R35mm,L240mm,fully ionized Ar+,n1e21/m³,initial Te/Ti5/1eV,
+both gamma5/3,degree5 and16 axial cells. Prescribed mean axial field is0.1mT
+sin²(pi*t/12µs), then zero during12µs relaxation. It prescribes enclosed flux,
+not wall Bz or finite-coil current. Bulk motion, Hall, finite current inertia,
+pressure, current transport, Coulomb exchange and electron Joule heat remain.
 
-| Complete run | Old current space,160 steps | Wall current,160 steps | Wall current,320 steps |
+Eta is38.318200089µΩ m. The independent finite-inertia Bessel diffusion baseline
+retains the nonzero wall current; its equations and primary sources are in
+[flux_diffusion_reference.md](../examples/flux_diffusion_reference.md). The
+baseline omits the nonlinear fluid/temperature response retained in the model.
+This comparison is mathematical, not experimental.
+
+| Quantity over24µs | 8 cells /160 steps | 8 cells /320 steps | 16 cells /320 steps |
 | --- | ---: | ---: | ---: |
-| Space-time J RMS error / reference RMS | 28.06% | 0.01512% | 0.02048% |
-| Final thermal-energy gain | 9.250815µJ | 10.041496µJ | 10.041236µJ |
-| Difference from reference Joule heat | -7.8717% | +0.002600% | +0.0000073% |
-| Maximum Bz RMS error / peak drive | 2.79186e-4 | 2.79185e-4 | 2.80319e-4 |
-| Maximum energy-minus-source / peak field energy | 7.56468e-5 | 7.56530e-5 | 4.73071e-6 |
-| Maximum discrete/wall power discrepancy | 0.131842W | 0.000372219W | 0.000396497W |
-| Maximum wall-current absolute error | imposed zero trace | 5.53866A/m² | 5.01795A/m² |
+| Space-time J RMS error / reference RMS | 0.01512% | 0.02048% | 0.003419% |
+| Maximum Bz RMS error / peak imposed field | 2.79185e-4 | 2.80319e-4 | 4.10337e-5 |
+| Final thermal-energy gain | 10.041496µJ | 10.041236µJ | 10.041236µJ |
+| Difference from continuum Joule heat | +0.002600% | +0.0000073% | +0.0000074% |
+| Maximum energy-minus-source / peak field energy | 7.56530e-5 | 4.73071e-6 | 4.72980e-6 |
+| Maximum discrete-source / wall-power difference | 0.000372219W | 0.000396497W | 0.0000258659W |
+| Maximum instantaneous J RMS error | 2.25131A/m² | 6.91001A/m² | 1.09365A/m² |
 
-Continuum Joule heat is 10.041234979µJ. Maximum particle-number change in the
-new runs is below7.8e-17 relative. The maximum instantaneous total-power minus
-source discrepancy is below3.2e-12W. Energy drift is scaled by3.675µJ of peak
-harmonic-field energy, not the1.33J background thermal energy.
+The old8-cell/160-step model had28.06% space-time current error and7.87% too
+little heat. Continuum Joule heat is10.041234979µJ. The apparent near-exact
+final heat agreement can include temporal/spatial/finite-amplitude cancellation;
+it is not a general physical error estimate. Energy error is normalized by
+3.675µJ of peak harmonic-field energy, not the1.33J thermal background.
 
-Time refinement reduces the energy error15.9919-fold. It does not establish
-current time convergence: the320-step history samples an additional early
-boundary response and has a larger recorded peak current error,6.91 versus
-2.25A/m², and a larger time-integrated reference error. Both use endpoint
-trapezoidal time integration. The B/current spatial error remains to be measured
-on the finer grid. The very small final heating difference can include
-cancellation between temporal, spatial and finite-amplitude effects; it is not
-a general physical error estimate or experimental validation.
+At the same320-step resolution, spatial refinement reduces current error5.992-
+fold, peak Bz error6.831-fold and wall-power discrepancy15.329-fold. Halving dt
+reduces energy error15.9919-fold. These do not imply uniform pointwise accuracy:
+at the first75ns endpoint the fine current RMS error is1.26% of the then-small
+reference current; it is0.250% at150ns,0.0193% at600ns and0.000163% at3µs.
+Maximum wall-current error remains5.018A/m², including the unresolved fast
+carrier transient. Late weak-current errors also need not improve pointwise.
 
-Actual sessions5146 and51847 exited0 after all160/320 steps. Elapsed times were
-288.00 and178.64s; peak RSS0.325 and0.319GB. Their frozen sources, accepted states,
-wall-current coefficients, full stages and solver histories are saved in
-`outputs/wall_current_fixed_r8_t160` and `outputs/wall_current_fixed_r8_t320`.
-Direct measured comparisons are in `outputs/wall_current_comparison`.
-No unit tests, automatic replay campaign or new verification framework.
+The320-step history includes additional early samples. On identical150ns
+samples,8-cell current error changes0.01512%→0.01428%, while its peak still
+increases2.25→2.60A/m². No temporal order for current is established. The current
+space/time norms use endpoint trapezoidal integration and an independent1024-
+mode reference denominator. The measured spatial refinement supplies the main
+current-accuracy evidence.
 
-## Live continuation
+## Evolving-resistance physical comparison
 
-The full16-cell,320-step counterpart is running in actual session14381,
-`outputs/wall_current_fixed_r16_t320`. Poll that handle; do not restart it or
-modify its source closure. After its terminal result, compare the same physical
-field/current/heating quantities, then evolve the Spitzer-resistance pulse
-with the corrected boundary. Keep frc-goal.1 in progress until those results
-establish the bounded component. Do not substitute another reporting milestone.
+The8-cell/320-step Spitzer pulse completes with the same corrected wall model.
+Electron/ion means finish at3.021337/2.978700eV. Resistance increases from38.3182
+to about74.0081µΩ m as electrons transfer energy to ions. Thermal gain is
+8.295722µJ,17.38% less than the same-grid fixed-resistance case. Final maximum
+current is0.73555 versus52.11797A/m²; peak speed is0.04929m/s. The largest Bz
+RMS difference from the fixed-resistance reference is13.33% of the drive.
+These are physical-model/control differences, not numerical errors.
 
-The plasma still fills a rigid periodic cylinder. There is no solved external
-vacuum, physical free edge, finite-coil or real-end coupling. Weak-field Z1
-transport still lacks conduction, thermal forces, viscosity, neutrals and
-ionization. Neither field reversal nor axisymmetric closed contours would
-prove three-dimensional stability or particle confinement. The full goal and
-the separate unresolved long-contact accuracy issue remain open.
+Peak electron Hall parameter is0.010522; peak current-drift / electron and ion
+thermal-speed ratios are7.12e-5 and0.03211. These pass existing review thresholds,
+not complete transport-validity proof. Maximum energy-budget error is4.72998e-6
+of peak field energy and maximum instantaneous power discrepancy2.63e-12W.
+All four runs retain particle number to better than7.8e-17 relative in the
+independently reconstructed delta-density integral.
+
+## Evidence and next physical step
+
+All scientific sessions are terminal, with actual exits0 collected:
+5146 (8/160,288.00s,0.325GB peak RSS),51847 (8/320,178.64s,0.319GB),14381
+(16/320,1140.54s,0.821GB),65413 (Spitzer8/320,590.66s,0.461GB). Plotting observer
+97286 also exited0. Runs live in `outputs/wall_current_fixed_r8_t160`,
+`outputs/wall_current_fixed_r8_t320`, `outputs/wall_current_fixed_r16_t320` and
+`outputs/wall_current_spitzer_r8_t320`; comparisons are in
+`outputs/wall_current_comparison`. All accepted arrays/stages and frozen
+sources remain. No unit tests, automatic replay campaign or new framework.
+
+NEXT frc-vacuum.1: outer flux must evolve consistently with a magnetic-only
+exterior/source field. Preserve zero exterior fluid density/conductivity and
+include exterior field energy and source work. The existing finite-volume
+vacuum trace and regular-field representations require a compatible coupling.
+Do not retain the closed-flux assumption that uniform-harmonic/increment cross
+energy is zero when wall flux is free: for uniform B0 it is
+(2*pi*B0/mu0)*integral psi_increment(R,z) dz. The fixed-footprint first step does
+not complete the parent moving-interface, finite-coil and real-end requirements.
+
+These runs still fill a rigid periodic cylinder. Weak-field Z1 transport lacks
+thermal conduction/forces, viscosity, neutrals and ionization. They demonstrate
+no FRC formation, three-dimensional stability or particle confinement. The
+full goal and separate long-contact accuracy issue remain open.

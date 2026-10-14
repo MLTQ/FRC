@@ -28,6 +28,7 @@ The old magnetic solution is unchanged to linear order while the missing current
 component contributes consistently to momentum, heating and source work.
 No exact continuum wall-Poynting equality is claimed at finite resolution.
 
-Measured full24µs160/320-step runs and their remaining spatial/current limits
-are recorded in docs/WALL_CURRENT_RESULTS.md. The finer spatial run is still
-active; this is not yet an accepted formation or vacuum-boundary model.
+Four complete24µs pulses, including spatial/time refinement and evolving
+resistance, are recorded in docs/WALL_CURRENT_RESULTS.md. The bounded driven
+component is complete with stated startup/current/model limitations. Vacuum,
+free interfaces, physical coils/ends and formation remain unimplemented here.

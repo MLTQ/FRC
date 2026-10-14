@@ -24,6 +24,7 @@ existing driver pattern. No unit tests, new framework, numerical diffusion,
 floors, heat repair or atmosphere. Filled periodic rigid cylinder only; no
 free plasma edge, solved vacuum, finite coils, real ends or FRC formation.
 
-Measured full24µs160/320-step runs and their remaining spatial/current limits
-are recorded in docs/WALL_CURRENT_RESULTS.md. The finer spatial run is still
-active; this is not yet an accepted formation or vacuum-boundary model.
+Four complete24µs pulses, including spatial/time refinement and evolving
+resistance, are recorded in docs/WALL_CURRENT_RESULTS.md. The bounded driven
+component is complete with stated startup/current/model limitations. Vacuum,
+free interfaces, physical coils/ends and formation remain unimplemented here.

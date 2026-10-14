@@ -18,6 +18,7 @@ Only filled periodic rigid-wall geometry is supported. This is not a vacuum,
 plasma edge, sheath or finite-coil model. No current or heat filter is applied.
 Old geometry, transport and archived simulation sources remain unchanged.
 
-Measured full24µs160/320-step runs and their remaining spatial/current limits
-are recorded in docs/WALL_CURRENT_RESULTS.md. The finer spatial run is still
-active; this is not yet an accepted formation or vacuum-boundary model.
+Four complete24µs pulses, including spatial/time refinement and evolving
+resistance, are recorded in docs/WALL_CURRENT_RESULTS.md. The bounded driven
+component is complete with stated startup/current/model limitations. Vacuum,
+free interfaces, physical coils/ends and formation remain unimplemented here.
