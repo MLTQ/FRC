@@ -1,5 +1,64 @@
 # Active continuation: full current coupling on moving material
 
+## Current boundary: configured metre-scale biased pulse and 3-D view (2026-10-14)
+
+Previous goal turn45221c28 was PROGRESS: actual moving vacuum and finite-coil
+coupling, with two completed weak pulses. This continuation adds concrete
+experiment inputs and completes a metre-scale opposing-pulse trajectory.
+Read MATERIAL_EXPERIMENT.md and the material_experiment module companions.
+
+`configs/material_tube_bias_pulse.json` describes a1m x15cm tube, Ar inventory
+from0.1mTorr/300K, explicitly ASSUMED fully singly ionized/compact preparation,
+R35mm,Lhalf350mm,nc8.96143e19/m³,centralTe/Ti10/1eV,eta1e-4ohm-m. Two prescribed
+loops at r100mm,z±50mm supply100uT DC bias and a-1mT pulse. Rise/hold/fall1/.5/1us
+starts at.25us; all2000steps/3.5us complete (20691 exit0). Actual full moving
+current/fluid/species/vacuum terms remain; tube contact rejects at every stage.
+No wall, neutral, ionization or preparation physics is silently supplied.
+
+Peak Jtheta84.73kA/m², final Joule heat195.60uJ, source work156.49uJ. Plasma radius
+ends54.35mm inside75mm tube; meanTe/Ti3.49554/.375728eV. After return to+100uT bias,
+actual sampled plasma Bz spans-142.56 to+171.44uT. This is an exploratory response,
+not converged FRC formation or confinement. Maximum electron drift/thermal ratio
+5.95 and final cold-edge ion-ion Coulomb log.0159 expose physical validity limits.
+Maximum external/source-work residuals3.88e-7/4.12e-7 do not erase those limits.
+
+The completed12-state3-D view is outputs/material_experiment_display/index.html,
+served at http://127.0.0.1:8790/ (server89915), browserTab8 marked deliverable.
+It includes actual exterior B, prescribed coils, tube, moving plasma and all J
+components. Scientific3-D PNG/PDF, signed Bz/Jtheta/flux sections and browser_view.jpg
+were inspected. Playback, all current components, zero-current initial frame,
+shared/per-state color scales, rotation, zoom and reset exercised; browser logs
+show no warnings/errors. All scientific states remain unchanged. The old compact
+view at8789/server55641 and the user poster remain preserved.
+
+The6x12 weak coil refinement6211 also exited0. Common material-label field/current
+comparisons against4x8 show J differences30.26%,8.56%,60.38% at quarter/half/final
+duration. Final azimuthal J alone differs59.43%; total B difference23.62% after
+the source is off. Final heating differs0.98%; integrated agreement does not
+establish local accuracy. Independent coil-linkage discrepancy.3791% ->.3074%.
+Read outputs/material_coil_spatial_comparison_q10. The common10-point quadrature
+samples actual basis fields; no quadrature-cloud interpolation or state fitting.
+The preliminary6-point result is preserved. No unit tests or new test framework.
+
+LIVE scientific handles, authoritatively polled at this boundary:
+- 63566: outputs/material_tube_bias_only_r4_z16_t2000. Same metre-scale assumed
+  state, no pulse.525/2000,307.1s,RSS208MB at observation.
+- 42299: outputs/material_coil_free_r8_t2000. Next actual weak-pulse spatial grid;
+  775/2000,884.6s,RSS287MB at observation.
+- 89864: outputs/material_vector_free_r6_p5_q10_t2000. Older compact high-order
+  full-vector trajectory;925/2000,5250.2s,RSS492MB at observation.
+Poll exact handles; do not restart from timeouts or edit their source closures.
+Terminal display38726 and spatial figure44644/13723 exits0 collected.
+
+NEXT compare the complete metre-scale pulse with its bias-only control using
+actual fields, current, heat and motion; collect the third weak-pulse spatial
+trend and older high-order trajectory. Address numerical local-current limits
+and physical transport/edge/ionization, then compare meaningful biased/pulsed
+conditions and experimental observables. MATERIAL_EXPERIMENT cites the primary
+HFRC-F formation measurements: main-phase ionization/preparation matters, so the
+current fully pre-ionized calculation is NOT an experimental calibration.
+Keep frc-vacuum.3, transport, formation and the full goal open. No remote/publication.
+
 ## Current boundary: finite coils drive the freely moving plasma (2026-10-14)
 
 This continuation of836bcad9 advances the actual simulation. MaterialMagneticVacuum

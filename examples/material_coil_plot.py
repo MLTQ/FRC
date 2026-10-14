@@ -13,6 +13,7 @@ from plasma_bench.material_vacuum_space import MaterialVacuumSpace
 from plasma_bench.material_coil_current import MaterialCoilCurrent
 from plasma_bench.material_carrier_current import MaterialCurrentState
 from plasma_bench.material_vacuum_samples import physical_samples
+from plasma_bench.material_plasma_samples import material_samples
 from plasma_bench.waveforms import from_dict
 from .implicit_plasma_records import sha
 
@@ -83,6 +84,31 @@ def build(destination,sources):
                 if name in ('B','J'):row[name+'_component_relative_l2_differences']=np.sqrt(np.sum(volume[:,None]*(values[0]-values[1])**2,axis=0)/np.sum(volume[:,None]*values[1]**2,axis=0)).tolist()
             row['maximum_position_difference_m']=float(abs(states[0].fluid.coordinates-states[1].fluid.coordinates).max());comparisons.append(row)
         summary['same_grid_time_comparison']=comparisons
+    elif len(runs)==2 and all(runs[0][1][k]==runs[1][1][k] for k in ('radius_m','half_length_m','central_density_m3','resistivity_ohm_m','duration','coils','waveform','ion_mass_kg')):
+        pairs=[reconstruct(path,record) for path,record in runs];comparisons=[]
+        radial=np.unique(np.concatenate([m.space.mesh.rf for f,m in pairs]))
+        axial=np.unique(np.concatenate([m.space.mesh.zf for f,m in pairs]))
+        x,w=np.polynomial.legendre.leggauss(10)
+        r=(.5*(radial[1:]+radial[:-1])[:,None]+.5*np.diff(radial)[:,None]*x).ravel()
+        z=(.5*(axial[1:]+axial[:-1])[:,None]+.5*np.diff(axial)[:,None]*x).ravel()
+        rr,zz=np.meshgrid(r,z,indexing='ij')
+        dv=2*np.pi*rr*(.5*np.diff(radial)[:,None]*w).ravel()[:,None]*(.5*np.diff(axial)[:,None]*w).ravel()[None,:]
+        n0=d['central_density_m3']*((1-(rr/d['radius_m'])**2)*(1-(zz/d['half_length_m'])**2))**1.5
+        for fraction in (.25,.5,1.):
+            samples=[]
+            for (path,record),(f,m) in zip(runs,pairs):
+                k=round(fraction*record['steps']);s=state_at(path,k)
+                samples.append(material_samples(m,s,rr,zz,n0,time=k*record['dt']))
+            volume=dv*samples[-1]['volume_ratio'];row={'time':fraction*d['duration']}
+            for name in ('magnetic','current','velocity'):
+                a,b=[v[name] for v in samples]
+                row[name+'_relative_l2_difference']=float(np.sqrt(np.sum(volume[...,None]*(a-b)**2)/np.sum(volume[...,None]*b*b)))
+                if name!='velocity':row[name+'_component_relative_l2_differences']=np.sqrt(np.sum(volume[...,None]*(a-b)**2,axis=(0,1))/np.sum(volume[...,None]*b*b,axis=(0,1))).tolist()
+            row['maximum_position_difference_m']=float(np.linalg.norm(samples[0]['points']-samples[1]['points'],axis=-1).max())
+            comparisons.append(row)
+        summary['material_label_spatial_comparison']=dict(reference_quadrature_points=rr.size,
+            weighting='Ten-point Gaussian quadrature per union reference cell; actual volume of final listed run.',
+            scope='Same material labels, each at its actual physical position; two grids do not establish convergence. Time errors remain.',states=comparisons)
     titles=['Prescribed finite-coil current','Actual current components','Heat and induced magnetic energy','Two source-work budgets']
     labels=['Common coil current [A]','Peak current density [A/m²]','Energy [nJ]','Work residual / initial plasma energy']
     for ax,title,label in zip(axes[:,:2].T.flatten(),[titles[0],titles[2],titles[1],titles[3]],[labels[0],labels[2],labels[1],labels[3]]):

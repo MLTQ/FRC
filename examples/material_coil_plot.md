@@ -18,3 +18,12 @@ For two otherwise identical inputs, actual saved states at quarter, half and
 final duration give B/J/velocity material-label L2 differences, individual B/J
 component errors (so dominant components cannot hide weaker ones), and maximum
 position changes. No temporal interpolation or pass/fail tolerance is added.
+
+For two different meshes with the same physical inputs, field/current/velocity
+are evaluated in their actual basis at shared material labels. Ten-point Gauss
+quadrature on each cell of the union of both reference meshes resolves their
+piecewise maps. Volume weighting uses the final listed run's actual determinant.
+Componentwise differences and maximum physical-position mismatch remain explicit;
+two grids with unresolved time error do not establish spatial convergence.
+The independent common quadrature is higher than the simulation's six points:
+squared current norms include both the density profile and polynomial fields.

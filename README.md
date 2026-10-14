@@ -1,6 +1,20 @@
 # Virtual plasma bench
 
-The finite-coil simulation drives a moving, two-temperature plasma with finite
+The newest solver couples a freely moving two-temperature plasma, finite-mass
+currents, an actual magnetic vacuum and prescribed coils.
+
+A configured experiment now uses a **1m tube,15cm diameter, assumed pre-ionized
+argon inventory, steady bias and an opposing pulse**. Its complete3.5us trajectory
+is available in the [new coil/plasma3-D view](outputs/material_experiment_display/index.html)
+and [signed field/flux sections](outputs/material_experiment_display/material_experiment_sections.png).
+Change the [experiment inputs](configs/material_tube_bias_pulse.json), then run
+`python -m examples.material_experiment CONFIG OUTPUT`. A separate
+[bias-only control](configs/material_tube_bias_only.json) is running.
+Read [assumptions and actual results](docs/MATERIAL_EXPERIMENT.md): preparation
+and ionization are assumed, local current accuracy remains unresolved, and
+cold-edge carrier drift exceeds the thermal speed during this run.
+
+The earlier fixed-footprint finite-coil simulation drives a moving, two-temperature plasma with finite
 circular coils around a **finite tube with sealed end caps**. The magnetic
 vacuum surrounds its side and both ends, with exactly no exterior plasma or
 conductivity. Actual current inertia, Hall force, heating, species exchange and

@@ -1,0 +1,23 @@
+{
+  "title": "Exploratory pre-ionized argon in a one-metre tube",
+  "tube": {"radius_m": 0.075, "length_m": 1.0},
+  "plasma": {
+    "radius_m": 0.035,
+    "half_length_m": 0.35,
+    "gas": "Ar",
+    "neutral_fill_mtorr": 0.1,
+    "neutral_temperature_k": 300.0,
+    "assumed_charge_state": 1,
+    "assumed_ionization_fraction": 1.0,
+    "central_temperature_ev": [10.0, 1.0],
+    "prescribed_resistivity_ohm_m": 0.0001
+  },
+  "source": {
+    "coils_radius_z_turns": [[0.1, -0.05, 1.0], [0.1, 0.05, 1.0]],
+    "bias_center_t": 0.0001,
+    "pulse_center_t": {"kind": "Unipolar", "amplitude": -0.001, "start": 0.00000025, "rise": 0.000001, "hold": 0.0000005, "fall": 0.000001}
+  },
+  "mesh": {"nr": 4, "nz": 16, "degree": 3, "quadrature": 6, "vacuum_cells": 4, "vacuum_modes": 8},
+  "evolution": {"duration_s": 0.0000035, "steps": 2000},
+  "diagnostic_scales": {"reference_length_m": 0.005, "reference_time_s": 0.000001}
+}
