@@ -20,3 +20,10 @@ formation certificate. Cold-edge/transport, initial ionization assumptions and
 local current resolution remain limitations of the input simulation. Output is
 a scientific PNG/PDF and a concise comparison JSON with source/summary hashes.
 Pulse amplitude, time and chamber/gas labels come from the saved configuration.
+
+Also compares two pulsed coil arrangements: labels identify pulse strength and
+coil count from each input, rather than assuming the first run is bias-only.
+Particle-weighted RMS radius histories use the actual Q1 geometry and fixed
+particle inventory. At each run's recorded peak drive, each group's independent
+exterior flux linkage is compared with its volume-current linkage. The finite-
+space discrepancy is reported unchanged; it never repairs work or currents.

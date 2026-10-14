@@ -17,11 +17,12 @@ def run(config_path, destination):
     config = json.loads(Path(config_path).read_text()); out = Path(destination)
     if out.exists():
         raise ValueError('A fresh experiment output directory is required')
+    integrator = config.get('integrator', 'rk4')
     identity = provenance(['examples.material_experiment']); started = time.monotonic()
     out.mkdir(parents=True); freeze(out, identity)
     (out/'config.json').write_text(json.dumps(config, indent=2)+'\n')
     record = dict(terminal=False, success=False, completed_steps=0, config=config,
-        source_sha256=identity['source_sha256'], records=[],
+        source_sha256=identity['source_sha256'], integrator=integrator, records=[],
         scope='Complete moving-plasma equations with an assumed pre-ionized inventory and prescribed biased coils. Preparation, ionization, neutrals, physical edge/transport validity and convergence are not established. No formation or laboratory recommendation follows from this exploratory run.')
 
     def save():
@@ -36,15 +37,16 @@ def run(config_path, destination):
         state = MaterialCurrentState(fluid.initial, np.zeros(model.space.magnetic_count))
         previous = model.response(state, time=0.); energy0 = previous['total_energy']
         work = 0.; response_work = 0.; heat = 0.
+        group_work = np.zeros(len(model.source_groups)); group_response_work = group_work.copy()
+        field_per_amp = np.array([group['vacuum_center_field_per_amp_t'] for group in metadata['source_groups']])
         record.update(steps=steps, dt=dt, duration=duration, initial_total_energy_j=energy0)
 
         def observe(s, t, a):
             f = a['fields']; n = f['n'].ravel(); temperature = f['temperature'].reshape(-1, 2)
             j = E*n[:, None]*a['drift']; b = a['magnetic_field']; vol = a['volume']
             points = f['points'].reshape(-1, 2)
-            potential, unit = model.source(s.fluid.coordinates, points)
-            source_b = a['source_current_a']*unit
-            psi = model.space.flux@s.magnetic+a['source_current_a']*points[:, 0]*potential[:, 1]
+            source_b = a['applied_magnetic_field']
+            psi = model.space.flux@s.magnetic+points[:, 0]*a['applied_vector_potential'][:, 1]
             drift_ratio = np.linalg.norm(a['drift'], axis=1)/np.sqrt(E*temperature[:, 0]/ME)
             k = int(drift_ratio.argmax()); diagnostics = config['diagnostic_scales']
             local = regime(n[k], *temperature[k], fluid.ion_mass,
@@ -52,12 +54,16 @@ def run(config_path, destination):
                 length=diagnostics['reference_length_m'], timescale=diagnostics['reference_time_s'])
             boundary = s.fluid.coordinates[fluid.domain.boundary]
             return dict(time=t, source_current_a=a['source_current_a'],
-                nominal_vacuum_center_field_t=a['source_current_a']*metadata['vacuum_center_field_per_amp_t'],
+                nominal_vacuum_center_field_t=float(a['source_group_currents_a']@field_per_amp),
+                source_group_currents_a=a['source_group_currents_a'].tolist(),
+                source_group_center_fields_t=(a['source_group_currents_a']*field_per_amp).tolist(),
+                source_group_linkages_wb=a['source_group_linkages_wb'].tolist(),
+                source_group_external_work_j=group_work.tolist(), source_group_response_work_j=group_response_work.tolist() if integrator=='rk4' else None,
                 source_linkage_wb=a['source_linkage_wb'], total_energy_j=a['total_energy'],
                 response_energy_j=a['response_energy'], external_work_j=work,
-                source_response_work_j=response_work, joule_heat_j=heat,
+                source_response_work_j=response_work if integrator=='rk4' else None, joule_heat_j=heat,
                 relative_external_work_residual=(a['total_energy']-energy0-work)/energy0,
-                relative_response_work_residual=(a['response_energy']-energy0-response_work)/energy0,
+                relative_response_work_residual=(a['response_energy']-energy0-response_work)/energy0 if integrator=='rk4' else None,
                 induced_magnetic_energy_j=a['magnetic_energy'], current_energy_j=a['current_energy'],
                 peak_current_components_a_m2=abs(j).max(axis=0).tolist(),
                 peak_field_components_t=abs(b).max(axis=0).tolist(),
@@ -69,12 +75,15 @@ def run(config_path, destination):
                 maximum_drift_over_electron_thermal_speed=float(drift_ratio[k]),
                 local_regime_at_max_drift_ratio=dict(position_r_z_m=points[k].tolist(), **local),
                 maximum_plasma_radius_m=float(boundary[:, 0].max()),
+                midplane_plasma_radius_m=float(np.interp(0., model.space.mesh.zf, s.fluid.coordinates[fluid.domain.ids[-1], 0])),
+                particle_rms_radius_m=float(np.sqrt(np.sum(fluid.particles*f['points'][..., 0]**2)/fluid.particles.sum())),
                 maximum_plasma_half_length_m=float(abs(boundary[:, 1]).max()),
                 minimum_specific_entropy=s.fluid.entropy.min(axis=(0, 1)).tolist(),
                 minimum_vacuum_map_jacobian=float(a['vacuum_geometry']['determinant'].min()),
                 maximum_transport_outflow_s=a['maximum_transport_outflow_s'],
                 exchange_coulomb_log_range=a['exchange_coulomb_log_range'],
-                pair_power_residual_w=a['pair_power_residual'], residuals=a['residuals'])
+                pair_power_residual_w=a['pair_power_residual'], residuals=a['residuals'],
+                split_diagnostics=getattr(model, 'split_diagnostics', None))
 
         def arrays(s):
             return dict(magnetic=s.magnetic, **{k: getattr(s.fluid, k) for k in s.fluid.__dataclass_fields__})
@@ -87,7 +96,11 @@ def run(config_path, destination):
             if resource.getrusage(resource.RUSAGE_SELF).ru_maxrss > 4*1024**3 or shutil.disk_usage('.').free < 256*1024**2:
                 raise RuntimeError('Own4GiB/256MiB resource guard')
             work += .5*dt*(previous['external_power']+a['external_power'])
-            response_work += .5*dt*(previous['source_response_power']+a['source_response_power'])
+            if integrator == 'rk4':
+                response_work += .5*dt*(previous['source_response_power']+a['source_response_power'])
+            group_work += .5*dt*(previous['source_group_external_powers_w']+a['source_group_external_powers_w'])
+            if integrator == 'rk4':
+                group_response_work += .5*dt*(previous['source_group_response_powers_w']+a['source_group_response_powers_w'])
             heat += .5*dt*(previous['joule_power']+a['joule_power'])
             state = next_state; previous = a; record['completed_steps'] = step
             raw = out/f'step_{step:05}.npz'; np.savez_compressed(raw, **arrays(state))

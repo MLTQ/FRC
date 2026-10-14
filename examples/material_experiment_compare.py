@@ -4,8 +4,9 @@ import json
 from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
-from plasma_bench.material_experiment import build
+from plasma_bench.material_experiment import build, source_configs
 from plasma_bench.material_plasma_samples import material_samples
+from plasma_bench.material_vacuum_samples import physical_samples
 from .material_coil_plot import state_at
 from .implicit_plasma_records import sha
 
@@ -27,18 +28,23 @@ def compare(destination, control_path, pulse_path):
     out.mkdir(); fig, axes = plt.subplots(2, 3, figsize=(15, 8.6), constrained_layout=True)
     record = {'scope': 'Actual saved trajectories; exploratory pre-ionized plasma, not converged formation or confinement.', 'runs': {}}
     colors = ['#4b7281', '#b84b33']
-    amplitude = abs(second['config']['source']['pulse_center_t']['amplitude'])*1e3
-    labels = ('Bias only', f'{amplitude:g} mT opposing pulse')
+    labels = []
+    for data in (first, second):
+        pulsed = [g for g in source_configs(data['config']) if g['pulse_center_t']['amplitude'] != 0.]
+        labels.append('Bias only' if not pulsed else ' + '.join(
+            f"{abs(g['pulse_center_t']['amplitude'])*1e3:g} mT · {len(g['coils_radius_z_turns'])} pulse coils" for g in pulsed))
     field_cap = max(abs(x) for path, data in runs for x in data['records'][-1]['plasma_bz_range_t'])*1e6
     increment = 10**(np.floor(np.log10(field_cap))-1) if field_cap else 1.
     field_cap = max(increment, np.ceil(field_cap/increment)*increment)
-    for (path, data), label, color in zip(runs, labels, colors):
+    for run_index, ((path, data), label, color) in enumerate(zip(runs, labels, colors)):
         rows = [data['initial']]+data['records']; t = np.array([r['time'] for r in rows])*1e6
         f, model, meta = build(data['config'])
-        side = f.domain.ids[-1]; midplane_radius = []
+        side = f.domain.ids[-1]; midplane_radius = []; rms_radius = []
         for row in rows:
             u = state_at(path, row.get('step', 0))
             midplane_radius.append(float(np.interp(0., model.space.mesh.zf, u.fluid.coordinates[side, 0])))
+            points = f.geometry(u.fluid.coordinates)['points']
+            rms_radius.append(float(np.sqrt(np.sum(f.particles*points[..., 0]**2)/f.particles.sum())))
         axes[0, 0].plot(t, [r['nominal_vacuum_center_field_t']*1e3 for r in rows], color=color, label=label)
         axes[0, 1].plot(t, [r['maximum_plasma_radius_m']*1e3 for r in rows], color=color, label=label+' · max')
         axes[0, 1].plot(t, np.array(midplane_radius)*1e3, '--', color=color, label=label+' · middle')
@@ -50,7 +56,7 @@ def compare(destination, control_path, pulse_path):
         rr, zz = np.meshgrid(r, z, indexing='ij')
         n0 = meta['central_density_m3']*((1-(rr/data['config']['plasma']['radius_m'])**2)*(1-(zz/data['config']['plasma']['half_length_m'])**2))**1.5
         samples = material_samples(model, state, rr, zz, n0, time=data['duration'])
-        axis = axes[1, 1] if label == labels[0] else axes[1, 2]
+        axis = axes[1, run_index+1]
         artist = axis.pcolormesh(samples['points'][..., 1]*100, samples['points'][..., 0]*100,
             samples['magnetic'][..., 2]*1e6, shading='auto', cmap='RdBu_r', vmin=-field_cap, vmax=field_cap, rasterized=True)
         axis.contour(samples['points'][..., 1]*100, samples['points'][..., 0]*100,
@@ -58,23 +64,41 @@ def compare(destination, control_path, pulse_path):
         axis.set(xlabel='Axial position z [cm]', ylabel='Radius r [cm]', title=f"{label}: final Bz and flux\n{data['duration']*1e6:g} µs; radial scale expanded")
         fig.colorbar(artist, ax=axis, label='Axial field Bz [µT]', shrink=.8)
         record['runs'][path.name] = dict(source_sha256=data['source_sha256'], summary_sha256=sha(path/'summary.json'),
+            label=label, particle_rms_radius_history_m=rms_radius,
             midplane_radius_history_m=midplane_radius, time_history_s=[r['time'] for r in rows],
             final_midplane_radius_m=midplane_radius[-1],
             final={key: rows[-1][key] for key in ('time', 'maximum_plasma_radius_m', 'maximum_plasma_half_length_m',
                 'plasma_bz_range_t', 'peak_current_components_a_m2', 'joule_heat_j', 'external_work_j',
                 'particle_mean_temperature_ev', 'maximum_drift_over_electron_thermal_speed')})
+        # Compare independently reconstructed exterior coil flux with the
+        # volume-current linkage, using the actual peak-drive saved state.
+        peak = max(rows, key=lambda row: abs(row['nominal_vacuum_center_field_t']))
+        peak_state = state_at(path, peak.get('step', 0))
+        response = model.response(peak_state, rate=False, time=peak['time'])
+        group_comparisons = []
+        for index, group in enumerate(meta['source_groups']):
+            coils = np.asarray(group['coils_radius_z_turns'])
+            flux, _, _ = physical_samples(model.vacuum, peak_state.fluid.coordinates,
+                model.space.vacuum_trace@peak_state.magnetic, coils[:, 0], coils[:, 1],
+                geometry=response['vacuum_response'])
+            exterior = float(2*np.pi*np.sum(coils[:, 2]*flux))
+            volume = float(response['source_group_linkages_wb'][index])
+            group_comparisons.append(dict(name=group['name'], time_s=peak['time'],
+                exterior_coil_flux_linkage_wb=exterior, volume_current_linkage_wb=volume,
+                relative_difference=exterior/volume-1 if volume else None))
+        record['runs'][path.name]['peak_drive_linkage_comparison'] = group_comparisons
     labels = [('Prescribed field at centre', 'Vacuum centre Bz [mT]'),
               ('Compression at the middle versus outer expansion', 'Plasma radius [mm]'),
               ('Accumulated Joule heat', 'Heat [µJ]'), ('Azimuthal plasma current', 'Peak |Jθ| [kA/m²]')]
     for axis, (title, unit) in zip([*axes[0], axes[1, 0]], labels):
         axis.set(title=title, xlabel='Time [µs]', ylabel=unit); axis.grid(alpha=.2); axis.legend(frameon=False, fontsize=8)
     a, b = [d['records'][-1] for p, d in runs]
-    record['final_radius_pulse_minus_control_m'] = b['maximum_plasma_radius_m']-a['maximum_plasma_radius_m']
+    record['final_radius_second_minus_first_m'] = b['maximum_plasma_radius_m']-a['maximum_plasma_radius_m']
     tube=second['config']['tube'];plasma=second['config']['plasma']
     fig.suptitle(f"Coil-pulse response: magnetic field, current, heat and plasma motion\n{tube['length_m']:g} m × {tube['radius_m']*200:g} cm tube · assumed prepared {plasma['gas']} at {plasma['neutral_fill_mtorr']:g} mTorr inventory · no neutral/ionization model", fontsize=14)
     fig.savefig(out/'pulse_vs_bias.png', dpi=170); fig.savefig(out/'pulse_vs_bias.pdf'); plt.close(fig)
     (out/'comparison.json').write_text(json.dumps(record, indent=2)+'\n')
-    print('Physical pulse/control comparison complete:', out, flush=True)
+    print('Physical coil comparison complete:', out, flush=True)
 
 
 if __name__ == '__main__':

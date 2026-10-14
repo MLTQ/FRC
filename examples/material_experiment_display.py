@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 from mpl_toolkits.mplot3d.art3d import Line3DCollection
 from scipy.constants import elementary_charge as E
-from plasma_bench.material_experiment import build as experiment
+from plasma_bench.material_experiment import build as experiment, source_configs
 from plasma_bench.material_plasma_samples import material_samples
 from .material_coil_plot import state_at
 from .material_vector_display import outline, trace
@@ -19,20 +19,27 @@ def circle(radius, z):
     return np.column_stack((np.full_like(angle, z), radius*np.cos(angle), radius*np.sin(angle)))
 
 
-def build(source, destination):
+def build(source, destination, *, allow_partial=False):
     source = Path(source); out = Path(destination); d = json.loads((source/'summary.json').read_text())
-    if out.exists() or not d['terminal'] or not d['success']:
-        raise ValueError('Completed successful experiment and fresh display directory required')
+    if out.exists() or not d['terminal'] or (not d['success'] and not allow_partial) or d['completed_steps'] < 1:
+        raise ValueError('Terminal experiment and fresh display required; failed prefixes need --allow-partial')
+    last_step = d['completed_steps']
+    status = 'prescribed biased coils · exploratory plasma model' if d['success'] else f"Stopped at step {last_step+1}: {d.get('failure_message', 'simulation failed')}. Accepted states only."
     config = d['config']; fluid, model, metadata = experiment(config)
-    tube = config['tube']; plasma = config['plasma']; grid = config['mesh']; pulse = config['source']['pulse_center_t']
-    steps = set(np.round(np.linspace(0, d['steps'], 8)).astype(int))
-    if pulse['kind'] == 'Unipolar':
-        for t in (pulse['start'], pulse['start']+pulse['rise'], pulse['start']+pulse['rise']+pulse['hold'], pulse['start']+pulse['rise']+pulse['hold']+pulse['fall']):
-            steps.add(min(d['steps'], max(0, round(t/d['dt']))))
+    tube = config['tube']; plasma = config['plasma']; grid = config['mesh']
+    steps = set(np.round(np.linspace(0, last_step, 8)).astype(int))
+    for source_config in source_configs(config):
+        pulse = source_config['pulse_center_t']
+        if pulse['kind'] == 'Unipolar':
+            for t in (pulse['start'], pulse['start']+pulse['rise'], pulse['start']+pulse['rise']+pulse['hold'], pulse['start']+pulse['rise']+pulse['hold']+pulse['fall']):
+                steps.add(min(last_step, max(0, round(t/d['dt']))))
     frames = []; inputs = {str(source/'summary.json'): sha(source/'summary.json')}
     q = grid['quadrature']; local = np.array([q+1, 2*q-2, (q-2)*q+1, (q-1)*q-2])
     indices = (np.arange(grid['nr']*grid['nz'])[:, None]*q*q+local[None, :]).ravel()
     coils = [circle(radius, z) for radius, z, turns in model.coils]
+    coil_groups = [dict(label=g['name'], color=('#db9160', '#96b5ef', '#c6a5d8')[i % 3],
+                       paths=[circle(radius, z) for radius, z, turns in g['coils_radius_z_turns']])
+                   for i, g in enumerate(metadata['source_groups'])]
     chamber = [circle(tube['radius_m'], z) for z in (-tube['length_m']/2, 0., tube['length_m']/2)]
     for angle in np.arange(8)*np.pi/4:
         chamber.append(np.array([[-tube['length_m']/2, tube['radius_m']*np.cos(angle), tube['radius_m']*np.sin(angle)],
@@ -44,8 +51,8 @@ def build(source, destination):
         vacuum = a['vacuum_response']; vp = vacuum['points']
         keep = (vp[:, 0] < 1.5*tube['radius_m']) & (abs(vp[:, 1]) < tube['length_m']/2)
         vp = vp[keep]; vb = vacuum['magnetic_field'][keep]
-        _, source_field = model.source(state.fluid.coordinates, vp)
-        vb = np.column_stack((vb[:, 0], np.zeros(len(vb)), vb[:, 1]))+a['source_current_a']*source_field
+        source_field = model.applied_source(state.fluid.coordinates, vp, t)['magnetic']
+        vb = np.column_stack((vb[:, 0], np.zeros(len(vb)), vb[:, 1]))+source_field
         all_points = np.concatenate((points, vp)); all_b = np.concatenate((a['magnetic_field'], vb))
         paths = []
         for sign in (1., -1.):
@@ -60,7 +67,8 @@ def build(source, destination):
             outline=[p.tolist() for p in outline(state.fluid.coordinates[fluid.domain.ids])],
             bmax=max(peak_line_b, float(np.linalg.norm(a['magnetic_field'], axis=1).max())),
             jmax=abs(colors).max(axis=0).tolist(),
-            drive_center_t=a['source_current_a']*metadata['vacuum_center_field_per_amp_t'],
+            drive_center_t=float(sum(current*g['vacuum_center_field_per_amp_t'] for current, g in zip(a['source_group_currents_a'], metadata['source_groups']))),
+            drive_groups=[dict(name=g['name'], center_t=float(current*g['vacuum_center_field_per_amp_t'])) for current, g in zip(a['source_group_currents_a'], metadata['source_groups'])],
             midplane_radius_m=float(np.interp(0., model.space.mesh.zf, state.fluid.coordinates[fluid.domain.ids[-1], 0])),
             maximum_radius_m=float(state.fluid.coordinates[fluid.domain.boundary, 0].max()),
             temperature=(np.sum(fluid.particles[..., None]*a['fields']['temperature'], axis=(0, 1))/fluid.particles.sum()).tolist()))
@@ -82,8 +90,12 @@ def build(source, destination):
                             cmap='viridis', vmin=0., vmax=selected['jmax'][0]/1000)
     fig.colorbar(artist, ax=axes[1], shrink=.6, label='|J| [kA/m²]')
     for ax, title in zip(axes, ('Plasma and vacuum magnetic field lines', 'Actual plasma current density')):
-        for paths, color, width in ((selected['outline'], '#5d7c83', .3), (chamber, '#738088', .4), (coils, '#b06f3e', 1.2)):
+        for paths, color, width in ((selected['outline'], '#5d7c83', .3), (chamber, '#738088', .4)):
             for path in paths: ax.plot(*np.asarray(path).T, color=color, lw=width, alpha=.7)
+        for group in coil_groups:
+            for i, path in enumerate(group['paths']):
+                ax.plot(*path.T, color=group['color'], lw=1.2, alpha=.8, label=group['label'] if i == 0 else None)
+        ax.legend(loc='upper left', fontsize=8, frameon=False)
         ax.set(xlim=(-extent, extent), ylim=(-.3*extent, .3*extent), zlim=(-.3*extent, .3*extent),
                xlabel='Axial z [m]', ylabel='x [m]', zlabel='y [m]', title=title)
         ax.set_box_aspect((2, .6, .6)); ax.view_init(22, -67)
@@ -116,22 +128,27 @@ def build(source, destination):
         cloud = np.asarray(frame['current']); cloud[:, :3] /= extent; frame['current'] = cloud.tolist()
     data = dict(frames=frames, bmax=max(f['bmax'] for f in frames), jmax=np.max([f['jmax'] for f in frames], axis=0).tolist(),
         chamber=[(p/extent).tolist() for p in chamber], coils=[(p/extent).tolist() for p in coils], physical_scale_m=extent, initial_zoom=1.5,
-        status_note='prescribed biased coils · exploratory plasma model',
-        scope=f"Source: {source.name}. {d['steps']} completed coupled steps. Gas {plasma['gas']}, neutral preparation inventory {plasma['neutral_fill_mtorr']} mTorr at {plasma['neutral_temperature_k']} K, all assumed prepared as a compact singly ionized plasma. Central density {metadata['central_density_m3']:.4g}/m³; central Te/Ti {plasma['central_temperature_ev']} eV. Grid {grid['nr']}×{grid['nz']}, degree {grid['degree']}. Actual moving plasma and magnetic-only vacuum; prescribed resistance, conditional Coulomb exchange, explicit entropy diffusion. Local currents remain mesh/time sensitive. Ionization, preparation, physical edge and transport validity are unresolved. The displayed field peak includes traced exterior samples.")
+        coil_groups=[dict(label=g['label'], color=g['color'], paths=[(p/extent).tolist() for p in g['paths']]) for g in coil_groups],
+        status_note=status,
+        scope=f"Source: {source.name}. {last_step} accepted of {d['steps']} requested coupled steps. {status}. Gas {plasma['gas']}, neutral preparation inventory {plasma['neutral_fill_mtorr']} mTorr at {plasma['neutral_temperature_k']} K, all assumed prepared as a compact singly ionized plasma. Central density {metadata['central_density_m3']:.4g}/m³; central Te/Ti {plasma['central_temperature_ev']} eV. Grid {grid['nr']}×{grid['nz']}, degree {grid['degree']}. Actual moving plasma and magnetic-only vacuum; prescribed resistance, conditional Coulomb exchange, explicit entropy diffusion. Local currents remain mesh/time sensitive. Ionization, preparation, physical edge and transport validity are unresolved. The displayed field peak includes traced exterior samples.")
     assets = Path(__file__).resolve().parents[1]/'visualizations/material_fields'
     html = (assets/'index.html').read_text()
     html = html.replace('This run starts with closed magnetic flux. It does not demonstrate FRC formation or particle confinement. External coils are not included; spatial accuracy and the plasma edge remain under study.',
-        'A steady bias is followed by an opposing coil pulse. Copper rings show prescribed coils; grey lines show the tube. This coarse pre-ionized model does not establish FRC formation, physical transport or confinement.')
-    html = html.replace('<div class="toolbar">', '<p id="drive"></p><p id="motion"></p><div class="toolbar">')
+        'A steady bias is followed by an opposing coil pulse. Colored rings show independently prescribed coil groups; grey lines show the tube. This coarse pre-ionized model does not establish FRC formation, physical transport or confinement.')
+    if not d['success']:
+        from html import escape
+        html = html.replace('<div class="toolbar">', '<p style="color:#ffb697">'+escape(status)+'</p><div class="toolbar">')
+    html = html.replace('<div class="toolbar">', '<p id="drive"></p><p id="drive-groups"></p><p id="motion"></p><div class="toolbar">')
     html = html.replace('material_vector_3d.png', 'material_experiment_3d.png')
     html = html.replace('Open the scientific image</a>', 'Open the scientific image</a> · <a href="material_experiment_sections.png">Signed fields and flux contours</a>')
     html = html.replace('/* DATA */', 'const DATA='+json.dumps(data, separators=(',', ':'))+';').replace('/* VIEWER */', (assets/'viewer.js').read_text())
     (out/'index.html').write_text(html); (out/'display_data.json').write_text(json.dumps(data, separators=(',', ':'))+'\n')
     (out/'source.json').write_text(json.dumps(dict(source=str(source), inputs=inputs,
-        scope='Completed saved states only. Full plasma and exterior B, interpolated field-line paths, sampled actual J. No temporal interpolation, topology certificate or particle trajectories.'), indent=2)+'\n')
+        scope='Accepted saved states only; terminal status is shown explicitly. Full plasma and exterior B, interpolated field-line paths, sampled actual J. No temporal interpolation, topology certificate or particle trajectories.'), indent=2)+'\n')
     print('experiment display complete', out, flush=True)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(); parser.add_argument('source'); parser.add_argument('destination')
-    args = parser.parse_args(); build(args.source, args.destination)
+    parser.add_argument('--allow-partial', action='store_true')
+    args = parser.parse_args(); build(args.source, args.destination, allow_partial=args.allow_partial)

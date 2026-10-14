@@ -1,3 +1,54 @@
+# Resume the physical FRC simulation
+
+## Wrap-up: independent bias and formation coils (2026-10-14)
+
+User requested wrap-up to conserve usage credits. No further scientific work is
+being initiated. Remaining concrete work is filed as frc-vacuum.3.1 (strong pulse
+failure/completion) and frc-vacuum.3.2 (complete physical comparison and display).
+The overarching FRC goal remains incomplete.
+
+The solver now supports independent prescribed coil groups, with actual summed
+source fields/electric drive and separate linkage/work. The new configuration
+keeps the100uT Helmholtz bias pair and adds nine100mm-radius loops spanning
+z=-0.4..0.4m for a-20mT formation pulse. Initial gas/plasma and timing are unchanged
+from the earlier two-loop20mT case; exterior matter/conductivity stays exactly zero.
+
+The original RK4 long-array run49224 exited1 at attempted step609 after608 accepted
+steps (1.064us),392.127s. exp overflow/nonpositive or nonfinite species stopped it;
+all accepted states and frozen source69ef0ed6ad2e144ece369be2850d22940152fc0a02ebf7cb9b87f48783eb8a35
+remain in outputs/material_tube_independent_20mt_r4_z16_t2000. At recorded1.05us,
+middle/max radius34.663/34.980mm and heat60.961mJ; the subsequent final accepted
+state already has explosively large field/current. These are numerical-failure
+evidence, not credible predictions or completed formation. No floors/clipping.
+
+The same physical case is now using the existing opt-in split method. Direct
+external work remains observed; ambiguous instantaneous split response-work
+integrals are null. This run is unfinished; weak-pulse success does not establish
+strong-case stability. LIVE scientific jobs remain running:
+- 70492: outputs/material_tube_independent_20mt_split_r4_z16_t2000, 200/2000 at last observation; terminal=False. Source 570bfe80c034da277c9aa5244aba3425f31bd66b7999b88f1bdd38e6c1668f2d.
+- 89864: outputs/material_vector_free_r6_p5_q10_t2000, 1800/2000 at last observation; terminal=False. Source 5744fb58115ea903ba9a683959e4e47b30b331d75981d11bb672ae7e4fa743e6.
+Poll these exact handles before changing any source. Preserve frozen closures
+and every accepted state; never restart from a timeout. Last observed counts are
+snapshots, not completion claims. Local execution can continue after this wrap-up.
+
+The new display supports separate coil colors and centre-field labels. Explicit
+--allow-partial shows terminal failed prefixes and their stopping reason. Builder
+38088 exited0 for outputs/material_experiment_independent_20mt_partial_display;
+3D PNG inspected. Browser controls and section PNG/PDF review are PENDING, and it
+has not replaced the completed viewer at127.0.0.1:8790/20mt/ (server89915).
+The comparison helper now supports group labels, particle RMS radius and independent
+exterior-coil versus volume-current linkage. Its new path still needs execution
+on complete runs; do not describe it as already verified. No unit tests were run.
+
+NEXT collect70492 and89864, address the actual long-array failure if needed, then
+use the existing comparison/display on complete physically interpretable runs.
+Do not expand verification frameworks. Physical transport, ionization/preparation,
+spatial accuracy and experimental calibration remain open. Research search found
+additional primary papers but none was adopted as a new matched baseline here.
+Preserve user-modified outputs/frc_showcase/poster.png; no remote/publication.
+
+---
+
 # Continue the physical FRC simulation
 
 Read newest GOAL_STATUS.md and MATERIAL_EXPERIMENT.md. User priority: simulation

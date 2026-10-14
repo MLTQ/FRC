@@ -37,3 +37,20 @@ must lie radially outside the tube; the inherited source/interface check remains
 builder/config. Metadata records the resolved density, inventory, mass, field
 normalization and explicit assumptions. Physical transport, preparation,
 ionization and formation conclusions require further work.
+
+Independent drives use `source_groups` instead of `source`: each named group has
+its own fixed coils, DC centre-field contribution and serialized pulse. Every
+group normalizes its own current by its exact vacuum-centre field per ampere;
+the physical applied field is the sum over groups at every actual RK stage.
+This supports a Helmholtz-like bias pair separately from a longer formation array,
+including different timing and polarity. Coils remain abstract prescribed sources.
+`source_configs` exposes the declared groups to physical plots without merging
+their waveforms. Metadata retains each group and normalization; the legacy scalar
+normalization is null when there is no single common current. All initial pulses
+must be zero; this does not simulate the preparation of the initial plasma.
+
+Optional top-level integrator="split" selects the existing symmetric implicit
+entropy/current diffusion step; omitted or "rk4" retains the original coupled
+RK4. Tube contact is checked on all stages for either solver. This choice changes
+time integration, not plasma/source inputs or the physical equations. Strong
+source behavior remains to be measured; weak-pulse success is not a guarantee.

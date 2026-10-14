@@ -9,7 +9,8 @@ function draw(){const f=DATA.frames[frame],bmax=shared?DATA.bmax:f.bmax,jmax=sha
  canvases.forEach((c,index)=>{const ratio=window.devicePixelRatio||1,w=Math.round(c.clientWidth*ratio),h=Math.round(c.clientHeight*ratio);if(c.width!==w||c.height!==h){c.width=w;c.height=h;}const ctx=c.getContext('2d');ctx.clearRect(0,0,w,h);ctx.fillStyle='#0e202d';ctx.fillRect(0,0,w,h);
   f.outline.forEach(p=>line(ctx,p,c,'#527080',.7*ratio));
   (DATA.chamber||[]).forEach(p=>line(ctx,p,c,'#7c8a94',.6*ratio));
-  (DATA.coils||[]).forEach(p=>line(ctx,p,c,'#db9160',1.8*ratio));
+  if(DATA.coil_groups)DATA.coil_groups.forEach(g=>g.paths.forEach(p=>line(ctx,p,c,g.color,1.8*ratio)));
+  else (DATA.coils||[]).forEach(p=>line(ctx,p,c,'#db9160',1.8*ratio));
   if(index===0){f.lines.forEach(path=>{for(let i=1;i<path.points.length;i++)line(ctx,[path.points[i-1],path.points[i]],c,color(bmax>0?path.field[i]/bmax:0),1.2*ratio);});}
   else{const points=f.current.map(p=>({p:project(p.slice(0,3),c),j:p[3+component]})).sort((a,b)=>b.p[2]-a.p[2]);ctx.globalAlpha=.52;for(const p of points){const scaled=jmax>0?p.j/jmax:0,t=component?.5+.5*scaled:scaled;ctx.fillStyle=color(t,component!==0);ctx.beginPath();ctx.arc(p.p[0],p.p[1],1.9*ratio,0,2*Math.PI);ctx.fill();}ctx.globalAlpha=1;}
  });
@@ -18,6 +19,7 @@ function draw(){const f=DATA.frames[frame],bmax=shared?DATA.bmax:f.bmax,jmax=sha
  ids('current-title').textContent=['Current density magnitude','Radial current density','Azimuthal current density','Axial current density'][component];ids('current-gradient').style.background=component?'linear-gradient(90deg,#315a9e,#f1f5f5,#d35a47)':'linear-gradient(90deg,#3478ba,#67ddce,#fff1ad)';
  ids('metric-field').textContent=(f.bmax*1e6).toPrecision(4)+' µT';ids('metric-current').textContent=f.jmax[0].toPrecision(4)+' A/m²';ids('metric-temp').textContent=f.temperature.map(v=>v.toFixed(3)).join(' / ')+' eV';ids('scale').textContent=shared?'Use per-state color scale':'Use shared color scale';ids('status').textContent='Saved state '+(frame+1)+' of '+DATA.frames.length+' · '+(shared?'shared':'per-state')+' color scale · '+(DATA.status_note||'initialized flux, no formation claim');
  if(ids('drive'))ids('drive').textContent=f.drive_center_t===undefined?'':'Prescribed vacuum-centre field: '+(f.drive_center_t*1e3).toFixed(3)+' mT';
+ if(ids('drive-groups')){const el=ids('drive-groups');el.replaceChildren();(f.drive_groups||[]).forEach((g,i)=>{const span=document.createElement('span');span.style.color=DATA.coil_groups[i].color;span.textContent=(i?' · ':'')+g.name+': '+(g.center_t*1e3).toFixed(3)+' mT';el.append(span);});}
  if(ids('motion'))ids('motion').textContent=f.midplane_radius_m===undefined?'':'Plasma radius — middle: '+(f.midplane_radius_m*1000).toFixed(2)+' mm · maximum: '+(f.maximum_radius_m*1000).toFixed(2)+' mm';}
 ids('time').max=DATA.frames.length-1;ids('time').addEventListener('input',e=>{frame=+e.target.value;draw();});ids('component').addEventListener('change',e=>{component=+e.target.value;draw();});ids('scale').onclick=()=>{shared=!shared;draw();};ids('reset').onclick=()=>{yaw=-.65;pitch=.35;zoom=DATA.initial_zoom||1;draw();};
 ids('play').onclick=()=>{if(playing){clearInterval(playing);playing=null;ids('play').textContent='Play saved states';}else{ids('play').textContent='Pause';playing=setInterval(()=>{frame=(frame+1)%DATA.frames.length;draw();},1000);}};

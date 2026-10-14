@@ -32,3 +32,20 @@ computed from waveform/linkage, never fitted to observed energy change. Both
 budgets must be measured on complete coupled runs. Inherited upwind numerical
 diffusion and measured current time sensitivity remain; no formation, physical
 transport/edge or experimental validity follows from power cancellation alone.
+
+Independent source groups now each contain fixed loop geometry and I_g(t).
+`applied_source` supplies Bsrc=sum I_g*B_g, Asrc=sum I_g*A_g and the actual
+partial time derivative sum Idot_g*A_g. All Hall/Lorentz/motional and electric
+terms use those sums. lambda_g=integral J.A_g dV is retained for each group:
+
+    d(Efluid+Kcurrent+Wbind)/dt = -sum Idot_g*lambda_g,
+    d(Efluid+Kcurrent+Wbind+sum I_g*lambda_g)/dt = sum I_g*lambdadot_g.
+
+All pure prescribed-source energies, including source/source mutual energy,
+belong to the excluded source baseline. Plasma/source mutual work is explicit;
+it is not obtained by fitting observed plasma energy. Single-group construction
+and scalar observation fields remain compatible. For multiple groups, scalar
+current/linkage fields are null and explicit group arrays must be used. Calling
+`source` without selecting a group rejects ambiguity; `applied_source(time)`
+returns the actual total source. The regular axis potential has its exact zero
+limit. Exact matter-free vacuum and all original physical force terms remain.

@@ -29,3 +29,17 @@ This runner adds experiment inputs and actual simulations, no unit-test suite,
 replay framework or tolerance-based acceptance gate. It stops at wall contact
 instead of silently imposing a new boundary condition. Source modules must stay
 unchanged while its live trajectory is running.
+
+Independent source groups are recorded with their actual currents, centre-field
+contributions, induced linkage and both separately integrated work contributions.
+Totals use the full summed physical source field. Legacy scalar current/linkage
+values are null for multiple independent drives; no fictitious common current is
+invented. The midplane boundary radius and particle-weighted RMS radius are also
+observed, distinguishing a local pinch, bulk extent and the maximum surface radius.
+None of these radii proves particle confinement or models escaping particles.
+
+With optional integrator="split", source-response work and its group integrals
+are null because instantaneous upstream pressure at zero current does not define
+that split work integral. Direct external work -sum(Idot*lambda), actual Joule
+heat and group external work remain independently integrated. Existing split
+diagnostics are recorded; all accepted states and any failure remain preserved.

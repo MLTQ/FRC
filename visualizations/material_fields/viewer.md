@@ -24,3 +24,7 @@ Zoom always scales every coordinate equally.
 An optional motion label shows the saved midplane and maximum boundary radius,
 so a local pinch is distinguishable from expansion elsewhere. It reports actual
 geometry supplied by the builder; the browser does not infer confinement.
+
+Optional coil_groups replace the copper-only outlines with named colored groups.
+Per-frame drive_groups show each group's vacuum-centre contribution alongside
+the total. Text is inserted as textContent, with no HTML evaluation.

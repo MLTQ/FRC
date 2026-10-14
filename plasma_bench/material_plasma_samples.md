@@ -27,3 +27,8 @@ angle. The compact MaterialVectorSpace has a different poloidal representation
 and is not supported. Callers may reuse an actual `response` to avoid another
 weak-Ampere reconstruction. These field samples are not particle trajectories
 or topology certificates.
+
+For independent coil groups, exact prescribed source fields and potentials are
+summed at the requested time through `applied_source`. A single-current fallback
+is retained for an explicitly reconstructed older model; it is never used to
+collapse distinct waveforms into a fictitious common amplitude.

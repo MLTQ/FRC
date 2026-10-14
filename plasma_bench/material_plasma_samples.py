@@ -53,7 +53,10 @@ def material_samples(model, state, reference_r, reference_z, reference_density, 
     drift = np.linalg.solve(deformation.transpose(0, 2, 1), w0[..., None])[..., 0]
     density = n0/determinant; current = E*density[:, None]*drift
     magnetic = induced.copy()
-    if hasattr(model, 'source'):
+    if hasattr(model, 'applied_source'):
+        source = model.applied_source(state.fluid.coordinates, points, time)
+        magnetic += source['magnetic']; flux += points[:, 0]*source['potential'][:, 1]
+    elif hasattr(model, 'source'):
         potential, unit = model.source(state.fluid.coordinates, points)
         amplitude = float(model.waveform.value(time))
         magnetic += amplitude*unit; flux += amplitude*points[:, 0]*potential[:, 1]

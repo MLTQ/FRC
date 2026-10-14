@@ -35,3 +35,15 @@ The initial camera zoom fits the long tube while preserving all proportions.
 Each frame also carries the actual side radius at material reference z=0 and
 the largest boundary radius. The visible pair distinguishes central compression
 from outer expansion in these symmetric runs. Neither is a confinement measure.
+
+Independent source groups have distinct coil colors and named per-frame centre
+fields. All group fields are summed at the actual saved time for plasma, vacuum
+and meridional samples; transition frames include every configured waveform.
+The static figure includes a coil legend. Legacy single-source configurations
+use the same path without changing their physical inputs.
+
+Explicit --allow-partial displays only accepted states of a terminal failed run.
+Its final time is the last accepted step; no requested future state is fabricated.
+The stopping reason appears above the controls and in status/scope text. Default
+behavior still requires a complete successful trajectory. This helps inspect a
+physical failure without portraying an incomplete pulse as a successful result.

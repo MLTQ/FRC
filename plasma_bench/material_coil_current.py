@@ -7,15 +7,24 @@ from .material_carrier_current import MaterialCurrentState,positive_solve
 
 
 class MaterialCoilCurrent(MaterialVacuumCurrent):
-    def __init__(self,fluid,space,vacuum,coils,waveform,**options):
+    def __init__(self,fluid,space,vacuum,coils=None,waveform=None,*,source_groups=None,**options):
         super().__init__(fluid,space,vacuum,**options)
-        self.coils=tuple(coils);self.waveform=waveform
+        if source_groups is None:source_groups=((coils,waveform),)
+        elif coils is not None or waveform is not None:raise ValueError('Use either a common source or independent source groups')
+        self.source_groups=tuple((tuple(tuple(c) for c in group),wave) for group,wave in source_groups)
+        if not self.source_groups or any(not group or wave is None for group,wave in self.source_groups):
+            raise ValueError('Nonempty physical coils and a waveform required in every group')
+        self.coils=tuple(c for group,wave in self.source_groups for c in group)
+        self.waveform=self.source_groups[0][1] if len(self.source_groups)==1 else None
 
-    def source(self,coordinates,points):
+    def source(self,coordinates,points,*,coils=None):
+        if coils is None:
+            if len(self.source_groups)!=1:raise ValueError('Independent sources require an explicit group or applied_source(time)')
+            coils=self.coils
         ids=self.fluid.domain.ids
         polygon=coordinates[np.r_[ids[:,0],ids[-1,1:],ids[-2::-1,-1]]]
         psi=np.zeros(len(points));field=np.zeros((len(points),3))
-        for radius,center,turns in self.coils:
+        for radius,center,turns in coils:
             # A prescribed filament may not cross into the evolving material.
             inside=False
             for a,b in zip(polygon,np.roll(polygon,-1,axis=0)):
@@ -28,22 +37,35 @@ class MaterialCoilCurrent(MaterialVacuumCurrent):
             if inside:raise ValueError('Prescribed source filament entered the moving plasma')
             p,br,bz=loop_field(points[:,0],points[:,1],radius,center)
             psi+=turns*p;field[:,0]+=turns*br;field[:,2]+=turns*bz
-        potential=np.zeros_like(field);potential[:,1]=psi/points[:,0]
+        potential=np.zeros_like(field);potential[:,1]=np.divide(psi,points[:,0],out=np.zeros_like(psi),where=points[:,0]!=0)
         return potential,field
+
+    def applied_source(self,coordinates,points,time):
+        currents=np.array([float(wave.value(time)) for group,wave in self.source_groups])
+        slopes=np.array([float(wave.derivative(time)) for group,wave in self.source_groups])
+        if not np.isfinite(currents).all() or not np.isfinite(slopes).all():raise ValueError('Finite prescribed source waveforms required')
+        values=[self.source(coordinates,points,coils=group) for group,wave in self.source_groups]
+        potentials=np.array([v[0] for v in values]);fields=np.array([v[1] for v in values])
+        return dict(currents=currents,slopes=slopes,unit_potentials=potentials,unit_fields=fields,
+            potential=np.einsum('g,gpi->pi',currents,potentials),magnetic=np.einsum('g,gpi->pi',currents,fields),
+            potential_time_rate=np.einsum('g,gpi->pi',slopes,potentials))
 
     def response(self,state,*,rate=True,time=0.):
         # Retain the parent's actual thermal, force and geometry calculation.
         # Re-solve only the mixed electromagnetic rows with the exact source.
         a=super().response(state,rate=rate);f=self.fluid
-        amplitude=float(self.waveform.value(time));slope=float(self.waveform.derivative(time))
-        if not np.isfinite([amplitude,slope]).all():raise ValueError('Finite prescribed source waveform required')
-        potential,unit=self.source(state.fluid.coordinates,a['fields']['points'].reshape(-1,2))
-        maps=a['electric'];load=sum(g.T@(self.particles*potential[:,i]) for i,g in enumerate(maps))
-        w=a['drift_coefficients'];drift=a['drift'];induced=a['magnetic_field'].copy();total=induced+amplitude*unit
-        linkage=float(E*w@load)
-        a.update(induced_magnetic_field=induced,magnetic_field=total,source_current_a=amplitude,source_current_rate_a_s=slope,
-            source_linkage_wb=linkage,mutual_energy=amplitude*linkage,response_energy=a['total_energy']+amplitude*linkage,
-            external_power=-slope*linkage)
+        source=self.applied_source(state.fluid.coordinates,a['fields']['points'].reshape(-1,2),time)
+        currents,slopes=source['currents'],source['slopes'];maps=a['electric']
+        loads=np.array([sum(g.T@(self.particles*potential[:,i]) for i,g in enumerate(maps)) for potential in source['unit_potentials']])
+        w=a['drift_coefficients'];drift=a['drift'];induced=a['magnetic_field'].copy();total=induced+source['magnetic']
+        linkages=np.array([float(E*w@load) for load in loads]);mutual=float(currents@linkages)
+        single=len(currents)==1
+        a.update(induced_magnetic_field=induced,magnetic_field=total,
+            applied_magnetic_field=source['magnetic'],applied_vector_potential=source['potential'],
+            source_current_a=float(currents[0]) if single else None,source_current_rate_a_s=float(slopes[0]) if single else None,
+            source_linkage_wb=float(linkages[0]) if single else None,source_group_currents_a=currents,
+            source_group_linkages_wb=linkages,source_group_external_powers_w=-slopes*linkages,
+            mutual_energy=mutual,response_energy=a['total_energy']+mutual,external_power=float(-slopes@linkages))
         if not rate:return a
         h,d,mass,solve=a['h'],a['d'],a['mass'],a['solve'];b=state.magnetic
         thermal=self.species.pair(state.fluid,a,drift)
@@ -51,7 +73,7 @@ class MaterialCoilCurrent(MaterialVacuumCurrent):
         forcing_physical=self.delta*np.cross(drift,total+self.mu/E*curlw)-self.mu/E*np.cross(drift,a['vorticity'])
         n=a['fields']['n'].ravel();forcing_physical+=self.resistivity*E*n[:,None]*drift
         forcing=sum(maps[i].T@(self.particles*forcing_physical[:,i]) for i in range(3))+thermal['reduced_forcing']
-        source_material=-slope*potential+amplitude*np.cross(a['velocity'],unit)
+        source_material=-source['potential_time_rate']+np.cross(a['velocity'],source['magnetic'])
         drive=sum(maps[i].T@(self.particles*source_material[:,i]) for i in range(3))
         mwdot=sum(a['electric_rate'][i].T@(self.particles*drift[:,i])+maps[i].T@(self.particles*(a['electric_rate'][i]@w)) for i in range(3))
         rhs=forcing-drive-self.mu/E**2*(a['ddot'].T@b)-self.mu/E*mwdot
@@ -67,7 +89,7 @@ class MaterialCoilCurrent(MaterialVacuumCurrent):
         norm=lambda r,*v:float(np.linalg.norm(r)/max(sum(np.linalg.norm(t) for t in v),np.finfo(float).tiny))
         errors=dict(faraday=norm(h@bdot-d@electric,h@bdot,d@electric),ohm=norm(mass@projected_material-forcing-self.mu/E*(mass@wdot),mass@projected_material,forcing,self.mu/E*(mass@wdot)))
         if max(errors.values())>1e-10 or not np.isfinite(bdot).all():raise RuntimeError(f'Driven moving plasma equations failed: {errors}')
-        force_density=E*n[:,None]*np.cross(drift,amplitude*unit);vol=a['fields']['volume']
+        force_density=E*n[:,None]*np.cross(drift,source['magnetic']);vol=a['fields']['volume']
         force_density=force_density.reshape(self.shape+(3,));r=a['fields']['points'][...,0]
         local=np.einsum('cq,cqa,qn->cna',vol,force_density[...,[0,2]],f.shape)
         torque=np.einsum('cq,qn->cn',vol*r*force_density[...,1],f.shape)
@@ -75,17 +97,21 @@ class MaterialCoilCurrent(MaterialVacuumCurrent):
         np.add.at(force,f.ids.ravel(),local.reshape(-1,2));np.add.at(spin,f.ids.ravel(),torque.ravel());force[f.domain.axis,0]=0
         mechanical=a['mechanical_power']+float(np.sum(force*a['fields']['velocity'])+spin@a['fields']['omega'])
         magnetic=float(b@h@bdot+.5*b@a['hdot']@b);current=float(self.mu*w@(mass@wdot)+.5*self.mu*w@mwdot)
-        potential_rate=np.zeros_like(potential)
-        potential_rate[:,1]=a['velocity'][:,0]*(unit[:,2]-potential[:,1]/a['r'])-a['velocity'][:,2]*unit[:,0]
-        load_rate=sum(a['electric_rate'][i].T@(self.particles*potential[:,i])+maps[i].T@(self.particles*potential_rate[:,i]) for i in range(3))
-        linkage_rate=float(E*(wdot@load+w@load_rate))
+        linkage_rates=[]
+        for potential,unit,load in zip(source['unit_potentials'],source['unit_fields'],loads):
+            potential_rate=np.zeros_like(potential)
+            potential_rate[:,1]=a['velocity'][:,0]*(unit[:,2]-potential[:,1]/a['r'])-a['velocity'][:,2]*unit[:,0]
+            load_rate=sum(a['electric_rate'][i].T@(self.particles*potential[:,i])+maps[i].T@(self.particles*potential_rate[:,i]) for i in range(3))
+            linkage_rates.append(float(E*(wdot@load+w@load_rate)))
+        linkage_rates=np.array(linkage_rates)
         delta_e=electric-a['electric_reduced']
-        a['electric_field']+=np.column_stack([g@delta_e for g in maps])-slope*potential
+        a['electric_field']+=np.column_stack([g@delta_e for g in maps])-source['potential_time_rate']
         a['force']+=force;a['torque']+=spin
         a.update(magnetic_rate=bdot,drift_rate=wdot,electric_reduced=electric,electric_induced_material=a['electric_material']+delta_e,
             electric_material=a['electric_material']+delta_e+solve(drive),residuals=errors,magnetic_power=magnetic,current_power=current,mechanical_power=mechanical,
-            source_linkage_rate_wb_s=linkage_rate,source_response_power=amplitude*linkage_rate,
-            pair_power_residual=magnetic+current+mechanical+a['thermal_relative_power']+slope*linkage)
+            source_linkage_rate_wb_s=float(linkage_rates[0]) if single else None,source_group_linkage_rates_wb_s=linkage_rates,
+            source_group_response_powers_w=currents*linkage_rates,source_response_power=float(currents@linkage_rates),
+            pair_power_residual=magnetic+current+mechanical+a['thermal_relative_power']+float(slopes@linkages))
         return a
 
     def derivative(self,state,time=0.):

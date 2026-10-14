@@ -7,6 +7,7 @@ from .material_two_species import MaterialTwoSpecies
 from .material_vacuum_space import MaterialVacuumSpace
 from .material_magnetic_vacuum import MaterialMagneticVacuum
 from .material_coil_current import MaterialCoilCurrent
+from .material_split_current import SplitMaterialCoilCurrent
 from .electromagnetics import loop_field
 from .waveforms import from_dict
 
@@ -31,6 +32,16 @@ class BiasedWaveform:
         return self.pulse.derivative(time) / self.field_per_amp
 
 
+def source_configs(config):
+    """Explicit independent source inputs, including the earlier common source."""
+    if ('source' in config) == ('source_groups' in config):
+        raise ValueError('Specify either source or source_groups, not both')
+    groups = config['source_groups'] if 'source_groups' in config else [config['source']]
+    if not isinstance(groups, list) or not groups:
+        raise ValueError('At least one prescribed source group is required')
+    return groups
+
+
 class TubeMaterialCoilCurrent(MaterialCoilCurrent):
     """Free evolution only until contact with the explicitly nonconducting tube."""
     def __init__(self, *args, tube_radius, tube_half_length, **kwargs):
@@ -45,10 +56,14 @@ class TubeMaterialCoilCurrent(MaterialCoilCurrent):
         return super().response(state, rate=rate, time=time)
 
 
+class TubeMaterialSplitCurrent(TubeMaterialCoilCurrent, SplitMaterialCoilCurrent):
+    """Same tube-contact guard with the opt-in entropy/current split step."""
+
+
 def build(config):
     """Build the actual solver; fill pressure fixes inventory, not local density."""
     tube = config['tube']; plasma = config['plasma']; grid = config['mesh']
-    source = config['source']; evolution = config['evolution']
+    sources = source_configs(config); evolution = config['evolution']
     values = [tube['radius_m'], tube['length_m'], plasma['radius_m'],
               plasma['half_length_m'], plasma['neutral_fill_mtorr'],
               plasma['neutral_temperature_k'], *plasma['central_temperature_ev'],
@@ -61,7 +76,7 @@ def build(config):
         raise ValueError('Initial free plasma must fit strictly inside the nonconducting tube')
     if not isinstance(evolution['steps'], int) or evolution['steps'] < 4:
         raise ValueError('At least four time steps required')
-    if not np.isfinite(source['bias_center_t']):
+    if not all(np.isfinite(source['bias_center_t']) for source in sources):
         raise ValueError('Finite prescribed bias required')
     mass, ions_per_neutral = GASES[plasma['gas']]
     mesh = MHDMesh(plasma['radius_m'], plasma['half_length_m'], grid['nr'], grid['nz'])
@@ -83,24 +98,33 @@ def build(config):
     fluid.initial.entropy[:] = np.log(temperatures)-(2/3)*np.log(center_density)
     vacuum = MaterialMagneticVacuum(mesh, degree=grid['degree'], quadrature_order=grid['quadrature'],
                                     vacuum_cells=grid['vacuum_cells'], modes=grid['vacuum_modes'])
-    coils = tuple(tuple(row) for row in source['coils_radius_z_turns'])
-    for radius, center, turns in coils:
-        if not np.isfinite([radius, center, turns]).all() or radius <= tube['radius_m']:
-            raise ValueError('Finite prescribed loops must lie radially outside the tube')
-    field_per_amp = sum(turns*float(loop_field(0., 0., radius, center)[2]) for radius, center, turns in coils)
-    if not np.isfinite(field_per_amp) or field_per_amp == 0:
-        raise ValueError('Nonzero finite vacuum-center field per common ampere required')
-    pulse = from_dict(source['pulse_center_t'])
-    if float(pulse.value(0.)) != 0.:
-        raise ValueError('Pulse must start at zero so the initial field equals the declared DC bias')
-    wave = BiasedWaveform(source['bias_center_t'], pulse, field_per_amp)
-    model = TubeMaterialCoilCurrent(fluid, space, vacuum, coils, wave,
+    groups = []; group_metadata = []
+    for index, source in enumerate(sources):
+        coils = tuple(tuple(row) for row in source['coils_radius_z_turns'])
+        for radius, center, turns in coils:
+            if not np.isfinite([radius, center, turns]).all() or radius <= tube['radius_m']:
+                raise ValueError('Finite prescribed loops must lie radially outside the tube')
+        field_per_amp = sum(turns*float(loop_field(0., 0., radius, center)[2]) for radius, center, turns in coils)
+        if not np.isfinite(field_per_amp) or field_per_amp == 0:
+            raise ValueError('Nonzero finite vacuum-center field per group ampere required')
+        pulse = from_dict(source['pulse_center_t'])
+        if float(pulse.value(0.)) != 0.:
+            raise ValueError('Each pulse must start at zero so the initial field is the declared bias')
+        groups.append((coils, BiasedWaveform(source['bias_center_t'], pulse, field_per_amp)))
+        group_metadata.append(dict(name=source.get('name', f'Coil group {index+1}'),
+            coils_radius_z_turns=coils, vacuum_center_field_per_amp_t=float(field_per_amp)))
+    integrator = config.get('integrator', 'rk4')
+    if integrator not in ('rk4', 'split'):
+        raise ValueError('Supported time integrators: rk4 or split')
+    solver = TubeMaterialSplitCurrent if integrator == 'split' else TubeMaterialCoilCurrent
+    model = solver(fluid, space, vacuum, source_groups=groups,
         resistivity=plasma['prescribed_resistivity_ohm_m'], coulomb_exchange=True,
         tube_radius=tube['radius_m'], tube_half_length=tube['length_m']/2)
     metadata = dict(central_density_m3=float(center_density), ion_inventory=float(fluid.particles.sum()),
         assumed_neutral_inventory=float(neutral_density*chamber_volume), ions_per_neutral=ions_per_neutral,
         neutral_density_before_preparation_m3=float(neutral_density), ion_mass_kg=float(fluid.ion_mass),
-        vacuum_center_field_per_amp_t=float(field_per_amp), actual_initial_entropy=fluid.initial.entropy[0, 0].tolist(),
+        vacuum_center_field_per_amp_t=group_metadata[0]['vacuum_center_field_per_amp_t'] if len(groups)==1 else None,
+        source_groups=group_metadata, actual_initial_entropy=fluid.initial.entropy[0, 0].tolist(),
         assumptions=['All initial gas inventory is assumed prepared as the declared compact singly ionized plasma.',
             'No ionization, recombination, neutrals, radiation or preparation energy is evolved.',
             'Quartz is represented only as a nonconducting, nonmagnetic contact limit; no wall or sheath model.',
