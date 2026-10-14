@@ -32,3 +32,6 @@ adds no simulation accuracy and is not a separatrix or closed-flux certificate.
 Unlike the 3-D view, the 2-D sections explicitly expand the radial scale for
 readability; both axes retain metres and the figure states that convention.
 The initial camera zoom fits the long tube while preserving all proportions.
+Each frame also carries the actual side radius at material reference z=0 and
+the largest boundary radius. The visible pair distinguishes central compression
+from outer expansion in these symmetric runs. Neither is a confinement measure.

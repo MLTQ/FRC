@@ -27,3 +27,11 @@ Componentwise differences and maximum physical-position mismatch remain explicit
 two grids with unresolved time error do not establish spatial convergence.
 The independent common quadrature is higher than the simulation's six points:
 squared current norms include both the density profile and polynomial fields.
+
+Integration method is included in each legend/summary. For split upstream runs,
+the ambiguous instantaneous mutual/source-rate integral is absent, not zero;
+its null value is omitted from the figure. The directly integrated external work
+and every actual B/J/motion sample are still compared. Reconstruction needs only
+the unchanged state/field definitions, not the historical time-step algorithm.
+Different integrators on the same grid are labeled a method comparison rather
+than a time comparison; agreement between them is not an analytic baseline.

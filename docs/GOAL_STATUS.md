@@ -1,5 +1,69 @@
 # Active research: a credible experimental FRC simulation
 
+## Current boundary: pulse/control physics and stronger prescribed field (2026-10-14)
+
+Simulation-first continuation of3a471e54. Read MATERIAL_EXPERIMENT.md and
+material_split_current.md. The complete bias-only metre-scale control63566 exits0:
+final radius54.2617mm versus54.3501mm with the1mT opposing pulse. The pulse gives
+field reversal and much greater heating, but almost no change in expansion.
+Inspected actual Bz/flux/current/heat/radius figure:
+outputs/material_tube_pulse_control_comparison/pulse_vs_bias.png (also PDF).
+
+Third weak-pulse spatial run42299 exits0 at2000steps. Compared with6x12,8x16 has
+final B/J/velocity differences10.05%/48.63%/0.3684%; local current remains unresolved.
+Independent exterior/volume coil linkage discrepancy0.29949%. Actual-basis plot
+and data: outputs/material_coil_spatial_r6_r8_q10. No additional test framework.
+
+Initial central pressure157.936Pa corresponds to19.923mT magnetic pressure. A
+20mT prescribed opposing-pulse exploration completed2000steps/3.5us (52842 exit0,
+1197.04s), same assumed pre-ionized plasma. Minimum recorded midplane radius is
+31.3557mm at2.10us, then53.1791mm at3.5us; maximum boundary radius68.6460mm is
+larger than the control54.2617mm. Heating85.5213mJ, external work75.3002mJ,
+meanTe/Ti7.12060/.439237eV. Final Bz-5.28416..+.929770mT with+.1mT source bias.
+This is transient central compression plus greater outer expansion, not sustained
+confinement.
+Bulk particle-weighted RMS radius ends25.6110mm vs27.4959mm control (6.85% smaller),
+both above18.7082mm initial. Thus the boundary maximum alone hides a modest bulk
+effect; neither moment nor surface geometry establishes particle confinement. Drift/thermal ratio reaches116.93, exposing an invalidly established
+edge closure; strong-run local/time accuracy remains unresolved. Work residual
+maxima/E0 are2.7201e-5/4.9576e-5. No experimental/hardware recommendation.
+Completed output: outputs/material_tube_bias_pulse_20mt_r4_z16_t2000.
+Inspected comparison: outputs/material_tube_20mt_control_comparison.
+Updated actual3-D/signed sections: outputs/material_experiment_20mt_display.
+
+An opt-in split step handles the matched upwind pressure switch implicitly while
+retaining all physical terms and directly measured external work. Two early
+failed attempts and sources are preserved. Corrected candidate complete pulses:
+COMPLETED14252: outputs/material_coil_split_r4_t2000_d,2000steps/7.121769us,
+1066.17s. Actual time halving now reduces late sensitivity: total B/J differences
+.21196%/.38724%, Jr/Jtheta/Jz3.7249%/.018683%/4.0554%, versus original RK4 weak
+Jr/Jz15.28%/14.99%. Btheta still6.0173%; local accuracy is not fully established.
+Max direct-work residual/E0 2.65160e-10, minima entropy within2.91e-13 of initial.
+Inspected outputs/material_coil_split_time_comparison. No further new job pending.
+COMPLETED45710: outputs/material_coil_split_r4_t1000_d,1000steps/7.121769us,
+539.42s. Max direct-work residual/E0 1.06014e-9; minimum entropy deviation from
+initial at most1.60e-13. Heat5.49400nJ, final peakJtheta9.91443A/m².
+Actual method comparison with original1000-step RK4: final B/J differences
+.9814%/1.8543%, weak Jr/Jz19.80%/18.11%; not a time-convergence certificate.
+Inspected outputs/material_coil_split_vs_rk4_t1000. New step remains opt-in for physical cases beyond this weak pulse.
+Both source d56d01a8aa762d4b58f241fb8abd3b5636278de928764c24497fdca1de1a0eeb.
+Previous c runs exited1 at steps1656/808: a newly hit pressure bound repeatedly
+released caused a zero-length solve step. The new retained working-set solve
+resolves the actual captured quadratic to4.34e-19 without changing its equations.
+The two complete weak pulses demonstrate improved time behavior; strong pulses
+and negative pressure branches are not thereby validated. No unit tests.
+LIVE89864: outputs/material_vector_free_r6_p5_q10_t2000, older full-vector run.
+Poll exact handles; keep all live source closures unchanged.
+
+Newest3-D viewer is localhost8790/20mt/ on server89915, browserTab8 marked
+deliverable. Time/component/motion-label checks passed; no browser errors.
+Scientific PNG/PDF and browser_view.jpg inspected. The old1mT view remains at8790/. Preserve the old views and user-modified poster. No remote.
+The overarching goal and frc-vacuum.3 remain open. NEXT improve actual coil/transport/preparation simulations using these complete
+results, including independently prescribed bias/formation coil groups. Use the
+new step in concrete physical trajectories before broader adoption. Collect89864
+when it exits; no repeat exhaustive grid/replay infrastructure.
+Avoid expanding verification infrastructure. Keep the full goal open.
+
 ## Current boundary: configured metre-scale biased pulse and 3-D view (2026-10-14)
 
 Previous goal turn45221c28 was PROGRESS: actual moving vacuum and finite-coil

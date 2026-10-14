@@ -21,3 +21,6 @@ Exactly zero field/current frames use the zero color without dividing by a zero
 range; their displayed physical maxima remain exactly zero.
 An optional initial_zoom fits the long tube more clearly; reset restores it.
 Zoom always scales every coordinate equally.
+An optional motion label shows the saved midplane and maximum boundary radius,
+so a local pinch is distinguishable from expansion elsewhere. It reports actual
+geometry supplied by the builder; the browser does not infer confinement.

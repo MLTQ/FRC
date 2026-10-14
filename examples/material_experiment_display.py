@@ -61,6 +61,8 @@ def build(source, destination):
             bmax=max(peak_line_b, float(np.linalg.norm(a['magnetic_field'], axis=1).max())),
             jmax=abs(colors).max(axis=0).tolist(),
             drive_center_t=a['source_current_a']*metadata['vacuum_center_field_per_amp_t'],
+            midplane_radius_m=float(np.interp(0., model.space.mesh.zf, state.fluid.coordinates[fluid.domain.ids[-1], 0])),
+            maximum_radius_m=float(state.fluid.coordinates[fluid.domain.boundary, 0].max()),
             temperature=(np.sum(fluid.particles[..., None]*a['fields']['temperature'], axis=(0, 1))/fluid.particles.sum()).tolist()))
         print('experiment display state', step, flush=True)
     extent = max(tube['length_m']/2, max(c[0] for c in model.coils)/.6)*1.05
@@ -120,7 +122,7 @@ def build(source, destination):
     html = (assets/'index.html').read_text()
     html = html.replace('This run starts with closed magnetic flux. It does not demonstrate FRC formation or particle confinement. External coils are not included; spatial accuracy and the plasma edge remain under study.',
         'A steady bias is followed by an opposing coil pulse. Copper rings show prescribed coils; grey lines show the tube. This coarse pre-ionized model does not establish FRC formation, physical transport or confinement.')
-    html = html.replace('<div class="toolbar">', '<p id="drive"></p><div class="toolbar">')
+    html = html.replace('<div class="toolbar">', '<p id="drive"></p><p id="motion"></p><div class="toolbar">')
     html = html.replace('material_vector_3d.png', 'material_experiment_3d.png')
     html = html.replace('Open the scientific image</a>', 'Open the scientific image</a> · <a href="material_experiment_sections.png">Signed fields and flux contours</a>')
     html = html.replace('/* DATA */', 'const DATA='+json.dumps(data, separators=(',', ':'))+';').replace('/* VIEWER */', (assets/'viewer.js').read_text())

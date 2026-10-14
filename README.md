@@ -3,16 +3,21 @@
 The newest solver couples a freely moving two-temperature plasma, finite-mass
 currents, an actual magnetic vacuum and prescribed coils.
 
-A configured experiment now uses a **1m tube,15cm diameter, assumed pre-ionized
-argon inventory, steady bias and an opposing pulse**. Its complete3.5us trajectory
-is available in the [new coil/plasma3-D view](outputs/material_experiment_display/index.html)
-and [signed field/flux sections](outputs/material_experiment_display/material_experiment_sections.png).
-Change the [experiment inputs](configs/material_tube_bias_pulse.json), then run
-`python -m examples.material_experiment CONFIG OUTPUT`. A separate
-[bias-only control](configs/material_tube_bias_only.json) is running.
-Read [assumptions and actual results](docs/MATERIAL_EXPERIMENT.md): preparation
-and ionization are assumed, local current accuracy remains unresolved, and
-cold-edge carrier drift exceeds the thermal speed during this run.
+A configured experiment uses a **1m tube,15cm diameter, assumed pre-ionized
+argon inventory, steady bias and an opposing pulse**. Complete bias-only,1mT
+and20mT pulse trajectories now show a useful distinction: the1mT pulse reverses
+part of the field with almost no change in expansion; the20mT pulse briefly
+compresses the middle, then rebounds with greater expansion elsewhere.
+See the [updated3-D field/current playback](outputs/material_experiment_20mt_display/index.html)
+and [actual pulse/control comparison](outputs/material_tube_20mt_control_comparison/pulse_vs_bias.png).
+The [earlier1mT view](outputs/material_experiment_display/index.html) is preserved.
+
+Change the [experiment inputs](configs/material_tube_bias_pulse_20mt.json), then
+run `python -m examples.material_experiment CONFIG OUTPUT`. Read
+[assumptions and measured results](docs/MATERIAL_EXPERIMENT.md): preparation and
+ionization are assumed, current accuracy remains unresolved, and cold-edge drift
+exceeds the thermal speed. This is an exploratory simulator, not a validated
+laboratory design or demonstration of confinement.
 
 The earlier fixed-footprint finite-coil simulation drives a moving, two-temperature plasma with finite
 circular coils around a **finite tube with sealed end caps**. The magnetic

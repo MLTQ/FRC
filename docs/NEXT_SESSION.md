@@ -1,3 +1,40 @@
+# Continue the physical FRC simulation
+
+Read newest GOAL_STATUS.md and MATERIAL_EXPERIMENT.md. User priority: simulation
+first, complete end-to-end and independent mathematical/experimental comparisons.
+No unit tests, recursive verification frameworks or subagent delegation.
+
+Completed bias-only,1mT and20mT pulses now distinguish magnetic response,
+transient central compression, bulk extent and outer expansion. The20mT pulse
+shrinks middle35 ->31.3557mm, then rebounds; final max radius68.6460mm. Particle
+RMS radius25.6110mm vs27.4959mm control (both expand from18.7082mm). Heat85.5213mJ.
+Strong cold-edge drift/thermal ratio116.93 and local accuracy limit physical claims.
+Newest3D view localhost8790/20mt/ (server89915, Tab8 marked deliverable) includes
+middle/max radius, actual full plasma/vacuum B and all J components. PNG/PDF,
+comparison and browser screenshot inspected; controls checked without errors.
+
+Completed corrected split runs45710/14252:1000/2000steps, same source
+ d56d01a8aa762d4b58f241fb8abd3b5636278de928764c24497fdca1de1a0eeb.
+Time-halving final J difference.38724%; weak Jr/Jz3.7249%/4.0554%, versus older
+15.28%/14.99%. Fine work residual/E0 2.65e-10, entropy minima within2.91e-13.
+This improves time integration but leaves spatial and strong-case validity open.
+New step remains opt-in. Four failed attempts and the concrete bound-stagnation
+fix are preserved. Existing physical plots perform comparisons; no new framework.
+
+ONLY LIVE scientific job:89864 outputs/material_vector_free_r6_p5_q10_t2000,
+older high-order full-vector trajectory. Poll exact handle; preserve its common
+science source closure and all accepted states; never restart from timeout.
+All new coil, control, strong-pulse, split and plot jobs are terminal.
+
+NEXT prioritize physical simulations with independently prescribed bias and
+formation coils, and defensible transport/ionization/preparation. Apply the new
+integration to concrete physical cases before broad adoption; its weak-pulse
+success does not validate nonconvex pressure branches or a laboratory experiment.
+Collect89864 when it exits. Keep full goal and frc-vacuum.3 open. No remote or
+publication; preserve user-modified outputs/frc_showcase/poster.png.
+
+---
+
 # Active continuation: full current coupling on moving material
 
 ## Current boundary: configured metre-scale biased pulse and 3-D view (2026-10-14)

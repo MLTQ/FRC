@@ -19,6 +19,15 @@ fed back into state integration. All actual fields, heat, current, motion,
 source/response quantities and physical residuals are retained, with every
 accepted state and frozen source. No unit tests or reporting framework.
 
+Optional `--integrator split` uses SplitMaterialCoilCurrent's symmetric implicit
+upstream-diffusion step around the central physical RK4 evolution. It preserves
+every accepted state in the same format and records the actual nonlinear solve
+and thermal/field exchange observations. The source-response work integral is
+null for this method because the pointwise zero-current trace is ambiguous;
+direct waveform work -Idot*lambda remains independently integrated. Defaults and
+physical parameters are unchanged. This option is evaluated with complete pulses,
+not unit tests. See `plasma_bench/material_split_current.md` for equations.
+
 This first coarse trajectory establishes execution/coupling only. Its field,
 current and force accuracy need independent physical/time/spatial comparisons.
 The inherited upwind method has already shown current time sensitivity. Constant

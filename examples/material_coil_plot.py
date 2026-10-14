@@ -44,17 +44,19 @@ def build(destination,sources):
         runs.append((p,d))
     out.mkdir();fig,axes=plt.subplots(2,3,figsize=(15,9),constrained_layout=True);summary={}
     for p,d in runs:
-        rows=[d['initial']]+d['records'];t=np.array([r['time'] for r in rows])*1e6;label=f"{d['nr']}×{d['nz']}, {d['steps']} steps"
+        rows=[d['initial']]+d['records'];t=np.array([r['time'] for r in rows])*1e6;label=f"{d['nr']}×{d['nz']}, {d['steps']} steps, {d.get('integrator','rk4')}"
         axes[0,0].plot(t,[r['source_current_a'] for r in rows],label=label)
         j=np.array([r['peak_current_components_a_m2'] for r in rows]);axes[0,1].plot(t,j[:,1],label='Jθ '+label)
         axes[0,1].plot(t,np.max(j[:,[0,2]],axis=1),'--',label='Max Jr,Jz '+label)
         axes[1,0].plot(t,np.array([r['joule_heat_j'] for r in rows])*1e9,label='Joule heat '+label)
         axes[1,0].plot(t,np.array([r['magnetic_induced_energy_j'] for r in rows])*1e9,'--',label='Induced field '+label)
         axes[1,1].plot(t,[r['relative_external_work_residual'] for r in rows],label='External E work '+label)
-        axes[1,1].plot(t,[r['relative_response_work_residual'] for r in rows],'--',label='Mutual/source work '+label)
+        if all(r['relative_response_work_residual'] is not None for r in rows):
+            axes[1,1].plot(t,[r['relative_response_work_residual'] for r in rows],'--',label='Mutual/source work '+label)
         rows=[d['initial']]+d['records'];summary[p.name]={'source_sha256':d['source_sha256'],'summary_sha256':sha(p/'summary.json'),
             'max_external_work_residual':max(abs(r['relative_external_work_residual']) for r in rows),
-            'max_response_work_residual':max(abs(r['relative_response_work_residual']) for r in rows),
+            'max_response_work_residual':max((abs(r['relative_response_work_residual']) for r in rows if r['relative_response_work_residual'] is not None),default=None),
+            'integrator':d.get('integrator','rk4'),
             'max_current_components_a_m2':np.max([r['peak_current_components_a_m2'] for r in rows],axis=0).tolist(),
             'max_pair_power_residual_w':max(abs(r['pair_power_residual_w']) for r in rows),
             'minimum_entropy':np.min([r['minimum_specific_entropy'] for r in rows],axis=0).tolist(),'final':{k:v for k,v in rows[-1].items() if k!='boundary_coordinates'}}
@@ -83,7 +85,8 @@ def build(destination,sources):
                 row[name+'_relative_l2_difference']=float(np.sqrt(np.sum(volume[:,None]*(values[0]-values[1])**2)/np.sum(volume[:,None]*values[1]**2)))
                 if name in ('B','J'):row[name+'_component_relative_l2_differences']=np.sqrt(np.sum(volume[:,None]*(values[0]-values[1])**2,axis=0)/np.sum(volume[:,None]*values[1]**2,axis=0)).tolist()
             row['maximum_position_difference_m']=float(abs(states[0].fluid.coordinates-states[1].fluid.coordinates).max());comparisons.append(row)
-        summary['same_grid_time_comparison']=comparisons
+        same_method=runs[0][1].get('integrator','rk4')==runs[1][1].get('integrator','rk4')
+        summary['same_grid_time_comparison' if same_method else 'same_grid_method_comparison']=comparisons
     elif len(runs)==2 and all(runs[0][1][k]==runs[1][1][k] for k in ('radius_m','half_length_m','central_density_m3','resistivity_ohm_m','duration','coils','waveform','ion_mass_kg')):
         pairs=[reconstruct(path,record) for path,record in runs];comparisons=[]
         radial=np.unique(np.concatenate([m.space.mesh.rf for f,m in pairs]))
@@ -109,7 +112,7 @@ def build(destination,sources):
         summary['material_label_spatial_comparison']=dict(reference_quadrature_points=rr.size,
             weighting='Ten-point Gaussian quadrature per union reference cell; actual volume of final listed run.',
             scope='Same material labels, each at its actual physical position; two grids do not establish convergence. Time errors remain.',states=comparisons)
-    titles=['Prescribed finite-coil current','Actual current components','Heat and induced magnetic energy','Two source-work budgets']
+    titles=['Prescribed finite-coil current','Actual current components','Heat and induced magnetic energy','Source-work balance']
     labels=['Common coil current [A]','Peak current density [A/m²]','Energy [nJ]','Work residual / initial plasma energy']
     for ax,title,label in zip(axes[:,:2].T.flatten(),[titles[0],titles[2],titles[1],titles[3]],[labels[0],labels[2],labels[1],labels[3]]):
         ax.set(xlabel='Time [µs]',ylabel=label,title=title);ax.grid(alpha=.2);ax.legend(fontsize=7,frameon=False)
