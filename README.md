@@ -1,11 +1,10 @@
 # Virtual plasma bench
 
-The latest simulation applies a prescribed axial-flux pulse to a moving,
-collisional plasma and follows its current, heating and relaxation. The full
-fixed-resistance runs finish and closely match the independent magnetic
-diffusion solution. Current and heating remain less accurate at the driven
-wall; the finer run underestimates total heating by 4.5%. Read the
-[measured pulse results](docs/DRIVEN_FLUX_RESULTS.md) and
+The latest simulation now evolves the current at the driven wall, including
+its physical inertia, force and Joule heating. Two complete pulse runs greatly
+improve the current and heating comparison with the independent diffusion
+solution. The finer spatial run is still active. Read the
+[wall-current results](docs/WALL_CURRENT_RESULTS.md) and
 [current handoff](docs/NEXT_SESSION.md).
 
 The preceding full runs establish [moving thermal relaxation](docs/ADVECTED_COULOMB_RESULTS.md)

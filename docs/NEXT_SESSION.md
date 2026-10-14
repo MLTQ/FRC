@@ -1,5 +1,33 @@
 # Active continuation: driven plasma and wall current
 
+## Current physical change: evolved driven-wall current (2026-10-14)
+
+Read WALL_CURRENT_RESULTS.md and the visually inspected
+outputs/wall_current_comparison/wall_current_response.png. The prior goal turn made progress (ccb5b2e):
+three full pulses exposed missing wall current. New opt-in WallCurrentGeometry,
+Model,Plasma,Gauss now evolve it with physical inertia and the same current in
+all forces, heat, species terms and source work. An exact actual-density Schur
+elimination reuses the strict induction solve; complete Ohm remains checked.
+No numerical diffusion, floors, compensating heat, unit tests or new framework.
+
+Completed outputs/wall_current_fixed_r8_t160 and wall_current_fixed_r8_t320;
+actual sessions5146/51847 exited0. First run reduces space-time current error
+28.06%→0.01512%, heating error-7.87%→+0.002600%, wall-power discrepancy
+0.131842→0.000372219W. Time refinement reduces energy drift15.9919-fold to
+4.73071e-6 of peak field energy. Final heat difference is+7.30e-8 relative,
+but possible error cancellation prevents treating this as an accuracy bound.
+Current error does not time-converge: additional early-time samples increase
+its norm to0.02048% and peak6.91A/m²; spatial refinement must resolve this.
+
+LIVE finer full pulse: outputs/wall_current_fixed_r16_t320, actual session14381;
+last observed117/320. Poll that exact handle and collect its actual terminal
+exit. Do not restart or change its source closure. Next finish that physical
+comparison, then run the corrected evolving-Spitzer pulse. Keep frc-goal.1 in
+progress. The full FRC goal and vacuum/coil/end/transport/formation gates remain
+open; these are filled periodic rigid-cylinder cases, not formation experiments.
+Preserve frozen evidence, the user's poster, and the active uncommitted output.
+Earlier live-worker notes below are historical.
+
 ## Current simulation: prescribed flux and evolving resistance (2026-10-14)
 
 Three complete 24 µs driven-plasma runs now finish: two fixed-resistance grids
