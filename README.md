@@ -18,6 +18,15 @@ last spatial refinement changes peak current by0.33% and heating by0.001%.
 See the [actual field/current figure](outputs/finite_coil_comparison/finite_coil_response.png).
 These are model comparisons, not an experimental calibration.
 
+The moving-edge work now has a separate two-species material fluid component:
+six complete expansion/rotation runs carry an actual free surface with no
+exterior gas. Independent affine solutions show about fourfold error reduction
+per mesh doubling; finest surface error is40µm for spherical expansion. Read
+[the moving-edge results](docs/MATERIAL_CARRIER_EDGE_RESULTS.md) and
+[trajectory figure](outputs/material_vacuum_comparison/material_vacuum_expansion.png).
+This zero-current component still needs coupling to the full magnetic/current
+and coil equations; the heated physical edge is not yet validated.
+
 The sandbox remains a research prototype. A physical moving plasma edge,
 transport/ionization validity and converged FRC formation remain unfinished.
 It is not yet validated for selecting a laboratory formation experiment.

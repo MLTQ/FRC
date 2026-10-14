@@ -1,5 +1,55 @@
 # Active research: a credible experimental FRC simulation
 
+## Current boundary: moving carrier/thermal fluid component (2026-10-14)
+
+The previous goal turn made progress in95bd276: complete finite-coil/sealed-end
+coupling and seven full pulses. This turn adds a necessary moving fluid
+component, not a replacement or completed extension of that electromagnetic
+solver. Read MATERIAL_CARRIER_EDGE_RESULTS.md and the inspected
+outputs/material_vacuum_comparison/material_vacuum_expansion.png.
+
+MaterialTwoSpecies carries fixed quadrature particle weights, two physical
+entropies, canonical meridional/angular momentum and material rotation angle.
+Density uses actual changing cylindrical volume. Compact reference density and
+temperatures vanish together at the moving surface; no exterior fluid/floors.
+Consistent physical mi+me inertia, pressure virtual work and position-dependent
+angular inertia/centrifugal force evolve general Q1 node motion. Outer motion
+is not prescribed or constrained to affine shape. The older P0 MovingPlasma
+solver is not reused as dynamics. No unit tests, new framework, diffusion,
+energy repair or acceptance relaxation was introduced.
+
+Three spherical and two rotating elongated7.12177us trajectories complete;
+a sixth complete rotating trajectory stores/compares material phase. Actual
+sessions90694,87440,12290 and figure observer95156 exited0, all collected.
+Initial directr4 setup exited1 before stepping on a name collision, preserved.
+No worker remains live; do not restart these runs. All accepted states/source
+closures remain in outputs/material_vacuum_*. The final angle-aware example
+uses the current source; earlier five frozen sources omit the passive angle.
+
+Independent physical-vacuum Euler reference: closed-form spherical expansion
+and separately integrated rotating affine axes. Roughly4x error reduction per
+mesh doubling. Finest final surface errors40.0um(sphere)/24.5um(rotating),
+velocity errors0.0348%/0.0308% of stated speed scale, density errors~0.083%.
+Native energy drift <4e-14; initial polygonal mass remains0.2408% low at16/32,
+so conservation is not physical accuracy. Final phase error0.000100835rad.
+B=J=0 and equal species temperatures make current/Hall/Joule/exchange terms
+vanish in this explicitly limited fixture. No heated edge, ionization or
+laboratory-validity claim. Rotation/volume are real evolved solver states.
+
+frc-vacuum.3 and full goal remain open. NEXT connect full magnetic/current
+physics to the actual moving material state, rather than add more zero-current
+or sphere/refinement campaigns. Include changing geometry, toroidal winding,
+physical current kinetic energy, Hall/advection/stress, species relative flux,
+finite-coil mutual/source work and a magnetic-only exterior. The new
+axisymmetric deformation helper is preparatory, not verified field coupling.
+A carrier-weighted drift space is a candidate to avoid artificial J/n floors,
+not an adopted closure. Read SURFACE_COMPATIBILITY before edge heating; the
+zero-current physical-vacuum profiles do not solve current-carrying thermal
+compatibility or kinetic/sheath/ionization validity. Retain full finite-coil
+solver, all archived evidence and user poster. Full formation/UI/experimental
+validation, long-contact accuracy and remaining transport gates stay open.
+Earlier boundary blocks below are historical and superseded.
+
 ## Current boundary: finite coils and sealed finite ends (2026-10-14)
 
 This goal turn made physical simulation progress beyond23b5d08. The full
