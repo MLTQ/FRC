@@ -2,41 +2,40 @@
 
 ## Current simulation boundary (2026-10-14)
 
-Concrete solver progress: the opt-in HyperdiffusiveWallPlasma adds sixth-order
-numerical magnetic/current damping with paired numerical electron heat. Read
-HYPERDIFFUSIVE_CONTACT_RESULTS.md and the new model/solver companions.
-All original terms and solver tolerances remain. Physical resistivity is separate.
-The independent continuum calculation predicts only1.82e-7 relative density
-signal distortion over100us. This is a candidate, not a validated physical closure.
+This continuation made concrete solver and simulation progress. New opt-in
+CoulombExchangeWallPlasma adds conditional Z=1 Maxwellian electron-ion thermal
+exchange to the moving finite-mass model, with opposite heat and both gamma5/3.
+Two complete400us uniform Te5/Ti1 argon evolutions at40/80 steps match an
+independent scalar time integral. Final Te errors2.05219e-6/1.30405e-7eV improve
+15.737-fold; fine max physical-energy drift4.32892e-8. Sessions20930/96369
+exited0 and were collected. Read COULOMB_EXCHANGE_RESULTS.md and companions.
+The physical component/evidence is committed at51ba8d7; its nonuniform/drifting
+and complete transport validity remain open. No unit tests or new framework.
 
-Actual worker session40062/PID41757 remains active: F8/64,B32/64,epsilon=-1e-4,
-100us/60 steps, outputs/hyperdiffusive_contact_f8_b32_s025 and adjacent _control.
-Latest observed progress22 accepted steps,36.667us, peak ownRSS4.749GB,
-minimum free disk10.363GB. Poll the actual session; do not restart it.
-Independent density observer through19 steps/31.667us gives error6.42403e-5
-of the predicted perturbation. At18.333us it was3.30690e-5 versus original
-undamped0.0696199 (about2105x lower). The original run failed after28.333us.
-This improvement has not yet been evaluated at the full requested duration.
+The numerical hyperdiffusion contact completed all60 steps/100us, but failed
+physical-reference accuracy: final density error0.954513, Btheta1.41193 and
+current-vector25.9242 relative to their continuum perturbation norms. Physical
+energy drift is-4.76713% of the initial perturbation-energy scale. Early accuracy
+improvement did not persist. Read HYPERDIFFUSIVE_CONTACT_RESULTS.md.
+Actual worker40062/PID41757 exited0 and was collected; _control is terminal,
+peak4.801GB, elapsed2814.49s, no resource interruption. Observer81511 completed
+all density endpoints and q16/20 final field/energy comparisons, exit0 collected.
+Additional observers94697/71800 and plot49151 are terminal. No worker is live.
+Do not restart the completed run or treat success=true as physical validation.
+All accepted states, sources and negative results are retained. Preserve user poster.
 
-Existing independent energy helpers at step11/18.333us give total-energy
-change-2.03296e-18J, or-1.23013e-7 of the initial perturbation energy. q16/20
-agree closely. Observers24167,75938,3393,24536 all exited0 and were collected.
-No new unit tests, automatic replay or verification framework. One heavy worker.
-Code and immutable evidence through step19 are saved; newer live output and
-its live summaries remain pending until terminal collection. Preserve user poster.
+NEXT frc-transport.1: run a nonuniform monatomic collisional contact with n constant, uniform
+axial velocity, Te(z,0)+Ti(z,0)=6eV and zero current, using the new exchange
+source in the complete moving equations. The independent target is scalar
+thermal relaxation along z-vt characteristics, constant total pressure and
+unchanged axial field. This evaluates actual advection/source coupling; it does
+not substitute for or close the magnetic/current accuracy bug frc-7mm.7.
+Use end-to-end physical comparisons, not a new verification framework.
 
-NEXT collect session40062, use existing trajectory_density_prefix on the full
-accepted history, and apply matched_mode_physical.changes and
-matched_mode_energy_scale.measure to the terminal state. Report actual complete
-success or failure, energy drift and all limits. Do not claim damping is a cure
-without duration/refinement evidence; consider the next concrete physical solver
-change rather than expanding replay/reporting infrastructure.
-
-Earlier collisionless F32 worker is terminal (scientifically stopped after39
-steps/16.25us). Earlier resistive Bessel runs are complete; read
-RESISTIVE_WALL_RESULTS.md. Exact vacuum, physical coil/end boundaries,
-transport/ionization, formation and the full FRC goal remain open. Earlier
-sections below are historical and superseded by this boundary.
+The hyperdiffusion candidate is evaluated but not adopted. Physical resistivity
+and uniform Coulomb exchange are separate components, not a complete collision,
+conduction/ionization or drift closure. Exact vacuum, physical coil/end boundaries,
+formation and the full FRC goal remain open. Earlier sections below are historical.
 
 ## Simulation-first continuation (2026-10-14)
 

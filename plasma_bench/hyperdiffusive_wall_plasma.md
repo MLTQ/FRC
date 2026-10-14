@@ -32,3 +32,6 @@ Coefficient choice belongs to the caller and must be recorded. Resolution
 refinement must reduce eta6 to zero before interpreting collisionless physics.
 `numerical_hyper_power` is distinct from physical Ohmic power. This candidate
 does not establish that damping resolves the pressure/current inconsistency.
+
+The full100us contact evaluation is complete and this candidate is not adopted:
+late density/current errors remain large. See docs/HYPERDIFFUSIVE_CONTACT_RESULTS.md.

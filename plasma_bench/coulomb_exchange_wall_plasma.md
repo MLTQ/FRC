@@ -35,3 +35,8 @@ zero wall Btheta/normal velocity, periodic axial domain and regular axis remain.
 There is no exact-vacuum interface or formation model in this filled cylinder.
 No numerical damping is added by this class. It does not combine with the
 separate hyperdiffusive candidate by implicit or hidden inheritance.
+
+Two complete400us uniform relaxation runs at40/80 steps show the expected
+time refinement against an independent scalar integral. See
+docs/COULOMB_EXCHANGE_RESULTS.md. Nonuniform advection/source coupling is the
+next physical simulation (frc-transport.1), not established by the uniform case.
