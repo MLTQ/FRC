@@ -1,34 +1,42 @@
 # Active research: a credible experimental FRC simulation
 
-## Active time-step refinement (2026-10-14)
+## Current simulation boundary (2026-10-14)
 
-Both F32/64,B32/64 full100us attempts are terminal, with zero accepted steps.
-The60-step run rejected at1.8417582888632157e-12 after816.244s; the120-step
-control rejected at1.0288129410491659e-12 after531.094s. Actual parent exits0
-were collected through recorded numerical-failure paths, not physical success.
-No resource guard triggered. Do not restart or replay those failures by default.
+This turn made solver and physical-simulation progress. New opt-in
+ResistiveWallPlasma adds prescribed scalar eta*J and locally paired Joule
+heating to the complete moving finite-mass equations. Two full nonlinear
+Bessel-decay runs completed all40 steps over five decay times (5.260160724us).
+Independent final Bz errors improve3.22082e-5→2.60917e-6 of the remaining
+analytic signal at nr8→16. Actual sessions44111/18880 exited0. Read
+RESISTIVE_WALL_RESULTS.md and the two new module companions. No unit tests,
+new verification framework, automatic replay or experimental match.
 
-The only active scientific worker is now the full100us/240-step control:
-session81190, parent37105, child37106. Physical states:
-outputs/trajectory_fluid32_t240_minus; campaign:
-outputs/trajectory_fluid32_quarter_campaign; control:
-outputs/coupled_refinement_diagnostics/fluid32_t240_minus_control.
-Plan: outputs/coupled_refinement_diagnostics/fluid32_quarter_step_plan.json.
-Same physical model, initial data, signed amplitude and strict bounds; dt alone
-is0.416667us. Poll the actual session and inspect accepted evolution or failure.
-Do not launch another heavy worker or edit its source closure while it runs.
-Use existing independent physical comparisons; no new verification framework.
+The F32/64,B32/64 collisionless contact was deliberately stopped after its
+independent density comparison worsened: error0.0482122 of the predicted
+perturbation at13.333us, versus0.000659527 in the earlier F8/64 run. Early
+agreement did not persist. Final saved progress is39 steps,16.25us, of the
+requested100us. It is not a full-duration pass or a stage-solver rejection.
+Actual parent81190 exited130; its own child37106 returned-2 after SIGINT.
+Read outputs/trajectory_fluid32_t240_minus/scientific_stop.json. Campaign and
+resource control are terminal; the unmodified physical summary retains its
+last live terminal=false flag. Do not mistake that preserved snapshot for a
+running job or restart it. Peak ownRSS5.555GB; no resource guard triggered.
 
-A completed existing-continuum calculation covers radial modes32/64/128 at
-axial64/128. Growth is12,513–23,552 /s, well below the950,000 /s saved-error
-projection; this finite scan and nonmodal comparison do not prove a cause.
-Raw evidence: outputs/contact_short_radial_spectrum. Read the measured
-COUPLED_FLUID_REFINEMENT_RESULTS.md. Its actual process5184 exited0.
+The prefix3 and prefix32 density observers are complete, exits0 collected
+(sessions81265 and39542). Prefix32 covers every saved endpoint through13.333us.
+All accepted trajectory states, sources and solver histories are preserved.
+No scientific worker remains active. The earlier60/120-step failures and
+short-radial continuum scan are already complete; do not rerun them.
 
-RESEARCH_QUESTIONS.md identifies actual MSX measured field traces and
-flux-density data as a later formation comparison target, with missing
-inputs and model-derived profiles distinguished. No experimental match is
-claimed. Full goal remains open; older live-session notes below are historical.
+NEXT improve the unresolved pressure/current coupling in the moving contact
+solver, judging a concrete change with the existing independent continuum
+comparison and actual trajectories. The new resistive force/heating can now
+be used for nonuniform moving resistive cases; its passed decay run does not
+cure the collisionless problem or establish a gas/temperature-dependent closure.
+Do not expand replay/reporting infrastructure as the default next milestone.
+Exact vacuum, physical coil/end boundaries, transport/ionization, formation and
+the full original sandbox goal remain open. Earlier status blocks below are
+historical and superseded by this boundary.
 
 ## Simulation-first continuation (2026-10-14)
 

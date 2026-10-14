@@ -101,3 +101,39 @@ These sampled continuum growth rates remain far below the approximately
 is not a bound on all modes, and a directional projection is not an eigenvalue;
 this does not establish a numerical cause or certify a physical instability.
 The next useful evidence remains the finer fluid trajectory itself.
+
+## Early accepted evolution
+
+Latest accepted progress:6 steps through2.5us; actual session81190 remains
+live. The existing density-prefix tool compared steps0–3 through1.25us with
+the independent continuum mode: q20 relative L2 error5.15516056205211e-6 of
+the growing density signal (initial representation error2.275293536876836e-9).
+q16 gives5.155223045207872e-6. This is early single-sign density agreement,
+not full-duration success, all-field accuracy or a cure for later fast growth.
+Evidence: outputs/trajectory_fluid32_prefix3_density; immutable snapshot:
+outputs/coupled_refinement_diagnostics/fluid32_t240_prefix3.json. Observer
+session81265 exited0, peak248,168,448 bytes; it called no production RHS.
+
+## Longer-time comparison and deliberate scientific stop
+
+Early agreement did not persist. The complete accepted prefix through32 steps
+(13.333us) has independently measured q20 relative density errors1.31270e-5,
+1.68175e-5,7.28553e-4,0.0482122 at3.333,6.667,10,13.333us. The earlierF8
+trajectory at those same times gives1.32276e-5,1.26005e-5,3.37208e-5,
+0.000659527. Fluid resolution and timestep both changed, so neither a sole
+cause nor isolated convergence is inferred. This fails the intended physical
+accuracy comparison despite every saved step passing numerical residual bounds.
+
+The run was intentionally stopped to work on the unresolved coupling, after
+39 accepted steps through16.25us. Actual session81190 returned130; the parent
+collected its own child's SIGINT returncode-2. Resources passed (peak5.555GB).
+No100us pass or terminal stage rejection is claimed. The original physical
+summary remains an unmodified last-live snapshot; campaign/control are terminal.
+An explicit scientific_stop.json records the stop and preserved-summary hash.
+
+The existing density observer completed through every selected step, actual
+session39542 exit0; evidence outputs/trajectory_fluid32_prefix32_density and
+its immutable manifest in coupled_refinement_diagnostics. No replay was run.
+The separate new prescribed-resistivity/Joule-heating model and two successful
+end-to-end decay runs are documented in RESISTIVE_WALL_RESULTS.md. They do not
+explain or remove this collisionless failure. All original goal gates stay open.
