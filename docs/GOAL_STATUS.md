@@ -1,5 +1,54 @@
 # Active research: a credible experimental FRC simulation
 
+## Current boundary: finite-mass current coupled to the free material (2026-10-14)
+
+This advances c4c32463 from ideal magnetic forces to independent current/field
+coordinates evolving with actual material motion. MaterialCarrierCurrent retains
+physical electron/ion masses, Hall/self-drift, moving-density inertia, vorticity,
+magnetic force and drift stress. Read MATERIAL_CURRENT_COUPLING.md and the
+visually inspected outputs/material_current_comparison/material_current_expansion.png.
+The invariant sector is toroidal B with meridional flow/current, equal constant
+species entropies and eta=0. Both ends and side move freely; exterior matter,
+conductivity and toroidal B are exactly zero. It is a mathematical component,
+not a replacement for the fuller fixed-footprint finite-coil solver.
+
+Two complete prescribed-expansion trajectories follow the independent finite-
+inertia law (physical B amplitude 1/6 at doubled scale, versus ideal 1/4).
+Final B/current errors improve 4.88/2.70-fold with spatial refinement. Five
+free-run attempts include four completed 7.12177us trajectories and one preserved
+failure after553 accepted steps. Original fine Faraday reconstruction exceeded
+its unchanged1e-10 limit. Refining the original mixed linear rows resolves that
+failure; no state/energy correction or tolerance relaxation was introduced.
+
+Independent initial data exposed magnetic-only projection current-energy errors
++84.7%/+29.2%. A physical magnetic-plus-carrier error projection reduces those to
++3.49%/-0.152%, but increases initial B error. The finest initial J/drift errors
+remain16.2%/25.4%. New free trajectories conserve energy within6.44e-10 and satisfy
+the independent virial within3.56e-12(coarse)/3.22e-11(fine). Yet final magnetic
+energy changes45%, current energy22%, and peak current4.5-fold between4x8/8x16:
+THE FREE TRAJECTORY IS NOT SPATIALLY CONVERGED. Global conservation does not prove
+accurate local fields, pointwise current continuity or physical edge transport.
+
+Conditional Coulomb samples flag eta=0 (34–190 collision times over the run) and
+large edge drift (final drift/electron thermal speed up to24). These conditional
+Maxwellian estimates do not validate transport at large drift. No laboratory
+prediction, FRC formation, stability or confinement is established. General
+species entropy/heating, poloidal fields and moving vacuum/coil coupling remain.
+
+All scientific sessions15237,1742,50963 and batch62098 have terminal exits0
+collected; original failure94090 exit1 and observers95334,43866 exit0 collected.
+No worker is live. Do not restart them. Frozen sources and every accepted state
+remain in outputs/material_current_*. Figure PNG inspected; PDF/comparison JSON
+saved. No unit tests or new verification framework. User poster remains untouched.
+
+NEXT improve the actual field/current spatial representation using existing
+polynomial degree/quadrature controls (currentlydegree3/q6; candidate5/q8), then
+compare a complete free trajectory and necessary time control. Do not replace
+simulation work with another reporting framework or claim convergence from
+energy alone. Then extend general species entropy/heating and poloidal/moving-
+vacuum/finite-coil physics. Keep frc-vacuum.3, parent and full goal open. The old
+interactive3D viewer remains unchanged. Earlier boundary blocks are historical.
+
 ## Current boundary: magnetic forces on the moving material (2026-10-14)
 
 The previous goal turn made progress in05b4abd4 by evolving the material fluid.

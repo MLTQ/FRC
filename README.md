@@ -29,9 +29,17 @@ magnetized expansion runs evolve the field, deformation and rotation together.
 Independent initial force/current comparisons refine; current reconstruction now
 includes field jumps at cell faces. Read [the magnetic coupling results](docs/MATERIAL_MAGNETIC_COUPLING.md)
 and [field/current figure](outputs/material_magnetic_comparison/material_magnetic_expansion.png).
-This moving path still lacks full finite current inertia, Hall/species transport,
-heating and coil coupling. Its initialized ideal flux is not FRC formation;
-the heated physical edge is not validated.
+The newest extension evolves finite-mass current and fluid together in an
+isentropic toroidal-field sector, including Hall effects, changing-density
+inertia and current stress. Complete expanding-field runs follow an independent
+finite-inertia solution. Complete free expansions conserve total energy to
+6.44e-10, but their final magnetic energy changes about45% with spatial refinement:
+the local field/current trajectory is not yet converged. Read the
+[current coupling results](docs/MATERIAL_CURRENT_COUPLING.md) and
+[updated field/current figure](outputs/material_current_comparison/material_current_expansion.png).
+General species transport/heating, poloidal fields and moving coil/vacuum coupling
+remain missing from this new path. It is a mathematical fixture, not FRC
+formation or a validated heated physical edge.
 
 The sandbox remains a research prototype. A physical moving plasma edge,
 transport/ionization validity and converged FRC formation remain unfinished.
