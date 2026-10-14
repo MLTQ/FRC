@@ -40,3 +40,12 @@ explicitly changes this preference. Historical test results remain historical.
 No sub-agent delegation is required by this repository. Hardware remains abstract
 prescribed waveforms. Neither closed flux nor an axisymmetric equilibrium proves
 three-dimensional stability or particle confinement.
+
+## Simulation-first priority (user, 2026-10-14)
+
+Prioritize work on the simulation and complete end-to-end runs against
+independent mathematical or experimental baselines. Do not expand verification
+frameworks or add recursive checks of checks. Use existing verification tools
+when needed to evaluate a concrete solver change; do not make exhaustive replay
+or new reporting infrastructure the default next milestone. Preserve evidence
+and report limitations, while directing effort toward physical simulation.

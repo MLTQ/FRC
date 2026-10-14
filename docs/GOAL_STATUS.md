@@ -1,5 +1,46 @@
 # Active research: a credible experimental FRC simulation
 
+## Simulation-first continuation (2026-10-14)
+
+The prior scientific turn made progress: F32 physical audit and full F8/F16/F32
+comparison, with complete replays, finished and actual exits0 were collected.
+Read COUPLED_FLUID_REFINEMENT_RESULTS.md. Physical energy-rate error decreases
+with fluid resolution, but fluid response is not converged and rapid magnetic
+response persists. No cause or cure is established by directional projections.
+
+The user asks to prioritize the sim and end-to-end physical baselines rather
+than further verification/reporting infrastructure. An actual F32/64,B32/64
+100us/60-step negative1e-4 trajectory is now running through the existing
+driver: parent session78724/PID33604, child33608. Paths:
+outputs/trajectory_fluid32_campaign and outputs/trajectory_fluid32_t60_minus.
+Poll the actual session; do not restart based on old status snapshots. Original
+equations, bounds, duration and physical parameters remain unchanged. Storage
+preflight reserved133413940 bytes per complete run with10.9GB free. No unit tests.
+
+The full lab-design goal remains open. The immediate gate is accurate moving
+plasma evolution; exact vacuum, transport/ionization/validity, physical coil/end
+coupling and converged formation remain. The latest display still shows the
+older accepted F8 step17 until a new physical trajectory is evaluated.
+
+## Latest requested display and scientific boundary (2026-10-12)
+
+Updated viewer: outputs/current_state_display_v3/index.html and inspected
+current_state_3d.png. Signed Jr/Jtheta/Jz controls and quantitative meridional
+Jz/Bz-departure slices accompany the unchanged full magnetic paths. Four real
+saved frames still end at step17,28.3333us; step18 rejected, no reversal/FRC.
+Complete builds replay byte-identically and all560 manifest inputs pass.
+Browser interaction remains unverified because the Mac is locked. No unit
+tests or physical solver runs for this presentation. Read CURRENT_STATE_DISPLAY_V3.md.
+
+The interrupted scientific continuation has complete transferred directions,
+F16/F32 signed-RHS probes/replays and the F16 physical audit/replay. These do
+not provide a later evolved state or demonstrate a growth cure. F32 physical
+audit and the prepared comparison are not executed. Read
+COUPLED_FLUID_REFINEMENT_PROGRESS.md for exact evidence, expired-session
+qualification and next command. Do not restart completed calculations.
+Full FRC goal and all acceptance gates remain open. Older next-action blocks
+below are historical and superseded by this boundary.
+
 ## Latest continuation: entropy budget and fluid-space resolution (2026-10-12)
 
 Verified progress from 1146f0b. Read SPECIES_INTERFACE_VERIFICATION.md and the

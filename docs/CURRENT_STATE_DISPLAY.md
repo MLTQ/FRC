@@ -1,5 +1,10 @@
 # Updated 3D field display — 2026-10-12
 
+**Superseded by [the v3 signed-current display](CURRENT_STATE_DISPLAY_V3.md).**
+The following v2 record is preserved as historical evidence. Both displays
+use the same last accepted physical state; v3 adds component views and the
+newer coupled-refinement research status.
+
 The current entry points are [the offline viewer](../outputs/current_state_display_v2/index.html)
 and [the inspected scientific PNG](../outputs/current_state_display_v2/current_state_3d.png).
 Both show the last accepted trajectory state: step 17, 28.3333 µs. The newer

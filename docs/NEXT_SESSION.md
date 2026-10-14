@@ -1,5 +1,40 @@
 # Active continuation: trajectory rejection
 
+## Current simulation run (2026-10-14)
+
+Read COUPLED_FLUID_REFINEMENT_RESULTS.md. F32 audit and full cross-grid
+comparison/replays are complete. Do not rerun them. The user specifically
+prioritizes simulation and direct mathematical/experimental comparisons over
+additional verification frameworks; AGENTS.md records that preference.
+
+Actual full F32/64,B32/64 evolution runs in session78724, parent PID33604,
+child33608, via the existing trajectory_control_campaign. Target100us/60 steps,
+epsilon=-1e-4, original bounds. Poll that handle, collect its actual terminal
+exit, then compare saved physical evolution with the independent reference.
+Campaign: outputs/trajectory_fluid32_campaign; states:
+outputs/trajectory_fluid32_t60_minus. One heavy worker at a time. No new physical
+source has changed, and no further report/replay wrapper is needed for this run.
+All full-goal gates remain open; older pending-comparison notes are historical.
+
+## Latest boundary: requested signed-current / magnetic display (2026-10-12)
+
+Use outputs/current_state_display_v3/index.html and current_state_3d.png.
+Complete build/replay is byte-identical; PNG visually inspected,560 inputs
+hash-checked. Signed current selection and meridional Jz/Bz-departure slices
+add detail without changing the four physical states or magnetic paths.
+Latest accepted step remains17 at28.3333us; the new diagnostics do not evolve
+time. Mac locked, so browser interaction remains unchecked. Read
+CURRENT_STATE_DISPLAY_V3.md. Optional localhost presentation server60135
+uses127.0.0.1:8788; it is not a scientific worker.
+
+NEXT scientific work: COUPLED_FLUID_REFINEMENT_PROGRESS.md records completed
+transfer/F16/F32 probes and F16 physical audit, each fully replayed. Finish
+the unlaunched F32 physical audit/replay, then the prepared but unexecuted
+physical cross-grid comparison under a new guarded wrapper. Session30234
+is expired; saved replay/terminal evidence passes, but no new actual exit
+was observed. Do not restart it. No further physical job ran for the display.
+All goal gates remain open; keep original bounds and use end-to-end checks.
+
 ## Latest continuation: completed entropy budget and scalar-space refinement
 
 Read SPECIES_INTERFACE_VERIFICATION.md. All workers are terminal with actual
