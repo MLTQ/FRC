@@ -1,41 +1,47 @@
-# Active continuation: trajectory rejection
+# Active continuation: collisional magnetic evolution
 
 ## Current simulation boundary (2026-10-14)
 
-This continuation made concrete solver and simulation progress. New opt-in
-CoulombExchangeWallPlasma adds conditional Z=1 Maxwellian electron-ion thermal
-exchange to the moving finite-mass model, with opposite heat and both gamma5/3.
-Two complete400us uniform Te5/Ti1 argon evolutions at40/80 steps match an
-independent scalar time integral. Final Te errors2.05219e-6/1.30405e-7eV improve
-15.737-fold; fine max physical-energy drift4.32892e-8. Sessions20930/96369
-exited0 and were collected. Read COULOMB_EXCHANGE_RESULTS.md and companions.
-The physical component/evidence is committed at51ba8d7; its nonuniform/drifting
-and complete transport validity remain open. No unit tests or new framework.
+Completed physical progress: three full100us moving temperature contacts and
+four full12us collisional magnetic decays. No unit tests or new verification
+framework. All scientific workers are terminal; actual exits were collected.
 
-The numerical hyperdiffusion contact completed all60 steps/100us, but failed
-physical-reference accuracy: final density error0.954513, Btheta1.41193 and
-current-vector25.9242 relative to their continuum perturbation norms. Physical
-energy drift is-4.76713% of the initial perturbation-energy scale. Early accuracy
-improvement did not persist. Read HYPERDIFFUSIVE_CONTACT_RESULTS.md.
-Actual worker40062/PID41757 exited0 and was collected; _control is terminal,
-peak4.801GB, elapsed2814.49s, no resource interruption. Observer81511 completed
-all density endpoints and q16/20 final field/energy comparisons, exit0 collected.
-Additional observers94697/71800 and plot49151 are terminal. No worker is live.
-Do not restart the completed run or treat success=true as physical validation.
-All accepted states, sources and negative results are retained. Preserve user poster.
+Nonuniform advection/Coulomb exchange matches independent characteristic
+relaxation. Axial refinement reduces Te/Ti errors50/55.7-fold; time refinement
+reduces energy drift15.99-fold to3.93322e-11. Read ADVECTED_COULOMB_RESULTS.md.
+Sessions38573/39308/91750 completed; frc-transport.1 is closed for this component.
 
-NEXT frc-transport.1: run a nonuniform monatomic collisional contact with n constant, uniform
-axial velocity, Te(z,0)+Ti(z,0)=6eV and zero current, using the new exchange
-source in the complete moving equations. The independent target is scalar
-thermal relaxation along z-vt characteristics, constant total pressure and
-unchanged axial field. This evaluates actual advection/source coupling; it does
-not substitute for or close the magnetic/current accuracy bug frc-7mm.7.
-Use end-to-end physical comparisons, not a new verification framework.
+New SpitzerWallPlasma evaluates weak-field Z1 resistance from actual evolving
+Te/n, paired with electron Joule heat and electron-ion exchange. Cooling raises
+eta73%; magnetic decay follows an independently integrated variable-resistance
+Bessel reference. Original8/80 and16/80 runs completed, sessions61936/53684.
+Final B errors3.27565e-5/8.07015e-6 of remaining signal; current error does not
+mesh-converge. Read SPITZER_DECAY_RESULTS.md and the inspected comparison PNG.
 
-The hyperdiffusion candidate is evaluated but not adopted. Physical resistivity
-and uniform Coulomb exchange are separate components, not a complete collision,
-conduction/ionization or drift closure. Exact vacuum, physical coil/end boundaries,
-formation and the full FRC goal remain open. Earlier sections below are historical.
+Original8/160 rejected step17 on strict floating wall-trace cancellation;
+session58978 and targeted observational probe92257 are terminal with the
+failure preserved. New opt-in LiftedModalGauss adds independent magnetic
+coordinates before one lift, retaining all equations, scaling and bounds.
+Its8/80 and8/160 full runs complete, sessions99314/35233: energy drift decreases
+15.9858-fold to2.91367e-5 of initial field/current energy. Old/new80-step final
+vector-B difference is1.90935e-10 of initial Bz. B/J errors do not time-converge;
+finite-amplitude/spatial/numerical contributions remain. frc-transport.2 closed
+for the bounded implemented component, not complete transport validity.
+
+NEXT frc-goal.1: drive the collisional plasma with a prescribed axial-field
+pulse. Couple induced-field Faraday forcing and external work explicitly;
+merely changing the harmonic bias is insufficient. Begin with the filled
+cylinder/fixed-resistance diffusion baseline, then evolve resistance, Joule
+heat and motion. Hardware stays prescribed waveforms. Use existing tools and
+actual end-to-end physics, not another replay/reporting framework.
+
+The closure is conditional: weakly magnetized Z1 Maxwellians, leading-me/mi
+Joule heat, no thermal forces/conduction/viscosity/neutrals/ionization. It is
+not a complete magnetized collision model. Exact vacuum, physical coils/ends
+and credible formation remain open. The hyperdiffusion candidate remains
+rejected for long-time accuracy (HYPERDIFFUSIVE_CONTACT_RESULTS.md), and
+frc-7mm.7 stays open. Preserve all frozen evidence and the user's poster.
+Earlier sections are historical; their live-worker notes are obsolete.
 
 ## Current simulation run (2026-10-14)
 

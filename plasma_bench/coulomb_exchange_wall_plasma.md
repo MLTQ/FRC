@@ -38,5 +38,7 @@ separate hyperdiffusive candidate by implicit or hidden inheritance.
 
 Two complete400us uniform relaxation runs at40/80 steps show the expected
 time refinement against an independent scalar integral. See
-docs/COULOMB_EXCHANGE_RESULTS.md. Nonuniform advection/source coupling is the
-next physical simulation (frc-transport.1), not established by the uniform case.
+docs/COULOMB_EXCHANGE_RESULTS.md. Three nonuniform moving transits subsequently
+completed with spatial temperature convergence and temporal energy convergence;
+see docs/ADVECTED_COULOMB_RESULTS.md. This does not establish accuracy of the
+separate nonzero-current magnetic trajectory or a complete transport closure.
