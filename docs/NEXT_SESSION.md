@@ -1,4 +1,44 @@
-# Active continuation: finite coil and axial end coupling
+# Active continuation: full current coupling on moving material
+
+## Current boundary: magnetic forces on the moving material (2026-10-14)
+
+The previous goal turn made progress in05b4abd4 by evolving the material fluid.
+This turn adds actual full-vector ideal magnetic forces and angular torque,
+including field winding by material rotation and the full geometry derivative.
+Read MATERIAL_MAGNETIC_COUPLING.md and the inspected figure in
+outputs/material_magnetic_comparison/. This is component progress, not completed
+finite-mass moving plasma or a replacement for the full finite-coil solver.
+
+The reference field vanishes at the material boundary; the exterior is exactly
+empty with zero B. General nodal motion is evolved, with no prescribed shape,
+force fit, diffusion or energy repair. This ideal fixture has initialized closed
+flux, no coils, and no resistive formation. Current inertia/Hall/species-relative
+transport/Joule/exchange are absent from this moving path and remain mandatory.
+
+Four complete7.12177us trajectories (initial r4, then4/8/16 with corrected current
+observer) finish; actual scientific95584 and batch18833 exits0 were collected.
+Plot99255 exited0; PNG inspected. No worker remains live. Do not restart them.
+Current reconstruction was corrected to include internal field-jump contributions
+through weak Ampere; cellwise curl alone has a nonvanishing refinement error.
+The projection is a diagnostic, not a finite-mass charge/current discretization.
+
+Independent initial force errors0.01695/0.004332/0.001064 of C/R; weak-current
+errors0.1382/0.04542/0.01163 of Bp/(mu0 R). B errors improve only about2x per
+mesh doubling, not4x. Complete final position/velocity/current differences
+improve about4x; B differences2x. Native energy change<2.89e-14 and independent
+virial inertia error<6.38e-10; initial magnetic-energy geometry error0.174% remains
+at16/32. Actual torque generates4.54m/s peak toroidal motion. Cold dilute edge
+and projected J/n show strong validity/reconstruction limits; no lab claim.
+
+NEXT implement independent magnetic/current coordinates on the moving geometry,
+with full finite-mass energy/stress and Hall/species transport, then true finite
+coil and vacuum flux traces/source work. Do not make further ideal-only studies
+or reporting frameworks the next milestone. The current reconstruction reveals
+why raw cellwise curl/J/n is not a valid coupling. Keep frc-vacuum.3, parent and
+full goal open. Preserve the existing full finite-coil solver, all historical
+sources, and the user's modified poster. The older interactive3D viewer is
+unchanged; formation/transport/UI/experimental acceptance remains unfinished.
+Earlier sections below are historical and superseded.
 
 ## Current boundary: moving carrier/thermal fluid component (2026-10-14)
 

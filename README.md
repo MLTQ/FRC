@@ -1,6 +1,6 @@
 # Virtual plasma bench
 
-The latest simulation drives a moving, two-temperature plasma with finite
+The finite-coil simulation drives a moving, two-temperature plasma with finite
 circular coils around a **finite tube with sealed end caps**. The magnetic
 vacuum surrounds its side and both ends, with exactly no exterior plasma or
 conductivity. Actual current inertia, Hall force, heating, species exchange and
@@ -24,8 +24,14 @@ exterior gas. Independent affine solutions show about fourfold error reduction
 per mesh doubling; finest surface error is40µm for spherical expansion. Read
 [the moving-edge results](docs/MATERIAL_CARRIER_EDGE_RESULTS.md) and
 [trajectory figure](outputs/material_vacuum_comparison/material_vacuum_expansion.png).
-This zero-current component still needs coupling to the full magnetic/current
-and coil equations; the heated physical edge is not yet validated.
+It now also has an ideal-MHD magnetic-force/torque extension: three complete
+magnetized expansion runs evolve the field, deformation and rotation together.
+Independent initial force/current comparisons refine; current reconstruction now
+includes field jumps at cell faces. Read [the magnetic coupling results](docs/MATERIAL_MAGNETIC_COUPLING.md)
+and [field/current figure](outputs/material_magnetic_comparison/material_magnetic_expansion.png).
+This moving path still lacks full finite current inertia, Hall/species transport,
+heating and coil coupling. Its initialized ideal flux is not FRC formation;
+the heated physical edge is not validated.
 
 The sandbox remains a research prototype. A physical moving plasma edge,
 transport/ionization validity and converged FRC formation remain unfinished.

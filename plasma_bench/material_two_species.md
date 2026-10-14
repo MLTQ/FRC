@@ -46,3 +46,8 @@ used identical fluid dynamics without storing angle; frozen sources are retained
 Six full trajectories and measured limits are in
 docs/MATERIAL_CARRIER_EDGE_RESULTS.md. The zero-current expansion/rotation
 component is exercised; complete moving electromagnetic coupling remains open.
+
+MaterialIdealPlasma now composes this fluid with MaterialMagnetic forces/torques.
+The fluid class itself remains unchanged; its original zero-current runs remain
+valid. The new wrapper is only an ideal-MHD limit, not the missing full finite-mass
+current/species/coil coupling. See MATERIAL_MAGNETIC_COUPLING.md for actual runs.
