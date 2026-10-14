@@ -1,5 +1,69 @@
 # Active research: a credible experimental FRC simulation
 
+## Current boundary: finite coils drive the freely moving plasma (2026-10-14)
+
+This continuation of836bcad9 advances the actual simulation. MaterialMagneticVacuum
+follows the freely moving side and both ends with zero exterior plasma matter/
+conductivity; its condensed magnetic energy, metric rate and shape force enter
+MaterialVacuumCurrent. MaterialVacuumSpace matches the same poloidal flux trace
+throughout the interface. MaterialCoilCurrent supplies analytic finite-loop
+fields, stage-time electric drive, motional terms, Lorentz force/torque and two
+independently accumulated reciprocal source-work budgets. Full physical masses,
+Hall/current inertia and stress, rotation, species entropy/pressure and heat
+remain. Read MATERIAL_VACUUM_COILS.md and module companions before changes.
+
+Three complete nonaffine moving-vacuum trajectories compare against analytic
+physical dipole fields, Maxwell traction, energy and power. Joint refinement4/8/16
+reduces maximum field error9.06% ->1.38% ->0.266%, traction4.60% ->0.542% ->0.0806%,
+and power3.55% ->0.347% ->0.0134%. An independent physical sampler also converges.
+This is a mathematical baseline, not experimental calibration.
+
+The complete unforced penetrating-flux trajectory40493 exited0:2000steps/7.12us,
+energy change3.00e-6, all-space virial error3.43e-7. Initial B/J errors19.75%/14.31%
+remain coarse. Its frozen archive retains the temporary module name
+material_vacuum_expansion; that ORIGINAL nonmagnetic driver was restored unchanged.
+The new permanent entry is examples.material_penetrating_expansion. Both startup
+failures are preserved with their frozen source and no physical trajectory.
+
+Both complete10uT finite-coil pulses,1000/2000steps, exited0 (30464/26556).
+They include rise, hold, fall and source-off evolution through7.121769us.
+At1.780us, time halving changes total B/J by0.00193%/0.1013%; final changes are
+0.624%/1.498%. Componentwise final J(r,theta,z) differences15.28%/0.150%/14.99%
+and Btheta16.24% reveal unresolved weak late-time currents despite the dominant
+component's agreement. Maximum external-work residual/initial energy improves
+7.60e-9 ->3.54e-9. Final Joule heat5.49395nJ, source work5.53643nJ. During the
+plateau, exterior flux at actual coil locations differs0.3791% from volume-current
+linkage; neither is adjusted to fit the other. Inspected figure/data:
+outputs/material_coil_comparison/material_coil_pulse.png and comparison.json.
+
+The heated upwind time control56380 also exited0. Both full trajectories preserve
+the initial entropy lower bound, but final B/J/drift differences8.74%/14.36%/19.89%
+are not time converged. Maximum energy drift improves only2.21-fold. The matched
+pressure force's upstream switch at zero current is a candidate source of weak
+late-current sensitivity, not a proved sole cause. No entropy/heat/transport floor
+or fitted correction was added. Read MATERIAL_THERMAL_COUPLING.md.
+
+LIVE scientific handles (authoritatively polled after the above completions):
+- 6211: outputs/material_coil_free_r6_t2000, same complete pulse on6x12,p3,q6,
+  vacuum4/modes6,2000steps. At latest observation575/2000,361.8s,RSS208MB.
+- 89864: outputs/material_vector_free_r6_p5_q10_t2000, older compact full-vector
+  initialized-flux run; at525/2000,2970.6s,RSS492MB. Initial B/J0.432%/0.844%.
+Poll exact handles for actual terminal exits; do not restart on observation timeout
+or edit their frozen source closures. Keep all accepted states and failures.
+The old3-D compact-vector display remains at127.0.0.1:8789 (server55641); it does
+not display the new coil pulse. Other old scientific live notes below are history.
+
+NEXT finish the6x12 coil pulse and compare actual fields/current, boundary motion,
+heat and coil linkage with4x8; inspect both dominant and weak current components.
+Resolve the measured temporal/local-current limits before stronger-waveform
+interpretation. Then advance physical transport/ionization and useful prescribed
+bias/formation studies, with experimental comparisons where applicable. No new
+verification framework or unit tests. The present centimetre-scale fully ionized
+fixture is not the user's proposed metre-scale neutral-fill experiment. Spatial
+and temporal convergence, heated-edge/transport validity, formation, experimental
+controls, stability and confinement remain distinct unfinished requirements.
+Keep frc-vacuum.3, its parent and the full FRC goal open. No remote/publication.
+
 ## Current boundary: full-vector moving plasma and updated 3-D display (2026-10-14)
 
 The preceding checkpoint5e61a3eb was progress: actual species heat and entropy

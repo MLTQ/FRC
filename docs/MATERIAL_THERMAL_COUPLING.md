@@ -156,8 +156,19 @@ minimum Coulomb log remains1.02611, so physical closure validity is unresolved.
 Maximum relative energy/virial errors are1.11973e-6/1.47758e-7. Observed Joule
 heat is103.273nJ; final particle-mean Te/Ti are0.370989/0.368980eV, peakB/J
 0.364979uT/120.116A/m². The run took1024.48seconds and275.1MB peak memory.
-Its own time-halved2000-step control is pending; the earlier skew method's
-fourth-order time result cannot be transferred to this upwind method.
+Its own time-halved2000-step control now completes, preserving the same entropy
+lower bound. Energy/virial errors improve only2.21/2.25-fold, to5.06986e-7 and
+6.58004e-8. Final same-material B/J/drift relative L2 differences are8.736%,
+14.360%,19.893%; the combined species temperature difference is2.88e-5 and
+maximum position difference0.584micrometres. Peak drift changes120.9 to54.1km/s.
+Thus the weak late-time current is NOT time converged even though temperature
+and total energy look close. First-order upwind pressure work changes its selected
+state at current-flux sign switches; this nonsmooth coupling warrants a direct
+time-integration/transport investigation rather than another energy-only claim.
+That mechanism is a candidate explanation, not a proved sole cause. The earlier
+skew method's fourth-order time result cannot be transferred to this method.
+See the inspected outputs/material_thermal_upwind_comparison figure and its
+time_comparison.json. No further test framework was introduced.
 
 ## Evidence and live continuation
 
@@ -174,8 +185,9 @@ Their frozen source closure is fea72a1041a501f76842a5c15a912ed66f8f1d3505e810435
 
 Failure26494 is terminal1 with exit collected; failure-stage observer99229
 is terminal0. Nonresistive43078 and upwind60494 have terminal exits0 collected.
-LIVE56380 is the upwind6x12,p5,q10,2000-step time control. LIVE89864 is the new
+Upwind time control56380 has terminal exit0 collected. LIVE89864 is the new
 full-vector6x12,p5,q10,2000-step expansion, sharing this thermal transport.
+Read MATERIAL_VACUUM_COILS.md for the new moving-vacuum and source-pulse work.
 Re-poll exact handles and inspect terminal summaries before restart/source edit.
 Do not refactor the base geometry or thermal source closure while either uses it. The shared geometry
 temporarily duplicates the base implementation to preserve its running source.

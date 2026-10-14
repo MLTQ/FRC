@@ -47,7 +47,8 @@ These are coarse model trajectories with unresolved edge/transport validity.
 A higher-order heated run exposed an entropy undershoot and was preserved as a
 failure. The conservative upwind entropy/pressure replacement now completes the
 full expansion while preserving the initial entropy lower bound. Its first-order
-numerical diffusion is explicit; a time-halved comparison is in progress.
+numerical diffusion is explicit. A complete time-halved comparison preserves
+the entropy bound but exposes14.36% late-current sensitivity; this is unresolved.
 
 The newest moving-material extension evolves **all axisymmetric B, J and flow
 components**, including poloidal flux and dynamically generated rotation. Its
@@ -57,7 +58,15 @@ and [scientific image](outputs/material_vector_display/material_vector_3d.png).
 Read [the full-vector results](docs/MATERIAL_VECTOR_COUPLING.md). The coarse
 initial B/J errors19.6%/35.9% preclude a convergence claim; a higher-order full
 run has started with initial errors0.432%/0.844%. Penetrating moving vacuum and
-finite coils still need coupling to this new path; it is not FRC formation.
+finite coils now couple to this path through a magnetic-only moving exterior.
+Two complete10µT prescribed pulses drive actual current, motion and species heat.
+Independent moving-dipole comparisons refine exterior field error to0.266% and
+Maxwell-traction error to0.0806%. Time halving changes late azimuthal current by
+0.150%, but weaker radial/axial currents by about15%; a finer spatial pulse is
+running. Read [moving-vacuum and coil results](docs/MATERIAL_VACUUM_COILS.md) and
+[the actual coil-pulse figure](outputs/material_coil_comparison/material_coil_pulse.png).
+The linked3-D display still shows the earlier compact initialized-flux run.
+These pulses do not establish FRC formation.
 
 The sandbox remains a research prototype. A physical moving plasma edge,
 transport/ionization validity and converged FRC formation remain unfinished.

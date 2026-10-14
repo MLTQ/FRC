@@ -1,0 +1,34 @@
+# Prescribed finite coils driving moving material plasma
+
+Extends MaterialVacuumCurrent with analytic circular-loop fields evaluated at
+the actual moving physical quadrature and a prescribed waveform I(t). The source
+field remains separate from induced coefficients, so its exact curl is zero
+inside plasma. A filament entering or touching the actual material polygon rejects. No
+hardware circuit, exterior matter/conductivity or fixed plasma wall is added.
+
+The total field in Hall and Lorentz forces is Bind+I*Bunit. Source material E is
+-Idot*Aunit+I*v cross Bunit. Its actual current-metric load is subtracted from
+the induced Faraday/Ohm forcing. The same full H,D and geometry derivatives
+remain; physical Ohm residual restores the projected source-material E. Physical
+laboratory E adds the exact -Idot*Aunit, keeping it distinct from its finite-space
+projection. Current heat and pressure/entropy depend on actual J and species.
+
+Source force is integral J cross (I*Bunit), including the r-weighted angular
+torque. At fixed instantaneous state, the parent thermal/force calculation is
+unchanged; only the mixed electromagnetic rows are solved again with the source.
+This temporary repeated linear solve avoids changing an active archived parent's
+implementation. It is not a split fluid/time integration. All stages use their
+actual waveform time; unchanged1e-10 physical equation bounds remain enforced.
+
+Reciprocal linkage lambda=integral J.Aunit dV=e*wcoeff.T*loadA. Its derivative
+uses actual wdot, electric-map rate and the analytic moving-potential derivatives
+d_r Atheta=Bz-Atheta/r, d_z Atheta=-Br. Therefore
+
+    d(Efluid+Kcurrent+Wbind)/dt = -Idot*lambda,
+    d(Efluid+Kcurrent+Wbind+I*lambda)/dt = I*lambdadot.
+
+The prescribed ideal-filament self-energy baseline is excluded. Source work is
+computed from waveform/linkage, never fitted to observed energy change. Both
+budgets must be measured on complete coupled runs. Inherited upwind numerical
+diffusion and measured current time sensitivity remain; no formation, physical
+transport/edge or experimental validity follows from power cancellation alone.
