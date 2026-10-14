@@ -40,3 +40,7 @@ Joule shares, the initially common entropy minimum is a spatial lower bound.
 The thermal representation and pressure forcing are lower order than degree-5
 fields. Their spatial error, edge traces and numerical diffusion must be measured;
 accurate integrated energy alone is insufficient.
+
+Full-vector fields additionally have zero scalar-gradient rows for toroidal
+electric coordinates. These carry zero axisymmetric entropy flux and zero
+pressure-gradient coefficient; meridional incidence rows remain unchanged.

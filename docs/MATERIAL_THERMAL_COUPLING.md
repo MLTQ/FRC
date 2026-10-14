@@ -99,8 +99,12 @@ the existing representation to degree5 with10-point quadrature on8x16 reduces
 initial B/J errors from5.21%/16.15% to0.0683%/0.2096%, with drift error0.3642%.
 Magnetic/current energy errors are +1.052e-5/-2.520e-5 relative; independent
 initial acceleration error is0.0006707 of C/R. This is initial-data evidence only.
-The full nonresistive high-order trajectory is still running at this checkpoint;
-do not claim its completion. The first high-order heated attempt failed below.
+The full nonresistive high-order trajectory now completes7.121769us. Maximum
+energy/virial errors are1.01e-8/5.94e-11, but final magnetic/current energies
+31.80/53.94nJ still differ strongly from the degree3 run's15.41/63.98nJ.
+Peak current changes14.28 to6.07kA/m². This is not spatial convergence; see
+outputs/material_current_p5_comparison. The first high-order heated attempt
+failed below.
 
 The completed heated runs encounter Coulomb logs as low as2.340 during evolution;
 the final maximum-drift sample has log2.782 and drift/electron thermal speed8.12.
@@ -145,13 +149,15 @@ This spatial operator has the required lower-bound property, subject to temporal
 resolution. The actual outflow/m and minimum species entropy are now recorded.
 It is lower order than the degree-5 fields and needs spatial accuracy assessment;
 energy conservation alone will not establish it. The complete replacement run
-is in progress. The old skew runs remain explicitly selectable and archived.
-The replacement has passed the failed run's1.32465us point: at1.79469us (step252),
-minimum electron/ion entropies are -27.6304585/-27.63102098 versus initial
--27.63102112, minimum Coulomb log1.02710, and transport outflow*dt is0.05447.
-These are partial observations; completion and time/spatial accuracy remain
-unproven. At that point total energy change is1.73e-7, larger than in the coarse
-skew comparison, so the new method needs its own temporal assessment.
+now finishes1000 steps/7.121769us. The old skew runs remain archived/selectable.
+Minimum entropy over the full run is exactly the initial common value; final
+electron/ion minima are -27.6296662/-27.6310154. Maximum outflow*dt is0.05849;
+minimum Coulomb log remains1.02611, so physical closure validity is unresolved.
+Maximum relative energy/virial errors are1.11973e-6/1.47758e-7. Observed Joule
+heat is103.273nJ; final particle-mean Te/Ti are0.370989/0.368980eV, peakB/J
+0.364979uT/120.116A/m². The run took1024.48seconds and275.1MB peak memory.
+Its own time-halved2000-step control is pending; the earlier skew method's
+fourth-order time result cannot be transferred to this upwind method.
 
 ## Evidence and live continuation
 
@@ -167,12 +173,16 @@ and states are in outputs/material_thermal_free_r4_t{1000,2000}_eta1e3.
 Their frozen source closure is fea72a1041a501f76842a5c15a912ed66f8f1d3505e810435b697a9c78297e3d.
 
 Failure26494 is terminal1 with exit collected; failure-stage observer99229
-is terminal0. LIVE science handles:43078 (nonresistive8x16,p5,q10,2000 steps)
-and60494 (heated6x12,p5,q10,1000 steps with upwind transport). Re-poll these exact
-handles and inspect terminal summaries before a restart or source edit.
-Do not refactor the base geometry or thermal source closure while either uses it. The new shared geometry
+is terminal0. Nonresistive43078 and upwind60494 have terminal exits0 collected.
+LIVE56380 is the upwind6x12,p5,q10,2000-step time control. LIVE89864 is the new
+full-vector6x12,p5,q10,2000-step expansion, sharing this thermal transport.
+Re-poll exact handles and inspect terminal summaries before restart/source edit.
+Do not refactor the base geometry or thermal source closure while either uses it. The shared geometry
 temporarily duplicates the base implementation to preserve its running source.
 After completion, consolidate it and compare complete spatial trajectories;
-then advance poloidal/moving-vacuum/finite-coil physics and physical transport.
+then advance moving-vacuum/finite-coil physics and physical transport. Poloidal
+fields and rotation now evolve in MaterialVectorCurrent; see
+MATERIAL_VECTOR_COUPLING.md. This does not supply penetrating external fields.
 The full FRC goal and frc-vacuum.3 remain open. No unit tests or new verification
-framework were added or run. The older interactive3D viewer is unchanged.
+framework were added or run. The older interactive3D viewer is unchanged; a new
+actual full-vector display is available in outputs/material_vector_display/.

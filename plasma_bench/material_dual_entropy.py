@@ -13,7 +13,8 @@ class MaterialDualEntropy:
         self.node_particles=np.asarray(self.sample.T@self.particles)
         if np.any(self.node_particles<=0):raise ValueError('Positive actual particles in every dual volume required')
         gradient=space.gradient
-        if gradient.shape[1]!=fluid.nodes or np.any(np.count_nonzero(gradient,axis=1)!=2):
+        counts=np.count_nonzero(gradient,axis=1)
+        if gradient.shape[1]!=fluid.nodes or np.any((counts!=0)&(counts!=2)):
             raise ValueError('Shared material nodes and oriented compatible edge incidence required')
         self.tail=gradient.argmin(axis=1);self.head=gradient.argmax(axis=1)
         self.edge_scale=gradient[np.arange(len(gradient)),self.head]

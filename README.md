@@ -45,17 +45,26 @@ error16.3-fold and changes final current by4e-7 relative. See the
 [updated heated field/current figure](outputs/material_thermal_comparison/material_current_expansion.png).
 These are coarse model trajectories with unresolved edge/transport validity.
 A higher-order heated run exposed an entropy undershoot and was preserved as a
-failure. A conservative upwind entropy/pressure pair is now being exercised;
-its numerical diffusion is explicit, and no heat or collision check is removed.
-Higher-order runs are in progress. Poloidal fields and moving coil/vacuum
-coupling remain missing from this new path; it is not FRC formation.
+failure. The conservative upwind entropy/pressure replacement now completes the
+full expansion while preserving the initial entropy lower bound. Its first-order
+numerical diffusion is explicit; a time-halved comparison is in progress.
+
+The newest moving-material extension evolves **all axisymmetric B, J and flow
+components**, including poloidal flux and dynamically generated rotation. Its
+first complete7.12us trajectory is available in the
+[updated interactive3-D display](outputs/material_vector_display/index.html)
+and [scientific image](outputs/material_vector_display/material_vector_3d.png).
+Read [the full-vector results](docs/MATERIAL_VECTOR_COUPLING.md). The coarse
+initial B/J errors19.6%/35.9% preclude a convergence claim; a higher-order full
+run has started with initial errors0.432%/0.844%. Penetrating moving vacuum and
+finite coils still need coupling to this new path; it is not FRC formation.
 
 The sandbox remains a research prototype. A physical moving plasma edge,
 transport/ionization validity and converged FRC formation remain unfinished.
 It is not yet validated for selecting a laboratory formation experiment.
 No unit tests are added or run under the current simulation-first preference.
 
-The [interactive 3D viewer](outputs/current_state_display_v3/index.html) still
+The [older interactive 3D viewer](outputs/current_state_display_v3/index.html) still
 shows the earlier nonuniform contact through 28.33 µs. It is a snapshot of that
 run, not the newer driven-pulse calculation. Read its
 [display limitations](docs/CURRENT_STATE_DISPLAY_V3.md).
