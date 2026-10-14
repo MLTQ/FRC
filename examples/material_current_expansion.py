@@ -16,12 +16,13 @@ from plasma_bench.material_carrier_current import MaterialCarrierCurrent,Materia
 from .implicit_plasma_records import provenance,freeze,sha
 
 
-def run(destination,*,nr=4,nz=8,steps=400,mode='reference',initial_projection='magnetic_current'):
+def run(destination,*,nr=4,nz=8,steps=400,mode='reference',initial_projection='magnetic_current',degree=3,quadrature=6):
     destination=Path(destination)
     if destination.exists() or mode not in ('reference','free') or initial_projection not in ('magnetic','magnetic_current') or steps<4:raise ValueError('Fresh output and complete declared mode required')
+    if degree not in (1,3,5) or min(nr,nz)<degree or quadrature<2*degree:raise ValueError('Supported degree, enough cells and quadrature >= 2*degree required')
     started=time.monotonic();identity=provenance(['examples.material_current_expansion']);destination.mkdir(parents=True);freeze(destination,identity)
     radius=.035;length=.07;mi=39.948*atomic_mass;mass=mi+ME;mu=mi*ME/mass
-    mesh=MHDMesh(radius,length,nr,nz);domain=MaterialCylinder(mesh,quadrature=6);space=MaterialCurrentSpace(mesh,degree=3,quadrature=6)
+    mesh=MHDMesh(radius,length,nr,nz);domain=MaterialCylinder(mesh,quadrature=quadrature);space=MaterialCurrentSpace(mesh,degree=degree,quadrature=quadrature)
     r=space.reference_r.reshape(nr*nz,-1);z=space.reference_z.reshape(nr*nz,-1)
     kr=jn_zeros(1,1)[0]/radius;kz=np.pi/(2*length);density=mu*(kr*kr+kz*kz)/(MU0*E*E) if mode=='reference' else 1e18
     h=np.ones_like(r) if mode=='reference' else (1-(r/radius)**2)*(1-(z/length)**2)
@@ -54,7 +55,7 @@ def run(destination,*,nr=4,nz=8,steps=400,mode='reference',initial_projection='m
     initial=model.response(state);energy0=initial['total_energy'];field_energy0=initial['magnetic_energy']+initial['current_energy']
     inertia0=float(np.sum(mass*fluid.particles*np.sum(initial['fields']['points']**2,axis=-1)))
     inertia_rate0=float(2*np.sum(mass*fluid.particles*np.sum(initial['fields']['points']*initial['fields']['sampled_velocity'],axis=-1)))
-    record=dict(terminal=False,success=False,completed_steps=0,steps=steps,dt=dt,duration=duration,mode=mode,nr=nr,nz=nz,
+    record=dict(terminal=False,success=False,completed_steps=0,steps=steps,dt=dt,duration=duration,mode=mode,nr=nr,nz=nz,degree=degree,quadrature=quadrature,
         radius_m=radius,half_length_m=length,ion_mass_kg=mi,central_density_m3=density,amplitude_t=amplitude,source_sha256=identity['source_sha256'],records=[],
         initial_field_energy_j=field_energy0,initial_total_energy_j=energy0,initial_projection=initial_projection,
         scope='Moving finite-mass Hall/current-inertia/stress sector; Btheta and poloidal fluid/carrier velocity. Equal constant species entropies, eta=0. Reference motion prescribed; free mode evolves fluid simultaneously. No exterior matter, coil or FRC formation claim.')
@@ -112,5 +113,5 @@ def run(destination,*,nr=4,nz=8,steps=400,mode='reference',initial_projection='m
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('destination');p.add_argument('--nr',type=int,default=4);p.add_argument('--nz',type=int,default=8);p.add_argument('--steps',type=int,default=400);p.add_argument('--mode',choices=('reference','free'),default='reference');p.add_argument('--initial-projection',choices=('magnetic','magnetic_current'),default='magnetic_current');a=p.parse_args()
-    d=run(a.destination,nr=a.nr,nz=a.nz,steps=a.steps,mode=a.mode,initial_projection=a.initial_projection);raise SystemExit(0 if d['success'] else 1)
+    p=argparse.ArgumentParser();p.add_argument('destination');p.add_argument('--nr',type=int,default=4);p.add_argument('--nz',type=int,default=8);p.add_argument('--steps',type=int,default=400);p.add_argument('--mode',choices=('reference','free'),default='reference');p.add_argument('--initial-projection',choices=('magnetic','magnetic_current'),default='magnetic_current');p.add_argument('--degree',type=int,default=3);p.add_argument('--quadrature',type=int,default=6);a=p.parse_args()
+    d=run(a.destination,nr=a.nr,nz=a.nz,steps=a.steps,mode=a.mode,initial_projection=a.initial_projection,degree=a.degree,quadrature=a.quadrature);raise SystemExit(0 if d['success'] else 1)

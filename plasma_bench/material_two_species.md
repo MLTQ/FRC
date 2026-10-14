@@ -51,3 +51,9 @@ MaterialIdealPlasma now composes this fluid with MaterialMagnetic forces/torques
 The fluid class itself remains unchanged; its original zero-current runs remain
 valid. The new wrapper is only an ideal-MHD limit, not the missing full finite-mass
 current/species/coil coupling. See MATERIAL_MAGNETIC_COUPLING.md for actual runs.
+
+MaterialThermalCurrent now composes the unchanged fluid with finite-mass current,
+general species entropy/pressure work, prescribed resistance/heat and conditional
+exchange in the meridional/toroidal-field sector. Read MATERIAL_THERMAL_COUPLING.md
+for complete coarse runs, the preserved fine entropy failure and ongoing upwind
+replacement. Poloidal/vacuum/coil and physical edge validity remain incomplete.

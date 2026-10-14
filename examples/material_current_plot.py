@@ -9,6 +9,7 @@ from plasma_bench.material_cylinder import MaterialCylinder
 from plasma_bench.material_current_space import MaterialCurrentSpace
 from plasma_bench.material_two_species import MaterialTwoSpecies,MaterialSpeciesState
 from plasma_bench.material_carrier_current import MaterialCarrierCurrent,MaterialCurrentState
+from plasma_bench.material_thermal_current import MaterialThermalCurrent
 from .implicit_plasma_records import sha
 from plasma_bench.coulomb_transport import regime
 
@@ -21,11 +22,13 @@ def load(path):
 
 def reconstruct(path,record):
     nr=record['nr'];nz=record['nz'];mesh=MHDMesh(record['radius_m'],record['half_length_m'],nr,nz)
-    domain=MaterialCylinder(mesh,quadrature=6);space=MaterialCurrentSpace(mesh,degree=3,quadrature=6)
+    degree=record.get('degree',3);quadrature=record.get('quadrature',6)
+    domain=MaterialCylinder(mesh,quadrature=quadrature);space=MaterialCurrentSpace(mesh,degree=degree,quadrature=quadrature)
     r=space.reference_r.reshape(nr*nz,-1);z=space.reference_z.reshape(nr*nz,-1)
     h=(1-(r/mesh.radius)**2)*(1-(z/mesh.half_length)**2);n=record['central_density_m3']*h**1.5
     fluid=MaterialTwoSpecies(domain,domain.fluid_reference,n,np.broadcast_to(h[...,None],h.shape+(2,)),record['ion_mass_kg']);fluid.initial.entropy[:]=-(2/3)*np.log(record['central_density_m3'])
-    model=MaterialCarrierCurrent(fluid,space);states=[]
+    model=(MaterialThermalCurrent(fluid,space,resistivity=record['resistivity_ohm_m'],coulomb_exchange=record['coulomb_exchange'],electron_heat_fraction=record['electron_heat_fraction'],transport=record.get('entropy_transport','skew'))
+        if record.get('thermal_current') else MaterialCarrierCurrent(fluid,space));states=[]
     for name in ('initial.npz',f"step_{record['steps']:05}.npz"):
         with np.load(path/name) as raw:
             states.append(MaterialCurrentState(MaterialSpeciesState(**{k:raw[k].copy() for k in MaterialSpeciesState.__dataclass_fields__}),raw['magnetic'].copy()))
@@ -80,8 +83,9 @@ def initial_comparison(path,d):
 def build(destination,free_paths):
     out=Path(destination)
     if out.exists():raise ValueError('Fresh figure output required')
-    refs=[load(f'outputs/material_current_reference_r{nr}_t400') for nr in (4,8)]
-    free=[load(p) for p in free_paths];out.mkdir(parents=True)
+    free=[load(p) for p in free_paths];heated=any(d.get('thermal_current') for p,d in free)
+    refs=[] if heated else [load(f'outputs/material_current_reference_r{nr}_t400') for nr in (4,8)]
+    out.mkdir(parents=True)
     plt.rcParams.update({'font.size':10,'axes.spines.top':False,'axes.spines.right':False})
     fig,axes=plt.subplots(2,3,figsize=(16,10),constrained_layout=True)
     for path,d in refs:
@@ -93,16 +97,34 @@ def build(destination,free_paths):
     axes[0,0].plot(t,2/((1+lam)*lam**2),'k:',lw=2,label='Independent finite-inertia limit')
     axes[0,0].plot(t,lam**-2,color='#9e7771',ls='--',label='Ideal flux freezing')
     axes[0,0].set(xlabel='Time / expansion time',ylabel='Peak B / initial peak',title='Current inertia changes the evolving field');axes[0,0].legend(frameon=False,fontsize=8);axes[0,0].grid(alpha=.2)
-    axes[1,0].set(xlabel='Time / expansion time',ylabel='RMS error / stated initial scale',title='Independent magnetic/current reference');axes[1,0].legend(frameon=False,fontsize=8);axes[1,0].grid(alpha=.2)
+    axes[1,0].set(xlabel='Time / expansion time',ylabel='RMS error / stated initial scale',title='Independent magnetic/current reference')
+    if refs:axes[1,0].legend(frameon=False,fontsize=8)
+    axes[1,0].grid(alpha=.2)
+    if heated:
+        axes[0,0].clear();axes[1,0].clear()
+        for path,d in free:
+            if not d.get('thermal_current'):continue
+            rows=[d['initial']]+d['records'];t=np.array([r['time'] for r in rows])*1e6
+            label=f"{d['nr']}×{d['nz']}, p{d.get('degree',3)}, {d['steps']} steps, {d.get('entropy_transport','skew')}"
+            temperature=np.array([r['particle_mean_temperature_ev'] for r in rows])
+            axes[0,0].plot(t,temperature[:,0],label=f'Electrons {label}')
+            axes[0,0].plot(t,temperature[:,1],'--',label=f'Ions {label}')
+            axes[1,0].plot(t,np.array([r['joule_heat_j'] for r in rows])*1e9,label=f'Joule heat {label}')
+            axes[1,0].plot(t,np.array([r['exchange_heat_to_electrons_j'] for r in rows])*1e9,'--',label=f'Exchange to electrons {label}')
+        axes[0,0].set(xlabel='Time [µs]',ylabel='Particle-mean temperature [eV]',title='Actual electron and ion temperatures')
+        axes[1,0].set(xlabel='Time [µs]',ylabel='Accumulated heat [nJ]',title='Current loss becomes heat; species exchange energy')
+        for ax in axes[:,0]:ax.legend(frameon=False,fontsize=8);ax.grid(alpha=.2)
     for path,d in free:
         rows=[d['initial']]+d['records'];t=np.array([r['time'] for r in rows])*1e6
-        axes[0,1].plot(t,np.array([r['magnetic_energy_j'] for r in rows])*1e9,label=f"Magnetic {d['nr']} × {d['nz']}")
-        axes[0,1].plot(t,np.array([r['current_energy_j'] for r in rows])*1e9,'--',label=f"Current inertia {d['nr']} × {d['nz']}")
-        axes[1,1].plot(t,[r['relative_total_energy_change'] for r in rows],label=f"{d['nr']} × {d['nz']}")
+        label=f"{d['nr']} × {d['nz']}, p{d.get('degree',3)}, q{d.get('quadrature',6)}, {d['steps']} steps"
+        if d.get('thermal_current'):label+=f", {d.get('entropy_transport','skew')}, η={d['resistivity_ohm_m']:g} Ωm"
+        axes[0,1].plot(t,np.array([r['magnetic_energy_j'] for r in rows])*1e9,label=f"Magnetic {label}")
+        axes[0,1].plot(t,np.array([r['current_energy_j'] for r in rows])*1e9,'--',label=f"Current inertia {label}")
+        axes[1,1].plot(t,[r['relative_total_energy_change'] for r in rows],label=label)
     axes[0,1].set(xlabel='Time [µs]',ylabel='Energy [nJ]',title='Actual free motion: magnetic and carrier energy');axes[0,1].legend(frameon=False,fontsize=8);axes[0,1].grid(alpha=.2)
     axes[1,1].set(xlabel='Time [µs]',ylabel='Relative total energy change',title='Unforced coupled-fluid energy');axes[1,1].legend(frameon=False);axes[1,1].grid(alpha=.2)
     path,d=free[-1];fluid,model,states=reconstruct(path,d);nr=d['nr'];nz=d['nz']
-    responses=[model.response(u,rate=False) for u in states];limit=max(abs(v['magnetic_field']).max() for v in responses)*1e6
+    responses=[model.response(u,rate=False) for u in states];limit=abs(responses[-1]['magnetic_field']).max()*1e6
     regimes=[]
     for name,a in zip(('initial','final'),responses):
         density=a['fields']['n'].ravel();temps=a['fields']['temperature'].reshape(-1,2);drift=np.linalg.norm(a['drift'],axis=-1)
@@ -111,7 +133,10 @@ def build(destination,free_paths):
             value.update(state=name,sample=location,quadrature_index=index,reference_length_note='Body radius, not a resolved local gradient length; no local validity certificate.')
             if value['classical_coefficients'] is not None:
                 collisions=value['classical_coefficients']['electron_ion_momentum_rate_s']*d['duration']
-                value.update(electron_collisions_over_duration=collisions,zero_resistivity_review=bool(collisions>=.1))
+                eta=d.get('resistivity_ohm_m',0.)
+                value.update(electron_collisions_over_duration=collisions,prescribed_resistivity_ohm_m=eta,
+                    zero_resistivity_review=bool(eta==0. and collisions>=.1),
+                    prescribed_over_classical_momentum_resistivity=eta/value['classical_coefficients']['momentum_resistivity_ohm_m'])
             regimes.append(value)
     for row in range(2):
         state=states[-1];a=responses[-1];label=f"After {d['duration']*1e6:.2f} µs"
@@ -134,10 +159,12 @@ def build(destination,free_paths):
         component='Bθ [µT]' if row==0 else 'Jz [kA/m²]'
         axes[row,2].set(xlabel='Axial z [cm]',ylabel='Radius r [cm]',title=f'{label} · {component}; arrows: current direction',aspect='equal')
         fig.colorbar(artist,ax=axes[row,2],shrink=.7)
-    fig.suptitle('Moving fluid with finite-mass carrier currents\nIsentropic toroidal-field sector · Hall/current stress included · no coils or FRC formation',fontsize=16)
+    subtitle=('Evolving species entropy and heat · prescribed scalar resistance · no coils or FRC formation' if heated
+        else 'Isentropic toroidal-field sector · Hall/current stress included · no coils or FRC formation')
+    fig.suptitle('Moving fluid with finite-mass carrier currents\n'+subtitle,fontsize=16)
     fig.savefig(out/'material_current_expansion.png',dpi=180);fig.savefig(out/'material_current_expansion.pdf');plt.close(fig)
     historical=[load(p) for p in ('outputs/material_current_free_r4_t2000','outputs/material_current_free_r8_t2000_refined')]
-    summary={'historical_magnetic_only_initial_comparison':{p.name:initial_comparison(p,d) for p,d in historical},'free_initial_comparison':{p.name:initial_comparison(p,d) for p,d in free},'regime_samples':regimes,'inputs':{str(p/'summary.json'):sha(p/'summary.json') for p,d in refs+free+historical},'reference_final':{p.name:d['records'][-1] for p,d in refs},'free_final':{p.name:d['records'][-1] for p,d in free},'interpretation':'Reference motion is prescribed; free mode evolves simultaneous material/current coordinates. Constant entropy/eta=0 sector, no external coils, no formation claim.'}
+    summary={'historical_magnetic_only_initial_comparison':{p.name:initial_comparison(p,d) for p,d in historical},'free_initial_comparison':{p.name:initial_comparison(p,d) for p,d in free},'regime_samples':regimes,'inputs':{str(p/'summary.json'):sha(p/'summary.json') for p,d in refs+free+historical},'reference_final':{p.name:d['records'][-1] for p,d in refs},'free_final':{p.name:d['records'][-1] for p,d in free},'interpretation':'Free motion and finite-mass currents; thermal cases evolve both entropies with prescribed resistance and conditional exchange. Toroidal-field sector, no external coils, no formation claim.'}
     (out/'comparison.json').write_text(json.dumps(summary,indent=2)+'\n');print('material current figure complete',out,flush=True)
 
 

@@ -33,3 +33,12 @@ measured85%/29% initial current-energy excess from magnetic-only projection.
 No continuing state, heat or energy is corrected. Archives identify their source
 and new records name the projection. Independent initial B and J errors remain
 in each record; improved total energy alone does not validate the representation.
+
+`--degree` and `--quadrature` expose the existing compatible polynomial and
+physical integration orders; defaults remain 3/6 for historical reproduction.
+The fluid and field use the same quadrature. Degree 5 requires at least five
+cells in each direction and quadrature >= 10: polynomials in x=r²/2 have higher
+degree in r, so degree+1 Gauss points need not integrate the magnetic metric.
+The required 2*degree is sufficient for that undeformed polynomial metric, not
+a claim of exact integration for nonpolynomial density or deformed geometry.
+New run records retain both orders; original files without them mean 3/6.

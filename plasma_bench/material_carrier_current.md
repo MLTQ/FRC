@@ -55,3 +55,8 @@ energy errors (85%/29% at4/8 and8/16); those runs are preserved. The new project
 reduces them to +3.49%/-0.152%, but increases B error and leaves 16.2% local J
 error on8/16. Final free trajectories remain spatially unconverged. Read
 `../docs/MATERIAL_CURRENT_COUPLING.md` for measured accuracy and validity limits.
+
+MaterialThermalCurrent extends the sector with actual entropy/pressure work and
+heat/exchange. This isentropic base and its active higher-order run stay unchanged.
+Read MATERIAL_THERMAL_COUPLING.md for the thermal trajectory evidence and the
+explicit upwind numerical diffusion introduced after a fine skew-entropy failure.

@@ -37,9 +37,18 @@ finite-inertia solution. Complete free expansions conserve total energy to
 the local field/current trajectory is not yet converged. Read the
 [current coupling results](docs/MATERIAL_CURRENT_COUPLING.md) and
 [updated field/current figure](outputs/material_current_comparison/material_current_expansion.png).
-General species transport/heating, poloidal fields and moving coil/vacuum coupling
-remain missing from this new path. It is a mathematical fixture, not FRC
-formation or a validated heated physical edge.
+The thermal extension now evolves both species entropies, pressure work,
+prescribed resistance/Joule heat and conditional Coulomb temperature exchange.
+Two complete heated expansions finish; halving the time step reduces energy
+error16.3-fold and changes final current by4e-7 relative. See the
+[thermal results](docs/MATERIAL_THERMAL_COUPLING.md) and
+[updated heated field/current figure](outputs/material_thermal_comparison/material_current_expansion.png).
+These are coarse model trajectories with unresolved edge/transport validity.
+A higher-order heated run exposed an entropy undershoot and was preserved as a
+failure. A conservative upwind entropy/pressure pair is now being exercised;
+its numerical diffusion is explicit, and no heat or collision check is removed.
+Higher-order runs are in progress. Poloidal fields and moving coil/vacuum
+coupling remain missing from this new path; it is not FRC formation.
 
 The sandbox remains a research prototype. A physical moving plasma edge,
 transport/ionization validity and converged FRC formation remain unfinished.

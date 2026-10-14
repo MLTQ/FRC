@@ -1,5 +1,54 @@
 # Active continuation: full current coupling on moving material
 
+## Current boundary: heated moving current and entropy transport (2026-10-14)
+
+The previous goal turn was progress in d6983b8f: actual finite-mass moving
+current. This turn adds general electron/ion entropy, matched pressure work,
+prescribed resistance/Joule heat and conditional Coulomb temperature exchange.
+Read MATERIAL_THERMAL_COUPLING.md. Two complete heated4x8,p3,q6 expansions finish
+7.121769us; physical fields, motion and both species evolve together. Halving dt
+reduces energy error16.26-fold (2.32e-10 to1.42e-11), final B/J differences
+2.16e-7/3.97e-7 relative. Independent virial errors refine about4-fold. Observed
+heat97.23nJ; temperatures cool overall with expansion. Plot inspected in
+outputs/material_thermal_comparison/. No unit tests or new verification framework.
+
+The first higher-order heated6x12,p5,q10 run FAILED at attempted187 after186
+accepted steps. Replayed stage diagnosis shows electron entropy below its
+initially uniform minimum, then a nonpositive Coulomb log. Preserve this failure;
+it is not just a physical closure issue. The continuum transport/nonnegative
+heat/exchange preserve the initially common entropy lower bound. The skew
+transport lacks that property. MaterialDualEntropy now uses positive dual
+volumes, compatible charge-balanced graph fluxes and explicit FIRST-ORDER UPWIND
+NUMERICAL DIFFUSION, with the matched pressure work. No entropy clipping, heat
+suppression, collision removal or log floor. Its complete replacement run is live;
+spatial accuracy and physical edge validity remain unproven.
+
+Higher-order current representation also improves independent INITIAL errors:
+on8x16, p5/q10 B/J errors0.0683%/0.2096%, drift0.3642%, versus previous5.21%/16.15%
+B/J. This does not establish complete-trajectory convergence. The full eta0 run
+is still live. Its source closure remains untouched.
+
+LIVE scientific handles:43078 = outputs/material_current_free_r8_p5_q10_t2000;
+60494 = outputs/material_thermal_free_r6_p5_q10_t1000_upwind. Re-poll the exact
+handles, do not restart from an observation timeout. Both retain every accepted
+state and frozen source. Do not change either active source closure. Geometry
+is temporarily duplicated in material_current_geometry to preserve the running
+base source; consolidate only after all dependent jobs finish.
+
+Terminal handles collected: heated96593/84105 exits0; first fine heated26494
+exit1; failed-stage99229 and observers95847/26949/91296 exits0. Independent initial
+observer79901 and profile18449 also terminal0. Older logs below are historical.
+
+NEXT complete the two live trajectories, inspect their actual terminal outputs,
+measure full current/thermal spatial changes and the new entropy minimum. A
+necessary time control may follow; do not add a framework. Then advance actual
+poloidal fields, moving vacuum/finite coils and defensible transport/ionization.
+The new path still has only toroidal B/meridional flow and prescribed scalar eta.
+Coulomb logs below5 and large edge drifts already preclude a lab-validity claim.
+Keep frc-vacuum.3, parent and full FRC goal open. Preserve all frozen failures,
+fuller fixed-footprint solver and user poster. The older interactive3D viewer
+remains unchanged. This is not FRC formation, stability or confinement.
+
 ## Current boundary: finite-mass current coupled to the free material (2026-10-14)
 
 This advances c4c32463 from ideal magnetic forces to independent current/field
