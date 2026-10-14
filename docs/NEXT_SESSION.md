@@ -1,4 +1,46 @@
-# Active continuation: collisional magnetic evolution
+# Active continuation: driven plasma and wall current
+
+## Current simulation: prescribed flux and evolving resistance (2026-10-14)
+
+Three complete 24 µs driven-plasma runs now finish: two fixed-resistance grids
+and one evolving-Spitzer-resistance control. Read DRIVEN_FLUX_RESULTS.md and
+outputs/driven_flux_comparison/driven_flux_response.png (visually inspected).
+Actual sessions 4859,4781,70772 and plotting observer25683 all exited0; no
+scientific worker remains live. Do not restart those calculations.
+
+New AxialFluxDrive and DrivenModalGauss supply actual loop-voltage forcing,
+source-time-dependent stages and external work. The pulse prescribes enclosed
+flux pi R² Bbar, not wall Bz. R0.035m,L0.24m,n1e21/m³,Ar+,initial Te5/Ti1eV;
+peak mean B0.1mT for12µs followed by12µs relaxation. Full momentum, current
+inertia, Hall, stress, pressure, Joule heat and Coulomb exchange remain.
+No numerical diffusion, atmosphere, floors, unit tests or new verification
+framework. Saved accepted states/stages and frozen source closures remain.
+
+Fixed eta3.83182e-5ohm m,160 steps,8→16 radial cells: maximum Bz RMS error
+falls2.79186e-4→4.82744e-5 of drive amplitude; space-time current error remains
+28.06%→21.14% of the continuum reference RMS. Heating is7.87%→4.47% low.
+Independent finite-inertia Bessel diffusion retains nonzero wall current;
+the old production current basis forces Jtheta(R)=0. Discrete-source versus
+reconstructed wall-Poynting power discrepancy falls0.131842→0.0747768W.
+Native energy closure cannot establish accurate current or boundary work.
+
+The full evolving-resistance run cools electrons/heats ions to3.02134/2.97870eV,
+raising eta to74.0081µohm m. Same-grid thermal gain is16.61% lower than fixed eta;
+final maximum current0.73558 versus52.11798A/m². These are model/control
+comparisons, not numerical errors. Peak Hall parameter0.01052 and ion drift/
+thermal speed0.03093 pass existing review thresholds, not full validity proof.
+
+NEXT physical work: correct the missing driven-wall current degree of freedom,
+including its finite current inertia and paired work/heating. Do not add
+compensating heat or alter current only in diagnostics. Use the completed
+pulse as the mathematical baseline; avoid more reporting/replay infrastructure.
+frc-goal.1 stays in progress until driven current/heating are credible.
+
+These filled periodic rigid cylinders have no solved vacuum, finite coils or
+real ends and do not demonstrate FRC formation. Full FRC goal, vacuum/transport
+scope and frc-7mm.7 long-contact accuracy remain open. Prior hyperdiffusion
+remains rejected. Preserve all archived evidence and the user's poster.
+Earlier sections below are historical; their live-worker notes are obsolete.
 
 ## Current simulation boundary (2026-10-14)
 

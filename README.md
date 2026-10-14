@@ -1,45 +1,28 @@
 # Virtual plasma bench
 
-Latest progress: the [complete species-entropy budget](docs/SPECIES_INTERFACE_VERIFICATION.md)
-now accounts for volume, interface, potential-transfer and mass effects with
-full independent replays. At fixed magnetic/current fields, refining the fluid
-space reduces the saved-direction electron source error from55.0% to0.0292%.
-The [inspected figure](outputs/species_budget_report/verification.png) summarizes
-the result. This has not yet established coupled trajectory accuracy or cured
-the growing mode. [Next complete-operator control](docs/COUPLED_FLUID_REFINEMENT_DESIGN.md).
+The latest simulation applies a prescribed axial-flux pulse to a moving,
+collisional plasma and follows its current, heating and relaxation. The full
+fixed-resistance runs finish and closely match the independent magnetic
+diffusion solution. Current and heating remain less accurate at the driven
+wall; the finer run underestimates total heating by 4.5%. Read the
+[measured pulse results](docs/DRIVEN_FLUX_RESULTS.md) and
+[current handoff](docs/NEXT_SESSION.md).
 
-Latest physics progress: [full spatial contributions and local current flux](docs/SPATIAL_PARTS_VERIFICATION.md) now have complete fresh replays. The fast error direction has substantial internal radial current jumps and local divergence; its cause and a consistent interface entropy budget remain unresolved. The [scientific figure](outputs/spatial_parts_figure_v2/verification.png) shows the measured signed contributions and independent controls. No physical solver or acceptance bound was changed.
+The preceding full runs establish [moving thermal relaxation](docs/ADVECTED_COULOMB_RESULTS.md)
+and [magnetic decay with evolving resistance](docs/SPITZER_DECAY_RESULTS.md)
+within their stated model limits. The sandbox is still a research prototype;
+exact moving vacuum coupling, physical coil/end boundaries and credible FRC
+formation remain unfinished. It is not yet validated for choosing a laboratory
+formation experiment. Work uses actual simulations and mathematical baselines;
+no unit tests are added or run under the current preference.
 
-Current research status: a finer-grid100µs contact trajectory develops rapid
-density growth and rejects step18 after28.33µs. Independent density observations
-and spatial localization replay exactly: from13.3µs onward more than99.7% of
-squared density error lies in low axial cell modes, and internal
-radial density traces separate substantially. The cause remains unresolved.
-The complete failed trajectory now replays exactly. A full spatial-RHS probe
-also reproduces rapid amplification of the saved error direction; its cause
-remains unresolved. See the [completed tangent study](docs/TRAJECTORY_TANGENT_VERIFICATION.md).
+The [interactive 3D viewer](outputs/current_state_display_v3/index.html) still
+shows the earlier nonuniform contact through 28.33 µs. It is a snapshot of that
+run, not the newer driven-pulse calculation. Read its
+[display limitations](docs/CURRENT_STATE_DISPLAY_V3.md).
 
-Updated display: [interactive 3D viewer](outputs/current_state_display_v3/index.html)
-and [current-state 3D image](outputs/current_state_display_v3/current_state_3d.png).
-They show actual saved fields through 28.33 µs, with the failed-duration status,
-physical units, complete B vector and full current magnitude. Read
-[display verification and limitations](docs/CURRENT_STATE_DISPLAY_V3.md).
-Signed radial/azimuthal/axial current controls, camera presets, cross-section
-plots and current audit status are included. No newer evolved state exists.
-The PNG is visually checked and full builds replay byte-identically; browser
-interaction remains unchecked while the Mac is locked. The completed finer
-fluid probes and pending physical comparison are recorded in the
-[scientific continuation boundary](docs/COUPLED_FLUID_REFINEMENT_PROGRESS.md).
-
-No unit tests were added or run. Full trajectory accuracy, local conservation,
-vacuum coupling and formation remain unfinished. The sandbox is not yet
-validated for selecting a laboratory formation experiment. Read the
-[latest measured results](docs/TRAJECTORY_REFINEMENT_VERIFICATION.md),
-[current handoff](docs/NEXT_SESSION.md), and
-[scientific figure](outputs/trajectory_rejection_report/verification.png).
-The preceding [instantaneous rate controls](docs/REFINED_CONTROL_VERIFICATION.md)
-retain their separate amplitude-sensitivity and strict-residual findings.
-Older summaries and test counts retain their historical scope and limits.
+The sections below preserve earlier component history; the current scientific
+boundary is in [GOAL_STATUS.md](docs/GOAL_STATUS.md).
 
 A scriptable, verified axisymmetric research sandbox. It currently implements
 analytic vacuum electromagnetics and stationary resistive plasma induction with
