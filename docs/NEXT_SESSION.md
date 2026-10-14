@@ -1,5 +1,35 @@
 # Active continuation: trajectory rejection
 
+## Active time-step refinement (2026-10-14)
+
+Both F32/64,B32/64 full100us attempts are terminal, with zero accepted steps.
+The60-step run rejected at1.8417582888632157e-12 after816.244s; the120-step
+control rejected at1.0288129410491659e-12 after531.094s. Actual parent exits0
+were collected through recorded numerical-failure paths, not physical success.
+No resource guard triggered. Do not restart or replay those failures by default.
+
+The only active scientific worker is now the full100us/240-step control:
+session81190, parent37105, child37106. Physical states:
+outputs/trajectory_fluid32_t240_minus; campaign:
+outputs/trajectory_fluid32_quarter_campaign; control:
+outputs/coupled_refinement_diagnostics/fluid32_t240_minus_control.
+Plan: outputs/coupled_refinement_diagnostics/fluid32_quarter_step_plan.json.
+Same physical model, initial data, signed amplitude and strict bounds; dt alone
+is0.416667us. Poll the actual session and inspect accepted evolution or failure.
+Do not launch another heavy worker or edit its source closure while it runs.
+Use existing independent physical comparisons; no new verification framework.
+
+A completed existing-continuum calculation covers radial modes32/64/128 at
+axial64/128. Growth is12,513–23,552 /s, well below the950,000 /s saved-error
+projection; this finite scan and nonmodal comparison do not prove a cause.
+Raw evidence: outputs/contact_short_radial_spectrum. Read the measured
+COUPLED_FLUID_REFINEMENT_RESULTS.md. Its actual process5184 exited0.
+
+RESEARCH_QUESTIONS.md identifies actual MSX measured field traces and
+flux-density data as a later formation comparison target, with missing
+inputs and model-derived profiles distinguished. No experimental match is
+claimed. Full goal remains open; older live-session notes below are historical.
+
 ## Current simulation run (2026-10-14)
 
 Read COUPLED_FLUID_REFINEMENT_RESULTS.md. F32 audit and full cross-grid

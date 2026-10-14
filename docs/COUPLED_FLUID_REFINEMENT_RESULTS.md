@@ -60,3 +60,44 @@ framework, artificial diffusion, floor, state repair or modified mass is added.
 Compare its saved evolution directly against the independent baseline before
 choosing a solver change. Full acceptance still requires physical accuracy,
 appropriate signed/time controls and the remaining project gates.
+
+## Full evolution outcome and time-step refinement
+
+The F32/64,B32/64 60-step run is terminal: it rejected the first step after
+816.244 s, with a Gauss line-search residual of 1.8417582888632157e-12.
+No time step was accepted. Peak own RSS was 5,282,955,264 bytes; no resource
+limit triggered. The campaign process returned exit 0 through its recorded
+numerical-failure path; this is not a successful physical trajectory.
+Evidence: outputs/trajectory_fluid32_t60_minus and its terminal control in
+outputs/coupled_refinement_diagnostics/fluid32_t60_minus_control.
+
+A separate full 100 us run with 120 steps halves dt to 0.833333 us, keeping
+all physical inputs and residual bounds. It runs under the existing driver
+at outputs/trajectory_fluid32_t120_minus. This is a time-step control, not
+an accepted cure. Compare actual saved evolution with the independent mode
+when accepted states are available. No failure replay, new wrapper or unit
+test was added. See GOAL_STATUS.md for the current worker.
+
+The 120-step control also rejected step1, at residual1.0288129410491659e-12
+after531.094s, peak5,467,111,424 bytes. Actual session55929 exit0 was collected;
+again zero accepted steps and no resource stop. Halving dt nearly halves the
+stalled residual, consistent with a rate-evaluation accuracy limit but not
+sufficient to identify its cause. The next actual full100us trajectory uses
+240 steps (dt0.416667us), all other inputs and bounds unchanged.
+
+## Independent shorter-wavelength comparison
+
+Using the existing original-equation Fourier/Bessel operator, radial modes
+32,64,128 have maximum real eigenvalues12513.4633,13325.6316,23551.9380 /s
+at128 axial points. Doubling axial points64→128 changes these by1.406e-7,
+2.730e-8,1.735e-11 relative. Leading eigenvalues are real; relative divergence
+residuals are1.762e-9,1.745e-9,1.059e-9. This extends the mathematical baseline
+without changing production physics. Raw operators, eigenvalues and vectors
+are in outputs/contact_short_radial_spectrum; source closure is included.
+Actual process5184 exited0; peak ownRSS243,351,552 bytes. No replay or unit tests.
+
+These sampled continuum growth rates remain far below the approximately
+950,000 /s production saved-error projection. A finite set of radial modes
+is not a bound on all modes, and a directional projection is not an eigenvalue;
+this does not establish a numerical cause or certify a physical instability.
+The next useful evidence remains the finer fluid trajectory itself.

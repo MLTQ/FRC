@@ -20,6 +20,29 @@ Do not infer a validated gas, pressure, pulse or hardware design from this
 envelope: model validity, attainable reversal/topology and numerical convergence
 must determine the useful region of parameter space. Hardware stays abstract.
 
+## Experimental comparison target selected (2026-10-14)
+
+Primary source: Weber, Intrator and Smith, *Plasma-gun-assisted field-reversed
+configuration formation in a conical theta-pinch*, Physics of Plasmas 22,
+042518 (2015), [DOI](https://doi.org/10.1063/1.4919262),
+[LANL accepted manuscript](https://www.osti.gov/servlets/purl/1291216).
+The complete relevant pages and figures were read, including Figures 7-10.
+
+Figure 7(a,b) gives measured external and on-axis axial-field traces for
+shot 9498. Figure 7(c) is a rigid-rotor reconstruction, not an independently
+measured radial profile; its density constraint comes from another shot.
+Figures 8-10 give experimental trapped flux versus neutral D2 fill density
+for three pre-ionization histories. Their overlaid curves were fitted to
+these data and must not be presented as independent predictions.
+
+Use measured field traces and flux-density trends as eventual formation
+comparison targets, keeping pre-ionization, geometry and diagnostics explicit.
+The apparatus has a 10 cm quartz tube and a conical pinch; it is not the
+current filled periodic argon benchmark or the user's selected lab design.
+No experimental comparison has been executed. The publication supplies plots,
+not a raw shot dataset or complete reproducible input deck; digitization error
+and missing initial/boundary inputs must remain explicit when a run is made.
+
 ## Open and completed research
 
 - [ ] Choose a formation-time conductivity closure; test anisotropy and Hall terms.
