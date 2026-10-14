@@ -1,4 +1,41 @@
-# Active continuation: magnetic vacuum coupling
+# Active continuation: finite coil and axial end coupling
+
+## Current boundary: magnetic vacuum coupling implemented (2026-10-14)
+
+The previous goal turn made progress: commit 49b0102 completed the driven-wall
+pulse comparisons. This turn implemented an evolving plasma/vacuum magnetic
+boundary and completed five full 24 µs runs. Read VACUUM_CYLINDER_RESULTS.md and
+the inspected outputs/vacuum_pulse_comparison/vacuum_coupled_response.png.
+All scientific sessions 66738,10198,15544,13948,44808 and plot observer 67929
+are terminal with actual exits 0 collected. Do not restart these trajectories.
+
+VacuumCylinderGeometry/VacuumPlasma/VacuumInduction/VacuumGauss retain full
+moving finite-mass current/species dynamics. Outer flux is free. The exterior
+contains no plasma density/conductivity; radial K-Bessel elimination uses the
+same polynomial axial trace and includes induced energy to infinity. An ideal
+cylindrical source sheet drives the plasma, with linked-flux work and the nonzero
+source/induced cross energy included. No new framework, unit tests, numerical
+diffusion, artificial atmosphere, state repair or tolerance relaxation.
+
+At the 100 µT source peak, mean plasma B is 51.914 µT at fixed resistance and
+57.625 µT with evolving resistance. The latter yields 8.7839% more heat in this
+new prescribed-source configuration. Joint 8/16→16/32 spatial refinement gives
+current/vacuum space-time errors 0.001085%/0.0003213%, improving 5.50/29.60-fold.
+Time halving improves energy error 15.97-fold. Global errors do not describe
+startup uniformly: the zero-field coarse control has 4.31% current error at its
+first 150 ns endpoint. The axial seed is a mathematical fixture, not formation.
+
+frc-vacuum.1 is complete for this fixed-footprint periodic coupling only.
+NEXT physical work: frc-vacuum.2, finite coil fields through actual axial end
+boundaries. Keep the actual new plasma equations and exact empty exterior;
+reuse existing coil/open-vacuum machinery only with compatible trace/work maps.
+Do not substitute a periodic coil array or an older incomplete plasma solver.
+No finite-end implementation exists yet. Avoid another reporting milestone.
+
+The complete FRC goal remains active. Moving free interfaces, actual coils/ends,
+transport/ionization/validity, frc-7mm.7 long-contact accuracy and converged
+formation remain. Preserve frozen evidence and the user's modified poster.
+Earlier sections are historical; their live-worker notes are obsolete.
 
 ## Current boundary: driven component complete; vacuum coupling next (2026-10-14)
 

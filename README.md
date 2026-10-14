@@ -1,13 +1,14 @@
 # Virtual plasma bench
 
-The latest simulation evolves the current at the driven wall with its physical
-inertia, force and Joule heating. Four full pulse runs now complete, including
-spatial/time refinement and temperature-dependent resistance. Fine-grid current
-error is 0.0034% over the full pulse against the mathematical baseline, with
-larger relative errors during the small initial transient. Read the
-[measured results](docs/WALL_CURRENT_RESULTS.md),
-[response plot](outputs/wall_current_comparison/wall_current_refinement.png), and
-[current handoff](docs/NEXT_SESSION.md). Magnetic vacuum/source coupling is next.
+The latest simulation couples the moving plasma to a magnetic-only exterior
+and lets its enclosed flux evolve. Five complete pulse runs include spatial/time
+refinement and evolving resistance. At the source peak, the plasma mean field
+reaches 52–58% of the applied field; evolving resistance changes the heating by
++8.8% in this configuration. Read the
+[measured results](docs/VACUUM_CYLINDER_RESULTS.md),
+[response plot](outputs/vacuum_pulse_comparison/vacuum_coupled_response.png), and
+[current handoff](docs/NEXT_SESSION.md). Finite coils and physical axial ends
+are next; the present source and axial boundaries are idealized.
 
 The preceding full runs establish [moving thermal relaxation](docs/ADVECTED_COULOMB_RESULTS.md)
 and [magnetic decay with evolving resistance](docs/SPITZER_DECAY_RESULTS.md)

@@ -32,3 +32,8 @@ Three full driven runs are recorded in docs/DRIVEN_FLUX_RESULTS.md. Fixed-eta
 Bz improves on8→16 cells, but space-time current error remains28.06%→21.14%
 and heating7.87%→4.47% low. The evolving-eta case is a physical control
 comparison. The wall-current approximation remains an unresolved solver issue.
+
+VacuumGauss reuses this exact stage/endpoint/source-work algorithm with an explicit
+VacuumMagnetic field_type and free-flux coordinates. The default remains
+HarmonicMagnetic; all nonlinear controls and arithmetic are unchanged. Frozen
+source archives preserve earlier prescribed-flux runs.

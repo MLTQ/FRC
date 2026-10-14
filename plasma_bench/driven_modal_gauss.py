@@ -8,6 +8,8 @@ from .gauss_secant import GaussSecant
 
 
 class DrivenModalGauss(LiftedModalGauss):
+    field_type = HarmonicMagnetic
+
     def step(self, state, field, dt, *, when):
         if not np.isfinite(dt) or dt <= 0: raise ValueError('Positive finite implicit time step required')
         c = self.coordinates; system = self.system; state = np.asarray(state, float)
@@ -31,7 +33,7 @@ class DrivenModalGauss(LiftedModalGauss):
 
         def field_at(packed, time):
             psi, g = system.geometry.unpack(packed)
-            result = HarmonicMagnetic(system.geometry.mesh, psi, g, system.field_value(time))
+            result = self.field_type(system.geometry.mesh, psi, g, system.field_value(time))
             result.packed_increment(system.geometry)
             return result
 
