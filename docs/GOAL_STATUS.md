@@ -1,5 +1,67 @@
 # Active research: a credible experimental FRC simulation
 
+## Direct ionization and atomic energy now evolve (2026-10-16)
+
+The previous goal turn was progress:ea2396471 preserved the paired8000 pulse,
+its unresolved time sensitivity, the published heat coefficient comparison,
+and the next full paired16000 run. This continuation adds missing atomic
+source physics while the four long pulse jobs remain live and unchanged.
+
+New plasma_bench/impact_ionization.py evolves all19 argon charge populations
+and electron thermal energy with physical stored atomic ionization energy.
+Ground-state direct-impact rates use the archived Voronov table; physical
+energy/uncertainty annotations use separate NIST ASD values. Read both module
+companions, data/atomic/argon/README and docs/ATOMIC_IONIZATION.md. No rate or
+state floors, clipping, fitted energy repair, unit suite or new framework.
+This is direct ionization only; recombination, excitation, metastables,
+radiation, recoil, neutral transport and moving-current coupling remain open.
+
+Complete source run60848 exited0 in3.122s; source
+ d418d918fa571267614effdc7962f24f6f397567f80527a709594b27e4099a85.
+All12 trajectories, raw input copies, PNG/PDF and source archive are saved in
+outputs/impact_ionization; PNG inspected. Independent scalar hydrogen time(x)
+quadrature gives maximum ion-fraction errors4.46844e-6/2.92686e-7/1.87101e-8
+for100/200/400steps over20us, approximately fourth order.
+
+At fixed N=8.961429541213399e19m^-3 and initialTe10eV, the full3.5us source-only
+argon case beginning allAr+ ends meancharge1.217395 andTe4.914274eV, storing
+6.02608eV/nucleus in further ionization. A10%seed with no heat ends meancharge
+.154006,Te2.775028eV; with prescribed20eV/nucleus thermal input it ends.974123,
+4.111383eV with16.8205% remaining neutrals. These are fixed-volume component
+studies, not the moving pulse or a preparation recommendation. The finest
+800->1600 comparison changes populations<=3.10e-9,Te<=1.40e-7eV; heated
+energy residual against analytic input1.004e-8eV/nucleus. No reaction-active
+rate extrapolation is important in these cases, but omitted processes remain.
+
+Data discrepancy retained: archivalAr3+ fit uses52.3eV while NIST physical
+energy is59.58eV; its maximum event fraction here8.09e-6 is small, not a
+license to use the fit everywhere. Data record SHA6f90efc5cc8267d63a5765d2d2e0f0529595c337710ee1e58117452651af93f0.
+No restricted OPEN-ADAS tables were used. Main pulse source still
+05555dc9be49c3a1af9c31467fc713f4d5e395442328e9107eea19f68d0b3c75;
+new atomic files are independent and not imported by the live solver.
+
+FOUR exact pulse handles were polled LIVE; latest saved observations:
+-16339 paired4x16t16000:2200/16000,1395.739s.
+-49353 paired6x24t8000:2700/8000,4178.396s.
+Both worktree31721f1f...d17afc, /private/tmp/frc-finite-drift,
+branchcodex/finite-drift-collisions HEAD60f76e4e4. Output folders are
+outputs/material_tube_independent_20mt_maxwellian_r4_z16_t16000 and
+outputs/material_tube_independent_20mt_maxwellian_r6_z24_t8000.
+-58668 original4x16t16000:6000/16000,3753.740s.
+-85554 original6x24t8000:5800/8000,9027.926s.
+Both main05555dc9...b3c75, in corresponding viscous output folders.
+Counts are observations, not liveness proof. Re-poll exact handles; never
+restart solely because an observation times out. Do not merge paired moving
+code into main until both original jobs finish.
+
+NEXT collect those complete trajectories and use existing configured-fields
+comparisons. For atomic physics, add defensible recombination/radiative and
+excitation sources plus their energy budgets before moving adoption; derive
+new-species neutral/momentum/current transfers explicitly. Continue nonlocal
+heat and edge/end loss work. frc-transport.5 is new andin_progress; .3/.4,
+frc-vacuum.3.3 and the full original FRC goal remain open. Existing viewers,
+user poster and scientific archives are preserved; local research/no remote.
+
 ## Paired pulse time sensitivity and published heat coefficient (2026-10-16)
 
 The previous user turn was a UI recheck with no new scientific progress.
