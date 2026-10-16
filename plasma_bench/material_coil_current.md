@@ -49,3 +49,10 @@ current/linkage fields are null and explicit group arrays must be used. Calling
 `source` without selecting a group rejects ambiguity; `applied_source(time)`
 returns the actual total source. The regular axis potential has its exact zero
 limit. Exact matter-free vacuum and all original physical force terms remain.
+
+The driven electromagnetic rows reuse the parent's `collision_electric`, which
+is either the original eta*J or the paired Maxwellian force R_e/(e*n). Species
+heat is already applied by the parent and is not added again. This keeps the
+source-driven drag and heat from one instantaneous collision calculation; the
+prescribed source is curl-free inside plasma and does not change J at fixed state.
+The current isotropic collision closure has no explicit magnetic-field dependence.

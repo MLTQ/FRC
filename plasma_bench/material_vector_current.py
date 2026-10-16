@@ -4,15 +4,16 @@ from scipy.constants import elementary_charge as E,mu_0 as MU0
 from .material_carrier_current import MaterialCarrierCurrent,MaterialCurrentState,positive_solve
 from .material_vector_geometry import vector_geometry
 from .material_dual_entropy import MaterialDualEntropy
-from .coulomb_exchange_wall_plasma import equilibration_rate
+from .material_collision_sources import collision_config,collision_sources
 
 
 class MaterialVectorCurrent(MaterialCarrierCurrent):
     """All axisymmetric field/current/flow components; compact magnetic boundary."""
-    def __init__(self,fluid,space,*,resistivity=.001,coulomb_exchange=True):
+    def __init__(self,fluid,space,*,resistivity=.001,coulomb_exchange=True,collision_model=None):
         super().__init__(fluid,space)
         if not np.isfinite(resistivity) or resistivity<0:raise ValueError('Finite nonnegative prescribed resistivity required')
         self.resistivity=float(resistivity);self.coulomb_exchange=bool(coulomb_exchange)
+        self.collision_model=collision_config(collision_model,fluid,self.resistivity,self.coulomb_exchange)
         self.electron_heat_fraction=fluid.ion_mass/fluid.mass
         self.species=MaterialDualEntropy(fluid,space)
 
@@ -42,7 +43,10 @@ class MaterialVectorCurrent(MaterialCarrierCurrent):
         thermal=self.species.pair(state.fluid,result,drift)
         curlw=np.column_stack([c@w for c in g['curl']])
         physical_forcing=self.delta*np.cross(drift,magnetic+self.mu/E*curlw)-self.mu/E*np.cross(drift,g['vorticity'])
-        n=g['fields']['n'].ravel();physical_forcing+=self.resistivity*E*n[:,None]*drift
+        n=g['fields']['n'].ravel()
+        collisions=collision_sources(g['fields'],drift,f.ion_mass,model=self.collision_model,
+            resistivity=self.resistivity,coulomb_exchange=self.coulomb_exchange)
+        physical_forcing+=collisions['electric']
         forcing=sum(g['electric'][i].T@(self.particles*physical_forcing[:,i]) for i in range(3))+thermal['reduced_forcing']
         mwdot=sum(g['electric_rate'][i].T@(self.particles*drift[:,i])+g['electric'][i].T@(self.particles*(g['electric_rate'][i]@w)) for i in range(3))
         rhs=forcing-self.mu/E**2*(g['ddot'].T@b)-self.mu/E*mwdot
@@ -72,11 +76,8 @@ class MaterialVectorCurrent(MaterialCarrierCurrent):
         force=np.zeros_like(state.fluid.coordinates);np.add.at(force,f.ids.ravel(),local.reshape(-1,2));force[f.domain.axis,0]=0
         torque=np.zeros(f.nodes);np.add.at(torque,f.ids.ravel(),local_torque.ravel())
 
-        joule=self.resistivity*(E*n)**2*np.sum(drift*drift,axis=-1)
-        te,ti=fields['temperature'].reshape(-1,2).T;frequency=np.zeros_like(n);exchange=np.zeros_like(n);log=None
-        if self.coulomb_exchange:
-            frequency,log=equilibration_rate(n,te,ti,f.ion_mass);exchange=1.5*E*n*frequency*(ti-te)
-        heating=np.column_stack((self.electron_heat_fraction*joule+exchange,(1-self.electron_heat_fraction)*joule-exchange))
+        joule=collisions['drag_power'];heating=collisions['heating']
+        exchange=collisions['thermal_exchange_to_electrons'];frequency=collisions['exchange_frequency'];log=collisions['coulomb_log']
         entropy_rate=thermal['entropy_rate']+self.species.heating_rate(g,heating)
         internal=fields['specific_internal'].reshape(-1,2)
         thermal_power=float(np.sum(self.particles[:,None]*internal*entropy_rate.reshape(-1,2)))
@@ -91,9 +92,13 @@ class MaterialVectorCurrent(MaterialCarrierCurrent):
             drift_rate=wdot,entropy_rate=entropy_rate,force=force,torque=torque,residuals=errors,
             magnetic_power=magnetic_power,current_power=current_power,mechanical_power=mechanical_power,thermal_relative_power=thermal_power,
             joule_power=float(g['volume']@joule),exchange_power_to_electrons=float(g['volume']@exchange),
+            collision_electric=collisions['electric'],collision_heat_species_power=g['volume']@heating,
+            collision_power_residual=float(g['volume']@(heating.sum(axis=1)-E*n*np.sum(drift*collisions['electric'],axis=1))),
+            collision_entropy_rate_over_kB=float(np.sum(g['volume'][:,None]*heating/(E*fields['temperature'].reshape(-1,2)))),
+            maximum_collision_relaxation_s=float(collisions['relaxation_rate'].max()),
             entropy_rates_over_kB=np.sum(self.particles[:,None]*entropy_rate.reshape(-1,2)/(f.gammas-1),axis=0),
             maximum_transport_outflow_s=thermal['maximum_transport_outflow_s'],
-            exchange_frequency_range_s=[float(frequency.min()),float(frequency.max())],
+            exchange_frequency_range_s=None if frequency is None else [float(frequency.min()),float(frequency.max())],
             exchange_coulomb_log_range=None if log is None else [float(log.min()),float(log.max())],
             pair_power_residual=float(magnetic_power+current_power+mechanical_power+thermal_power),
             weak_charge_residual=float(np.linalg.norm(charge)/max(np.linalg.norm(self.space.gradient)*np.linalg.norm(mass@w),np.finfo(float).tiny)))

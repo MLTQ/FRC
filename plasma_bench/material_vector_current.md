@@ -37,3 +37,15 @@ matter and conductivity outside. Penetrating vacuum fields and finite coils are
 still absent. Initialized closed psi is not resistive formation. Cold-edge
 transport, pointwise current traces, spatial convergence, 3-D stability and
 particle confinement remain unproven even if energy and torque balances agree.
+
+Optional `collision_model={"kind":"maxwellian_pair","coulomb_log":10.0}`
+replaces both prescribed resistance and separate thermal exchange; those inputs
+must be zero/False. `material_collision_sources` supplies a single electron-force
+electric field and paired species heats. All physical masses, stresses, Hall,
+entropy transport and metric terms remain. `collision_electric` is reused by the
+coil subclass; heat is applied once. `joule_power` now denotes total collisional
+relative-flow heating in either mode. Species heat, local relaxation rate,
+collision entropy and force/heat power mismatch are reported separately from the
+full energy residual. Paired mode's scalar exchange-frequency range is null.
+The independent homogeneous baseline does not establish moving-pulse accuracy
+or Maxwellian closure validity; actual coupled evolution is required.

@@ -50,3 +50,12 @@ residual. Its heat uses the same independent trapezoidal observation as Joule he
 neither measured integral repairs the state or closes the budget by construction.
 The config and resolved metadata retain the coefficients; omitted means no bulk
 viscosity. See the complete wall-shock baseline in `material_wall_shock.md`.
+
+For paired collisions the historical `joule_heat_j` means collisional relative
+flow converted into total species heat, not prescribed eta*J². Independently
+integrated `collision_heat_species_j` retains the actual signed electron/ion
+heats, including thermal exchange, while numerical ion heat stays separate.
+Records also retain collision entropy production, force/heat power mismatch and
+the maximum local relative-relaxation rate times dt. These observations neither
+repair energy nor certify a full-system timestep limit. The whole coupled source
+work balance remains the trajectory conservation measurement.
