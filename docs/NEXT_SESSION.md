@@ -1,5 +1,49 @@
 # Resume the physical FRC simulation
 
+## Continue from actual moving reactions and mesh-collapse evidence (2026-10-16)
+
+New material_species_set/material_reaction_projection/reactive_material modules
+and companions implement source-half / motion-full / source-half with actual
+changed species populations and new supports. Read ATOMIC_MOVING_FIELDS.md.
+Full cold neutral decay and unequal-mesh charged transport limits complete;
+general charged reacting evolution is NOT working through the requested20ns.
+
+Authoritative terminal results:
+- 83944 EXIT0,17.8446s: outputs/reactive_material_limits_coalescing,
+ sourcec443b091...943227. Six full40ns/20ns limits. Earlier identical physical
+ results43462 are in reactive_material_limits, sourced9ecbb80...40ea72.
+- 92476 EXIT130: interrupted stalled original argon attempt. termination.json
+ records the interruption; stale summary.json was intentionally not rewritten.
+ Its first case was not written, so its in-memory prefix is unavailable.
+- 71694 EXIT1,7.5186s: outputs/reactive_material_argon_collapse,
+ source2ff27979...26767. Requested20ns at32/64/128; actual prefixes
+ 4.71663/1.17987/0.295012ps, then dt~1e-25..1e-23s. Every accepted state saved.
+- outputs/material_velocity_resolution, source7395b307...12f38b, completes an
+ actual-state candidate projection study; all21 blocks admissible, no trajectory.
+- 17262 EXIT1,3515.644s: full16000 pulse stopped at1994 accepted steps,
+ 436.1875ns, by disk-space guard at1995. Sourcef5ddb118...a428f2 unchanged.
+ All raw states through step_01994.npz retained. It is NOT live or complete.
+ The8000/16000 comparison remains impossible until a full fine run completes.
+ Available disk was only~543MiB; do not remove archived evidence or bypass guard.
+
+NEXT solver action onfrc-transport.5.5.2: separate fine density/source quadrature
+cuts from mechanical velocity degrees of freedom. The successful snapshot
+restriction uses exact weighted P1 integrals with N/support/charge untouched.
+Derive and implement compatible motion, mass matrix, pressure/thermal work and
+common-field force on this two-space representation. Fine-cell positions must
+move with the represented velocity map; fine thermal energy remains actual.
+Retain a justified acoustic/plasma restriction, all species, positive actual
+thermal energy without repair, and exact vacuum. The candidate acoustic spectrum
+excludes electric sources and is not a full-system timestep certificate.
+Then run full charged reacting20ns cases and independent cold/affine limits,
+measuring time/spatial convergence, current, charge and the complete energy budget.
+Do not quietly replace this with frozen numbers or a prescribed neutral model.
+Repeated density-cut growth and projection admissibility remain separate risks.
+
+No live simulation remains. Do not restart any of these handles. The completed
+viewer remains at /20mt/; private LXCat files and the user poster are untouched.
+Full FRC scope, species/front accuracy and formation acceptance remain OPEN.
+
 ## Atomic overlap-source continuation bookmark (2026-10-16)
 
 Read newest GOAL_STATUS.md and ATOMIC_MOVING_FIELDS.md, then companions for

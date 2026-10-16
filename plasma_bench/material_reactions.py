@@ -27,8 +27,8 @@ class MaterialReactionOverlap:
         """Gather physical moments without enforcing neutrality or common support."""
         species=np.asarray(species)
         if (species.shape!=(model.species,) or not np.issubdtype(species.dtype,np.integer) or
-                len(set(species))!=len(species) or np.any(species<0) or np.any(species>=len(self.number))):
-            raise ValueError('Unique atomic species index for every material fluid required')
+                np.any(species<0) or np.any(species>=len(self.number))):
+            raise ValueError('Atomic species index for every material support block required')
         if not np.array_equal(model.mass,self.source.mass[species]) or not np.array_equal(model.charge,self.charge[species]):
             raise ValueError('Material and reaction species must have identical physical masses and charges')
         model.validate(state)
@@ -38,8 +38,10 @@ class MaterialReactionOverlap:
         rows=[];network=self.source.network
         for k in range(points.size):
             atomic=np.zeros(self.source.base_size);temperatures=np.zeros(network.count+1);velocity=np.zeros((network.count+1,3))
-            atomic[self.number[species]]=sample['number'][:,k]/self.density
-            temperatures[species]=sample['temperature_ev'][:,k];velocity[species]=sample['velocity'][:,k]
+            active=sample['number'][:,k]>0;ids=species[active]
+            if len(set(ids))!=len(ids):raise ValueError('Overlapping blocks of the same fluid require an explicit mixing closure')
+            atomic[self.number[ids]]=sample['number'][active,k]/self.density
+            temperatures[ids]=sample['temperature_ev'][active,k];velocity[ids]=sample['velocity'][active,k]
             atomic[network.thermal]=1.5*atomic[network.electrons]*temperatures[-1]
             rows.append(self.source.initial(atomic,temperatures[:-1],velocity))
         return ReactionOverlapState(edges,points,measure,np.asarray(rows).reshape(points.shape+(self.source.size,)),model.left_electric)

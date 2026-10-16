@@ -12,6 +12,9 @@ moments exactly. The inherited source uses one fixed reference density, without
 renormalizing cells to unit nucleus number. Empty exterior rows remain exactly
 zero. Existing fixed-frame coordinates are retained; laboratory velocities and
 moments are restored in outputs without discarding actual charge residuals.
+MaterialSpeciesSet is also accepted: atomic IDs can repeat for disconnected
+blocks, but two occupied blocks of the same fluid at one point reject. An empty
+block never overwrites an occupied block's moments during gathering.
 
 `step` advances the existing nonlinear exponential-midpoint atomic moment source
 at every physical quadrature point. New levels/ions/electrons may appear where
@@ -39,3 +42,6 @@ variable particle amounts, momentum/energy and newly occupied support; this
 remaining transport/reaction integration is not implemented by freezing numbers,
 discarding products, distributing heat to close a budget or rescaling old J.
 The full moving reactive goal remains open; this is not formation adoption.
+`reactive_material` now supplies a first explicit moving/source composition.
+Its cold translating neutral decay limit completes, while the full hot charged
+argon attempt exposes mesh/timestep collapse; see ATOMIC_MOVING_FIELDS.md.

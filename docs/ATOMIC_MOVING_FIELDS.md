@@ -1,5 +1,90 @@
 # Moving variable-species electrostatic research component
 
+## Actual moving/source composition and charged collapse (2026-10-16)
+
+New MaterialSpeciesSet permits different cell counts and disconnected support
+blocks per atomic species. MaterialReactionOverlap now accepts these actual
+supports, rejecting overlap between blocks of the same fluid instead of silently
+assuming multistream motion. A fixed translating frame retains cold common
+motion without subtracting large bulk energies. Global E/J use all actual
+species and the exact empty exterior. All physical masses are unchanged.
+
+material_reaction_projection integrates source-evolved N, momentum and total
+translational energy on the shared overlap partition. Nodal velocity is the
+consistent-mass P1 projection; cell U=E-K. Negative U rejects without clipping,
+heat redistribution or a budget correction. This keeps local stoichiometric
+charge averages but can numerically mix velocity. ReactiveMaterial composes
+source-half / moving-full / source-half and accumulates binding/produced-photon
+energy. Photon transport/escape is not implied. See the three module companions.
+
+Completed independent limits in outputs/reactive_material_limits_coalescing:
+83944 EXIT0,17.844640s, source
+c443b09100fc6d0c43206c2bb9d7a7a36d5e1f1450569c6cf47edbc952943227.
+Cold two-level neutral slab: hydrogen mass,3eV transition,A=2e7/s,n=1e19/m³,
+20mm half-width, lab velocity(1000,-2000,500)m/s. All20/40/80-step histories
+cover40ns and agree with N_upper=N0 exp(-At), translated supports, unchanged
+velocity and3eV-per-decay photons. Maximum population error2.8e-15, position
+error2.08e-17m, velocity error0, total energy change6.66e-16J/m², photon error
+1.80e-16J/m²; electrons stay exactly zero. This is a declared mathematical
+neutral limit, not an experimental argon validation.
+
+Physical-mass Ar-ion/electron transport, reactions disabled, n_i=n_e=1e14/m³,
+half-width10mm,Ti/Te=.2/2eV, completes20ns on32/64,64/128,128/256 independent
+meshes. Relative energy errors6.74e-9/1.69e-9/1.11e-9. Exact union J differences
+38.93%→21.38%; E differences2.705%→1.477%. Current is still spatially sensitive.
+Actual histories, source, PNG/PDF are retained and the figure visually inspected.
+Earlier precoalescing run43462 has the same physical results under source
+d9ecbb80de51f1d3db44a507fb7f1eadb582b1083e8f4845906a44c94440ea72.
+
+The projection-only study outputs/material_reaction_projection_coalesced retains
+the earlier actual constant-rate source fixture. Removing5 redundant cuts within
+8 domain-scale ULPs changes min width4.34e-19m→1.25mm without moving any species
+support endpoint or discarding any moment. But J changes0.2237% without merging
+versus0.3172% with merging. Global matter energy and momentum remain roundoff;
+this does NOT make the local-current change roundoff. Field-energy difference
+2.33e-10J/m² is retained, never repaired. Floating duplicate cleanup is not a
+general cure for source/transport partition growth.
+
+Real-rate charged attempt: full20ns requested at32/64/128 initial cells, original
+ion/electron conditions plus explicit Ar neutrals n=1e14/m³,T=.1eV. All existing
+ground-charge ladder DI/RR channels are retained with hashed data. This is a
+new reacting component experiment, not a lab fill or formation recommendation.
+Source small-drift/Maxwellian, RR ranges, omitted excitation, collisions and
+kinetic physics remain limitations. Source-half / motion-full / source-half
+keeps every actually populated species; first accepted state includes q0..5,e.
+
+| Initial cells | Accepted time | Next allowed step | Final occupied cells | Smallest cell |
+|---|---:|---:|---:|---:|
+|32|4.71663ps|1.70265e-25s|498|1.73472e-18m|
+|64|1.17987ps|2.70174e-23s|688|2.75821e-16m|
+|128|0.295012ps|2.99061e-23s|1108|3.05311e-16m|
+
+All three full-duration attempts FAILED; none is counted complete. At32 cells,
+the smallest q1 cell contains2.34396e-73 particles/m² and positive thermal energy.
+At64/128 the limiting tiny cuts include dense neutral material. Removing small
+populations alone would neither solve the general issue nor preserve the model.
+Actual-state sampling found no midpoint/Gauss cell-membership mismatch on these
+saved final states; no speculative rounding fix was applied.
+The first attempt92476 was explicitly interrupted EXIT130; its unwritten prefix
+is not available. Fresh bounded run71694 EXIT1 in7.518572s retains every accepted
+state and the computational failure in outputs/reactive_material_argon_collapse,
+source2ff279799b3c5d021a49d616af4cc119f79fa2581f3e9206abf5fdb5a6726767.
+The explicit2e-17s resource threshold rejects impractical advancement; it never
+increases dt, shortens the requested20ns or deletes fine cells.
+
+A concrete next representation is assessed in outputs/material_velocity_resolution,
+source7395b3078f5b3ad280d8b959ad8b607abbf8a1ce195e7477d05d0f419012f38b.
+Retain ALL actual density/support cuts; project velocity into a nested32/64/128
+P1 space. Exact weighted polynomial integration preserves global momentum and
+all21 occupied blocks retain nonnegative cell U=E-K on the saved states. Charge
+is untouched. Restricted electron acoustic frequencies are3.58e10/1.43e11/5.72e11
+rad/s; these use original pressure and exclude electric/collision stiffness.
+All arrays/matrices/input hashes are retained. It is a snapshot feasibility
+assessment, NOT a time stepper, positivity theorem or converged evolution.
+Next implement compatible two-space motion/forces/work and then complete actual
+charged reacting trajectories. Density-cut proliferation, local projection error,
+physical closures and all full FRC gates remain open. No unit tests were run.
+
 ## Reactions now evaluate on actual independent-support overlaps (2026-10-16)
 
 New `MaterialReactionOverlap` gathers the physical material species into the

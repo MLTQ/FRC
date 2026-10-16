@@ -1,5 +1,43 @@
 # Active research: a credible experimental FRC simulation
 
+## Moving reactions implemented; charged mesh collapse exposed (2026-10-16)
+
+The previous turn only reconfirmed the viewer: no new scientific progress.
+This continuation collected the new moving-source limits, completed a real-rate
+argon failure study, and assessed a concrete way to separate mechanical and
+reaction resolution. Read the newest ATOMIC_MOVING_FIELDS.md and NEXT_SESSION.md.
+
+New MaterialSpeciesSet, material_reaction_projection and ReactiveMaterial move
+actual changed masses, momenta, energies and newly occupied supports. Source-half /
+motion-full / source-half retains binding and produced-photon reservoirs. All
+40ns cold translating neutral decay cases complete against the independent
+exponential/translation solution, with maximum population error2.8e-15 and
+energy change6.66e-16J/m². Unequal ion/electron meshes complete full20ns; adjacent
+J differences38.93%→21.38% remain large despite energy errors<=6.75e-9.
+
+Full20ns argon ionization/recombination was requested at32/64/128 cells. All
+attempts fail the explicit computational timestep limit after one accepted step:
+next dt1.70e-25/2.70e-23/2.99e-23s. Actual species and exact vacuum are retained;
+no floors, thermal repairs, omitted charge states or partial-success claims.
+The original live attempt92476 was stopped EXIT130 after the collapse was
+reproduced; its unwritten in-memory prefix is unavailable and not invented.
+Fresh recorded attempt71694 EXIT1 preserves every accepted state and failure.
+
+Snapshot study outputs/material_velocity_resolution retains all density/charge
+cuts but restricts the mechanical velocity space. All21 occupied blocks retain
+nonnegative recovered thermal energy and momentum to roundoff. This is a useful
+next solver direction, not an implemented trajectory or convergence result.
+frc-transport.5.5.2 and all parent/full-goal gates remain OPEN.
+
+Long pulse17262 is now terminal EXIT1:1994/16000 accepted steps,436.1875ns of
+the requested3.5µs, resource guard at step1995. Peak memory206061568bytes was
+below4GiB; the disk-space arm of the256MiB guard tripped. About543MiB was free
+when inspected afterward. Original sourcef5ddb118...a428f2 and all1994 raw states
+are retained. Do not compare this prefix as a completed16000-step pulse or
+restart it on the assumption it is still live. No simulation job remains live.
+No unit tests, remote publication, viewer rebuild or private-data bundling.
+The user poster and full original scope remain unchanged.
+
 ## Atomic reactions on separate material supports (2026-10-16)
 
 Previous goal turn made concrete progress atdd90949cf: limited numerical stress,
