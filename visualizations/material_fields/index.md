@@ -14,3 +14,6 @@ outline is the material boundary, not a proposed experimental chamber.
 
 The timing label distinguishes the numerical integration step and total steps
 from the selected display states. Frame gaps come from actual saved timestamps.
+Previous/next buttons inspect one frame at a time; the1/5/10/20fps selector changes
+wall-clock playback speed, never simulated timestamps or solver integration.
+Dense local displays load their actual saved frames on demand through the viewer.

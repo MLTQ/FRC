@@ -10,8 +10,8 @@ The moving outline is supplied by the actual material mesh. Magnetic paths and
 current samples come from the read-only builder; the renderer does not alter
 scientific fields, evolve the simulation or infer topology/confinement.
 
-No external packages, network requests or browser storage are used. The single
-offline HTML file remains usable independently of the optional local server.
+No external packages or browser storage are used. Inline sparse displays remain
+usable as one offline HTML file. Dense manifests fetch local JSON frame files.
 
 Configured coil experiments may supply static chamber and coil paths, rendered
 in grey and copper respectively, plus a per-state prescribed centre-field label
@@ -34,3 +34,19 @@ separately from frame count and the gap to the preceding displayed state. Missin
 metadata shows only the known frame count; no step size is inferred from animation.
 Optional solver_completed_steps distinguishes a terminal partial run's evolved
 step count from its requested count; complete runs retain the compact label.
+
+Dense manifests may replace each frame's arrays with a relative `url`. The viewer
+loads that file, caches at most five complete frames and prefetches one neighbor.
+The visible and requested frames are protected from eviction during fast scrubs.
+Scrubbing is briefly debounced; request identifiers keep stale loads from moving
+the slider backward. A failed fetch is shown explicitly. No frame is synthesized.
+All field paths/cloud points retain the builder's existing detail. Play waits for
+each actual frame rather than skipping scientific states when drawing is slower
+than the chosen1/5/10/20fps. Previous/next buttons move one displayed state.
+`initial_frame` and `playback_fps` choose the starting state and playback rate;
+`display_interval_ns` labels the sampling target separately from actual gaps.
+The gap label refers to the preceding frame in time, including during reverse stepping.
+Dense time labels use ns with two decimal places, exposing1.75ns-step rounding.
+Field-line segments are batched into256 color levels per draw, avoiding tens of
+thousands of canvas stroke calls. Every path vertex and actual stored field value
+is retained; this quantizes only rendered color, not geometry or scientific data.

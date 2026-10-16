@@ -53,3 +53,14 @@ into display metadata. The UI distinguishes this step from the much sparser save
 states selected for animation, without interpolating or re-integrating them.
 For a terminal partial run the count explicitly distinguishes completed from
 requested steps; a requested duration is never presented as already evolved.
+
+`--frame-interval-ns 10` selects the nearest actual stored state to every10ns
+target, plus the final state. With1.75ns solver steps the actual gaps are8.75 or
+10.5ns, explicitly labeled; no temporal interpolation or new simulation is used.
+Dense displays write individual normalized `frames/step_*.json` files and a small
+manifest, retaining only the largest-current physical frame for the still image.
+Cloud sample indices and the retained physical frame are separate selections.
+This keeps build/browser memory bounded for hundreds of frames without reducing
+field-line or current-cloud detail. Dense playback starts at zero and defaults to
+10frames/s. Serve the generated directory over localhost so frame fetches work;
+the original sparse default remains one self-contained HTML document.

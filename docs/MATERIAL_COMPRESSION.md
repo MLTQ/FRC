@@ -110,3 +110,14 @@ Bsource²/(2mu0) scale alongside the assumed initial on-axis pressure. Induced
 screening and evolving pressure/forces are not represented by those input curves.
 The result explains why equal centre fields do not give equal forcing along the
 tube; it does not establish a lab coil design or force-balanced plasma.
+
+## Long-array terminal result (2026-10-16)
+
+Run13616 completed all4000steps to3.5us in2456.917s with source05555dc9...b3c75.
+Final middle/max radii61.600/64.723mm, particle RMS25.318mm, Joule heat238.046mJ,
+numerical ion heat15.634mJ, meanTe/Ti13.739/1.064eV. Maximum external-work residual
+relative to initial energy is4.59846e-5. The maximum final drift/thermal ratio67.87
+remains large; successful time evolution does not establish transport/edge
+validity, numerical convergence or formation. Matched control84694 is still live.
+The new351-frame10ns-target UI uses the older completed two-loop trajectory at
+the user's request; it does not yet depict or compare this new numerical case.

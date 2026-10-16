@@ -1,5 +1,40 @@
 # Active research: a credible experimental FRC simulation
 
+## 10ns animation and completed long-array trajectory (2026-10-16)
+
+User requested denser web animation. The original completed two-loop20mT run
+now has351display frames over0..3.5us at nearest10ns targets. Its actual solver
+step remains1.75ns, giving8.75/10.5ns frame gaps; timestamps and that distinction
+are visible. No temporal interpolation or scientific-state change. Read
+examples/material_experiment_display.md and visualizations/material_fields/viewer.md.
+
+The original URL127.0.0.1:8790/20mt/ now serves
+outputs/material_experiment_20mt_10ns_display through the existing90454 server.
+The same new view is at/20mt-10ns/; the previous12-frame view stays at/20mt-coarse/.
+Dense local frame files keep the HTML around201KB, with only five complete frames
+cached in the browser. All path vertices/current samples remain, with256 rendered
+color levels for faster drawing. Previous/next, playback speed, play/pause, rapid
+scrubs, signed components, color scales and final3500ns state were exercised in
+the browser with no console errors/warnings. Native screenshotbrowser_view.jpg
+was inspected. Full-page browser capture briefly produced a bad layout snapshot;
+the saved screenshot was replaced by the correct native capture. No unit tests.
+
+The actual long-array viscous run13616 also completed successfully: all4000steps,
+3.5us,2456.917s. Source05555dc9be49c3a1af9c31467fc713f4d5e395442328e9107eea19f68d0b3c75;
+outputs/material_tube_independent_20mt_viscous_r4_z16_t4000. Final middle/max radii
+61.600/64.723mm, particle RMS25.318mm, Joule238.046mJ, numerical ion heat15.634mJ,
+meanTe/Ti13.739/1.064eV. Max observed external-work residual/E0=4.5985e-5. This
+completes a numerical trajectory, not convergence, physical closure or formation.
+Final max drift/thermal ratio67.87 remains an important validity limitation.
+
+ONLY scientific run84694 remains LIVE: the matched two-loop viscous control,
+outputs/material_tube_two_loop_20mt_viscous_r4_z16_t4000;2700/4000 at last saved
+observation. Collect its actual terminal result before source changes. Then
+compare these matched runs and build the new experiment display if physically
+interpretable. The current requested10ns animation deliberately retains the older
+completed case; it does not silently substitute the new numerical treatment.
+Keepfrc-vacuum.3.1/.3.2 and the full goal open. Preserve the user poster; no remote.
+
 ## Active paired pulse runs (2026-10-16)
 
 Checkpointb72ae0bb7 saves the nanosecond timing label, complete shock comparisons,
