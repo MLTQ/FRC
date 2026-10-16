@@ -1,5 +1,40 @@
 # Resume the physical FRC simulation
 
+## Current accuracy and compression improved; continuation bookmark (2026-10-16)
+
+Read the newest GOAL_STATUS.md and ATOMIC_MOVING_FIELDS.md sections first.
+Actual species_material solver now has optional minmod-limited compression
+stress; matched force/work preserves its conservation equations and exact vacuum.
+All original full physical cases through1024 cells complete.512→1024 limited
+J/E differences8.07805%/0.330304% (original10.9910%/0.496145%). Current peaks
+remain unresolved and neutral-front error is1.19915mm. The changed method is
+opt-in, reaction-disabled and not adopted by formation.
+
+Independent full neutral compression/rebound and existing analytic Sod shock
+studies support the concrete change. Seven new simulations were collectedEXIT0:
+limited_support23277, limited_refined78703, limited_n10246725,
+original_n102498820, limited_halfstep73375, smooth_compression46438, shock18095.
+All outputs have species_material_ prefixes. Sources:aca2b117...b893f2 for
+expansion runs,824e580f...74396 smooth rebound,dfdc0f8c...150af4 shock.
+Actual histories and PNG/PDF retained. No unit suite/framework expansion.
+Exact saved-field norms and reproducible plot are in
+outputs/species_material_current_localization. The corrected original128-cell
+J half-step difference is0.02874%, not the smaller uniform-grid estimate.
+
+Only LIVE job is full pulse17262; exact handle confirmed. Latest summary
+1200/16000,2139.368s,nonterminal; f5ddb118...a428f2 source unchanged.
+Preserve that imported closure and never restart because observation times out.
+Collect its terminal result, then compare8000/16000 with existing configured
+field tool. Keep the live output uncommitted until complete; do not touch the
+user poster or private LXCat inputs. Viewer remains at /20mt/.
+
+NEXT: improve spatial treatment of narrow interior currents and low-mass fronts;
+retain the smooth-compression and shock evidence when changing the stress.
+Then couple actual changing atomic populations and momentum/energy across
+different species supports. Do not silently replace this with fixed numbers,
+neutrality, a numerical atmosphere or repaired thermal energy. Full original
+FRC scope and beadsfrc-goal/frc-transport.5.5/.5.5.1 remain OPEN.
+
 ## Active goal resumed: field sensitivity and separate species supports (2026-10-16)
 
 Previous goal turn made progress: detailed visualization saved at22b8e3dac and

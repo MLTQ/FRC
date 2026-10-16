@@ -21,12 +21,15 @@ class MaterialSpecies:
     gamma = 5/3
 
     def __init__(self, numbers, masses, charges, bounds, *, left_electric=0., cfl=.15,
-                 maximum_plasma_phase=.04, numerical_viscosity=(0., 0.)):
+                 maximum_plasma_phase=.04, numerical_viscosity=(0., 0.), viscosity_limiter='none'):
         self.numbers = np.asarray(numbers, float).copy()
         self.mass = np.asarray(masses, float); self.charge = np.asarray(charges, float)
         self.bounds = np.asarray(bounds, float); self.left_electric = float(left_electric)
         self.cfl = float(cfl); self.maximum_plasma_phase = float(maximum_plasma_phase)
         self.viscosity = np.asarray(numerical_viscosity, float)
+        if viscosity_limiter not in ('none', 'minmod'):
+            raise ValueError('Choose none or minmod numerical viscosity limiter')
+        self.viscosity_limiter = viscosity_limiter
         if self.numbers.ndim != 2 or not np.isfinite(self.numbers).all() or np.any(self.numbers <= 0):
             raise ValueError('Positive finite cell particle amounts; omit empty species')
         self.species, self.cells = self.numbers.shape
@@ -88,7 +91,16 @@ class MaterialSpecies:
     def pressure(self, state):
         width = self.validate(state); pressure=(self.gamma-1)*state.thermal/width
         sound=np.sqrt(self.gamma*pressure*width/(self.mass[:,None]*self.numbers))
-        compression=np.maximum(-np.diff(state.velocity[...,2],axis=1),0.)
+        jump=np.diff(state.velocity[...,2],axis=1)
+        compression=np.maximum(-jump,0.)
+        if self.viscosity_limiter == 'minmod':
+            # Remove resolved affine compression before forming numerical stress.
+            # One-sided end stencils refer only to occupied species cells.
+            gradient=jump/width
+            left=np.concatenate((gradient[:,:1],gradient[:,:-1]),axis=1)
+            right=np.concatenate((gradient[:,1:],gradient[:,-1:]),axis=1)
+            resolved=np.minimum(np.minimum(np.maximum(-left,0.),np.maximum(-gradient,0.)),np.maximum(-right,0.))
+            compression=np.maximum(compression-width*resolved,0.)
         viscosity=self.mass[:,None]*self.numbers/width*(self.viscosity[0]*sound*compression+self.viscosity[1]*compression**2)
         return pressure,viscosity,sound
 

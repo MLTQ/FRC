@@ -46,6 +46,14 @@ compressive oscillations, not physical heat transport. `--step-scale 0.5`
 halves both actual acoustic/plasma time limits for an equal-input time comparison.
 All requested durations and physical initial data stay fixed.
 
+`--viscosity-limiter minmod` removes resolved compression from the numerical
+stress using neighboring physical velocity gradients (see solver companion).
+The default `none` preserves the previous stress. Coefficients, limiter, mesh
+and time controls are archived explicitly. Spatial J/E norms now use two-point
+Gauss integration over the union of both actual species meshes, exact for the
+represented piecewise-linear fields; density L1 is likewise exact for the
+represented piecewise-constant densities, including their distinct supports.
+
 `--cells 128 256 512` extends the same complete physical studies after the
 original32/64/128 histories. Adjacent-grid comparisons and plots use the explicit
 counts, with no shortened duration or altered mass ratio for refined cases.

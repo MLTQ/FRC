@@ -21,6 +21,19 @@ Optional compressive numerical Q = rho [C1 c max(-dv,0) + C2 max(-dv,0)^2]
 converts its mechanical loss into the same cell thermal energy; it is not
 physical viscosity. Defaults C1=C2=0. No energy/temperature reset or floor.
 
+Optional `viscosity_limiter='minmod'` replaces max(-dv,0) in Q by
+`max(0, max(-dv_i,0) - h_i min(max(-g_left,0),max(-g_i,0),max(-g_right,0)))`,
+where g=dv/h on each species' physical cells. Boundary stencils repeat the
+nearest occupied cell, without ghost matter. This removes resolved affine
+compression; the residual jump is O(h²) in smooth regions on regular meshes.
+Q remains nonnegative and only acts under compression, so its matched work
+still heats the actual cell and preserves the semidiscrete energy identity.
+Default `none` retains the original explicitly archived stress. This is a
+one-dimensional limiter chosen here, inspired by the smooth-compression
+criterion of [Caramana et al. (1998)](https://cnls.lanl.gov/~shashkov/papers/ed_vis.pdf),
+not a reproduction of that paper's multidimensional viscosity or physical
+transport. Its effect on full expansions must be measured before adoption.
+
 The electric field is integrated exactly from the actual piecewise-constant
 species charge on the union of all moving cell boundaries. E_left is prescribed;
 E_right follows total charge. E is linear on each union interval and constant

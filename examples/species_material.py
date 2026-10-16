@@ -30,14 +30,14 @@ def density_error(model,state,kind,time_s,a,sound,scale,density):
     return float(np.sum(np.diff(edges)[:,None]*weight/2*abs(sampled-exact))/(2*a))
 
 
-def run(destination, *, mesh='uniform', viscosity=(0.,0.), step_scale=1., grids=(32,64,128)):
+def run(destination, *, mesh='uniform', viscosity=(0.,0.), step_scale=1., grids=(32,64,128), viscosity_limiter='none'):
     out=Path(destination)
     if out.exists():raise ValueError('Fresh independent-support output required')
     if mesh not in ('uniform','cosine'):raise ValueError('Choose uniform or cosine material labels')
     if not np.isfinite(step_scale) or not 0<step_scale<=1:raise ValueError('Time-step scale must lie in (0,1]')
     if len(grids)<2 or list(grids)!=sorted(set(grids)) or min(grids)<2:raise ValueError('At least two increasing cell counts required')
     identity=provenance(['examples.species_material']);out.mkdir(parents=True);freeze(out,identity)
-    began=time.monotonic(); report=dict(terminal=False,source_sha256=identity['source_sha256'],cases=[],mesh=mesh,step_scale=step_scale,numerical_viscosity=list(viscosity),grids=list(grids),
+    began=time.monotonic(); report=dict(terminal=False,source_sha256=identity['source_sha256'],cases=[],mesh=mesh,step_scale=step_scale,numerical_viscosity=list(viscosity),viscosity_limiter=viscosity_limiter,grids=list(grids),
         scope='Planar independent-support Euler-Poisson fluids, physical masses, no reactions/collisions; optional declared compressive numerical viscosity. Actual fields and front convergence, not formation or kinetic validation.')
     def save():
         report['elapsed_seconds']=time.monotonic()-began;(out/'summary.json').write_text(json.dumps(report,indent=2)+'\n')
@@ -56,7 +56,7 @@ def run(destination, *, mesh='uniform', viscosity=(0.,0.), step_scale=1., grids=
             faces=np.broadcast_to(a*labels,(len(masses),cells+1)).copy()
             numbers=density*np.diff(faces,axis=1)
             model=MaterialSpecies(numbers,masses,charge,(-.2,.2),left_electric=-EV*density*a/EPS0 if kind=='charged' else 0.,
-                                  cfl=.15,maximum_plasma_phase=.04*32/cells,numerical_viscosity=viscosity)
+                                  cfl=.15,maximum_plasma_phase=.04*32/cells,numerical_viscosity=viscosity,viscosity_limiter=viscosity_limiter)
             if kind=='charged':
                 left,right=faces[:,:-1],faces[:,1:];temp=temperature*(1-(left*left+left*right+right*right)/(3*a*a))
             elif kind=='plasma':temp=np.array([.2,2.])[:,None]
@@ -75,7 +75,7 @@ def run(destination, *, mesh='uniform', viscosity=(0.,0.), step_scale=1., grids=
             energy=budgets['energy_j_m2']; momentum=budgets['momentum_kg_per_m_s']
             case=dict(name=f'{kind}_n{cells}',kind=kind,cells=cells,species_charge=charge,species_mass_kg=masses,
                 reference_density_m3=density,duration_s=duration,completed_time_s=t,steps=len(times)-1,success=failure is None,failure=failure,
-                cfl=model.cfl,maximum_plasma_phase=model.maximum_plasma_phase,numerical_viscosity=model.viscosity.tolist(),
+                cfl=model.cfl,maximum_plasma_phase=model.maximum_plasma_phase,numerical_viscosity=model.viscosity.tolist(),viscosity_limiter=model.viscosity_limiter,
                 final_fronts_m=state.faces[:,[0,-1]].tolist(),
                 maximum_relative_energy_error=float(abs(energy-energy[0]).max()/energy[0]),
                 maximum_momentum_change_kg_per_m_s=float(np.linalg.norm(momentum-momentum[0],axis=1).max()),
@@ -99,11 +99,20 @@ def run(destination, *, mesh='uniform', viscosity=(0.,0.), step_scale=1., grids=
     comparisons=[];grid=np.linspace(-.19,.19,20001)
     for low,high in zip(grids[:-1],grids[1:]):
         if not all(c['success'] for c in report['cases'] if c['kind']=='plasma' and c['cells'] in (low,high)):continue
-        m,s,_=finals['plasma',low];n,t,_=finals['plasma',high];first=m.sample(s,grid);second=n.sample(t,grid)
+        m,s,_=finals['plasma',low];n,t,_=finals['plasma',high]
+        # J and E are piecewise linear on this union; two-point Gauss is exact
+        # for their squared difference and includes the empty exterior.
+        edges=np.unique(np.r_[m.bounds,n.bounds,s.faces.ravel(),t.faces.ravel()])
+        nodes=np.array([.5-.5/np.sqrt(3),.5+.5/np.sqrt(3)])
+        points=(edges[:-1,None]+np.diff(edges)[:,None]*nodes).ravel()
+        weights=np.repeat(np.diff(edges)/2,2)
+        first=m.sample(s,points);second=n.sample(t,points)
+        def relative(field):
+            a,b=first[field],second[field];w=weights if a.ndim==1 else weights[:,None]
+            return float(np.sqrt(np.sum(w*(a-b)**2)/np.sum(w*b*b)))
         comparisons.append(dict(coarse_cells=low,fine_cells=high,
-            species_number_l1_over_initial=np.trapezoid(abs(first['number']-second['number']),grid,axis=1).tolist(),
-            electric_relative_l2=float(np.linalg.norm(first['electric']-second['electric'])/np.linalg.norm(second['electric'])),
-            current_relative_l2=float(np.linalg.norm(first['current']-second['current'])/np.linalg.norm(second['current'])),
+            species_number_l1_over_initial=np.sum(weights*abs(first['number']-second['number']),axis=1).tolist(),
+            electric_relative_l2=relative('electric'),current_relative_l2=relative('current'),
             species_front_difference_m=abs(s.faces[:,[0,-1]]-t.faces[:,[0,-1]]).max(axis=1).tolist()))
         comparisons[-1]['species_number_l1_over_initial']=(np.asarray(comparisons[-1]['species_number_l1_over_initial'])/(2*.01*1e14)).tolist()
     report['plasma_spatial_sensitivity']=comparisons
@@ -135,5 +144,6 @@ def run(destination, *, mesh='uniform', viscosity=(0.,0.), step_scale=1., grids=
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('destination');p.add_argument('--mesh',choices=('uniform','cosine'),default='uniform')
     p.add_argument('--viscosity',type=float,nargs=2,default=(0.,0.));p.add_argument('--step-scale',type=float,default=1.)
+    p.add_argument('--viscosity-limiter',choices=('none','minmod'),default='none')
     p.add_argument('--cells',type=int,nargs='+',default=[32,64,128]);args=p.parse_args()
-    result=run(args.destination,mesh=args.mesh,viscosity=args.viscosity,step_scale=args.step_scale,grids=args.cells);raise SystemExit(0 if result['success'] else 1)
+    result=run(args.destination,mesh=args.mesh,viscosity=args.viscosity,step_scale=args.step_scale,grids=args.cells,viscosity_limiter=args.viscosity_limiter);raise SystemExit(0 if result['success'] else 1)

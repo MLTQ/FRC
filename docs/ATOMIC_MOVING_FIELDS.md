@@ -1,5 +1,82 @@
 # Moving variable-species electrostatic research component
 
+## Limited numerical stress improves compression and current accuracy (2026-10-16)
+
+Exact integration of J/E differences on the union of the saved physical meshes
+confirms the original256→512 current difference:15.1346%. About88.20% of its
+squared error is in |x|<9mm. The dominant discrepancy is an interior compressive
+current structure, not the ion-support edge. The previous uniform sampling grid
+was adequate for the spatial conclusion but missed narrow displaced cell jumps
+in the much smaller same-grid time differences; corrected norms are below.
+
+`MaterialSpecies(..., viscosity_limiter='minmod')` now removes resolved affine
+compression from the numerical viscous jump using neighboring physical velocity
+gradients. Q remains positive only in compression, and the identical stress
+enters momentum and thermal work. No evolved density, current, energy or support
+is clipped or repaired. Default `none` preserves the previous scheme; this is
+an opt-in research improvement, not formation adoption. See both companions
+for exact equations and the distinction from physical transport.
+
+All original neutral/charged/plasma cases retain their masses, initial states,
+vacuum and full durations. Complete actual20ns plasma comparisons are:
+
+| Adjacent cells | Original J difference | Limited J difference | Original E difference | Limited E difference |
+|---|---:|---:|---:|---:|
+|128→256|20.5808%|21.3847%|1.56597%|1.47656%|
+|256→512|15.1346%|13.0466%|0.912529%|0.705685%|
+|512→1024|10.9910%|8.07805%|0.496145%|0.330304%|
+
+Thus the limiter does not improve every coarse comparison. At1024 cells its
+electron/ion fronts are±54.065224/±10.043085mm, numerical heating7.70463e-9J/m²,
+and max relative total-energy error2.07849e-10. Density electron L1 difference
+512→1024 is0.423637% of the initial number. All actual thermal energies remain
+positive. The neutral front error is still1.19915mm; its slow convergence is
+unresolved. Current peaks remain spatially sensitive despite improved fields.
+
+Same-grid half-step J differences with exact union integration are0.174862%,
+0.0545214%,0.0196930% for the limited32/64/128 cases. For the already archived
+original-stress half-step cases they are0.175964%,0.0242791%,0.0287379%.
+These supersede the earlier uniform-sampling J time norms, which missed tiny
+displaced density discontinuities. E time differences stay below4e-6 relative.
+The time differences are still much smaller than spatial differences.
+
+Two independent physical baselines evaluate the actual change:
+
+- Smooth neutral quadratic-pressure compression/rebound: scalar energy-integral
+  quadrature sets the full14.3312877µs duration and minimum scale0.5. Original
+  stress produces endpoint position errors1.03627/.465801/.218267mm at32/64/128;
+  limited errors8.84e-12/6.20e-13/4.03e-14m. Its numerical heating is~1e-16J/m²
+  instead of~9.08e-4J/m² at128 cells. Global conservation alone did not expose
+  the original spurious heating and trajectory error.
+- Existing analytic gamma5/3 Sod solution, full3.860718µs, finite free neutral
+  slab and exact exterior vacuum. Central normalized density L1 errors for
+  limited64/128/256 decrease.0119667/.00665079/.00353818 (original finest.00392436).
+  Finest velocity/pressure L1 decrease.0102663/.00528047→.00803898/.00478187.
+  Small rarefaction-head overshoot persists; it is not claimed monotone.
+  Finest max relative energy error1.04647e-7, momentum change6.05e-21kg/(m s).
+
+All runs below were collected EXIT0; their actual histories and frozen sources
+are retained. No unit suite or generic verification framework was introduced.
+
+| Output under outputs/ | Handle | Seconds | Source prefix |
+|---|---:|---:|---|
+|species_material_limited_support|23277|4.515|aca2b117|
+|species_material_limited_refined|78703|24.982|aca2b117|
+|species_material_limited_n1024|6725|78.138|aca2b117|
+|species_material_original_n1024|98820|75.397|aca2b117|
+|species_material_limited_halfstep|73375|9.089|aca2b117|
+|species_material_smooth_compression|46438|3.384|824e580f|
+|species_material_shock|18095|1.935|dfdc0f8c|
+
+`outputs/species_material_current_localization/analysis.py` reproduces the exact
+saved-field comparisons and their PNG/PDF, including corrected historical time
+norms. Compression, shock and current figures were visually inspected. Bead
+frc-transport.5.5.1 and the full goal remain OPEN. Next resolve the narrow
+interior current structures and low-mass fronts with improved spatial treatment,
+then couple physical changing populations and their momentum/energy across
+distinct species supports. This remains a reaction-disabled planar component;
+fixed numbers are not a substitute for atomic reactions or full formation.
+
 ## Separate species supports remove the refined thermal failure (2026-10-16)
 
 New `plasma_bench/species_material` advances each species on its own physical

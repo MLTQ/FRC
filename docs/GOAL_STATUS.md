@@ -1,5 +1,37 @@
 # Active research: a credible experimental FRC simulation
 
+## Current accuracy and compression improved; full goal remains open (2026-10-16)
+
+Previous turn only reconfirmed the completed viewer, so it supplied no new
+scientific progress. This continuation changed the actual independent-support
+solver: optional minmod-limited numerical stress removes dissipation of resolved
+affine compression while retaining compatible pressure work and exact vacuum.
+Read the newest ATOMIC_MOVING_FIELDS.md section and species_material companions.
+Original coefficients and default remain available; no formation adoption.
+
+All full32..1024 neutral/charged/plasma histories completed. For512→1024,
+limited J/E differences improve to8.07805%/0.330304% versus original
+10.9910%/0.496145%. Narrow interior current structures still dominate error;
+neutral front error remains1.19915mm. Independent full smooth compression/rebound
+and the existing analytic Sod shock baseline establish the concrete limiter
+improvement. Complete source-frozen runs, raw states, PNG/PDF and exact saved-field
+comparisons are in the new species_material_* output directories. All seven
+new simulation handles have terminal EXIT0; no unit tests were run.
+
+Correction: exact integration across tiny displaced density jumps increases
+the earlier reported same-mesh J time norms. At128 cells original/limited
+half-step changes are0.02874%/0.01969%; still far below spatial differences.
+No original data were altered. See current_localization/limited_current_comparison.json.
+
+Only pulse17262 remains LIVE, confirmed by its exact process handle this turn.
+Latest saved1200/16000,2139.368s; source remains f5ddb118...a428f2, unchanged.
+Do not restart or edit its imported closure. Collect actual termination, then
+compare complete8000/16000 configured fields. The viewer and user poster are
+unchanged. Next solver work: spatial accuracy of narrow currents/fronts, then
+actual changing atomic populations and momentum/energy transfer across the
+distinct supports. Fixed-N planar transport does not satisfy those requirements.
+frc-transport.5.5.1, parent5.5 and fullfrc-goal remain OPEN. Local research only.
+
 ## Active goal resumed: field sensitivity and separate species supports (2026-10-16)
 
 Previous goal turn made progress: detailed visualization saved at22b8e3dac and
