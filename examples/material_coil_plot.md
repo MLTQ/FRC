@@ -55,6 +55,8 @@ remain in the JSON. No new states, repair, pass/fail thresholds or test framewor
 The scientific PNG/PDF show differences throughout the complete trajectories;
 two grids alone still do not prove convergence or physical model validity.
 `entropy_transport` is also a named numerical input (legacy default `upwind`).
+`central_integrator` is named separately (legacy default `rk4`); changing to
+fixed DOP853 alters the central time advance without changing the outer split.
 A central-energy-diffusion run changes that flux as well as its integrator;
 such comparisons must not be reported as timestep convergence.
 Calculated comparisons are written before plotting, so a rendering failure does

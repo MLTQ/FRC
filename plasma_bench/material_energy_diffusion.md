@@ -55,6 +55,14 @@ redistribution measure, not generated heat or an integral of every edge flux.
 Numerical bulk-viscous ion heating and physical collision heat remain separate.
 All cumulative observations are diagnostic only and never modify a state.
 
+Optional `central_integrator="dop853_fixed"` changes only the central full-state
+advance to the twelve-stage eighth-order tableau in material_rk8. Default `rk4`
+preserves the original central advance. `central_step` exposes that choice to
+the actual-state hold comparison; the outer halves and their diagnostics remain
+identical. The full split method remains at most second order, with explicitly
+fixed steps and no adaptive error estimate. Numerical energy loss and actual
+fields must be measured, not inferred from the central method's formal order.
+
 The general conservative-central plus dissipative-flux strategy is discussed by
 [Ranocha (2018)](https://arxiv.org/abs/1701.02264). The equations above are the
 explicit derivation for this material graph, not a claim that a published Euler
