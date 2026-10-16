@@ -1,5 +1,51 @@
 # Numerical thermal-energy transport in the moving pulse
 
+## Higher-order time comparison and compression continuation (2026-10-16)
+
+Full8000-step run92324 is terminal EXIT0:3.5us,13763.455s, sourcef5ddb118...28f2.
+Existing configured-field comparison88989 EXIT0 uses81 common times and6400
+material quadrature points. Only dt changes0.875→0.4375ns. Results are in
+`outputs/material_tube_rk8_energy_diffusion_timestep_4000_8000_comparison`;
+PNG visually inspected and PDF/JSON retained. These differences are between
+numerical solutions, not errors against an exact formation experiment.
+
+| Time | Relative total B | Relative current J | Relative velocity | Maximum position difference |
+|---|---:|---:|---:|---:|
+|0.875us|0.0007167%|0.0036381%|0.0011620%|0.00002293mm|
+|1.750us|2.42348%|11.7166%|6.93382%|1.38086mm|
+|2.625us|2.43122%|7.03446%|2.19194%|1.85359mm|
+|3.500us|2.87103%|6.51492%|1.48009%|3.43673mm|
+
+Maximum vectorB/J differences are10.4436%/40.8797% at1.35625us; this remains
+materially time-sensitive. Maximum absolute external-work residual/E0 improves
+8.58117e-6→4.95865e-7, while final separate response-work residual/E0 improves
+2.10732e-4→3.56620e-6. Fine final collision heat88.472106mJ and numerical ion
+heat33.401135mJ remain separately recorded. MeanTe/Ti9.739794/2.067533eV;
+midplane/maximum radius55.588118/63.429696mm. Small energy residual is not field
+accuracy, physical heat-transport validity or a formation certificate.
+
+The existing hold runner95741 EXIT0 (709.065s) starts from the actual fine-run
+step3000 and continues through3050,1.3125→1.334375us, with constant prescribed
+currents. Output `outputs/material_hold_interval_rk8_compression_3000_3050`
+freezes sourcedf92f8cb...ab92 and all accepted states. Actual energy changes at
+0.4375/0.21875/0.109375ns are-2.9920e-10/-1.1224e-12/+5.9397e-15J; summed
+diffusion changes are1.34e-14/2.45e-14/4.07e-14J. Against the finest local
+continuation, endpoint relativeJ differences are4.64473e-6 and9.65927e-7;
+B differences1.10005e-6 and2.40361e-7. Coarse replay differs from its original
+endpoint by at most5.12e-15m in coordinates and3.03e-9 in entropy (the recorded
+time arithmetic differs at floating-point precision). This is a well-resolved
+local continuation from an identical starting state, not proof that the prior
+full histories agree. The full-run discrepancy accumulates before/through
+compression; do not substitute this local invariant for full-pulse convergence.
+
+Matching full16000-step pulse **17262 is LIVE**, dt0.21875ns, same physical
+inputs and sourcef5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2.
+Config `configs/material_tube_independent_20mt_rk8_energy_diffusion_t16000.json`;
+output `outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t16000`.
+Collect the exact handle's terminal result, then compare8000/16000 with the
+same configured-field tool. Preserve its imported source while live. No new
+physical coefficients, atmosphere, state repair or unit-test framework was added.
+
 ## Full higher-order strong pulse completed (2026-10-16)
 
 Private run86765 exited0 after all4000steps/3.5us in6904.864s, source

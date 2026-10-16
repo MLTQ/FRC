@@ -1,5 +1,55 @@
 # Resume the physical FRC simulation
 
+## Active goal resumed: field sensitivity and separate species supports (2026-10-16)
+
+Previous goal turn made progress: detailed visualization saved at22b8e3dac and
+completed8000-step pulse collected. This continuation resumes the full original
+FRC objective; no acceptance scope has been reduced and no formation/adoption
+claim is made. No unit suite, new verification framework or viewer rebuild.
+
+Completed configured-field comparison88989 EXIT0:
+`outputs/material_tube_rk8_energy_diffusion_timestep_4000_8000_comparison`.
+Onlydt0.875→0.4375ns changed. FinalB/J differences2.87103%/6.51492%; maximum
+J difference40.8797% during compression. Energy residual improves17.3x but
+fields remain time-sensitive. Existing actual-state hold95741 EXIT0,
+709.065s, source df92f8cb...ab92:1.3125→1.334375us from identical fine-run
+state, three actual dt values. EndpointJ changes only4.64e-6/9.66e-7 relative
+to the finest local continuation. Read newest MATERIAL_ENERGY_DIFFUSION.md.
+
+Matching full16000-step/0.21875ns pulse **17262 is LIVE**. Last saved400/16000,
+734.624s; exact handle polled live. Output
+`outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t16000`;
+config `configs/material_tube_independent_20mt_rk8_energy_diffusion_t16000.json`.
+Its imported source remains f5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2.
+Do not restart on timeout or edit that closure while live. On terminal success,
+use the existing configured-fields tool against8000; on failure preserve it.
+No other process from this continuation remains live.
+
+Actual solver progress onfrc-transport.5.5.1: new species_material uses separate
+material supports, physical nodal momenta/thermal energies and exact represented
+interior/exterior Gauss fields. It eliminates the previous shared-mesh ion-tail
+thermal failure for these reaction-disabled physical cases. All32/64/128 and
+then128/256/512 cases complete the original durations, including full20ns plasma.
+Five complete source-frozen studies, equal-time spatial comparisons, and a
+same-grid half-step comparison are preserved. Read ATOMIC_MOVING_FIELDS.md and
+both new companions before modifying this separate component.
+
+With explicit numerical stressC1=.5,C2=2 and surface-focused labels,256→512
+changes E by0.9126%, J by15.1339% and electron numberL1 by0.8798%. Neutral
+front errors decrease6.24→4.57→3.30→2.37→1.69mm across32..512; the independent
+charged affine reference is reproduced to time/roundoff accuracy. Thermal energy
+stays positive without floors; tiny global budgets are not mistaken for current
+accuracy. Finer actual fields and front resolution remain necessary. The new
+transport sector has fixed per-species cell numbers; atomic reactions/collisions,
+transverse fields, cylindrical geometry and real boundaries are NOT yet coupled.
+Do not substitute it for the existing formation solver or silently drop those
+original requirements. The full goal and the front issue remain OPEN.
+
+Next useful work: improve low-mass-front/current spatial resolution, then couple
+actual changing species and their momentum/energy across independent supports.
+Meanwhile collect17262 and compare complete pulse fields. Preserve private
+LXCat raw data, all prior failures and the user-modified poster. Local Git only.
+
 ## Detailed current-volume visualization (2026-10-16)
 
 User requested a more detailed rendering inspired by a current-volume / field-line

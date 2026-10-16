@@ -1,5 +1,73 @@
 # Moving variable-species electrostatic research component
 
+## Separate species supports remove the refined thermal failure (2026-10-16)
+
+New `plasma_bench/species_material` advances each species on its own physical
+material support, with consistent nodal mass, three velocities and cell internal
+energy. The exact represented Gauss field uses the union of the species cells
+and the empty exterior. Electric work enters actual nodal kinetic energy rather
+than an ALE numerical-current thermal source. Read the module/example companions
+for the complete equations, boundaries and disclosed numerical viscosity.
+The full variable-population/reaction and axisymmetric goals are unchanged:
+this reaction-disabled transport component is NOT adopted by the formation solver.
+
+All original neutral/charged/plasma physical cases and durations were retained.
+Physical masses, original32/64/128 grids, then128/256/512 grids all complete;
+the electron–ion request is20ns on every grid. No clipping, density floor,
+exterior matter, mass deletion, shortened duration or thermal-energy reset.
+Every accepted state and exact source is archived in these completed EXIT0 runs:
+
+| Output under outputs/ | Handle | Seconds | Source prefix |
+|---|---:|---:|---|
+|species_material_support|20816|4.326|6ce08375|
+|species_material_cosine_support|17772|4.806|e72eaed6|
+|species_material_cosine_viscous_support|71020|4.407|18e7b306|
+|species_material_cosine_viscous_halfstep|48102|8.337|18e7b306|
+|species_material_cosine_viscous_refined|88244|25.653|35bd273f|
+
+Uniform material particles resolve the low-mass rarefaction front slowly.
+Cosine-spaced initial labels increase surface resolution without changing
+the physical initial density or inventory. The inviscid version has substantial
+compressive oscillations. Explicit numerical compression stress C1=.5,C2=2
+damps those oscillations with matched mechanical work and ion/electron thermal
+heating; it is numerical viscosity, not a transport coefficient inferred for a lab.
+No-viscosity attempts remain archived. Charged affine expansion has no numerical
+viscous heating and reproduces the independent energy-integral reference to
+time/roundoff accuracy; its512-cell front error is8.95e-16m.
+
+For cosine labels with the declared numerical stress:
+
+| Cells | Neutral number L1 / initial number | Neutral front error | Plasma max relative energy error |
+|---|---:|---:|---:|
+|32|0.0260762|6.23687mm|2.70232e-8|
+|64|0.0141323|4.57148mm|6.74310e-9|
+|128|0.00709053|3.30380mm|1.77860e-9|
+|256|0.00347507|2.36704mm|1.09294e-9|
+|512|0.00172143|1.68713mm|4.65887e-10|
+
+All plasma histories conserve particle amounts exactly by their material
+representation and keep momentum near roundoff. At512 cells the electron fronts
+are±53.294637mm and ion fronts±10.038820mm. Adjacent128→256 and256→512 electric
+field differences at20ns fall1.56591%→0.912610%; current differences fall
+20.5750%→15.1339%, and electron-density L1 fractions1.4680%→0.879826%.
+Thus the small current-carrying structure and leading front still need spatial
+resolution; these results do not justify a converged physical edge claim.
+The measured exterior field energy is retained even where every species is empty.
+
+Halving time limits at fixed32/64/128 meshes changes finalJ by at most
+4.12770e-5 relative (128 cells4.39032e-6) and E by at most3.49246e-6.
+These time differences are far smaller than the spatial differences. Exact
+same-grid endpoint comparisons are saved in the half-step output. Fine plots
+were inspected and their PDFs saved. No unit tests or new generic verification
+framework were used; this is actual replacement transport/front dynamics.
+
+Beadfrc-transport.5.5.1 remains IN_PROGRESS. Next improve the low-mass front and
+local current spatial accuracy, then conservatively couple changing atomic
+populations, reaction momentum/energy and collisions across distinct species
+supports. Do not silently keep fixed species numbers when making that adoption.
+Transverse Maxwell fields, cylindrical geometry and physical wall/end/sheath
+conditions remain full-goal requirements. Earlier ALE failures below are preserved.
+
 This component advances actual species numbers, three momenta and total energies
 on moving axial control volumes. It includes relative species fluxes, a Gauss
 field from actual charge, and electric work compatible with the moving-volume
