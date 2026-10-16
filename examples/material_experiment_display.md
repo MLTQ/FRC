@@ -47,3 +47,9 @@ Its final time is the last accepted step; no requested future state is fabricate
 The stopping reason appears above the controls and in status/scope text. Default
 behavior still requires a complete successful trajectory. This helps inspect a
 physical failure without portraying an incomplete pulse as a successful result.
+
+The numerical dt and requested/completed step counts are copied from the simulation summary
+into display metadata. The UI distinguishes this step from the much sparser saved
+states selected for animation, without interpolating or re-integrating them.
+For a terminal partial run the count explicitly distinguishes completed from
+requested steps; a requested duration is never presented as already evolved.

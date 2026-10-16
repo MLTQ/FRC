@@ -36,7 +36,7 @@ def run(config_path, destination):
         steps = config['evolution']['steps']; duration = config['evolution']['duration_s']; dt = duration/steps
         state = MaterialCurrentState(fluid.initial, np.zeros(model.space.magnetic_count))
         previous = model.response(state, time=0.); energy0 = previous['total_energy']
-        work = 0.; response_work = 0.; heat = 0.
+        work = 0.; response_work = 0.; heat = 0.; viscous_heat = 0.
         group_work = np.zeros(len(model.source_groups)); group_response_work = group_work.copy()
         field_per_amp = np.array([group['vacuum_center_field_per_amp_t'] for group in metadata['source_groups']])
         record.update(steps=steps, dt=dt, duration=duration, initial_total_energy_j=energy0)
@@ -62,6 +62,9 @@ def run(config_path, destination):
                 source_linkage_wb=a['source_linkage_wb'], total_energy_j=a['total_energy'],
                 response_energy_j=a['response_energy'], external_work_j=work,
                 source_response_work_j=response_work if integrator=='rk4' else None, joule_heat_j=heat,
+                numerical_viscous_heat_j=viscous_heat,
+                numerical_viscous_pressure_max_pa=a['numerical_viscous_pressure_max'],
+                numerical_viscous_power_residual_w=a['numerical_viscous_power_residual'],
                 relative_external_work_residual=(a['total_energy']-energy0-work)/energy0,
                 relative_response_work_residual=(a['response_energy']-energy0-response_work)/energy0 if integrator=='rk4' else None,
                 induced_magnetic_energy_j=a['magnetic_energy'], current_energy_j=a['current_energy'],
@@ -102,6 +105,7 @@ def run(config_path, destination):
             if integrator == 'rk4':
                 group_response_work += .5*dt*(previous['source_group_response_powers_w']+a['source_group_response_powers_w'])
             heat += .5*dt*(previous['joule_power']+a['joule_power'])
+            viscous_heat += .5*dt*(previous['numerical_viscous_power']+a['numerical_viscous_power'])
             state = next_state; previous = a; record['completed_steps'] = step
             raw = out/f'step_{step:05}.npz'; np.savez_compressed(raw, **arrays(state))
             if step % stride == 0 or step in (1, steps):

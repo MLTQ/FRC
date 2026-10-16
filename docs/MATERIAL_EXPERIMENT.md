@@ -291,3 +291,18 @@ Do not expand verification frameworks. Physical transport, ionization/preparatio
 spatial accuracy and experimental calibration remain open. Research search found
 additional primary papers but none was adopted as a new matched baseline here.
 Preserve user-modified outputs/frc_showcase/poster.png; no remote/publication.
+
+## Strong long-array continuation (2026-10-15)
+
+The initial20mT independent-array pulse and its split-current version both fail
+near1.07us. Full time halving to0.875ns reaches1.101625us before rejecting a
+folded end cell. See MATERIAL_COMPRESSION.md for actual stage/fold evidence and
+an optional numerical bulk pressure with matched ion heating. Its independent
+complete wall-shock runs converge toward Rankine-Hugoniot jumps; the100-cell
+time control reduces the observed energy/work error to3.08385e-6. Numerical
+pressure remains explicitly optional, with separate recorded heat. A new full
+physical pulse is running; no successful long-array formation is yet claimed.
+
+The completed two-loop20mT viewer now separates the actual1.75ns integration
+step from roughly250/500ns between its12selected display states. Scientific
+arrays are unchanged; the coarser animation spacing is not the integration step.

@@ -126,7 +126,7 @@ def build(source, destination, *, allow_partial=False):
         for line in frame['lines']: line['points'] = (np.asarray(line['points'])/extent).tolist()
         frame['outline'] = [(np.asarray(p)/extent).tolist() for p in frame['outline']]
         cloud = np.asarray(frame['current']); cloud[:, :3] /= extent; frame['current'] = cloud.tolist()
-    data = dict(frames=frames, bmax=max(f['bmax'] for f in frames), jmax=np.max([f['jmax'] for f in frames], axis=0).tolist(),
+    data = dict(solver_dt_s=d['dt'], solver_steps=d['steps'], solver_completed_steps=d['completed_steps'], frames=frames, bmax=max(f['bmax'] for f in frames), jmax=np.max([f['jmax'] for f in frames], axis=0).tolist(),
         chamber=[(p/extent).tolist() for p in chamber], coils=[(p/extent).tolist() for p in coils], physical_scale_m=extent, initial_zoom=1.5,
         coil_groups=[dict(label=g['label'], color=g['color'], paths=[(p/extent).tolist() for p in g['paths']]) for g in coil_groups],
         status_note=status,

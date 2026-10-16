@@ -1,5 +1,46 @@
 # Resume the physical FRC simulation
 
+## Nanosecond integration and the strong-pulse compression limit (2026-10-15)
+
+Research resumed after the usage refresh. The displayed completed two-loop20mT
+trajectory uses2000 RK4 steps over3.5us: **1.75ns per solver step**, not250ns.
+The12 selected display states are unevenly spaced by roughly0.25/0.5us. The
+viewer now labels the integration step and display gap separately; its saved
+scientific states are unchanged. The refreshed localhost8790/20mt/ view and timing
+screenshot were inspected, with no browser warnings/errors. Server90454 serves it.
+
+Both previous overnight jobs are terminal: the strong split pulse also failed
+(613 accepted, attempted614, nonpositive/nonfinite species), while the higher-order
+compact-vector trajectory completed2000steps. See MATERIAL_VECTOR_COUPLING.md for
+its actual energy/virial and resolution differences; it is not spatially converged.
+
+The full strong long-array pulse rerun with **0.875ns** steps reaches1.101625us
+(1259 accepted, attempted1260) and rejects a folded material cell. This moves beyond
+the original1.064us field/entropy explosion but does not complete the3.5us pulse.
+A short0.4375ns continuation of the earlier prefix also reaches an end-cell fold;
+it is diagnostic evidence, not an initial-to-end convergence run. Saved actual RK
+stages, restricted EM spectra and folded geometry are in
+outputs/material_independent_pulse_failure_analysis. The restricted spectrum does
+not establish a simple electron-gyro timestep limit or full-system stability.
+
+An optional numerical bulk pressure and matched ion heating are implemented in
+material_bulk_viscosity and the experiment builder, defaultOFF. The current
+complete wall-shock comparison11487 finished all50/100/200-cell trajectories,
+with density/velocity/pressure L1 errors falling to0.962%/0.484%/2.956%. Read
+MATERIAL_COMPRESSION.md and outputs/material_wall_shock_viscosity_b (inspected
+PNG; PDF also generated). The finest energy/work residual is0.0523%. The complete
+100-cell time control31436, outputs/material_wall_shock_viscosity_t4, cuts dt25ns
+to6.25ns and lowers energy/work error0.105% ->0.000308%; physical shock errors
+remain spatially limited. The physical20mT array
+rerun is LIVE13616 in outputs/material_tube_independent_20mt_viscous_r4_z16_t4000,
+source05555dc9be49c3a1af9c31467fc713f4d5e395442328e9107eea19f68d0b3c75;
+0.875ns,4000requestedsteps, explicit numericalC1=0.5,C2=2. Collect actual terminal
+results; do not restart on observation timeout or edit live sources. All previous
+physical terms and exact exterior vacuum remain; no floors or mesh repair.
+The first rejected one-radial-cell setup is preserved separately, with no evolved
+state. No unit tests or new verification framework. The FRC goal andfrc-vacuum.3.1
+remain open; physical closures, preparation, accuracy and formation are unfinished.
+
 ## Wrap-up: independent bias and formation coils (2026-10-14)
 
 User requested wrap-up to conserve usage credits. No further scientific work is

@@ -95,3 +95,22 @@ do not restart it on an observation timeout or edit its live source closure.
 After the current run, use its actual physical comparison to direct the next
 solver change, then couple penetrating moving vacuum/finite coils. No new
 verification framework or unit tests accompany this extension.
+
+## Completed higher-order trajectory (collected2026-10-15)
+
+The6x12,degree5,q10 trajectory completed all2000steps/7.121769us in11483.19s.
+The old process handle89864 expired overnight, but its saved terminal summary
+confirms success. No restart was made. All raw states and the original frozen
+source5744fb58115ea903ba9a683959e4e47b30b331d75981d11bb672ae7e4fa743e6
+remain in outputs/material_vector_free_r6_p5_q10_t2000.
+
+Initial B/J errors0.4320%/0.8437% and force RMS error0.00189028 of C/R compare
+against the independent analytic initial fields/force above. Maximum full-run
+energy change1.49326e-5 and independent virial error1.74261e-6 remain measured,
+not repaired. Maximum absolute angular/axial momentum7.75e-30kg m²/s and
+1.36e-24kg m/s. Final Joule heat479.663nJ, peak B0.675541uT, peak J102.315A/m²,
+meanTe/Ti0.376493/0.367776eV. Final peak toroidal velocity18.1868m/s, versus
+7.31690m/s on the older coarse run, and Joule heat is10.47% larger. Those changes
+preclude claiming converged rotation/current from integrated conservation.
+Both resolution and field degree changed; this is not a measured convergence
+order. Compact initialized flux remains distinct from coil-driven formation.

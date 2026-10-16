@@ -43,3 +43,10 @@ are null because instantaneous upstream pressure at zero current does not define
 that split work integral. Direct external work -sum(Idot*lambda), actual Joule
 heat and group external work remain independently integrated. Existing split
 diagnostics are recorded; all accepted states and any failure remain preserved.
+
+The optional declared numerical bulk viscosity is observed separately: cumulative
+numerical ion heat, peak numerical pressure and actual mechanical/thermal power
+residual. Its heat uses the same independent trapezoidal observation as Joule heat;
+neither measured integral repairs the state or closes the budget by construction.
+The config and resolved metadata retain the coefficients; omitted means no bulk
+viscosity. See the complete wall-shock baseline in `material_wall_shock.md`.

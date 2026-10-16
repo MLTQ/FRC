@@ -54,3 +54,13 @@ entropy/current diffusion step; omitted or "rk4" retains the original coupled
 RK4. Tube contact is checked on all stages for either solver. This choice changes
 time integration, not plasma/source inputs or the physical equations. Strong
 source behavior remains to be measured; weak-pulse success is not a guarantee.
+
+Optional `numerical_bulk_viscosity={"linear":0.5,"quadratic":2.0}` adds the
+compressive pressure defined in `material_bulk_viscosity.md`; default is OFF.
+Its force enters bulk momentum at each stage and its positive mechanical loss
+heats ions through the actual dual entropy volumes. There is no relative-current
+drag, changed physical resistance, exterior material or mesh repair. Both actual
+mechanical power and the heat represented by entropy are retained in the energy
+diagnostic. Numerical heating/pressure are reported separately from Joule heat.
+Scalar bulk diffusion vanishes in expansion and with mesh size in smooth flow;
+it does not guarantee an untangled multidimensional mesh or physical shock heating.

@@ -11,3 +11,6 @@ position is one actual state; playback does not interpolate time. Current magnit
 is the default, with all signed components available. Color-scale
 mode is explicit and field/current values retain physical units. The moving
 outline is the material boundary, not a proposed experimental chamber.
+
+The timing label distinguishes the numerical integration step and total steps
+from the selected display states. Frame gaps come from actual saved timestamps.

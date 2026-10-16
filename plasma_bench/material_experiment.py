@@ -8,6 +8,7 @@ from .material_vacuum_space import MaterialVacuumSpace
 from .material_magnetic_vacuum import MaterialMagneticVacuum
 from .material_coil_current import MaterialCoilCurrent
 from .material_split_current import SplitMaterialCoilCurrent
+from .material_bulk_viscosity import bulk_viscosity
 from .electromagnetics import loop_field
 from .waveforms import from_dict
 
@@ -44,16 +45,41 @@ def source_configs(config):
 
 class TubeMaterialCoilCurrent(MaterialCoilCurrent):
     """Free evolution only until contact with the explicitly nonconducting tube."""
-    def __init__(self, *args, tube_radius, tube_half_length, **kwargs):
+    def __init__(self, *args, tube_radius, tube_half_length, numerical_bulk_viscosity=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.tube_radius = tube_radius
         self.tube_half_length = tube_half_length
+        self.numerical_bulk_viscosity = numerical_bulk_viscosity
+        if numerical_bulk_viscosity is not None:
+            if set(numerical_bulk_viscosity) != {'linear', 'quadratic'}:
+                raise ValueError('Explicit linear and quadratic numerical bulk viscosity coefficients required')
+            values = list(numerical_bulk_viscosity.values())
+            if not np.isfinite(values).all() or min(values) < 0:
+                raise ValueError('Finite nonnegative numerical bulk viscosity coefficients required')
 
     def response(self, state, *, rate=True, time=0.):
         boundary = state.fluid.coordinates[self.fluid.domain.boundary]
         if np.any(boundary[:, 0] >= self.tube_radius) or np.any(abs(boundary[:, 1]) >= self.tube_half_length):
             raise RuntimeError('Plasma reached tube: wall/sheath/contact physics is not implemented')
-        return super().response(state, rate=rate, time=time)
+        result = super().response(state, rate=rate, time=time)
+        if not rate:
+            return result
+        result.update(numerical_viscous_power=0., numerical_viscous_pressure_max=0.,
+                      numerical_viscous_power_residual=0.)
+        if self.numerical_bulk_viscosity is not None:
+            visc = bulk_viscosity(self.fluid, state.fluid, result['fields'], **self.numerical_bulk_viscosity)
+            heating = np.zeros((len(result['volume']), 2)); heating[:, 1] = visc['heating'].ravel()
+            entropy = self.species.heating_rate(result, heating)
+            thermal = float(np.sum(self.fluid.particles[..., None]*result['fields']['specific_internal']*entropy))
+            result['force'] += visc['force']; result['entropy_rate'] += entropy
+            result['mechanical_power'] += visc['mechanical_power']
+            result['thermal_relative_power'] += thermal
+            result['entropy_rates_over_kB'] += np.sum(self.fluid.particles[..., None]*entropy/(self.fluid.gammas-1), axis=(0, 1))
+            result['pair_power_residual'] += visc['mechanical_power']+thermal
+            result.update(numerical_viscous_power=visc['power'],
+                numerical_viscous_pressure_max=float(visc['pressure'].max()),
+                numerical_viscous_power_residual=visc['mechanical_power']+thermal)
+        return result
 
 
 class TubeMaterialSplitCurrent(TubeMaterialCoilCurrent, SplitMaterialCoilCurrent):
@@ -119,12 +145,14 @@ def build(config):
     solver = TubeMaterialSplitCurrent if integrator == 'split' else TubeMaterialCoilCurrent
     model = solver(fluid, space, vacuum, source_groups=groups,
         resistivity=plasma['prescribed_resistivity_ohm_m'], coulomb_exchange=True,
-        tube_radius=tube['radius_m'], tube_half_length=tube['length_m']/2)
+        tube_radius=tube['radius_m'], tube_half_length=tube['length_m']/2,
+        numerical_bulk_viscosity=config.get('numerical_bulk_viscosity'))
     metadata = dict(central_density_m3=float(center_density), ion_inventory=float(fluid.particles.sum()),
         assumed_neutral_inventory=float(neutral_density*chamber_volume), ions_per_neutral=ions_per_neutral,
         neutral_density_before_preparation_m3=float(neutral_density), ion_mass_kg=float(fluid.ion_mass),
         vacuum_center_field_per_amp_t=group_metadata[0]['vacuum_center_field_per_amp_t'] if len(groups)==1 else None,
         source_groups=group_metadata, actual_initial_entropy=fluid.initial.entropy[0, 0].tolist(),
+        numerical_bulk_viscosity=model.numerical_bulk_viscosity,
         assumptions=['All initial gas inventory is assumed prepared as the declared compact singly ionized plasma.',
             'No ionization, recombination, neutrals, radiation or preparation energy is evolved.',
             'Quartz is represented only as a nonconducting, nonmagnetic contact limit; no wall or sheath model.',

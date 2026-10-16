@@ -28,3 +28,9 @@ geometry supplied by the builder; the browser does not infer confinement.
 Optional coil_groups replace the copper-only outlines with named colored groups.
 Per-frame drive_groups show each group's vacuum-centre contribution alongside
 the total. Text is inserted as textContent, with no HTML evaluation.
+
+Optional solver_dt_s and solver_steps expose the actual integration step in ns,
+separately from frame count and the gap to the preceding displayed state. Missing
+metadata shows only the known frame count; no step size is inferred from animation.
+Optional solver_completed_steps distinguishes a terminal partial run's evolved
+step count from its requested count; complete runs retain the compact label.
