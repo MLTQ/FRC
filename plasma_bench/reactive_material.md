@@ -33,3 +33,9 @@ The ledger separately accumulates observed field-energy changes caused by source
 projection/coarsening. This diagnostic is NOT subtracted from full_energy_j_m2
 and never repairs physical heat. `last_projection` exposes the actual last cut
 counts and field changes; the two source halves both contribute to the ledger.
+
+Two additional ledger fields record numerical projection thermal gain and the
+L1 amount of local total-energy redistribution. They are diagnostics only,
+never additional physical reservoirs or terms subtracted from full energy.
+The precise projected-frame research alternative supplies them. The historical
+transfer carries these fields unchanged and does not claim to measure them.

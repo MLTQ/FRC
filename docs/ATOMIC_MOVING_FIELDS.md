@@ -1,5 +1,25 @@
 # Moving variable-species electrostatic research component
 
+## Final retained-knot diagnosis and next session (2026-10-16)
+
+Run17499 is terminal EXIT1:10ns coupled accepted, complete second10ns transport,
+then failed reaction return. Exact inherited-knot replay first fails in neutral0:
+16 negative cells, Tmin−0.17233045eV from a positive0.00775447eV source. Balanced
+condition6.1192; local velocity refinement38→52 still leaves4 negative cells.
+
+The new explicit projected_frame research alternative transfers U=E-W+K and
+records deltaE=2K-W, its L1 redistribution and temperature changes. Global
+conservation follows from exact Galerkin orthogonality but does not establish
+local accuracy: saved snapshot Ar9+ reaches2.882045e6eV from~0.199eV, despite
+balanced condition3.0434. Its endpoint velocity7.94e6m/s is far from source~300m/s.
+See projection_energy.md for assumptions. Default remains local_total; there
+is no complete candidate trajectory and no formation adoption or heat repair.
+
+All evidence, exact source/knot state and candidate overlay source are retained
+in outputs/reactive_material_argon_retained_knots_10ns. THREAD_HANDOFF.md is the
+current entry point. New beads5.5.4/.5/.6 isolate actual projection fixes and full
+charged refinement. No jobs remain live; older progress sections are historical.
+
 ## Accurate mass arithmetic and retained moving velocity knots (2026-10-16)
 
 The actual rare-species projection failures exposed badly scaled mass solves.
@@ -48,7 +68,7 @@ transfer error are not separated, and no formal order is claimed. Comparison
 figure and numbers: outputs/reaction_remap_retained_knots. The reacting5ns
 case still rejects a later source return after completing its internal motion;
 this is an unresolved local representation/admissibility defect, not success.
-A fresh10ns run is pending; NEXT_SESSION records its exact live handle/source.
+The10ns run subsequently failed; the current handoff records its terminal evidence.
 No formation, stability, confinement or lab-parameter recommendation follows.
 
 ## Actual precise-geometry source/motion evolution (2026-10-16)

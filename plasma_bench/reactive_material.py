@@ -11,6 +11,8 @@ class MaterialReservoirs:
     photons_j_m2: float=0.
     input_heat_j_m2: float=0.
     projection_field_change_j_m2: float=0.
+    projection_thermal_gain_j_m2: float=0.
+    projection_energy_redistribution_l1_j_m2: float=0.
 
 
 class ReactiveMaterial:
@@ -25,7 +27,8 @@ class ReactiveMaterial:
         result,advanced,record=project_reactions(self.overlap,self.last_overlap,**self.controls)
         self.last_projection=record
         ledger=MaterialReservoirs(reservoirs.photons_j_m2+record['photon_energy_j_m2'],reservoirs.input_heat_j_m2+record['input_heat_j_m2'],
-            reservoirs.projection_field_change_j_m2+record['projection_field_energy_change_j_m2'])
+            reservoirs.projection_field_change_j_m2+record['projection_field_energy_change_j_m2'],
+            reservoirs.projection_thermal_gain_j_m2,reservoirs.projection_energy_redistribution_l1_j_m2)
         return result,advanced,ledger
 
     def step(self,model,state,reservoirs,dt):
@@ -42,5 +45,7 @@ class ReactiveMaterial:
         binding=EV*(source.network.energy_ev@number[:-1])
         result.update(atomic_numbers_m2=number,binding_energy_j_m2=float(binding),photon_energy_j_m2=reservoirs.photons_j_m2,
                       observed_projection_field_change_j_m2=reservoirs.projection_field_change_j_m2,
+                      observed_projection_thermal_gain_j_m2=reservoirs.projection_thermal_gain_j_m2,
+                      observed_projection_energy_redistribution_l1_j_m2=reservoirs.projection_energy_redistribution_l1_j_m2,
                       full_energy_j_m2=float(result['energy_j_m2']+binding+reservoirs.photons_j_m2-reservoirs.input_heat_j_m2))
         return result

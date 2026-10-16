@@ -1,69 +1,33 @@
 # Resume the physical FRC simulation
 
-## Resolve the remaining reaction-return thermal failure (2026-10-16)
+Read [THREAD_HANDOFF.md](THREAD_HANDOFF.md) first. It replaces the old October4
+handoff and contains the current terminal evidence, exact next actions and
+preserved-state rules. The user requested wrap-up for a new session on October16.
 
-Read precise_material.md, precise_reactions.md, mass_scaling.md and the
-subcycling/remap-control example companions. Two implemented changes now
-matter: diagonally equilibrated mass solves for reaction return AND material
-acceleration; inherited velocity knots rather than a newly rebuilt cosine mesh.
-Existing velocity knots still inside a resulting support are all retained,
-with new support ends added. New species/blocks without old knots use the
-initial target mesh. No density cuts or inherited knots are removed to satisfy
-a quota. Actual per-block velocity counts can grow and are recorded.
+## Next action
 
-LIVE17499: examples.reactive_material_subcycling
-outputs/reactive_material_argon_retained_knots_10ns --source-step-ns 10
---cells 32 --coalesce-ulps 0. Source 552213d640f98cfcf49d5679fcdc6535050e940b31a62f42dda4dc8ff66f46ef.
-The first 10 ns has completed in 527 transport steps, with 1691 density cells
-and 32/34 velocity cells per block. The second interval is in progress.
-Poll this exact handle; do not restart on timeout. Keep its imported Python
-closure unchanged until it is terminal. No other simulation remains live.
+Start **frc-transport.5.5.4**, then .5 and .6 in dependency order. These cover
+trace-ion velocity projection, local energy admissibility, then complete20ns
+charged source-time/spatial refinement. Use the existing simulation tools and
+independent physical comparisons; no unit suite or framework expansion.
 
-Its rejected_source.npz, if created, now includes exact inherited mesh arrays
-named velocity_knots_species*_decimal_m. Reconstruct those Decimal arrays and
-pass the mapping into project_precise_reactions; do not silently rebuild the
-old cosine space when replaying a retained-knot failure. Stage source/knots are
-cleared before each source call so older data cannot masquerade as a new failure.
-The earlier retained-knots 5 ns attempt predates this extra metadata; its last
-failed projection needs evolution replay to recover the exact knots.
+Run17499 is terminal EXIT1, not live:10ns coupled accepted; second10ns transport
+completed460steps, final source return failed. The exact saved projection first
+fails in neutral species0. The experimental projected_frame energy alternative
+makes U positive but produces2.882045e6eV in trace Ar9+; it is not adopted, and
+local_total remains the default. No full candidate trajectory has been run.
+Evidence and separately archived candidate source are in
+outputs/reactive_material_argon_retained_knots_10ns. Reuse the saved decimal
+velocity_knots_species*_decimal_m for exact projection reconstruction.
 
-Terminal evidence:
-- precise_material_expansion,5888 EXIT0, source90ff816e...ef08d: all six full
-  affine cases, raw precise histories and inspected figure. Geometry bug5.5.3
-  CLOSED; thermal/current accuracy and the original full goal remain open.
-- subcycled_affine_balanced,14306 EXIT0, source20b0b39b...9f861: full6.083704us,
-  213 transport steps, energy1.1154e-13 relative, front1.8145e-13m.
-- reactive_material_argon_balanced_10ns,89197 EXIT0, sourcec8eebf7d...74010:
-  full20ns,815steps,21343 density cells,minwidth9.59274e-25m,energy4.24338e-11.
-  Its source-free field comparison is NOT isolated reaction error: numerical
-  representations differ. A matched zero-source control follows below.
-- reactive_material_argon_balanced_5ns,91261 EXIT1,119.679s:5ns coupled accepted,
-  next5ns transport completed (205 steps), final source projection rejected.
-  Same sourcec8eebf7d. Balanced snapshot projections still reject at32..512
-  velocity cells; constant1m/s reproduction error<=8.02e-13, within-cell density
-  variation<=9.66e-13. The actual source is warm; a projected rare velocity can
-  overshoot its source enough to make U=E-K negative. No clipping.
-- reactive_material_argon_balanced_n64_10ns,97915 EXIT1,603.798s:10ns accepted,
-  next10ns transport completed (578 steps), final source projection rejected.
-- reaction_remap_control,81579 EXIT0,96.808s,9ea80ada...f90663: full20ns matched
-  DI/RR-disabled direct/10ns/5ns cases. Rebuilt meshes produce J differences
-  55.020%/65.369%, E7.423%/8.009%. Conservation alone hid large transfer error.
-- reaction_remap_retained_knots,3944 EXIT0,127.719s,678de51a...3783fd:
-  all three full20ns cases. Retained knots reduce J to0.01021%/0.02575% and
-  E to0.00003142%/0.00003092%. Residual includes transfer and step grouping.
-  Inspected remap_effect.png/pdf and measured_comparison.json are saved.
-- reactive_material_argon_retained_knots_5ns,77564 EXIT1,150.608s,
-  source8b5c97f6...5e98167: first5ns accepted, next5ns transport complete in273
-  steps, then source return rejects negative thermal energy. Do not claim
-  exact failed species/basis without replay: this attempt did not save knots.
+All simulation jobs are terminal. Preserve the user's poster and private data;
+no viewer update is needed. The full original FRC goal remains open. The detailed
+current handoff includes completed controls, source fingerprints, storage and
+execution guidance. Do not treat the historical live-job notes below as current.
 
-NEXT inspect17499 outcome and its exact source/knot projection; identify whether
-failure is in a newly created species without inherited knots or a changing
-mixture within an old support. Preserve all physical moments and supports;
-derive a locally admissible representation instead of clipping heat or merely
-raising uniform resolution again. Continue the full20ns source/space studies
-and measured current accuracy before formation adoption. No unit tests.
-Poster remains untouched, SHA a783f7cda0f4a249cc4c23ead61debbdf89d356436a2a3dab2189029c6d5deca.
+---
+
+# Historical continuation notes — superseded by the current handoff
 
 ## Collect precise-geometry convergence (2026-10-16)
 

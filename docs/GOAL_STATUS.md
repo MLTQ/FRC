@@ -1,5 +1,32 @@
 # Active research: a credible experimental FRC simulation
 
+## Session handoff: local reaction projection still unresolved (2026-10-16)
+
+**Authoritative current entry: [THREAD_HANDOFF.md](THREAD_HANDOFF.md).** The
+user is moving to a new session; no new simulation was launched during wrap-up.
+All numerical jobs are terminal. Old LIVE entries below are historical.
+
+Retained-knot run17499 EXIT1, 230.838s: first10ns coupled accepted, all460
+transport steps of the second10ns complete, final source return rejects U<0.
+Full20ns is NOT completed. Exact source and inherited decimal velocity knots
+are retained in outputs/reactive_material_argon_retained_knots_10ns.
+
+Exact diagnosis locates the first failure in inherited neutral species0:
+sourceT0.00775447eV, projectedTmin−0.17233045eV, scaled matrix condition6.1192.
+Local refinement38→52 velocity cells leaves4 negative cells, Tmin−0.02318735eV.
+The explicit projected_frame energy candidate preserves global energy to
+3.03e-15 relative and yields positive U, but Ar9+ reaches2.882045e6eV from
+~0.199eV and velocity7.94e6m/s from~300m/s. Condition3.0434 does not explain
+away this local failure. This option is NOT adopted; local_total stays default.
+Candidate source, exact input and snapshot measurements are saved; no full
+candidate trajectory has been run. No clipping, trace cutoff or coarsening.
+
+New beads5.5.4 →5.5.5 →5.5.6 cover the concrete velocity error, locally accurate
+energy transfer, then complete charged time/space refinement. Existing coupling
+5.5.2 and the full frc-goal remain open. Precise geometry5.5.3 remains closed on
+its completed independent evidence. Simulation-first, E2E/physical comparisons,
+no unit suite. The viewer, user poster and private LXCat files are unchanged.
+
 ## Moving velocity mesh retained through reactions (2026-10-16)
 
 This continuation made two concrete solver changes: diagonal scaling of the
@@ -31,12 +58,12 @@ reactions. Measured comparison and inspected figure: outputs/reaction_remap_reta
 The corrected reacting 5 ns-interval attempt still fails a later thermal
 projection: 5 ns coupled time accepted, next 5 ns transport complete, final
 source return rejected. Its source and steps are retained; no heat repair.
-A fresh 10 ns-interval run17499 is LIVE with inherited knots and complete
-projection metadata; first 10 ns accepted, full 20 ns still pending. Read
-NEXT_SESSION before editing its frozen source or interpreting older outputs.
+Run17499 is now terminal EXIT1: first10ns accepted, second10ns transport
+complete, final source return rejected. Exact inherited projection metadata
+is retained; see the current handoff for the neutral and trace-ion diagnoses.
 
-Next resolve local admissibility of reaction return, especially newly born
-species, then complete source/space refinement and current accuracy. These
+Next resolve local admissibility and trace-ion velocity error in reaction return,
+then complete source/space refinement and current accuracy. These
 planar component calculations are not FRC formation or lab recommendations.
 The full original goal stays open. No unit suite, viewer/poster edit or publication.
 

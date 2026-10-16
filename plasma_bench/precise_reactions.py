@@ -2,6 +2,7 @@
 import numpy as np
 from scipy.constants import elementary_charge as EV, epsilon_0 as EPS0
 from .mass_scaling import solve_mass_banded
+from .projection_energy import projected_frame_energy
 from .precise_geometry import decimal, widths, fraction, quadrature, interpolate, geometry_precision
 from .precise_material import PreciseMaterialSubcells, PreciseMaterialState, PreciseMaterialSet
 from .material_species_set import MaterialSetState
@@ -66,10 +67,12 @@ class PreciseReactionOverlap(MaterialReactionOverlap):
 
 @geometry_precision
 def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0,
-        velocity_knots=None, cfl=.15, maximum_plasma_phase=.04,
+        velocity_knots=None, energy_projection='local_total', cfl=.15, maximum_plasma_phase=.04,
         numerical_viscosity=(.5, 2.), viscosity_limiter='minmod'):
     if not isinstance(coalesce_ulps, int) or coalesce_ulps < 0:
         raise ValueError('Nonnegative integer explicitly declared ULP cleanup required')
+    if energy_projection not in ('local_total', 'projected_frame'):
+        raise ValueError('Explicit local_total or projected_frame energy projection required')
     source, network, values = overlap.source, overlap.source.network, state.moments
     present = np.any(values[..., overlap.number] > 0, axis=1)
     protected = np.r_[True, np.any(present[:-1] != present[1:], axis=1), True]
@@ -94,12 +97,13 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
     groups = np.searchsorted(kept, np.arange(len(state.edges)-1), side='right')-1
     right = fraction(state.points, edges[groups, None], edges[groups+1, None])
     count, models, states, ids, records = len(edges)-1, [], [], [], []
+    thermal_gain, energy_l1, maximum_temperature_change = 0., 0., 0.
     for species, mass in enumerate(source.mass):
         scale = float(values[..., overlap.number[species]].max())
         if scale == 0:
             continue
         population_scale = overlap.density*scale
-        nn, ee = np.zeros(count), np.zeros(count)
+        nn, ee, source_thermal = np.zeros(count), np.zeros(count), np.zeros(count)
         ll, lr = np.zeros((count, 3)), np.zeros((count, 3))
         np.add.at(nn, groups, np.sum(state.weights*(values[..., overlap.number[species]]/scale), axis=1))
         pm = values[..., source.momentum[species]]/scale*source.momentum_scale
@@ -107,6 +111,11 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
         np.add.at(ll, groups, np.sum(state.weights[..., None]*pm*(1-right[..., None]), axis=1))
         np.add.at(lr, groups, np.sum(state.weights[..., None]*pm*right[..., None], axis=1))
         np.add.at(ee, groups, np.sum(state.weights*em, axis=1))
+        number = values[..., overlap.number[species]]
+        source_velocity = np.divide(values[..., source.momentum[species]], number[..., None],
+            out=np.zeros_like(pm), where=number[..., None] > 0)*(source.momentum_scale/mass)
+        source_kinetic = (number/scale)*(.5*mass*np.sum(source_velocity*source_velocity, axis=-1))
+        np.add.at(source_thermal, groups, np.sum(state.weights*(em-source_kinetic), axis=1))
         occupied = nn > 0
         expected = np.zeros(count, bool)
         np.logical_or.at(expected, groups, present[:, species])
@@ -132,9 +141,19 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
             velocity = solve_mass_banded(model.matrix[0], model.restrict_load(load))
             vl, vr = model.fine_velocity(velocity[None, ...])
             kinetic = mass*model.relative_numbers/6*np.sum(vl*vl+vl*vr+vr*vr, axis=1)
+            if energy_projection == 'projected_frame':
+                thermal, redistribution = projected_frame_energy(ee[first:last], ll[first:last],
+                    lr[first:last], vl, vr, kinetic)
+            else:
+                thermal, redistribution = ee[first:last]-kinetic, np.zeros(last-first)
             result = PreciseMaterialState(faces[None, :].copy(), velocity[None, ...],
-                                          (ee[first:last]-kinetic)[None, :])
+                                          thermal[None, :])
             model.validate(result)
+            gain = thermal-source_thermal[first:last]
+            thermal_gain += float(gain.sum()*population_scale)
+            energy_l1 += float(abs(redistribution).sum()*population_scale)
+            maximum_temperature_change = max(maximum_temperature_change,
+                float(abs((model.gamma-1)*(gain/model.relative_numbers)/EV).max()))
             records.append(dict(species=species, cells=last-first, minimum_width_m=float(widths(faces).min()),
                 velocity_cells=model.velocity_cells, inherited_velocity_faces=inherited is not None,
                 support_decimal_m=[str(faces[0]), str(faces[-1])]))
@@ -153,6 +172,9 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
     h = widths(state.edges)
     old_energy = EPS0/6*np.sum(h*(old[:-1]**2+old[:-1]*old[1:]+old[1:]**2))
     record = dict(blocks=records, removed_roundoff_edges=len(state.edges)-len(edges),
+        energy_projection=energy_projection, projection_thermal_gain_j_m2=thermal_gain,
+        projection_energy_redistribution_l1_j_m2=energy_l1,
+        maximum_projection_temperature_change_ev=maximum_temperature_change,
         geometric_tolerance_m=float(tolerance), removed_density_edges=0, minimum_density_width_m=0.,
         projection_field_energy_change_j_m2=float(new_energy-old_energy),
         projection_field_maximum_change_v_m=float(abs(delta).max()),
@@ -187,5 +209,7 @@ class PreciseReactiveMaterial(ReactiveMaterial):
         self.last_projection = record
         ledger = MaterialReservoirs(reservoirs.photons_j_m2+record['photon_energy_j_m2'],
             reservoirs.input_heat_j_m2+record['input_heat_j_m2'],
-            reservoirs.projection_field_change_j_m2+record['projection_field_energy_change_j_m2'])
+            reservoirs.projection_field_change_j_m2+record['projection_field_energy_change_j_m2'],
+            reservoirs.projection_thermal_gain_j_m2+record['projection_thermal_gain_j_m2'],
+            reservoirs.projection_energy_redistribution_l1_j_m2+record['projection_energy_redistribution_l1_j_m2'])
         return result, advanced, ledger
