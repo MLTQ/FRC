@@ -1,5 +1,34 @@
 # Numerical thermal-energy transport in the moving pulse
 
+## Full higher-order strong pulse completed (2026-10-16)
+
+Private run86765 exited0 after all4000steps/3.5us in6904.864s, source
+`f5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2`.
+All accepted states are in
+`outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t4000`.
+At the same0.875ns step as the older centralRK4 method, maximum absolute
+external-work residual/E0 falls0.002154535->8.5811669e-6 (about251times).
+Final residual/E0 is-7.7190998e-6. The separately integrated mutual/response
+work residual/E0 remains+0.0002107324; it is not the same diagnostic and is
+not silently replaced with the smaller external-work budget.
+
+Final collision heat89.199455mJ, numerical ion heat33.159145mJ, meanTe/Ti
+9.774611/2.057522eV, particle RMS radius22.852619mm, middle/maximum boundary
+radii55.741056/63.707295mm. Drift/thermal validity remains unresolved.
+
+Existing method comparison91680 exited0 at81common times/6400material points:
+`outputs/material_tube_strong_rk8_vs_rk4_energy_diffusion_r4_z16_t4000`.
+Only central_integrator changes. Final relativeB/J/velocity differences are
+3.72866%/8.58821%/1.06613%, maxposition1.97707mm. Sampled vectorJ difference
+reaches39.6036%; these are method differences, not errors against an exact
+solution. ScientificPNG inspected; PDF and JSON saved. Small source-work error
+alone still does not establish field convergence.
+
+Matching higher-order8000-step run92324 remains LIVE in MAIN at0.4375ns with
+the same source. Collect its actual full outcome and use the existing field
+comparison. Preserve its imported closure and live output, and keep the original
+physical transport, vacuum-edge, spatial-convergence and formation gates open.
+
 ## Complete strong-pulse timestep comparison; higher-order option in main
 
 The 8000-step central-RK4 run completed all 3.5 us in 7153.509 s. Its terminal

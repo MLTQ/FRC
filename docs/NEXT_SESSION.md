@@ -1,5 +1,64 @@
 # Resume the physical FRC simulation
 
+## Field/species source implemented; two exact jobs remain live (2026-10-16)
+
+PROGRESS after415513dbf: full finite-mass Lorentz/Ampere coupling now evolves
+the actual reacting species momenta/energies and electricfield. Read newest
+GOAL_STATUS and ATOMIC_ELECTROMAGNETIC.md. No unit suite/UI repeat/framework;
+full originalscope remainsOPEN.
+
+56187 TERMINAL EXIT0 in477.414s, outputs/atomic_electromagnetic,
+source5e55b33a3eab66fafc90f1558b62f2a65b913cff77c20f1cecfadea239e0f80e.
+Allsix analyticmode and bothfull700/1400heatedargon histories complete. Analytic
+phaseerrors decrease~4x on timehalving; reacting energyerror<=2.66e-12eV/nucleus.
+But reacting omega_p*dt2207/1104 leaves fastphase unresolved: maxcurrentdifference
+27670.94A/m2,E3316.75V/m. This is not a validated currenttail. Original bad
+empty-neutral velocityerror metric corrected in occupied_velocity_readout.json
+from actualsavedarrays; state/fields/current/budgetsunchanged. Newdriver excludes
+empty slot. ScientificPNGinspected/PDFsaved.
+
+New optionalexponential method solves samephysical skewsource via sparseaction,
+retaining every nonzero chargedpopulation and exactzero neutral/empty coupling.
+No floors, energynormalization, artificialmass or phasefit. SIX analyticmode
+histories alreadycomplete with maxEerror5.68e-13V/m,J3.50e-14A/m2. Global
+reaction/collision splitting can still be unresolved; don't infer it is solved.
+
+LIVE77504: outputs/atomic_electromagnetic_exponential. Source
+8bae70d9b3335e0c0426c8978142fdc5bbfc77e931d46418ec4cf832a0052822.
+Full700-step heatedcase now succeeds through3.5us, finalJ magnitude.008561895A/m2,
+E=[-.000447424,-2.40530e-7,-.002872067]V/m,Te2.502600599eV, energyerror
+2.52e-12eV/nucleus. The1400-step case remainsLIVE; global splitting/timeaccuracy
+is stillunproven. Preserve importedatomicclosure:
+atomic_electromagnetic, species_field_exponential, atomic_collisions/frame/moments,
+atomicnetwork/data readers and exampledependencies. No source edits whilelive.
+Do not stage liveoutput, restart on timeout, or treat old elapsedsummary as a
+stoppedprocess; this runner saves at completedcase boundaries. Poll exacthandle.
+
+86765 TERMINAL EXIT0, complete4000step higher-order strongpulse,6904.864s.
+outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t4000.
+Maxexternal-work/E0 8.58117e-6 (~251x smaller thanprior same-stepRK4); distinct
+response-work residual/E0 +0.0002107324 remains. Actualmethodcomparison91680 EXIT0
+in outputs/material_tube_strong_rk8_vs_rk4_energy_diffusion_r4_z16_t4000:
+onlycentral_integrator changes,81times/6400points, finalB/J differences3.7287%/
+8.5882%, maxposition1.97707mm. PNGinspected/PDFsaved. Methoddifference, nottruth.
+
+LIVE92324 MAIN:8000step higher-orderstrongpulse,0.4375ns, lastobserved800/8000
+at1400.828s; outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t8000.
+Samef5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2 source as4000.
+Preserve mainmovingclosure andliveoutput. Privatecheckoutis nowidle but its
+implemented methodis already imported inmain; no need another merge/replay.
+
+NEXT: collect77504 actualfull outcomes and inspect E/J/timestep/collision-source
+behavior; preserve failures. Collect92324 then run existingconfigured-fields
+comparison against completedhigher-order4000 withonlydt changed. Continue
+physical spatialspecies/field assembly with charge-continuous fluxes, matching
+fieldwork and exact trackedvacuum. The newhomogeneousMaxwell source has electric
+displacementenergy; it is NOT the moving quasineutralconstraint and must not be
+graftedonto fixedcarriers/twoentropies or arbitraryFVchargefluxes. No imposed
+Gauss/current/energy repair. Originalphysicaltransport, branchdata/photon,
+boundary/validity/formation gatesremainopen. Preserve personalinputs/LXCat pending,
+userposter andfinished10nsviewers. LocalGitonly; no publication.
+
 ## Species flux evidence saved; higher-order moving solver available (2026-10-16)
 
 Previous goal turn was NO PROGRESS on physics: it rechecked the finished10ns

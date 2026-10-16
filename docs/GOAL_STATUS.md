@@ -1,5 +1,55 @@
 # Active research: a credible experimental FRC simulation
 
+## Reactive field/current coupling and completed higher-order pulse (2026-10-16)
+
+Previous goal turn made PROGRESS in415513dbf. This continuation adds actual
+Lorentz/Ampere feedback between all reacting charged species and electric field,
+retaining physical masses, species energies and field energy/momentum. Read
+docs/ATOMIC_ELECTROMAGNETIC.md and the three new module/example companions.
+Full original scope staysOPEN; no unit suite or verification framework.
+
+Initial midpoint run56187 EXIT0 in477.414s: six complete analytic parallel/
+perpendicular mode comparisons and both complete700/1400step reacting/colliding
+argon histories through3.5us. Source5e55b33a...e0f80e and all actual states in
+outputs/atomic_electromagnetic. Independent mode errors decrease aboutfourfold
+on timehalving; combinedparticle/field energy drift<=2.66e-12eV/nucleus in
+reacting runs. But omega_p*dt reaches2207/1104 and currenttime differences reach
+27670.94A/m2. These full source histories are NOT phase-resolved. Original
+undefined-empty-neutral velocity-error aggregate is corrected separately from
+saved arrays; no field/current/state change. PNG inspected/PDF saved.
+
+Optional exponential integration of the same physical source removes midpoint
+substep phase error. Run77504 remainsLIVE in outputs/atomic_electromagnetic_exponential,
+source8bae70d9b3335e0c0426c8978142fdc5bbfc77e931d46418ec4cf832a0052822.
+Six analytic mode histories alreadycomplete, maxE/J errors5.68e-13V/m /
+3.50e-14A/m2. Full700-step heated argon now completes: finalJ magnitude
+0.008561895A/m2,Te2.502600599eV, energy drift2.52e-12eV/nucleus;1400 pending.
+Do not modify this
+atomic imported closure or stage its live output. Fullreaction/field splitting
+accuracy is unproven despite accurate frozen-source oscillations.
+
+This is homogeneous full-Maxwell source physics, not the moving quasineutral
+field constraint. Spatial curls, charge-continuous fluxes/Gauss law, exact free
+boundary and physical ends still must be assembled; do not graft this update
+onto the old fixed-carrier/two-entropy state. Exact formation exterior untouched.
+
+Private higher-order strong pulse86765 nowEXIT0: all4000steps/3.5us,6904.864s,
+sourcef5ddb118...28f2. Existingmethodcomparison91680 EXIT0 changes onlycentral
+integrator. Maxexternal-work error/E0 improves0.002154535->8.58117e-6 (~251x),
+but finalB/J differences fromoldmethod remain3.7287%/8.5882%; sampledJdifference
+reaches39.6036%. See MATERIAL_ENERGY_DIFFUSION and complete saved comparison.
+ScientificPNG inspected/PDFsaved; no field-convergence or formation claim.
+
+Only moving run92324 remainsLIVE inMAIN:8000requestedsteps,0.4375ns;
+observed800/8000 at1400.828s. Samef5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2
+source as completed4000. Preserve movingclosure/liveoutput. Poll exact77504
+and92324 handles; no timeout-based restart. NEXT collectboth full outcomes,
+comparefields/currents with existing tools and continue consistent spatial
+species/field coupling. Atomic branching/neutral collisions, physicalheat,
+photon transport, vacuumedge, validity and originalformation gates remainopen.
+Preserve private atomicinputs/LXCat pendingpermission, userposter and10nsUI.
+LocalGitonly; no remote or publication.
+
 ## Species transport completed; strong-pulse time error measured (2026-10-16)
 
 The preceding goal turn made NO PROGRESS on physics: it reconfirmed the already
