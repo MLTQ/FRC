@@ -1,5 +1,47 @@
 # Resume the physical FRC simulation
 
+## Numerical thermal-energy flux implemented; collect full pulses (2026-10-16)
+
+PROGRESS after a2e0391f9: actual new moving-solver numerical flux is implemented
+on private branchcodex/finite-drift-collisions, commit e0f7c5376, path
+/private/tmp/frc-finite-drift. Read docs/MATERIAL_ENERGY_DIFFUSION.md. Central
+physical entropy/pressure RK4 retains every physical term, with conservative
+thermal-energy diffusion halves replacing the discontinuous numerical pressure
+force. Explicit entropy_transport=central_energy_diffusion/integrator=energy_split.
+This changes numerical spatial and time treatment, NOT physical heat conduction.
+Do not merge its changed imported modules into MAIN while95749 remains live.
+
+Independent analytic run93705 EXIT0,0.891s, source84047d488b6f16f9c86bd37aeea54653a3d3dcedddb5400319218568dec8f3a8.
+outputs/material_energy_transport retains all histories/inspected PNG/source.
+Fixed-D spatial errors decrease fourfold per grid doubling; max relative energy
+drift2.73115e-14, positive sampled total entropy production. No whole-solver
+accuracy claim. New beadfrc-vacuum.3.4 remains in_progress.
+
+FOUR exact handles re-polled LIVE; saved counts below are observations only:
+-95749 MAIN original-resistance split+bulkpressure4x16t8000, source31721f1f...
+ d17afc, latest3400/8000 at3015.939s.
+-41479 private full20mT paired-collision energy-diffusion4x16t4000,
+ outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t4000,
+ latest300/4000 at282.494s.
+-9903 private weak0.5mT4x8t800, outputs/material_tube_weak_energy_diffusion_r4_z8_t800,
+ latest330/800 at194.269s.
+-17128 private weak0.5mT4x8t1600, outputs/material_tube_weak_energy_diffusion_r4_z8_t1600,
+ latest240/1600 at138.420s.
+All three private runs share577ad923bec574d77ff1d2fb329047eba8cd7be539acdb26090603748343bd0f.
+Keep both moving source closures unchanged. Never restart after an observation
+timeout; collect actual terminal handles. The earlier3x6 weak input was rejected
+before evolution; preserve outputs/material_tube_weak_energy_diffusion_r3_z6_t800.
+
+NEXT after both weak runs EXIT0: use existing examples.material_coil_plot
+--configured-fields in private checkout with fresh main output
+outputs/material_tube_weak_energy_diffusion_timestep_comparison and their two
+absolute output paths. Inspect actual B/J/velocity/position, heating, entropy
+production and both source-work budgets. Collect strong41479 and95749 before
+interpreting applicability. No automatic timestep doubling or new framework.
+Keep full FRC scope open. Physical heat/edge/species/radiation work remains;
+LXCat terms still pending. Preserve exact vacuum, user poster and existing
+completed10ns viewers; no remote publication.
+
 ## Radiation comparison completed; collect moving calculations next (2026-10-16)
 
 Progress: run67602 EXIT0,33 complete trajectories,611.819s. New dipole

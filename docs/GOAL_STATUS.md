@@ -1,5 +1,42 @@
 # Active research: a credible experimental FRC simulation
 
+## Conservative numerical thermal transport under full-pulse study (2026-10-16)
+
+Previous turn was PROGRESS: a2e0391f9 preserved the completed radiation/raw-count
+comparison and third paired timestep evidence. This turn implements a concrete
+solver change addressing the discontinuous pressure part of entropy upwinding.
+Read docs/MATERIAL_ENERGY_DIFFUSION.md for equations, limits and measured data.
+The physical central entropy/pressure pair and all current/fluid/collision/source
+terms remain; conservative numerical thermal mixing replaces the discontinuous
+numerical pressure force. This is explicitly NOT physical heat conduction.
+
+Implementation is isolated at /private/tmp/frc-finite-drift, local branch
+codex/finite-drift-collisions commit e0f7c5376. Main moving source is unchanged.
+Independent heat-equation run93705 EXIT0 in0.891s: fixed-D spatial errors
+1.99547e-3,4.98472e-4,1.24592e-4,3.11464e-5 at16/32/64/128 cells;
+energy drift <=2.73115e-14, positive sampled total-entropy increments.
+Full histories/inspected PNG/source are in outputs/material_energy_transport.
+This verifies limits of the added diffusion term, not the whole plasma solver.
+
+FOUR handles confirmed LIVE; never restart from observation timeouts:
+-95749 MAIN original-resistance pressure-switch split+bulk pressure; latest
+ saved3400/8000 at3015.939s; source31721f1f...d17afc unchanged.
+-41479 private full20mT paired-collision pulse with numerical energy diffusion,
+4x16,4000steps/3.5us; latest saved300/4000 at282.494s.
+-9903 private weak0.5mT4x8 control,800steps; latest saved330/800 at194.269s.
+-17128 private matching weak control,1600steps; latest saved240/1600 at138.420s.
+All three private runs source577ad923bec574d77ff1d2fb329047eba8cd7be539acdb26090603748343bd0f.
+Counts are observations, not completion claims. Keep both source closures frozen.
+
+Next collect full weak trajectories and run the existing configured-fields
+comparison in the private checkout, then interpret the strong runs after their
+actual terminal outcomes. Newfrc-vacuum.3.4 tracks this solver change. A3x6 input
+rejection before evolution is preserved separately; no result was repaired.
+Full original requirements, physical heat/edge/species/radiation work and all
+formation/confinement acceptance gates remain open. No unit suite or new
+verification framework. Preserve exact vacuum, user poster and pending LXCat
+permission; no remote publication. Completed10ns viewers need no further work.
+
 ## Polarized radiation compared with original detector counts (2026-10-16)
 
 Progress: run67602 completed all33 stationary radiation trajectories in611.819s.
