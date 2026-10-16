@@ -1,5 +1,42 @@
 # Resume the physical FRC simulation
 
+## Collect finer full pulse; central time error now localized (2026-10-16)
+
+This continuation made PROGRESS. Read the newest GOAL_STATUS.md and
+MATERIAL_ENERGY_DIFFUSION.md. The user's 10 ns animation is complete; do not
+rebuild/recheck it again. No unit suite or new verification framework.
+
+Completed:41479 EXIT0, full4000-step20mT pulse,3524.619s;99873 EXIT0, existing
+actual-field method comparison;72041 EXIT0, all three actual saved-state hold
+continuations,386.734s. Full outputs respectively:
+- outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t4000
+- outputs/material_tube_energy_diffusion_vs_upwind_r4_z16_t4000
+- outputs/material_hold_interval
+
+The constant-current hold loss is in the central RK4 advance. Halving dt twice
+from0.875ns reduces loss0.116611767->0.006434984->0.000243639mJ. Numerical
+diffusion energy changes are <=4.01e-14J. Local endpoint B/J agreement improves,
+but the full method comparison still differs by55.30%/92.47% at3.5us and is
+not a time-convergence study. Scientific PNGs inspected; no energy/state repair.
+The small standalone interval example's source isafe4723d...9c92d.
+
+ONLY LIVE exact handle82391, MAIN, full8000-step new-method pulse at0.4375ns.
+Last exact handle printed1000/8000; this is an observation, not completion.
+Output outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t8000
+and moving source577ad923bec574d77ff1d2fb329047eba8cd7be539acdb26090603748343bd0f
+remain frozen. Do not stage live output or restart from a polling timeout.
+Private checkout/private/tmp/frc-finite-drift is now idle;41479 is terminal.
+
+NEXT collect82391's real terminal outcome, then compare completed4000/8000
+physical fields with existing examples.material_coil_plot --configured-fields.
+Use the localized central time error to guide a concrete integration change if
+needed; avoid a fourth blanket refinement or new diagnostic infrastructure.
+Physical reactions/momentum/current/energy coupling, finite-frequency photon
+exchange, nonlocal heat and edge/contact conditions remain full-goal work.
+Keepfrc-vacuum.3.4/.3.3, transport children andfrc-goal open. Preserve private
+OPEN-ADAS data rules, pending LXCat permission, exact vacuum and the user poster.
+No remote/publication. Earlier status blocks below are historical.
+
 ## Joint atomic source complete; two strong-pulse runs live (2026-10-16)
 
 This turn made PROGRESS after eb0f0fe51. Read the newest GOAL_STATUS.md and

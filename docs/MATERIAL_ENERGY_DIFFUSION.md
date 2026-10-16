@@ -1,5 +1,67 @@
 # Numerical thermal-energy transport in the moving pulse
 
+## Completed strong pulse: local loss is in central time integration (2026-10-16)
+
+Strong pulse 41479 exited 0 after all 4000 steps through 3.5 us in 3524.619 s.
+Its complete states and source 577ad923bec574d77ff1d2fb329047eba8cd7be539acdb26090603748343bd0f
+are preserved in `outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t4000`.
+Final external-work residual / E0 is -0.002153588 (maximum absolute 0.002154535).
+Collision heat is 88.774993 mJ; numerical bulk ion heat is 33.281814 mJ.
+Final mean Te/Ti are 9.745415/2.063095 eV, particle RMS radius 22.838098 mm,
+middle/maximum boundary radii 55.988203/64.654447 mm. Completing the trajectory
+does not establish temporal, spatial or physical accuracy.
+
+Run 72041 exited 0 in 386.734 s. The narrow existing-state experiment
+`examples/material_hold_interval.py` starts all three full continuations from
+the actual step-1450 arrays and evolves the same constant-current interval,
+1.26875 to 1.3125 us. Both prescribed source-current derivatives are zero, so
+the independent energy limit is constant fluid + relative-current + induced-field
+energy. All physical forces, collisions, numerical bulk viscosity, exact exterior
+vacuum and numerical thermal mixing remain. There is no state or energy repair.
+All accepted arrays, operator energy increments, source archive and inspected
+PNG/PDF are in `outputs/material_hold_interval`, source
+afe4723d925c814341b518a8cefc4aaaba6653f80bf33441daaa12ed9c19c92d.
+
+| Solver step | Full steps | Total energy change | Diffusion contribution |
+|---|---:|---:|---:|
+| 0.875 ns | 50 | -0.116611767 mJ | +1.1713e-14 J |
+| 0.4375 ns | 100 | -0.006434984 mJ | +2.5702e-14 J |
+| 0.21875 ns | 200 | -0.000243639 mJ | +4.0024e-14 J |
+
+The energy loss occurs during the central RK4 steps, and decreases by factors
+18.12 and 26.41 under halving. This local result identifies finite-step central
+integration as the source of the observed hold loss; it does not prove a
+particular asymptotic order or exclude other full-pulse errors. The coarse
+endpoint reproduces archived energy within 6.0e-14 J and positions within
+2.2e-14 m; tiny timestep arithmetic differences prevent bitwise identity.
+Independent centered energy differences along the actual central derivative at
+three saved states decrease approximately quadratically with perturbation size
+before roundoff, reaching <=8.3e-4 W, far below the coarse average loss ~2665 W.
+
+Actual endpoint fields use 6400 physical quadrature points and the finest
+continuation's volume. Relative B/J/velocity differences against 0.21875 ns are
+6.0401%/33.1348%/4.8805% for 0.875 ns, versus
+0.190964%/1.016104%/0.108900% for 0.4375 ns. Maximum position differences are
+89.1465 and 1.24069 micrometres. These local improvements do not establish
+full-pulse convergence, particularly through later evolving fields.
+
+Existing numerical-method comparison 99873 also exited 0, using 81 common
+times and 6400 physical points. Output
+`outputs/material_tube_energy_diffusion_vs_upwind_r4_z16_t4000` preserves JSON
+and inspected PNG/PDF. Against the previous upwind RK4 run, final relative
+B/J/velocity differences are 55.3026%/92.4714%/12.6432%, with maximum material
+position difference 7.64067 mm. Both the numerical spatial flux and integrator
+change, so these are method sensitivities, not timestep convergence or a ranking
+against truth. The new method cannot yet be claimed more accurate.
+
+Full-pulse 82391 remains LIVE in MAIN at 8000 steps requested (0.4375 ns),
+unchanged moving source 577ad923...bd0f. Keep its imported source frozen and
+collect its actual terminal result before the existing configured-field
+comparison. The private checkout is now idle. If improvement is still needed,
+use the localized central time-integration error to motivate a concrete solver
+change; do not substitute repeated blanket refinements or more report tooling.
+Physical heat, reactions, radiation, edge conditions and formation gates remain.
+
 ## Strong-pulse conservation observation and matching time control (2026-10-16)
 
 The weak-case agreement below does not extend to demonstrated strong-pulse

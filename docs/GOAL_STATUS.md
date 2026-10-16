@@ -1,5 +1,41 @@
 # Active research: a credible experimental FRC simulation
 
+## Strong pulse completed; local timestep loss isolated (2026-10-16)
+
+PROGRESS: complete strong pulse 41479 and actual-field comparison 99873 exited
+0; three saved-state hold continuations 72041 exited 0 in 386.734 s. Read the
+newest MATERIAL_ENERGY_DIFFUSION.md and examples/material_hold_interval.md.
+No unit suite or new verification framework. The original FRC goal stays open.
+
+The full 4000-step, 3.5 us pulse finishes with external-work residual / E0
+-0.002153588, collision heat 88.774993 mJ, numerical ion heat 33.281814 mJ,
+mean Te/Ti 9.745415/2.063095 eV. Complete arrays/source are preserved.
+Against the previous upwind RK4 method, final B/J differences are 55.3026% and
+92.4714%; both numerical flux and integrator change. This is sensitivity, not
+proof that either method is accurate.
+
+Actual-state continuations of the zero-source-work hold 1.26875..1.3125 us
+localize the energy loss to central RK4. At dt0.875/0.4375/0.21875 ns, losses
+are 0.116611767/0.006434984/0.000243639 mJ, while observed diffusion energy
+changes remain <=4.01e-14 J. Finest-referenced B/J endpoint differences decrease
+6.0401%/33.1348% to0.190964%/1.016104%. Three independent directional energy
+probes also support finite-step error. This short interval cannot establish
+whole-pulse or spatial convergence. Sourceafe4723d...9c92d and all accepted
+states plus inspected scientific figures are in outputs/material_hold_interval.
+
+ONLY 82391 remains LIVE: MAIN full strong pulse, 8000 steps requested,
+0.4375 ns, source577ad923...bd0f. Last exact handle printed1000/8000. Preserve
+its source closure and live outputs; do not restart. Private41479 is terminal,
+so the private checkout is available for a concrete solver improvement after
+interpreting the complete finer pulse. Collect terminal82391 and use the existing
+physical field comparison; do not add another default reporting/refinement layer.
+
+The requested 10 ns animation is already complete at localhost8790/20mt/:
+351 actual states, 1.75 ns solver step and8.75/10.5 ns frame gaps. Existing
+browser end-to-end checks are recorded below. No rebuild was necessary here.
+Atomic/moving/photon/heat/edge coupling, original acceptance gates, exact exterior
+vacuum, user poster and local-only repository policy remain unchanged.
+
 ## Joint atomic source completed; strong pulse exposes energy loss (2026-10-16)
 
 Previous turn was PROGRESS (eb0f0fe51/f838aeab0). This continuation combines
