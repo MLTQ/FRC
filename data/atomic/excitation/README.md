@@ -28,9 +28,9 @@ excited-state ionization, pressure broadening or line-transfer data here.
 No missing transition is certified zero. Natural plus thermal widths alone
 cannot establish an experiment's total line shape.
 
-Resolved BSR electron-impact data are sought separately from LXCat. Download
-requires user confirmation of that site's terms; it has not been accepted or
-downloaded. Never treat other datasets' non-Maxwellian E/N-dependent rate tables
+BSR electron-impact cross sections were acquired privately from LXCat after
+the user authorized local research on 2026-10-16. They remain outside Git; see
+`docs/LXCAT_BSR_INPUT.md` for hashes, attribution, restrictions and next-use limits. Never treat other datasets' non-Maxwellian E/N-dependent rate tables
 as Maxwellian temperature rates. CHIANTI's public Ar list starts at Ar III and
 does not supply the missing neutral/Ar II rates.
 
@@ -42,8 +42,8 @@ They remain outside the repository in `/private/tmp/frc-openadas-personal/`;
 raw files and reconstructed rate arrays are not bundled with code or archives.
 Exact links, identities, assumptions and completed results are documented in
 `docs/COLLISIONAL_LEVELS.md`. The generic reader requires explicit local paths.
-These are supplied Maxwellian effective collision strengths, not the pending
-LXCat BSR cross-section download. No LXCat terms were accepted.
+These are supplied Maxwellian effective collision strengths, separate from the
+subsequently authorized private LXCat BSR cross-section download.
 
 The Ar I excitation study explicitly uses this directory's current NIST
 radiative data with matched ADAS collision levels; it excludes the source's S

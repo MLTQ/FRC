@@ -71,9 +71,10 @@ argon rate set was calculated from steady-field non-Maxwellian distributions
 and cannot be substituted directly into the Maxwellian model.
 
 The BSR resolved cross sections were located through LXCat2's official download
-workflow. Access stops at explicit terms acceptance (attribution, no third-party
-redistribution, no commercial use). The user confirmation request is pending;
-the terms were not accepted and the data were not downloaded. This does not
+workflow. The user authorized local research on 2026-10-16; terms were accepted and
+the BSR electron–argon export is now preserved privately outside Git. Attribution,
+no third-party redistribution and no commercial use still apply. See
+`LXCAT_BSR_INPUT.md` for exact provenance and next-use limitations. This does not
 block independent simulation work. Keep the full FRC goal and frc-transport.5
 open, and collect the live pulse convergence comparisons when they finish.
 

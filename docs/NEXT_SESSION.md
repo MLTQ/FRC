@@ -1,5 +1,17 @@
 # Resume the physical FRC simulation
 
+## LXCat permission resolved; private data acquired (2026-10-16)
+
+User explicitly authorized acceptance for local research. LXCat terms are now
+accepted; the BSR electron–argon download is saved outside Git under
+`/Users/max/Library/Application Support/FRC/personal-atomic-inputs/lxcat-bsr-argon-2026-10-16/`.
+See `LXCAT_BSR_INPUT.md` for attribution, exact hashes, restrictions and next use.
+The export contains 1 elastic,31 excitation and1 ionization process blocks;
+no new rates have been integrated into the simulation. This supersedes historical
+“LXCat permission pending” instructions. Preserve no-redistribution/noncommercial
+restrictions and original citations. Broader research remains paused; existing
+simulation/visualization results and continuation priorities are unchanged.
+
 ## Requested visualization refresh completed (2026-10-16)
 
 Research bookmark is local commit `cd154892c`; continuation bead
