@@ -1,5 +1,53 @@
 # Active research: a credible experimental FRC simulation
 
+## Completed coil comparison and live physical refinements (2026-10-16)
+
+The previous goal turn made progress: the requested 10 ns animation was completed
+and committed as cabe7f572. This continuation collected matched control 84694
+(exit 0, 4000 steps / 3.5 us, 2362.285 s). Both physical runs use frozen source
+05555dc9be49c3a1af9c31467fc713f4d5e395442328e9107eea19f68d0b3c75.
+
+The completed comparison is outputs/material_tube_array_vs_two_loop_viscous_comparison.
+Read MATERIAL_COMPRESSION.md for the measured table. The array gives 2.776 times
+Joule heat but only 1.40% smaller final particle RMS radius than the two-loop case;
+both expand overall. Numerical ion heat is separate (15.634 versus 2.691 mJ).
+Independent peak-drive coil-flux/current-linkage differences are 0.62–1.26% for
+the array groups. At peak drive, drift above electron thermal speed accounts for
+7.985% of the array Joule power; it cannot be dismissed from its final edge maximum.
+No physical transport, formation, confinement or spatial convergence claim follows.
+
+Completed array display: outputs/material_experiment_independent_20mt_10ns_display,
+http://127.0.0.1:8790/array20mt/ through server 90454. Builder 53068 and comparison
+3803 both exited 0. There are 351 actual frames at nearest 10 ns targets; 0.875 ns
+integration gives 9.625/10.5 ns gaps. Separate bias/array labels and numerical
+compression assumptions are visible. Playback, signed current, scales, final
+state and disclosure were exercised in the browser with no console warnings or
+errors. Scientific PNGs and full-page browser_view.jpg were inspected; PDFs were
+generated. Original /20mt/ and old outputs remain unchanged.
+
+THREE scientific jobs remain LIVE; collect actual handles before source changes:
+- 88009: outputs/material_tube_independent_20mt_viscous_r4_z16_t8000,
+  same full array pulse with 0.4375 ns steps (time control).
+- 85554: outputs/material_tube_independent_20mt_viscous_r6_z24_t8000,
+  same pulse with 6x24 plasma cells, 6 vacuum cells / 12 modes, 0.4375 ns steps.
+- 46579: outputs/material_tube_bias_only_viscous_r4_z16_t4000,
+  matching bias-only control, 0.875 ns steps and declared C1=0.5, C2=2.
+Last saved observations: 88009 at 600/8000 steps (378.14 s), 85554 at
+200/8000 (302.81 s), and 46579 at 150/4000 (90.13 s); all nonterminal.
+These are snapshots, not completion claims. Actual handles were re-polled live.
+All preserve exact exterior vacuum and every original physical term, save every
+accepted state, and use the same frozen source above. Do not restart from an
+observation timeout or edit their source while live. The first two are tracked
+by frc-vacuum.3.3; bias comparison remains in frc-vacuum.3.2. The completed numerical
+failure/trajectory issue frc-vacuum.3.1 is closed; the full goal and parent remain open.
+
+NEXT collect the bias-only run and compare its complete trajectory with the array
+using examples.material_experiment_compare. Collect both refinements; use existing
+actual material-basis sampling to measure B/J/velocity, geometry, heat and linkage
+changes at common times/labels. The older material_coil_plot reconstruction expects
+its older flat configuration, so do not feed these experiment configs to it unchanged.
+No new verification framework or unit tests. Preserve the user-modified poster.
+
 ## 10ns animation and completed long-array trajectory (2026-10-16)
 
 User requested denser web animation. The original completed two-loop20mT run

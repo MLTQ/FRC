@@ -22,7 +22,9 @@ nonuniform field even with Helmholtz-spaced coils.
 
 The visible scope preserves assumed preparation/ionization, prescribed transport,
 coarse mesh/current limits, and the distinction between field lines, topology and
-particle confinement. This is a visualization of the simulation, not a new
+particle confinement. When numerical bulk viscosity is enabled, the scope names
+its declared coefficients and identifies the associated ion heating as numerical.
+This is a visualization of the simulation, not a new
 validation or reporting framework. The older compact-flux display is preserved.
 
 A second scientific figure samples the actual material basis at three saved

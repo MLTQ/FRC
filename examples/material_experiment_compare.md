@@ -24,6 +24,17 @@ Pulse amplitude, time and chamber/gas labels come from the saved configuration.
 Also compares two pulsed coil arrangements: labels identify pulse strength and
 coil count from each input, rather than assuming the first run is bias-only.
 Particle-weighted RMS radius histories use the actual Q1 geometry and fixed
-particle inventory. At each run's recorded peak drive, each group's independent
+particle inventory; dotted curves distinguish bulk extent from surface radii.
+The heat panel shows Joule heating and explicitly numerical compression heating
+separately in mJ. Missing numerical heat in older archives remains null and is
+not drawn. The JSON retains both heat histories, declared viscosity coefficients,
+minimum radii and maximum observed external-work residual relative to initial
+energy. Neither cumulative heat integral repairs the trajectory's energy budget.
+At peak drive and final time, drift/thermal thresholds 0.1 and 1 are reported as
+fractions of volume, particle inventory, electron thermal energy and integral J²dV.
+The last weight is proportional to Joule power for these uniform prescribed-eta
+runs. These content measures distinguish a dilute-edge maximum from bulk impact;
+they are not a declaration that other samples have valid transport.
+At each run's recorded peak drive, each group's independent
 exterior flux linkage is compared with its volume-current linkage. The finite-
 space discrepancy is reported unchanged; it never repairs work or currents.

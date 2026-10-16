@@ -121,3 +121,56 @@ remains large; successful time evolution does not establish transport/edge
 validity, numerical convergence or formation. Matched control84694 is still live.
 The new351-frame10ns-target UI uses the older completed two-loop trajectory at
 the user's request; it does not yet depict or compare this new numerical case.
+
+## Matched complete coil comparison (2026-10-16)
+
+Control 84694 completed all 4000 steps / 3.5 us (2362.285 s), with the same source,
+0.875 ns timestep, plasma inputs and numerical pressure as the long-array case.
+Only prescribed coil arrangement changes. The comparison uses saved physical
+states; the inspected PNG and generated PDF are in
+outputs/material_tube_array_vs_two_loop_viscous_comparison.
+
+| Quantity at 3.5 us | Two pulse coils | Nine-loop array |
+|---|---:|---:|
+| Midplane surface radius | 53.140 mm | 61.600 mm |
+| Maximum surface radius | 67.390 mm | 64.723 mm |
+| Particle RMS radius | 25.677 mm | 25.318 mm |
+| Joule heat | 85.742 mJ | 238.046 mJ |
+| Numerical ion heat | 2.691 mJ | 15.634 mJ |
+| Mean Te / Ti | 6.996 / 0.570 eV | 13.739 / 1.064 eV |
+| Maximum observed external-work residual / E0 | 1.154e-5 | 4.598e-5 |
+
+The array produces 2.776 times Joule heat but only 1.40% smaller final particle
+RMS radius. Both exceed the initial 18.708 mm RMS radius. Minimum recorded middle
+radii are 34.034 mm at 1.925 us and 33.915 mm at 1.8375 us, from 35 mm initially.
+The array initially suppresses the large axial variation of the outer radius,
+but rebounds after the pulse. Neither surface compression nor lower RMS relative
+to control establishes particle confinement. The artificial-pressure contribution
+is significant: 15.634 mJ is 6.57% of the array Joule heat and 17.47% of initial
+plasma energy. Its change under refinement remains to be measured.
+
+At recorded peak drive 1.26875 us, independent exterior-flux versus volume-current
+linkage differences are +0.765% for two coils, +1.257% for array bias and -0.618%
+for the formation array. These finite-space discrepancies are unchanged; they do
+not repair the work integral. The much smaller global work residual does not
+therefore establish spatial field accuracy.
+
+Actual quadrature content helps interpret the large drift maximum. At array peak
+drive, |w|/sqrt(eTe/me)>=1 includes 0.793% of particles, 14.278% of plasma volume
+and 7.985% of instantaneous Joule power. Threshold 0.1 includes 34.904% of particles
+and 89.925% of power. At final time the >=1 fractions shrink to 0.0198% of particles
+and 0.00173% of power. Two-loop peak >=1 fractions are 0.115% of particles and
+0.847% of power. These are descriptive thresholds, not a transport-validity test;
+other samples can violate collisional, isotropic or local closure assumptions.
+Uniform prescribed eta makes integral J²dV weighting proportional to Joule power.
+No neutral, preparation, conduction or kinetic closure has been added.
+
+The completed array now has a separate 351-frame 10 ns-target web display at
+127.0.0.1:8790/array20mt/. Its actual gaps are 9.625/10.5 ns, with no temporal
+interpolation. Numerical compression coefficients and scope are disclosed.
+The original two-loop /20mt/ animation is retained.
+
+Full-pulse time and spatial refinements are LIVE 88009 and 85554, both 8000 steps
+at 0.4375 ns; a matched bias-only 4000-step control is LIVE 46579. Read the newest
+GOAL_STATUS boundary for paths and collection order. These runs are unfinished;
+no partial prefix substitutes for completed convergence evidence.

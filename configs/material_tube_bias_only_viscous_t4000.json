@@ -1,0 +1,64 @@
+{
+  "title": "Bias-only control with matching 0.875 ns steps and declared numerical bulk viscosity",
+  "tube": {
+    "radius_m": 0.075,
+    "length_m": 1.0
+  },
+  "plasma": {
+    "radius_m": 0.035,
+    "half_length_m": 0.35,
+    "gas": "Ar",
+    "neutral_fill_mtorr": 0.1,
+    "neutral_temperature_k": 300.0,
+    "assumed_charge_state": 1,
+    "assumed_ionization_fraction": 1.0,
+    "central_temperature_ev": [
+      10.0,
+      1.0
+    ],
+    "prescribed_resistivity_ohm_m": 0.0001
+  },
+  "source": {
+    "coils_radius_z_turns": [
+      [
+        0.1,
+        -0.05,
+        1.0
+      ],
+      [
+        0.1,
+        0.05,
+        1.0
+      ]
+    ],
+    "bias_center_t": 0.0001,
+    "pulse_center_t": {
+      "kind": "Unipolar",
+      "amplitude": 0.0,
+      "start": 2.5e-07,
+      "rise": 1e-06,
+      "hold": 5e-07,
+      "fall": 1e-06
+    }
+  },
+  "mesh": {
+    "nr": 4,
+    "nz": 16,
+    "degree": 3,
+    "quadrature": 6,
+    "vacuum_cells": 4,
+    "vacuum_modes": 8
+  },
+  "evolution": {
+    "duration_s": 3.5e-06,
+    "steps": 4000
+  },
+  "diagnostic_scales": {
+    "reference_length_m": 0.005,
+    "reference_time_s": 1e-06
+  },
+  "numerical_bulk_viscosity": {
+    "linear": 0.5,
+    "quadratic": 2.0
+  }
+}

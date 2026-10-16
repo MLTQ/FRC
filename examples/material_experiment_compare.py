@@ -4,11 +4,29 @@ import json
 from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.constants import elementary_charge as E, electron_mass as ME
 from plasma_bench.material_experiment import build, source_configs
 from plasma_bench.material_plasma_samples import material_samples
 from plasma_bench.material_vacuum_samples import physical_samples
 from .material_coil_plot import state_at
 from .implicit_plasma_records import sha
+
+
+def drift_content(response):
+    """How much plasma and resistive power occupy large-drift samples?"""
+    fields = response['fields']; n = fields['n'].ravel()
+    te = fields['temperature'].reshape(-1, 2)[:, 0]
+    drift2 = np.sum(response['drift']**2, axis=1)
+    ratio = np.sqrt(drift2/(E*te/ME)); volume = response['volume']
+    weights = {'volume': volume, 'particle': n*volume,
+               'electron_thermal_energy': n*te*volume,
+               'current_squared_volume': (E*n)**2*drift2*volume}
+    return dict(maximum_drift_over_electron_thermal_speed=float(ratio.max()),
+        scope='Actual quadrature; current-squared volume weights equal Joule-power weights only for the prescribed uniform scalar resistivity. Thresholds describe content, not a validity theorem.',
+        thresholds=[dict(drift_over_thermal=threshold,
+            fractions={name: float(weight[ratio >= threshold].sum()/weight.sum())
+                       if weight.sum() else None for name, weight in weights.items()})
+            for threshold in (.1, 1.)])
 
 
 def compare(destination, control_path, pulse_path):
@@ -48,7 +66,12 @@ def compare(destination, control_path, pulse_path):
         axes[0, 0].plot(t, [r['nominal_vacuum_center_field_t']*1e3 for r in rows], color=color, label=label)
         axes[0, 1].plot(t, [r['maximum_plasma_radius_m']*1e3 for r in rows], color=color, label=label+' · max')
         axes[0, 1].plot(t, np.array(midplane_radius)*1e3, '--', color=color, label=label+' · middle')
-        axes[0, 2].plot(t, [r['joule_heat_j']*1e6 for r in rows], color=color, label=label)
+        axes[0, 1].plot(t, np.array(rms_radius)*1e3, ':', color=color, label=label+' · particle RMS')
+        axes[0, 2].plot(t, [r['joule_heat_j']*1e3 for r in rows], color=color, label=label+' · Joule')
+        numerical_heat = [r.get('numerical_viscous_heat_j') for r in rows]
+        if all(value is not None for value in numerical_heat):
+            axes[0, 2].plot(t, np.array(numerical_heat)*1e3, '--', color=color,
+                           label=label+' · numerical ion heat')
         axes[1, 0].plot(t, [r['peak_current_components_a_m2'][1]/1e3 for r in rows], color=color, label=label)
         state = state_at(path, data['completed_steps'])
         r = np.linspace(.001, .999, 120)*data['config']['plasma']['radius_m']
@@ -66,15 +89,27 @@ def compare(destination, control_path, pulse_path):
         record['runs'][path.name] = dict(source_sha256=data['source_sha256'], summary_sha256=sha(path/'summary.json'),
             label=label, particle_rms_radius_history_m=rms_radius,
             midplane_radius_history_m=midplane_radius, time_history_s=[r['time'] for r in rows],
+            joule_heat_history_j=[r['joule_heat_j'] for r in rows],
+            numerical_viscous_heat_history_j=numerical_heat,
+            numerical_bulk_viscosity=data['config'].get('numerical_bulk_viscosity'),
+            maximum_absolute_external_work_residual_over_initial_energy=max(
+                abs(r['relative_external_work_residual']) for r in rows),
+            minimum_midplane_radius_m=min(midplane_radius),
+            minimum_particle_rms_radius_m=min(rms_radius),
             final_midplane_radius_m=midplane_radius[-1],
             final={key: rows[-1][key] for key in ('time', 'maximum_plasma_radius_m', 'maximum_plasma_half_length_m',
                 'plasma_bz_range_t', 'peak_current_components_a_m2', 'joule_heat_j', 'external_work_j',
                 'particle_mean_temperature_ev', 'maximum_drift_over_electron_thermal_speed')})
+        record['runs'][path.name]['final']['numerical_viscous_heat_j'] = numerical_heat[-1]
         # Compare independently reconstructed exterior coil flux with the
         # volume-current linkage, using the actual peak-drive saved state.
         peak = max(rows, key=lambda row: abs(row['nominal_vacuum_center_field_t']))
         peak_state = state_at(path, peak.get('step', 0))
         response = model.response(peak_state, rate=False, time=peak['time'])
+        record['runs'][path.name]['drift_content'] = {
+            'peak_drive': dict(time_s=peak['time'], **drift_content(response)),
+            'final': dict(time_s=data['duration'], **drift_content(
+                model.response(state, rate=False, time=data['duration'])))}
         group_comparisons = []
         for index, group in enumerate(meta['source_groups']):
             coils = np.asarray(group['coils_radius_z_turns'])
@@ -89,7 +124,7 @@ def compare(destination, control_path, pulse_path):
         record['runs'][path.name]['peak_drive_linkage_comparison'] = group_comparisons
     labels = [('Prescribed field at centre', 'Vacuum centre Bz [mT]'),
               ('Compression at the middle versus outer expansion', 'Plasma radius [mm]'),
-              ('Accumulated Joule heat', 'Heat [µJ]'), ('Azimuthal plasma current', 'Peak |Jθ| [kA/m²]')]
+              ('Resistive and numerical compression heating', 'Accumulated heat [mJ]'), ('Azimuthal plasma current', 'Peak |Jθ| [kA/m²]')]
     for axis, (title, unit) in zip([*axes[0], axes[1, 0]], labels):
         axis.set(title=title, xlabel='Time [µs]', ylabel=unit); axis.grid(alpha=.2); axis.legend(frameon=False, fontsize=8)
     a, b = [d['records'][-1] for p, d in runs]

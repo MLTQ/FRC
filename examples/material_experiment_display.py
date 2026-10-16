@@ -27,6 +27,9 @@ def build(source, destination, *, allow_partial=False, frame_interval_ns=None):
     status = 'prescribed biased coils · exploratory plasma model' if d['success'] else f"Stopped at step {last_step+1}: {d.get('failure_message', 'simulation failed')}. Accepted states only."
     config = d['config']; fluid, model, metadata = experiment(config)
     tube = config['tube']; plasma = config['plasma']; grid = config['mesh']
+    viscosity = config.get('numerical_bulk_viscosity')
+    viscosity_note = (' No numerical bulk viscosity.' if viscosity is None else
+        f" Numerical compression pressure is enabled (linear {viscosity['linear']:g}, quadratic {viscosity['quadratic']:g}); its ion heating is numerical, not a physical transport model.")
     external_frames = frame_interval_ns is not None
     if external_frames:
         interval = frame_interval_ns*1e-9
@@ -150,7 +153,7 @@ def build(source, destination, *, allow_partial=False, frame_interval_ns=None):
         chamber=[(p/extent).tolist() for p in chamber], coils=[(p/extent).tolist() for p in coils], physical_scale_m=extent, initial_zoom=1.5,
         coil_groups=[dict(label=g['label'], color=g['color'], paths=[(p/extent).tolist() for p in g['paths']]) for g in coil_groups],
         status_note=status,
-        scope=f"Source: {source.name}. {last_step} accepted of {d['steps']} requested coupled steps. {status}. Gas {plasma['gas']}, neutral preparation inventory {plasma['neutral_fill_mtorr']} mTorr at {plasma['neutral_temperature_k']} K, all assumed prepared as a compact singly ionized plasma. Central density {metadata['central_density_m3']:.4g}/m³; central Te/Ti {plasma['central_temperature_ev']} eV. Grid {grid['nr']}×{grid['nz']}, degree {grid['degree']}. Actual moving plasma and magnetic-only vacuum; prescribed resistance, conditional Coulomb exchange, explicit entropy diffusion. Local currents remain mesh/time sensitive. Ionization, preparation, physical edge and transport validity are unresolved. The displayed field peak includes traced exterior samples.")
+        scope=f"Source: {source.name}. {last_step} accepted of {d['steps']} requested coupled steps. {status}. Gas {plasma['gas']}, neutral preparation inventory {plasma['neutral_fill_mtorr']} mTorr at {plasma['neutral_temperature_k']} K, all assumed prepared as a compact singly ionized plasma. Central density {metadata['central_density_m3']:.4g}/m³; central Te/Ti {plasma['central_temperature_ev']} eV. Grid {grid['nr']}×{grid['nz']}, degree {grid['degree']}. Actual moving plasma and magnetic-only vacuum; prescribed resistance, conditional Coulomb exchange, explicit entropy diffusion.{viscosity_note} Local currents remain mesh/time sensitive. Ionization, preparation, physical edge and transport validity are unresolved. The displayed field peak includes traced exterior samples.")
     assets = Path(__file__).resolve().parents[1]/'visualizations/material_fields'
     html = (assets/'index.html').read_text()
     html = html.replace('This run starts with closed magnetic flux. It does not demonstrate FRC formation or particle confinement. External coils are not included; spatial accuracy and the plasma edge remain under study.',
