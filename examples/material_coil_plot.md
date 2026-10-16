@@ -35,3 +35,24 @@ and every actual B/J/motion sample are still compared. Reconstruction needs only
 the unchanged state/field definitions, not the historical time-step algorithm.
 Different integrators on the same grid are labeled a method comparison rather
 than a time comparison; agreement between them is not an analytic baseline.
+
+`--configured-fields OUTPUT FIRST SECOND` extends the same actual-basis
+comparison to current experiment configs, including independent source groups
+and paired collisions. It requires two complete successful trajectories with
+identical physical plasma, tube, collision closure, waveforms and duration.
+Mesh, timestep, numerical bulk viscosity and integrator may differ; every changed
+numerical input is named. Combined changes are not mislabeled as time convergence.
+
+Up to 81 exactly common saved times span the full duration, selected from the
+integer-step intersection without time interpolation. Ten-point Gauss quadrature
+on the union reference mesh compares total/induced B, all J and velocity components
+and actual material-position mismatch. Each run uses its own inventory-normalized
+initial density. The second run's actual volumes weight the norms; it is a
+comparison reference, not assumed truth. Zero reference norms give null relative
+differences and retain absolute component RMS differences. Separate numerical,
+collisional and species heat observations and original source-work residuals
+remain in the JSON. No new states, repair, pass/fail thresholds or test framework.
+The scientific PNG/PDF show differences throughout the complete trajectories;
+two grids alone still do not prove convergence or physical model validity.
+Calculated comparisons are written before plotting, so a rendering failure does
+not discard the physical measurements. Use `MPLBACKEND=Agg` for headless runs.
