@@ -1,5 +1,58 @@
 # Resume the physical FRC simulation
 
+## Photon transport and spatial pulse sensitivity completed (2026-10-16)
+
+Previous goal turn was NO PROGRESS on physics: it reconfirmed the finished 10 ns
+viewer. This continuation collected terminal radiation/spatial runs, completed
+actual-field and independent linkage comparisons, and preserved new physical
+results. Read docs/RESONANCE_TRANSPORT.md and the new top section of
+MATERIAL_COMPRESSION.md. No unit tests or new verification framework.
+
+Photon run 92249 exited 0: 20 complete cases, 524.793 s, source
+c896aed3898d0b2e76bab5f09f235ac64326d9ad173a2f72d2a84d9f730d84bc.
+outputs/resonance_transport retains all exits/event traces and inspected PNG/PDF.
+Weak centre pulse, fixed 300 K ground-neutral bath, 1 m x 15 cm cylinder; exact
+zero exterior opacity. Conditional absorbing-atom velocities preserve atom-frame
+frequency correlation. At 10 mTorr, 104.8/106.7 nm retained fractions at 3.5 us
+are 73.27/86.77%; complete randomization gives 5.74/64.06%. Thus immediate line
+photon escape is not defensible for this case. All packets escape by 753.31 us,
+counts balance exactly; narrow-line constant packet energy is not a coupled
+plasma energy proof. Rare complete-randomization detunings reach 22.3% of line
+frequency: preserve/flag, never clip. Free-flight/vacuum analytic comparisons
+agree within measured sampling uncertainty; multi-scatter laboratory accuracy
+is unproven. No coupling into moving plasma or DI/RR source yet.
+
+Published ORNL-TM-4368 radiation experiment, original PDF plus visually checked
+Table 1, saved in data/atomic/radiation_reference. New bead frc-transport.5.1
+tracks a detector-matched calculation: 7 cm x 2.22 cm cell, axial beam, 0.714 cm
+side aperture and 50 um slit. Preserve impurity flags and early-fit windows.
+Do not compare inverse global mean escape with measured detector slopes.
+
+Original spatial pulse 85554 exited 0, 8000 steps/3.5 us, 12445.786 s, source
+05555dc9be49c3a1af9c31467fc713f4d5e395442328e9107eea19f68d0b3c75.
+Complete comparison 5386 and independent linkage 66781 exited 0; inspected PNG,
+PDF/JSON in outputs/material_tube_array_spatial_comparison. Refining4x16 to6x24
+(and vacuum4/8 to6/12) at0.4375ns changes final B27.7235%, J60.3198%, v14.9646%,
+material positions28.972mm. Maximum surface64.214->73.083mm, versus75mm tube.
+Peak bias/array linkage discrepancies improve to-0.04775/-0.06267%, but detailed
+fields/edge are unresolved. Do not infer accuracy from small work residuals.
+
+THREE exact handles re-polled LIVE this turn, not restarted:
+58668 original4x16t16000, latest saved12200/16000,7769.999s, main source05555dc9.
+16339 paired4x16t16000, latest8400/16000,5376.775s;49353 paired6x24t8000,
+latest5300/8000,8190.884s. Paired source31721f1fef01b747862f5263f3ddb92e5dfbca0d3fc1995e5e03ebf229d17afc
+in /private/tmp/frc-finite-drift. Saved counts are observations; poll exact
+handles for liveness. Do not merge moving code while original58668 remains live.
+Do not stage these three unfinished output folders as completed studies.
+
+NEXT: advance actual radiative/collisional physics (detector comparison, then
+species/energy/current coupling), resolve collision-data access when answered,
+and collect the three full pulses. Use measured space/time differences to guide
+edge/current/entropy improvements. LXCat terms confirmation remains unanswered;
+do not accept/download gated data. Preserve user poster and 10 ns viewers.
+Keep frc-transport.5/.4/.3, frc-vacuum.3.3 and the full original FRC goal OPEN.
+
+
 ## Resolved argon radiation exposes neutral absorption (2026-10-16)
 
 Previous goal turn repeated the already-complete 10 ns viewer check; it added

@@ -1,5 +1,55 @@
 # Numerical compression treatment and the long-array pulse
 
+## Complete spatial comparison (2026-10-16)
+
+Original spatial run 85554 exited 0: all 8000 steps / 3.5 us in 12445.786 s,
+source 05555dc9be49c3a1af9c31467fc713f4d5e395442328e9107eea19f68d0b3c75.
+Its final raw-state digest matches the recorded digest. The 6x24 plasma mesh,
+6 vacuum cells and 12 vacuum modes replace 4x16 / 4 / 8; both use degree 3,
+six-point simulation quadrature, 0.4375 ns RK4, C1=0.5/C2=2 and identical
+physical inputs. Inventory normalization changes central density by 2.28 ppm.
+This changes plasma and vacuum spaces together, not either in isolation.
+
+Existing configured-fields comparison 5386 exited 0. It evaluates 81 common
+physical times on 26400 common material quadrature points; actual volume of
+the second run provides the weights. Read `outputs/material_tube_array_spatial_comparison`.
+PNG inspected, PDF and complete comparison JSON saved. No unit tests were run.
+
+| Quantity at 3.5 us | 4x16 | 6x24 |
+|---|---:|---:|
+| Joule heat | 239.6161 mJ | 247.2777 mJ |
+| Numerical ion heat | 15.5278 mJ | 15.5193 mJ |
+| Particle RMS radius | 25.2778 mm | 25.0652 mm |
+| Midplane surface radius | 60.7969 mm | 69.3804 mm |
+| Maximum surface radius | 64.2141 mm | 73.0831 mm |
+| Mean Te / Ti | 13.7941 / 1.06274 eV | 13.3775 / 1.06039 eV |
+| Max observed absolute external-work residual / E0 | 1.6904e-5 | 9.1335e-5 |
+
+Final relative vector L2 differences are B 27.7235%, induced B 27.2925%,
+J 60.3198% and velocity 14.9646%. Maximum material-position mismatch is
+28.9723 mm (including axial and radial motion). Final component RMS differences
+(r,theta,z) are B=(0.20201,0.25883,0.34610) mT and
+J=(7.5283,45.0394,26.2721) kA/m2. Across the trajectory the vector differences
+reach B 40.8138% at 2.8875 us, induced B 54.0387% at 2.275 us, J 86.4224% at
+1.70625 us and velocity 48.8969% at 1.6625 us. This is not spatial convergence;
+the already-measured timestep sensitivity remains superposed.
+
+Independent peak-drive linkage calculation 66781 exited 0 and is recorded in
+`peak_linkage.json`. At matched 1.26875 us, exterior-flux versus volume-current
+linkage discrepancies improve from +1.1722% to -0.04775% for the bias pair and
+from -0.62141% to -0.06267% for the long array. The refined vacuum representation
+therefore improves this particular reciprocity measurement; it does not make
+the full field or edge motion resolved, and no correction was applied.
+
+The finer run's maximum radius is only 1.917 mm short of the 75 mm contact
+limit, while differences between meshes are much larger. Do not interpret the
+predicted clearance or cold dilute-edge motion as a lab recommendation. Similar
+bulk heat and particle radius conceal large field and surface changes. Collect
+the already-running 0.21875 ns controls before changing either live solver;
+then prioritize the physical edge and spatial current/entropy discretization,
+not another claim of accuracy based on integrated energy. `frc-vacuum.3.3`
+and the full goal stay open. Paired-collision spatial/time runs are separate.
+
 ## Full isolated timestep comparison (2026-10-16)
 
 The original long-array8000-step run88009 exited0 after all3.5us in5189.560s.
