@@ -1,5 +1,57 @@
 # Active research: a credible experimental FRC simulation
 
+## Resolved argon radiation exposes neutral absorption (2026-10-16)
+
+Previous goal turn repeated the already-complete 10 ns viewer check; it added
+no new physics. This continuation revalidated all four exact live pulse handles
+and added a physical source component and complete measured trajectories.
+Read docs/LINE_RADIATION.md, plasma_bench/line_radiation.md and its example
+companion. Main moving source remains unchanged; no unit suite was run.
+
+New RadiativeLevels resolves 15 neutral-Ar levels and 31 NIST ASD transitions,
+finite spontaneous cascades, stored excitation energy and individual produced
+photon counts. It also computes Einstein absorption with natural/thermal Voigt
+widths and stimulated emission. Photon production is not assumed escape.
+Run 61232 exited 0 in 2.3004 s; outputs/line_radiation, source
+ d8ab123e5bb476a0dded1c9ddd23926ba3f667714af0b265fd45772f9498a2e1.
+NIST record bf04549cd6dae143ff65ee92700902f1eea0567003b005fea5310dd598d5f2db.
+Independent 2p5->1s4->ground analytic errors at 1/.5/.25 ns:
+4.48882e-7 / 2.65902e-8 / 1.61660e-9, fourth-order convergence.
+Three complete 3.5 us prepared cascades retain 4.211% metastable atoms,
+0.488062 eV/atom stored and 0.832620 eV/atom produced as photons. These are
+spontaneous-only component results, not preparation or formation predictions.
+Fine halving changes populations <=3.8541e-8; energy residual <=1.13e-14 eV.
+PNG inspected; PDF, raw NIST input and all states saved. No repair or floors.
+
+Physical next-step change: a 300 K ground-neutral column across 7.5 cm at only
+0.1 mTorr has line-centre optical depths 27.79 / 7.344 for the 104.822 /106.666
+nm resonance lines. At the prior source-study N, 1% ground neutrals gives
+7.738 /2.045 radially. Need photon reabsorption/transfer, not blanket thin line
+cooling. These are column depths, not escape fractions. Collisional excitation,
+stepwise ionization, metastable loss and RR branching remain to be coupled;
+this component has not yet replaced the DI/RR immediate-ground-cascade model.
+
+LXCat BSR collision data located but NOT downloaded: official workflow requires
+terms acceptance (attribution, no third-party redistribution/commercial use).
+User confirmation requested and remains pending; do not click acceptance until
+answered. Research tab can resume from its terms page. Continue independent
+work meanwhile. CHIANTI Ar begins at Ar III; INPTDAT steady-field non-Maxwellian
+rates cannot silently replace Maxwellian rates. See data/atomic/excitation.
+
+FOUR exact handles polled LIVE at this checkpoint. Latest saved observations:
+16339 paired4x16t16000:5800/16000,3705.122s;49353 paired6x24t8000:4300/8000,
+6653.163s. Worktree /private/tmp/frc-finite-drift, source31721f1f...d17afc.
+58668 original4x16t16000:9600/16000,6072.484s;85554 original6x24t8000:
+7300/8000,11356.141s. Main source05555dc9...b3c75. Counts are observations,
+not liveness proof; poll exact handles before action. Never restart on timeout.
+Do not merge paired moving code while the originals remain live. Collect the
+existing configured-fields comparisons when terminal; do not rerun old controls.
+
+NEXT: resolve collision-data access, build collisional-radiative evolution with
+actual neutral/Ar II rates and photon transfer, then species/current/momentum
+coupling. Collect full pulse time/spatial comparisons. Keep frc-transport.5/.4/.3,
+frc-vacuum.3.3 and the full goal OPEN. Preserve 10 ns viewers and user poster.
+
 ## Radiative recombination and photon energy now evolve (2026-10-16)
 
 The previous turn was progress: local commit2ea9d1905 saved the completed

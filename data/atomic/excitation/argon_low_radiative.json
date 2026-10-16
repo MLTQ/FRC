@@ -1,0 +1,465 @@
+{
+  "species": "Ar I",
+  "atomic_mass_u": 39.948,
+  "retrieved": "2026-10-16",
+  "database": "NIST ASD 5.12 (2024), DOI 10.18434/T4W30F",
+  "source": "https://physics.nist.gov/PhysRefData/ASD/lines_form.html",
+  "query": {
+    "spectra": "Ar I",
+    "maximum_upper_energy_cm1": 109000,
+    "only_with_transition_probabilities": true,
+    "wavelengths": "all vacuum",
+    "format": "CSV"
+  },
+  "raw_sha256": "c9179e859a8a8155ca675088e5d64d0b00bc19dbf2a5e6bd103bbaa964cf1bb4",
+  "levels": [
+    {
+      "index": 0,
+      "label": "ground",
+      "energy_cm1": 0.0,
+      "degeneracy": 1,
+      "configuration": "3s2.3p6",
+      "term": "1S",
+      "J": "0"
+    },
+    {
+      "index": 1,
+      "label": "1s5",
+      "energy_cm1": 93143.76,
+      "degeneracy": 5,
+      "configuration": "3s2.3p5.(2P*<3/2>).4s",
+      "term": "2[3/2]*",
+      "J": "2"
+    },
+    {
+      "index": 2,
+      "label": "1s4",
+      "energy_cm1": 93750.5978,
+      "degeneracy": 3,
+      "configuration": "3s2.3p5.(2P*<3/2>).4s",
+      "term": "2[3/2]*",
+      "J": "1"
+    },
+    {
+      "index": 3,
+      "label": "1s3",
+      "energy_cm1": 94553.6652,
+      "degeneracy": 1,
+      "configuration": "3s2.3p5.(2P*<1/2>).4s",
+      "term": "2[1/2]*",
+      "J": "0"
+    },
+    {
+      "index": 4,
+      "label": "1s2",
+      "energy_cm1": 95399.8276,
+      "degeneracy": 3,
+      "configuration": "3s2.3p5.(2P*<1/2>).4s",
+      "term": "2[1/2]*",
+      "J": "1"
+    },
+    {
+      "index": 5,
+      "label": "2p10",
+      "energy_cm1": 104102.099,
+      "degeneracy": 3,
+      "configuration": "3s2.3p5.(2P*<3/2>).4p",
+      "term": "2[1/2]",
+      "J": "1"
+    },
+    {
+      "index": 6,
+      "label": "2p9",
+      "energy_cm1": 105462.7596,
+      "degeneracy": 7,
+      "configuration": "3s2.3p5.(2P*<3/2>).4p",
+      "term": "2[5/2]",
+      "J": "3"
+    },
+    {
+      "index": 7,
+      "label": "2p8",
+      "energy_cm1": 105617.27,
+      "degeneracy": 5,
+      "configuration": "3s2.3p5.(2P*<3/2>).4p",
+      "term": "2[5/2]",
+      "J": "2"
+    },
+    {
+      "index": 8,
+      "label": "2p7",
+      "energy_cm1": 106087.2598,
+      "degeneracy": 3,
+      "configuration": "3s2.3p5.(2P*<3/2>).4p",
+      "term": "2[3/2]",
+      "J": "1"
+    },
+    {
+      "index": 9,
+      "label": "2p6",
+      "energy_cm1": 106237.5518,
+      "degeneracy": 5,
+      "configuration": "3s2.3p5.(2P*<3/2>).4p",
+      "term": "2[3/2]",
+      "J": "2"
+    },
+    {
+      "index": 10,
+      "label": "2p5",
+      "energy_cm1": 107054.272,
+      "degeneracy": 1,
+      "configuration": "3s2.3p5.(2P*<3/2>).4p",
+      "term": "2[1/2]",
+      "J": "0"
+    },
+    {
+      "index": 11,
+      "label": "2p4",
+      "energy_cm1": 107131.7086,
+      "degeneracy": 3,
+      "configuration": "3s2.3p5.(2P*<1/2>).4p",
+      "term": "2[3/2]",
+      "J": "1"
+    },
+    {
+      "index": 12,
+      "label": "2p3",
+      "energy_cm1": 107289.7001,
+      "degeneracy": 5,
+      "configuration": "3s2.3p5.(2P*<1/2>).4p",
+      "term": "2[3/2]",
+      "J": "2"
+    },
+    {
+      "index": 13,
+      "label": "2p2",
+      "energy_cm1": 107496.4166,
+      "degeneracy": 3,
+      "configuration": "3s2.3p5.(2P*<1/2>).4p",
+      "term": "2[1/2]",
+      "J": "1"
+    },
+    {
+      "index": 14,
+      "label": "2p1",
+      "energy_cm1": 108722.6194,
+      "degeneracy": 1,
+      "configuration": "3s2.3p5.(2P*<1/2>).4p",
+      "term": "2[1/2]",
+      "J": "0"
+    }
+  ],
+  "lines": [
+    {
+      "lower": 0,
+      "upper": 4,
+      "A_s1": 532000000.0,
+      "vacuum_wavelength_nm": 104.8219924,
+      "accuracy": "AA",
+      "type": "E1",
+      "transition_reference": "T7574",
+      "wavelength_reference": "L2131"
+    },
+    {
+      "lower": 0,
+      "upper": 2,
+      "A_s1": 132000000.0,
+      "vacuum_wavelength_nm": 106.6659865,
+      "accuracy": "A+",
+      "type": "E1",
+      "transition_reference": "T7574",
+      "wavelength_reference": "L2131"
+    },
+    {
+      "lower": 2,
+      "upper": 14,
+      "A_s1": 236000.0,
+      "vacuum_wavelength_nm": 667.91247,
+      "accuracy": "B",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 1,
+      "upper": 13,
+      "A_s1": 6400000.0,
+      "vacuum_wavelength_nm": 696.73513,
+      "accuracy": "B+",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 1,
+      "upper": 12,
+      "A_s1": 3800000.0,
+      "vacuum_wavelength_nm": 706.91661,
+      "accuracy": "B",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 1,
+      "upper": 11,
+      "A_s1": 630000.0,
+      "vacuum_wavelength_nm": 714.90111,
+      "accuracy": "B",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 2,
+      "upper": 13,
+      "A_s1": 1830000.0,
+      "vacuum_wavelength_nm": 727.49395,
+      "accuracy": "B+",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 2,
+      "upper": 12,
+      "A_s1": 8500000.0,
+      "vacuum_wavelength_nm": 738.60141,
+      "accuracy": "B",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 2,
+      "upper": 11,
+      "A_s1": 22000.0,
+      "vacuum_wavelength_nm": 747.32211,
+      "accuracy": "B",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": ""
+    },
+    {
+      "lower": 4,
+      "upper": 14,
+      "A_s1": 45000000.0,
+      "vacuum_wavelength_nm": 750.59343,
+      "accuracy": "B",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 2,
+      "upper": 10,
+      "A_s1": 40000000.0,
+      "vacuum_wavelength_nm": 751.67205,
+      "accuracy": "B",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 1,
+      "upper": 9,
+      "A_s1": 24500000.0,
+      "vacuum_wavelength_nm": 763.72071,
+      "accuracy": "B",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 1,
+      "upper": 8,
+      "A_s1": 5200000.0,
+      "vacuum_wavelength_nm": 772.58857,
+      "accuracy": "B+",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 3,
+      "upper": 13,
+      "A_s1": 11700000.0,
+      "vacuum_wavelength_nm": 772.63324,
+      "accuracy": "B+",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 3,
+      "upper": 11,
+      "A_s1": 18600000.0,
+      "vacuum_wavelength_nm": 795.03621,
+      "accuracy": "B",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 2,
+      "upper": 9,
+      "A_s1": 4900000.0,
+      "vacuum_wavelength_nm": 800.83582,
+      "accuracy": "C+",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 1,
+      "upper": 7,
+      "A_s1": 9300000.0,
+      "vacuum_wavelength_nm": 801.69896,
+      "accuracy": "B",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 2,
+      "upper": 8,
+      "A_s1": 25000000.0,
+      "vacuum_wavelength_nm": 810.59204,
+      "accuracy": "B+",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 1,
+      "upper": 6,
+      "A_s1": 33000000.0,
+      "vacuum_wavelength_nm": 811.75423,
+      "accuracy": "B",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 4,
+      "upper": 13,
+      "A_s1": 15300000.0,
+      "vacuum_wavelength_nm": 826.67932,
+      "accuracy": "B+",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 4,
+      "upper": 12,
+      "A_s1": 22300000.0,
+      "vacuum_wavelength_nm": 841.05191,
+      "accuracy": "B+",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 2,
+      "upper": 7,
+      "A_s1": 21500000.0,
+      "vacuum_wavelength_nm": 842.69624,
+      "accuracy": "B+",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 4,
+      "upper": 11,
+      "A_s1": 13900000.0,
+      "vacuum_wavelength_nm": 852.37823,
+      "accuracy": "B",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 3,
+      "upper": 8,
+      "A_s1": 2430000.0,
+      "vacuum_wavelength_nm": 867.03238,
+      "accuracy": "B",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 1,
+      "upper": 5,
+      "A_s1": 18900000.0,
+      "vacuum_wavelength_nm": 912.54706,
+      "accuracy": "B",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 4,
+      "upper": 9,
+      "A_s1": 5000000.0,
+      "vacuum_wavelength_nm": 922.70294,
+      "accuracy": "B",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 4,
+      "upper": 8,
+      "A_s1": 1060000.0,
+      "vacuum_wavelength_nm": 935.67845,
+      "accuracy": "B",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 2,
+      "upper": 5,
+      "A_s1": 5400000.0,
+      "vacuum_wavelength_nm": 966.04346,
+      "accuracy": "B",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 4,
+      "upper": 7,
+      "A_s1": 1470000.0,
+      "vacuum_wavelength_nm": 978.71851,
+      "accuracy": "B",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 3,
+      "upper": 5,
+      "A_s1": 980000.0,
+      "vacuum_wavelength_nm": 1047.29217,
+      "accuracy": "C+",
+      "type": "E1",
+      "transition_reference": "T5223",
+      "wavelength_reference": "L2634"
+    },
+    {
+      "lower": 4,
+      "upper": 5,
+      "A_s1": 190000.0,
+      "vacuum_wavelength_nm": 1149.12527,
+      "accuracy": "C",
+      "type": "E1",
+      "transition_reference": "T1242n",
+      "wavelength_reference": "L2634"
+    }
+  ],
+  "scope": "Ground + 4s/4p levels and all 31 NIST-reported transitions within this query. Missing transitions are not proved zero. No electron-impact, forbidden metastable decay, ionization, molecular quenching, pressure broadening, opacity closure or high-level cascades."
+}
