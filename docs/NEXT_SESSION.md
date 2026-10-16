@@ -1,5 +1,67 @@
 # Resume the physical FRC simulation
 
+## Linear kinetic heat transport completed (2026-10-16)
+
+Previous goal turn was progress:66ca30ac2 saved complete paired collision and
+original half-timestep pulses, exposed large current sensitivity, and launched
+an additional full timestep refinement. This continuation kept all four pulse
+runs live and their scientific source closures unchanged while evolving the
+missing heat-transport physics in an independent uniform-background limit.
+
+New plasma_bench.kinetic_heat retains full linearized electron-electron Landau
+collisions, velocity-dependent electron-ion Lorentz scattering and dynamic
+velocity moments. The periodic small-temperature-perturbation fixture assumes
+stationary infinite-mass ions and a quasineutral zero-current electric response.
+It is NOT installed as the moving pulse heat closure. No BGK substitution,
+flux limiter, speed/collision floor, artificial damping, state repair or unit
+suite. Read KINETIC_HEAT_TRANSPORT.md and both new companion documents.
+
+Complete heat calculations89659 and92079 exited0. The refined output is
+outputs/kinetic_heat_relaxation_refined, source
+acb28fcfc9834a0be3d29ca5e96eed07747f6a1b255394ee12580a99275e16cc.
+Both scientific PNGs inspected; PDFs, complete operators and state histories
+saved. Degrees8..28 improve the independent analytic Lorentz conductivity
+comparison to2.4604e-6 relative difference. Full Z=1 local conductivity reaches
+3.20203 in Braginskii units,1.33% above the approximate3.16 reference, without
+fitting. Collisionless histories converge against independent Gaussian-
+characteristic Volterra evolution: degree28 max temperature error3.4723e-8,
+near the independent reference-integration floor; free-energy drift2.89e-15.
+The strongest collisional case K=1 still changes by1.696e-3 of initial
+perturbation amplitude between degrees24/28 (about1.65% of remaining final
+amplitude), so do not claim all kinetic regimes converged. Nonlocal heat
+relaxation is much slower than local diffusion in these complete trajectories.
+
+Code saved on branch as e275ffe57; ONLY its four new standalone files were
+cherry-picked to main as469927bc8. Main heat source exactly matches the refined
+run; main pulse source remains05555dc9be49c3a1af9c31467fc713f4d5e395442328e9107eea19f68d0b3c75.
+The paired moving collision source31721f1f...d17afc still resides on isolated
+codex/finite-drift-collisions at /private/tmp/frc-finite-drift; do not merge that
+coupling while original main runs remain live. Existing10ns viewers unchanged.
+
+FOUR exact pulse handles were re-polled LIVE; these are observed saved counts:
+-58668 original4x16t16000:1800/16000,1138.54s;0.21875ns/full3.5us requested.
+-85554 original6x24t8000:4100/8000,6424.51s;0.4375ns spatial control.
+Both main source05555dc9...b3c75, in
+outputs/material_tube_independent_20mt_viscous_r4_z16_t16000 and
+outputs/material_tube_independent_20mt_viscous_r6_z24_t8000 respectively.
+-33952 paired4x16t8000:6700/8000,4342.47s;time control.
+-49353 paired6x24t8000:1100/8000,1723.27s;spatial control.
+Both worktree source31721f1f...d17afc, in
+outputs/material_tube_independent_20mt_maxwellian_r4_z16_t8000 and
+outputs/material_tube_independent_20mt_maxwellian_r6_z24_t8000 respectively.
+
+NEXT collect those exact handles; never restart from an observation timeout.
+From /private/tmp/frc-finite-drift with MPLBACKEND=Agg and writable caches,
+use existing --configured-fields comparisons on complete successful pulse pairs,
+including paired4000/8000, original8000/16000 and matched8000 spatial grids.
+The independent kinetic baseline now provides actual local/nonlocal histories
+for the next heat model, but nonuniform/finite-drift/moving heat evolution and
+explicit edge/end energy/particle budgets remain. Do not transplant its periodic
+zero-current/infinite-ion-mass assumptions into formation. frc-transport.4 is
+now in_progress; full goal,frc-transport.3 andfrc-vacuum.3.3 remain open. Preserve
+poster and live sources, finish numerical comparisons, then integrate defensible
+transport with the full moving physical equations. No remote/publication.
+
 ## Completed paired pulse and unresolved timestep sensitivity (2026-10-16)
 
 The preceding UI-only turn made no new scientific progress: it rechecked an
