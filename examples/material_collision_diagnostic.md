@@ -1,9 +1,10 @@
 # Collision sensitivity of an actual completed pulse
 
 Evaluate the finite-drift paired Maxwellian collision moments at each recorded
-state of a completed configured experiment. The scalar Coulomb logarithm is
-explicitly 10; its screening/cutoff prescription has not been established for
-this pulse. Compare original eta*J², small-drift Maxwellian drag using the same
+state of a completed configured experiment. Use the source's declared fixed
+logarithm for a paired run, or explicit exploratory log10 for prescribed eta;
+the screening/cutoff prescription is not established for either. Compare eta*J²
+where active, small-drift Maxwellian drag using the same
 logarithm, finite-drift drag and separate electron/ion heat. No field, temperature
 or current is changed, and no candidate trajectory is evolved.
 
@@ -15,7 +16,7 @@ Maximum local relative-drift relaxation rate times original dt screens one
 source timescale; it is not a full-system stability criterion or timestep choice.
 
 The example freezes its own source/companions and hashes input states/summary,
-then emits one PNG/PDF plus actual values. The model-validity limitations in
+then emits two PNG/PDF figures plus actual values. The model-validity limitations in
 `maxwellian_pair_collisions.md` remain. This is physical model exploration, not
 a pass/fail suite, convergence certificate or new verification framework.
 
@@ -48,3 +49,11 @@ printed pp.34,37–39; `docs/TRANSPORT_REGIME.md` retains the source link and fo
 Large drift and non-Maxwellian distributions limit these thermal estimates.
 Two scientific figures separate collision-power sensitivity from physical-region
 content; their values are saved before rendering. No trajectory is modified.
+
+For a completed paired-Maxwellian source run, use its declared logarithm and
+label the reconstructed pair power as the actual implemented collision law.
+For a prescribed-eta source, retain hypothetical log10 sensitivity. The role is
+explicit in JSON and figure labels; legacy `candidate_*` field names remain for
+compatibility. The unused zero prescribed-eta curve is omitted for paired runs.
+The original every-step total heat is retained beside the sparse path integrals.
+An actual implemented law still does not establish kinetic or transport validity.
