@@ -1,7 +1,7 @@
 # Finite-cylinder resonance photon transport
 
 `transport` follows a weak pulse of resonance quanta, initially excited atoms
-at the cylinder centre, until every packet crosses the side or an end. The
+at supplied positions (centre by default), until every packet crosses a side or end. The
 uniform stationary ground-neutral density is prescribed only inside the finite
 cylinder; exterior opacity is exactly zero. Surface encounters remove photons
 from the gas. This is not a quartz transmission/reflection model or a neutral
@@ -48,6 +48,16 @@ and complete event lists for the first eight packets are returned.
 |---|---|
 | `examples.resonance_transport` | independent packets, explicit seed, SI geometry/density/time, all terminal exits |
 | `RadiativeLevels` | source energy, natural/thermal widths and Einstein line strength |
+| `SideView` | diagnostic-only conditional +x emission frequency, no altered photon escape |
+
+Optional `initial_positions_m` must lie strictly inside the gas and are copied;
+initial positions and terminal ray directions are saved. `side_view` scores
+the small-solid-angle detector signal at each emission. `redistribute` can
+return both outgoing and +x observer detunings using the same conditional atom
+velocity and atom-frame frequency. Initial spontaneous emission with a view
+samples a full thermal atom velocity and Lorentz rest frequency. Without a view,
+the original centre-source RNG path and redistribution are unchanged. Diagnostic
+source importance weights belong to the view and do not change analog transport.
 
 Primary background: Holstein (1947), DOI10.1103/PhysRev.72.1212;
 Rajaraman & Kushner (2004), DOI10.1088/0022-3727/37/13/009;

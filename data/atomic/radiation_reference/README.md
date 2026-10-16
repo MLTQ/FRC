@@ -30,3 +30,12 @@ extending the fit window until the slope changes (pages 27, 53-54). Above about
 gas survival curve nor inverse mean photon escape time. Before comparing model
 predictions, reproduce the viewed volume and fit-window dependence. The current
 1 m centre-source component study has not been validated against this table.
+
+Printed pages 35-36 (PDF 46-47), visually inspected, also specify a collision
+model citing P. R. Berman and W. E. Lamb, Phys. Rev. 187, 221 (1969):
+`nu_c = 0.904*A*(g_upper/g_ground)*N*lambda^3/(6*pi^2)` and
+`Pc=nu_c/(A+nu_c)`. Lorentz frequency HWHM is `(A+nu_c)/(4*pi)` for this ground
+resonance. The report gives `nu_c/A=1.737*P_Torr` at 293 K for its atomic inputs.
+Decorrelation means losing memory of the absorbed frequency and re-emitting
+from the full Voigt profile; it is not quenching. This is a sourced model
+assumption, not a modern measured collision cross section or a fitted rate.

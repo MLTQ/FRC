@@ -1,5 +1,53 @@
 # Paired finite-drift collision progress
 
+## Finer mesh reaches the wall-contact model limit (2026-10-16)
+
+Spatial run 49353 terminated with exit 1 after 9473.880 s. It accepted 6147 of
+8000 steps; attempted step 6148 stopped with: "Plasma reached tube:
+wall/sheath/contact physics is not implemented". The recorded source remains
+31721f1fef01b747862f5263f3ddb92e5dfbca0d3fc1995e5e03ebf229d17afc.
+All accepted states are retained in
+`outputs/material_tube_independent_20mt_maxwellian_r6_z24_t8000`.
+This is a terminal partial trajectory, not a successful full pulse and not a
+reason to restart. No field, density floor or artificial continuation was added.
+
+The last accepted time is 2.6893125 us. Its actual saved coordinates give maximum
+radius 74.994630 mm in the 75 mm tube, midplane radius 42.231923 mm, maximum
+half-length 388.477905 mm and particle RMS radius 19.321212 mm. Mean electron/
+ion temperatures are 12.124309 / 3.101361 eV. This endpoint is reconstructed
+from `step_06147.npz`, SHA256
+`c866a857afd1625bc0f3afdab0a1b40bb7756c82ccb94b3c452f8a0c6db3169a`.
+The summary's last periodic diagnostic is step 6100, not the final accepted
+state; its accumulated heat must not be labeled as a step-6147 measurement.
+
+Existing physical sampling at three exactly common saved steps was run without
+changing either solver (analysis session 8559 exited 0). Its full component
+differences and state identities are in
+`outputs/material_tube_maxwellian_spatial_contact_comparison/comparison.json`.
+Ten-point quadrature on the union reference mesh gives 26400 samples and uses
+the finer run's actual volume. This comparison ends at the accepted prefix.
+
+| Time | B vector difference | J vector difference | Bulk velocity difference | Maximum material-position mismatch |
+|---|---:|---:|---:|---:|
+| 2.1875 us | 21.9179% | 96.7556% | 57.8872% | 20.7271 mm |
+| 2.625 us | 62.1559% | 97.6467% | 36.4778% | 37.6754 mm |
+| 2.6893125 us | 69.8034% | 93.9034% | 33.6776% | 39.6623 mm |
+
+At the last shared time, the 4x16 run's maximum radius is only 39.851850 mm,
+although its particle RMS radius is a similar 19.683057 mm. Bulk radius and
+small energy residuals conceal large edge and field differences. The finer
+run's last periodic work/E0 residual is bounded in magnitude by 9.9961e-5;
+that does not establish the accuracy of its wall approach. Spatial and time
+errors remain mixed. The actual contact time and laboratory wall impact are
+not resolved predictions. Neither grid establishes FRC formation or confinement.
+
+Collect the already-running 4x16/16000-step paired trajectory 16339 and original
+trajectory 58668. Do not merge moving sources until the original is terminal.
+Use these results to address edge/current/entropy spatial treatment and physical
+heat/particle boundaries; simply imposing a reflective wall would introduce
+new physics without establishing an applicable sheath/contact model. Keep
+`frc-transport.3/.4`, `frc-vacuum.3.3` and the full goal open.
+
 ## Completed paired timestep comparison (2026-10-16)
 
 Run33952 exited0 after all8000steps/3.5us in5172.282s. Its source remains

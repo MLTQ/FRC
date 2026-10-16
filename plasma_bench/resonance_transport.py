@@ -72,7 +72,7 @@ def absorbing_velocity(rng, detuning, damping):
     return np.where(np.asarray(detuning) < 0, -result, result)
 
 
-def redistribute(rng, detuning, incoming, outgoing, damping):
+def redistribute(rng, detuning, incoming, outgoing, damping, *, observer=False):
     """Coherent atom-frame frequency, with conditional Maxwellian atom velocity."""
     parallel = absorbing_velocity(rng, detuning, damping)
     reference = np.zeros_like(incoming)
@@ -85,13 +85,16 @@ def redistribute(rng, detuning, incoming, outgoing, damping):
     transverse = rng.normal(size=(len(detuning), 2))
     velocity = (parallel[:, None]*incoming+transverse[:, 0, None]*e1
                 +transverse[:, 1, None]*e2)
-    return detuning-parallel+np.sum(velocity*outgoing, axis=1)
+    rest = detuning-parallel
+    shifted = rest+np.sum(velocity*outgoing, axis=1)
+    return (shifted, rest+velocity[:, 0]) if observer else shifted
 
 
 def transport(model, line, density_m3, temperature_j, radius_m, length_m,
               packets, seed, sample_times_s, *, redistribution='atom_frame',
-              maximum_generations=1_000_000, progress=None):
-    """Track every weak-pulse quantum from a centre atom until it reaches a wall.
+              maximum_generations=1_000_000, progress=None,
+              initial_positions_m=None, side_view=None):
+    """Track every weak-pulse quantum from a specified atom until wall escape.
 
     Each packet starts as an excited atom. The fixed neutral bath, isotropic
     scattering, exponential atom lifetimes, and narrow-line constant energy
@@ -114,9 +117,21 @@ def transport(model, line, density_m3, temperature_j, radius_m, length_m,
     strength = (density_m3*model.A[line]*model.wavelength[line]**2/(8*np.pi)
                 *model.weight[model.upper[line]]/model.weight[0]/sigma[line])
     rate = model.A[line]
-    position = np.zeros((packets, 3)); clock = np.zeros(packets)
+    position = (np.zeros((packets, 3)) if initial_positions_m is None
+                else np.array(initial_positions_m, dtype=float, copy=True))
+    if (position.shape != (packets, 3) or not np.isfinite(position).all()
+            or np.any(np.sum(position[:, :2]**2, axis=1) >= radius_m**2)
+            or np.any(abs(position[:, 2]) >= length_m/2)):
+        raise ValueError('Every initial excitation must be strictly inside the cylinder')
+    initial_position = position.copy(); clock = np.zeros(packets)
     direction = isotropic(rng, packets)
-    offset = rng.normal(size=packets)+damping*rng.standard_cauchy(packets)
+    if side_view is None:
+        offset = rng.normal(size=packets)+damping*rng.standard_cauchy(packets)
+    else:
+        velocity = rng.normal(size=(packets, 3))
+        rest = damping*rng.standard_cauchy(packets)
+        offset = rest+np.sum(velocity*direction, axis=1)
+        observer_offset = rest+velocity[:, 0]
     absorptions = np.zeros(packets, dtype=np.int64)
     flight_total = np.zeros(packets); exit_time = np.empty(packets)
     exit_offset = np.empty(packets); exit_side = np.zeros(packets, bool)
@@ -134,6 +149,9 @@ def transport(model, line, density_m3, temperature_j, radius_m, length_m,
         start = clock[alive].copy()
         emission = start+rng.exponential(1/rate, len(alive))
         interval(atom_delta, start, emission)
+        if side_view is not None:
+            side_view.record(alive, position[alive], emission, observer_offset[alive],
+                             strength, damping)
         boundary, side = cylinder_distance(position[alive], direction[alive], radius_m, length_m/2)
         opacity = strength*voigt_profile(offset[alive], 1., damping)
         path = np.full(len(alive), np.inf)
@@ -162,9 +180,20 @@ def transport(model, line, density_m3, temperature_j, radius_m, length_m,
         absorptions[alive] += 1
         outgoing = isotropic(rng, len(alive))
         if redistribution == 'atom_frame':
-            offset[alive] = redistribute(rng, offset[alive], direction[alive], outgoing, damping)
+            shifted = redistribute(rng, offset[alive], direction[alive], outgoing,
+                                   damping, observer=side_view is not None)
+            if side_view is None:
+                offset[alive] = shifted
+            else:
+                offset[alive], observer_offset[alive] = shifted
         else:
-            offset[alive] = rng.normal(size=len(alive))+damping*rng.standard_cauchy(len(alive))
+            if side_view is None:
+                offset[alive] = rng.normal(size=len(alive))+damping*rng.standard_cauchy(len(alive))
+            else:
+                velocity = rng.normal(size=(len(alive), 3))
+                rest = damping*rng.standard_cauchy(len(alive))
+                offset[alive] = rest+np.sum(velocity*outgoing, axis=1)
+                observer_offset[alive] = rest+velocity[:, 0]
         direction[alive] = outgoing
         maximum_relative_detuning = max(maximum_relative_detuning,
             float(abs(offset[alive]).max()*sigma[line]/model.frequency[line]))
@@ -175,6 +204,7 @@ def transport(model, line, density_m3, temperature_j, radius_m, length_m,
     return dict(time_s=grid, excited_count=atoms, photon_count=photons,
         escaped_count=escaped_count, packet_balance=atoms+photons+escaped_count-packets,
         exit_time_s=exit_time, exit_position_m=position, exit_detuning_sigma=exit_offset,
+        initial_position_m=initial_position, exit_direction=direction,
         exit_side=exit_side, absorptions=absorptions, flight_time_s=flight_total,
         first_flight_time_s=first_flight_time, example_events=np.array(traces),
         maximum_relative_detuning=np.array(maximum_relative_detuning))

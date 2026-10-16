@@ -1,5 +1,67 @@
 # Active research: a credible experimental FRC simulation
 
+## Detector radiation physics and a terminal wall-contact limit (2026-10-16)
+
+Previous goal turn was PROGRESS:4c7ce5d99 saved photon transport and original
+spatial sensitivity. This turn added actual detector/source transport, sourced
+resonant collision physics, complete experimental comparisons, and diagnosed
+the terminal paired spatial pulse. Read docs/RESONANCE_EXPERIMENT.md and the
+new top of FINITE_DRIFT_COLLISIONS.md. No unit suite or reporting framework.
+
+General resonance_transport now accepts initial source positions and SideView;
+observer frequency uses the same conditional absorbing atom as the actual ray.
+Direct-position run27479 exited0,17 complete trajectories,294.751s, source
+67932429ed2f3e22ebbdc8e702bb861fe9e739162301288d3f1978b15e6fccee.
+Its50um slit sampling was too noisy. Preserve it; linear PNG is the readable
+view of the same raw data. No sampling noise was corrected or hidden.
+
+New resonance_axial integrates the uniform initial axial source exactly while
+retaining finite end losses and their affine crossing times. No tiny live
+source interval is killed. Resonant collisions use the visually checked
+ORNL-TM-4368 p35 formula nu_c=0.904*A*(gu/gl)*N*lambda^3/(6*pi^2), broaden the
+Voigt line, and reset frequency conditional on actual Exp(A) residence time.
+This is decorrelation, not quenching. Weak fixed-bath component, not plasma
+coupling; constant hnu0 energy and formal unbounded wings remain limitations.
+
+Run95409 exited0:33 complete trajectories,575.457s, source
+1100b61556b8529eb77f57f92e4bf0fa241d4ebaaa0e862bab2ad09399d77e4a.
+outputs/resonance_axial_experiment has inspected PNG/PDF, all detector histories,
+source/input archives and complete source-interval exits. Vacuum detector
+integral matches analytic5.684105110424834e-5/sr; CDFmaxdiff.00153536; independent
+mean escape1.927924ns vs1.926595+/-0.007321ns. Max source budget residual1.33e-15.
+At14.7mTorr, early0.25-2us decay0.45685+/-0.01495/us vs measured0.468/us;
+no-collision0.37499. At42mTorr, collision predictions0.23842/0.27648/0.26009/us
+for three fixed windows vs measured0.310:10.8-23.1% discrepancy remains.
+Do not claim validation across both pressures. Largest formal detuning11.54%
+violates narrow-line assumptions; quantify spectral contribution, do not clip.
+
+NEXT radiation action (frc-transport.5.1 still OPEN/in_progress): inspect actual
+channel-count curves Run151/197, printed124/127 (PDF135/138), channel0.3289us,
+and the instrument time convention before selecting a comparison window.
+Resolve source/optical and collision/spectral assumptions without fitting rates
+to force agreement. Parent5 still needs actual collisional excitation and moving
+species/energy/photon/current coupling. LXCat terms confirmation still pending;
+do not accept/download gated data. No general1m-centre collision run was made.
+
+Paired spatial49353 is TERMINAL, exit1 after9473.880s:6147/8000 accepted;
+attempted6148 stopped at unimplemented wall/sheath/contact physics. Last accepted
+2.6893125us radius74.994630mm in75mm tube; summary periodic diagnostics end6100.
+All accepted states preserved. Existing physical-sampling analysis8559 exit0:
+paired4x16 vs6x24 at last shared time differ B69.8034%,J93.9034%,v33.6776%,
+materialpositions39.6623mm. Coarse maxradius39.85185mm despite similar bulkRMS.
+JSON in outputs/material_tube_maxwellian_spatial_contact_comparison. This is
+severe edge/spatial sensitivity, not a resolved physical impact or full pulse.
+
+TWO exact pulse handles re-polled LIVE, no restarts:
+58668 original4x16t16000, latest15200/16000,9689.950s, main source05555dc9...b3c75;
+16339 paired4x16t16000, latest11600/16000,7349.391s, source31721f1f...d17afc in
+/private/tmp/frc-finite-drift. Saved counts are observations, not liveness proof.
+Collect exact terminal handles and compare completed8000/16000 runs with the
+existing configured-fields tool. Do not merge moving source until58668 terminal.
+Preserve poster,10ns viewers, raw failures and full original scope; goal remains
+OPEN. Prioritize physical coupling and edge/current/entropy spatial treatment.
+
+
 ## Photon transport and spatial pulse sensitivity completed (2026-10-16)
 
 Previous goal turn was NO PROGRESS on physics: it reconfirmed the finished 10 ns
