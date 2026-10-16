@@ -1,5 +1,37 @@
 # Resume the physical FRC simulation
 
+## Atomic overlap-source continuation bookmark (2026-10-16)
+
+Read newest GOAL_STATUS.md and ATOMIC_MOVING_FIELDS.md, then companions for
+new plasma_bench/material_reactions and examples/material_reactions.
+The existing atomic moment source now gathers actual distinct material supports,
+preserving local births/charge, physical species momentum, energy and exact vacuum.
+It produces ReactionOverlapState with full local moments, not a projected
+SpeciesMaterialState. Do not present it as completed moving reaction integration.
+
+Five full2µs source histories inoutputs/material_reactions_overlap completed
+85898 EXIT0 in20.7663s, sourcecd232a99032600d17fa409049d1705089d407bd6bfe4eac8fd2a1374315068bb.
+Constant-coefficient hydrogen limit uses independent generalized logistic/donor
+moment formulas;25/50/100-step errors decrease~4x. Fine population error9.50e-6;
+ions really appear outside old support; empty exterior/unseeded neutral regions
+remain exactly empty of the relevant species. Frame/Gauss/direct-gather balances
+are in gather_and_frame_comparison.json. PNG inspected, PDF/raw states saved.
+
+NEXT onfrc-transport.5.5.2: implement conservative return to moving variable-mass
+transport. Account for changed numbers, all momenta, source-generated velocity
+structure and new supports while retaining pointwise birth-charge cancellation.
+Avoid separate naive deposition onto unmatched grids. A repeated union mesh
+can grow and make tiny cells; this is unresolved, not permission to discard
+particles, merge arbitrarily or repair energy. Then run complete coupled moving
+physical cases, retaining original durations and independent field/current/budget
+comparisons. The earlier narrow-current/front accuracy issue5.5.1 remains open.
+
+Only LIVE job17262: exact handle confirmed; latest saved1600/16000,2831.588s.
+Sourcef5ddb118...a428f2 unchanged. Do not edit its closure, restart on observation
+timeout, or commit its incomplete output. Collect actual termination and compare
+complete8000/16000 configured fields. Preserve poster/private inputs/viewer.
+All full-goal acceptance gates remain in force; no adoption or completion claim.
+
 ## Current accuracy and compression improved; continuation bookmark (2026-10-16)
 
 Read the newest GOAL_STATUS.md and ATOMIC_MOVING_FIELDS.md sections first.

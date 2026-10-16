@@ -1,5 +1,35 @@
 # Active research: a credible experimental FRC simulation
 
+## Atomic reactions on separate material supports (2026-10-16)
+
+Previous goal turn made concrete progress atdd90949cf: limited numerical stress,
+full1024-cell comparisons, independent compression/rebound and shock evidence.
+This turn begins the required variable-population coupling. New material_reactions
+evaluates the existing atomic momentum/energy source on actual species overlap
+regions. It can create products beyond their former support while preserving
+local stoichiometric charge; it retains the full reacted moments without an
+unqualified projection back to old grids. Read the newest ATOMIC_MOVING_FIELDS.md.
+
+Complete five-case source run85898 EXIT0,20.7663s, sourcecd232a99...5068bb:
+all2µs constant-rate histories converge toward independent local logistic and
+donor-moment solutions. Fine population error9.50e-6, carrier birth outside
+old ion support4.48776e17/m², exact empty/unseeded regions remain zero.
+Physical budgets and coordinate/quadrature comparisons close to roundoff.
+Raw histories/source/PNG/PDF:outputs/material_reactions_overlap.
+
+This is a frozen-geometry source substep, not moving reactive integration.
+Newfrc-transport.5.5.2 stays IN_PROGRESS: next return the actual changed species
+moments to transport with compatible current/energy and growing supports,
+without artificial birth-charge separation or uncontrolled union-mesh growth.
+The fixed-number transport component and standalone source do not fulfill that
+acceptance gate. Front/current spatial limitations and full FRC scope remain.
+
+Only live job is17262, exact handle polled:1600/16000 saved,2831.588s,
+nonterminal. Its sourcef5ddb118...a428f2 remains unchanged. Preserve the live
+closure/output and collect actual completion before8000/16000 field comparison.
+Viewer, user poster, private inputs and original physical durations unchanged.
+No unit tests or generic verification framework. Fullgoal and parent5.5 OPEN.
+
 ## Current accuracy and compression improved; full goal remains open (2026-10-16)
 
 Previous turn only reconfirmed the completed viewer, so it supplied no new

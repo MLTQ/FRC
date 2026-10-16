@@ -1,5 +1,65 @@
 # Moving variable-species electrostatic research component
 
+## Reactions now evaluate on actual independent-support overlaps (2026-10-16)
+
+New `MaterialReactionOverlap` gathers the physical material species into the
+existing atomic moment source on the union of their cell boundaries. It keeps
+actual local particle amounts, all three momenta, translational/binding energy
+and produced photons together, including newly populated species outside their
+former supports. Different species are not separately deposited back onto old
+grids, which would generally break pointwise reaction charge conservation.
+Read `plasma_bench/material_reactions.md` and its example companion.
+
+This is a frozen-geometry reaction substep. Its output retains unprojected
+local moments in `ReactionOverlapState`; it does NOT yet advance the moving
+transport state with variable numbers. No return mapping, split moving
+trajectory or formation adoption is claimed. In particular, holding this
+charge-separated configuration fixed for microseconds is a mathematical
+source-only limit, not a physically unforced plasma trajectory.
+
+Complete run85898 EXIT0 in20.7663s, source
+cd232a99032600d17fa409049d1705089d407bd6bfe4eac8fd2a1374315068bb,
+is saved in `outputs/material_reactions_overlap`. All five histories cover
+the original2µs source duration with physical hydrogen masses and a declared
+constant ionization coefficient/13.6eV threshold, not a fitted lab rate.
+Neutral/ion/electron supports initially extend to15/5/10mm, respectively.
+Independent generalized logistic number laws allow initial local charge
+imbalance; donor momentum/mass ratios give all product moments analytically.
+
+| Steps | Max analytic population error | Max analytic momentum error (scaled) | Max analytic translational energy error (eV/reference particle) |
+|---|---:|---:|---:|
+|25|1.48273e-4|1.28494e-5|2.01650e-3|
+|50|3.76923e-5|3.26645e-6|5.12613e-4|
+|100|9.50287e-6|8.23527e-7|1.29238e-4|
+
+The fine run creates4.48776367e17ions/m² outside the old ion support, versus
+analytic4.48785644e17. Exact empty exterior remains zero; unseeded neutral
+regions retain exactly zero electrons. Local charge changes at most2.35e-14C/m³
+and current5.80e-10A/m², despite real carrier growth; neither was reset.
+Matter+binding energy changes at most2.66e-15J/m² from4.52911537J/m².
+The Gauss field, including its empty exterior, changes at most2.67e-5V/m on
+its large deliberately charge-separated background; raw fields/energy retained.
+
+Direct original material integrals of number, linear-velocity momentum and
+quadratic kinetic energy agree with the gathered state to roundoff. Lab and
+fixed translating coordinates give identical populations, momentum differences
+at most1.08e-19kg/(m s), energy2.66e-15J/m² and local current7.61e-10A/m².
+Two/three-point Gauss integrals likewise agree to roundoff in this polynomial
+constant-rate limit; this does not establish quadrature accuracy for arbitrary
+temperature-dependent reaction rates. Independent postprocessing is retained
+in `gather_and_frame_comparison.json`, with full raw states/source and inspected
+PNG/PDF. No unit tests, floors, repaired energy or provider tables were added.
+
+New beadfrc-transport.5.5.2 remains IN_PROGRESS. Next implement the conservative
+return to an evolving transport representation: variable physical masses,
+newly occupied supports, local birth-charge cancellation and compatible energy
+must survive it. Continuous nodal velocities can no longer exactly represent
+all source-generated moment profiles. Repeated union-mesh refinement can also
+create excessive tiny cells; do not conceal this with density floors, deleted
+births or arbitrary merging. A valid coupling must then complete moving
+reaction/field histories at the requested physical durations, with independent
+convergence and conservation. All other original FRC requirements remain open.
+
 ## Limited numerical stress improves compression and current accuracy (2026-10-16)
 
 Exact integration of J/E differences on the union of the saved physical meshes
