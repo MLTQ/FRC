@@ -7,6 +7,7 @@ from scipy.sparse.linalg import expm_multiply
 from .material_carrier_current import MaterialCurrentState
 from .material_coil_current import MaterialCoilCurrent
 from .material_split_current import CentralEntropy
+from .material_rk8 import dop853_step
 
 
 def diffuse_energy(mass, tail, head, conductance, internal, duration):
@@ -36,8 +37,11 @@ def diffuse_energy(mass, tail, head, conductance, internal, duration):
 
 class EnergyDiffusionMaterialCoilCurrent(MaterialCoilCurrent):
     """Central physical entropy/pressure RK4 with conservative mixing halves."""
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, central_integrator='rk4', **kwargs):
         super().__init__(*args, **kwargs)
+        if central_integrator not in ('rk4', 'dop853_fixed'):
+            raise ValueError('Central integrator must be rk4 or dop853_fixed')
+        self.central_integrator = central_integrator
         self.species = CentralEntropy(self.fluid, self.space)
         self.split_diagnostics = {}
         self.mixing_entropy = np.zeros(2)
@@ -69,11 +73,16 @@ class EnergyDiffusionMaterialCoilCurrent(MaterialCoilCurrent):
             entropy_production_over_kB=entropy_change,
             node_energy_redistributed_j=.5*np.sum(abs(change), axis=0))
 
+    def central_step(self, state, dt, time=0.):
+        if self.central_integrator == 'dop853_fixed':
+            return dop853_step(self, state, dt, time)
+        return super().step(state, dt, time)
+
     def step(self, state, dt, time=0.):
         if not np.isfinite(dt) or dt <= 0:
             raise ValueError('Positive finite step required')
         first, a = self.diffusion_step(state, .5*dt)
-        middle = super().step(first, dt, time)
+        middle = self.central_step(first, dt, time)
         result, b = self.diffusion_step(middle, .5*dt)
         self.response(result, rate=False, time=time+dt)
         combined = {key: a[key]+b[key] for key in a}

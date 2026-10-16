@@ -68,3 +68,10 @@ work budgets remain defined. This is a different spatial/time numerical method,
 not physical heat conductivity; all original physical forces and collision
 sources still evolve. Source archives include the new method. The older split
 method continues to omit its undefined instantaneous source-response integral.
+
+For this path, `central_integrator="dop853_fixed"` selects the fixed higher-order
+central advance; omitted/`rk4` retains the earlier method. The resolved metadata
+and input config name it explicitly. The outer diffusion split remains at most
+second order. Completed weak pulses and actual strong-hold continuations are
+recorded in docs/MATERIAL_ENERGY_DIFFUSION.md; full strong-pulse convergence is
+still required. No adaptive error control or energy correction is implied.

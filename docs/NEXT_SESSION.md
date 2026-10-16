@@ -1,5 +1,62 @@
 # Resume the physical FRC simulation
 
+## Species flux evidence saved; higher-order moving solver available (2026-10-16)
+
+Previous goal turn was NO PROGRESS on physics: it rechecked the finished10ns
+viewer. This turn collected full runs, completed the actual-field comparison,
+preserved species transport evidence and imported the exercised higher-order
+option into MAIN. Full original scope remains OPEN. Do not revisit the viewer.
+Read newest GOAL_STATUS, ATOMIC_TRANSPORT and MATERIAL_ENERGY_DIFFUSION.
+
+Completed atomic transport84798: six full contact/neutral-decay histories,
+132.214s, sourcec50e5c4e5369839b839effff7cadf2a2b83175d7499478e1e41660b316383b58.
+Completed neutral expansion40134: terminal success summary,10.055s, all64/128/256
+cell histories through9.850823us, source69e5b29ef71c26cb9bc2ee5a6f9374fe68dd35d243a47d5776b4c031d2058e46.
+40134 handle is expired; no invented exit code or restart. All accepted arrays,
+analytic references, budgets and inspectedPNG/PDF saved under outputs/atomic_transport
+and outputs/atomic_neutral_expansion. Contact current reconstructed from all
+actual extensive moments is <=1.23e-9A/m2; no current/charge correction.
+
+Critical limitation: Eulerian HLLC/HLL flux spreads density beyond exact vacuum
+front. Finest exterior inventory fraction7.47763e-5, maxdensity0.000967948 of
+initial, no exactly empty finalcells. Do NOT adopt it at the formation interface,
+clip the tail, or call this exact vacuum preservation. It is an interior spatial
+species component; formation still uses its existing tracked empty exterior.
+Physical field feedback, radial/end transport and neutral collisions are absent.
+
+Original main RK4 pulse82391 is terminal successful: all8000steps,7153.509s,
+source577ad923bec574d77ff1d2fb329047eba8cd7be539acdb26090603748343bd0f.
+All8000 arrays saved in outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t8000.
+Expired process handle was not restarted. Comparison97671 EXIT0:
+outputs/material_tube_energy_diffusion_timestep_4000_8000_comparison.
+Onlydt changes;81exactcommon times,6400material points. FinalB/J differences
+4.1156%/10.1275%; maximumsampledJ35.3501% duringcompression. Maxenergybalance/E0
+improves0.002154535->0.000525715, insufficient for field accuracy. PNG inspected.
+
+Higher-order implementation/companions/configs/hold runner from privatefbbaf8e9f
+are now copied intoMAIN. Same sourcef5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2
+as already completed weak pulse/hold. Default stillRK4; opt-in dop853_fixed.
+Two live complete strong pulses; poll exacthandles before any closure changes:
+- 86765 PRIVATE /private/tmp/frc-finite-drift:4000steps,0.875ns;
+  last observed3600/4000 at6217.769s. Output inMAIN
+  outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t4000.
+- 92324 MAIN:8000steps,0.4375ns; 100/8000 confirmed at175.973s;
+  outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t8000.
+Preserve importedsource and all live outputs; do not stage live data. A polling
+timeout is not failure and must not trigger a restart. No closure files may be
+changed while these runs are live. Independent atomic code can still progress.
+
+NEXT: collect86765, then existing configured-fields comparison against old4000
+as CENTRAL-METHOD sensitivity. Collect92324 and compare higher-order4000/8000
+as timestep sensitivity; keep physical inputs fixed. Do not add a new report
+framework. Continue real atomic-species electromagnetic/current-inertia coupling:
+the moving state still has fixed carrier weights and two entropies, so local
+population/temperature resets are invalid. Retain species momenta/fluxes, physical
+masses, field work and exact interface, with independent physical limits.
+Original gates, transport/radiation/edge/validity and full FRC goal remain open.
+Personal atomic files/LXCat pending permission, userposter and10ns viewers are
+unchanged. No unit tests or publication; localGit only.
+
 ## Joint reacting/colliding source complete; strong pulses still live (2026-10-16)
 
 PROGRESS after cea155e26. New plasma_bench/atomic_collisions.py and example

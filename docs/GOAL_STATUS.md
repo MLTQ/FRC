@@ -1,5 +1,54 @@
 # Active research: a credible experimental FRC simulation
 
+## Species transport completed; strong-pulse time error measured (2026-10-16)
+
+The preceding goal turn made NO PROGRESS on physics: it reconfirmed the already
+finished 10 ns viewer. This continuation collected pending scientific outcomes,
+completed their actual-field comparison, and made the exercised higher-order
+solver available in main. The full original FRC objective remains OPEN.
+
+New axial transport retains every atomic level/electron's number, three momenta
+and total energy, fixed reference density and actual reaction source. Six full
+contact/neutral-decay histories and three pressure-driven neutral expansions
+completed; independent analytic errors decrease with refinement and integral
+budgets remain near roundoff. Read docs/ATOMIC_TRANSPORT.md for measured values,
+equations and assumptions. Source c50e5c4e...83b58 (transport) /69e5b29e...58e46
+and all accepted states are archived; scientific PNGs inspected, PDFs saved.
+
+The expansion reveals a material limitation: the Eulerian flux transports a
+small amount of matter beyond the exact vacuum front. Finest exterior inventory
+fraction is 7.47763e-5 and no final cell is exactly empty. This component MUST
+NOT replace the formation solver's tracked plasma/vacuum interface. It has no
+electromagnetic feedback or physical ends yet. No formation run adopts it and
+no state is clipped, normalized or repaired.
+
+Original central-RK4 pulse 82391 is terminal successful: all8000steps/3.5us,
+7153.509s, source577ad923...bd0f. Expired handle was not restarted. Existing
+comparison97671 EXIT0 at81exact common times changes only dt. Halving reduces
+maximum external-work error/E0 from0.002154535 to0.000525715, but final B/J
+differences remain4.1156%/10.1275%, maximum35.3501% for vectorJ during compression.
+Read MATERIAL_ENERGY_DIFFUSION.md and the complete saved comparison. Accuracy is
+not established by the better integral budget.
+
+Higher-order option and companions from private fbbaf8e9f are now in MAIN,
+including the actual-state hold runner and configs. Main/private moving source
+is f5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2.
+Two strong higher-order pulses remain LIVE by exact handles:
+- 86765 PRIVATE:4000steps requested; last observed3600/4000 at6217.769s.
+- 92324 MAIN:8000steps requested,0.4375ns; 100/8000 observed at175.973s.
+Outputs are material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t4000
+and t8000 under outputs/. Preserve both imported closures and live data.
+No source reset/restart on an observation timeout; no live data in commits.
+
+NEXT: collect full higher-order results and compare their actual fields using
+the existing configured-fields tool. Continue actual species/current-inertia
+and electromagnetic coupling without resetting the old moving fixed-carrier,
+two-entropy state. The Eulerian species flux is an interior component only;
+tracked boundary/physical escape, neutral collisions, heat, radiation, model
+validity and all formation/experimental acceptance gates remain open. Preserve
+private atomic data, pending LXCat permission, user poster and finished viewers.
+No unit tests or new verification framework. Local Git only; no publication.
+
 ## Reactive species now exchange collision momentum and heat (2026-10-16)
 
 Previous turn made PROGRESS in cea155e26 (fixed-frame reaction histories).

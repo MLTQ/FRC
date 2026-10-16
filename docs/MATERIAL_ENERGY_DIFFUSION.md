@@ -1,5 +1,58 @@
 # Numerical thermal-energy transport in the moving pulse
 
+## Complete strong-pulse timestep comparison; higher-order option in main
+
+The 8000-step central-RK4 run completed all 3.5 us in 7153.509 s. Its terminal
+summary reports success, all 8000 accepted arrays are present, and source
+`577ad923bec574d77ff1d2fb329047eba8cd7be539acdb26090603748343bd0f` is preserved in
+`outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t8000`.
+The old process handle 82391 is expired; no restart was made.
+
+At dt=0.4375 ns, the maximum external-work residual divided by initial energy
+is 0.000525715, versus 0.002154535 at 0.875 ns. Final collision heat is
+88.542681 mJ, numerical ion heat 33.390088 mJ, mean Te/Ti
+9.741858/2.067553 eV, particle RMS radius 22.831774 mm and middle/maximum
+boundary radii 55.668810/63.399166 mm. Neither completion nor energy balance
+establishes local field accuracy.
+
+The existing actual-field comparison completed (97671, exit 0) at 81 exact
+common times with 6400 common material quadrature points. Only dt changes.
+JSON and inspected scientific PNG/PDF are in
+`outputs/material_tube_energy_diffusion_timestep_4000_8000_comparison`.
+The second run's actual volumes weight the norms; positions are compared
+separately and neither run is treated as exact.
+
+| Time | Total B relative L2 difference | J relative L2 difference | Velocity difference | Maximum position difference |
+|---|---:|---:|---:|---:|
+| 0.875 us | 0.001420% | 0.007090% | 0.001575% | 0.000036 mm |
+| 1.750 us | 2.5574% | 9.6451% | 5.9890% | 1.08356 mm |
+| 2.625 us | 1.7769% | 4.9208% | 1.7825% | 1.41257 mm |
+| 3.500 us | 4.1156% | 10.1275% | 0.8226% | 1.63908 mm |
+
+Maximum sampled vector B/J differences are 9.0246% / 35.3501%, both at
+1.35625 us. Thus the old central scheme remains materially time-sensitive,
+especially during compression. The small integrated energy error cannot justify
+using it for quantitative formation or waveform choices.
+
+After this main run ended, the already exercised higher-order implementation
+from private commit fbbaf8e9f was brought into the main checkout, together with
+its configurations, existing hold runner and companion docs. The default stays
+RK4; `central_integrator="dop853_fixed"` is explicit. Main and private moving
+closures now have the same source hash
+`f5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2`.
+The complete weak pulse and strong hold below are the existing end-to-end
+evidence for these exact source files, not a new unit suite.
+
+Two higher-order strong pulses are live: private 86765 at 4000 requested steps,
+and main 92324 at 8000 requested steps (0.875/0.4375 ns). The finer input is
+`configs/material_tube_independent_20mt_rk8_energy_diffusion_t8000.json`; output
+is `outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t8000`.
+This matched pair directly evaluates the proposed central-integrator change
+against the observed strong-pulse time error. Collect both real outcomes before
+claiming full-pulse accuracy or comparing their fields; preserve both closures
+while live. No exterior atmosphere, altered collision model, energy repair or
+physical transport claim is introduced.
+
 ## Complete weak pulse with the higher-order centre (2026-10-16)
 
 Run 91606 exited 0 after all 800 steps through 3.5 us in 863.152 s, source

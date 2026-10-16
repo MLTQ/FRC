@@ -83,3 +83,10 @@ material_energy_diffusion.md for its energy/entropy identities and limitations.
 Every physical stage retains collisions, forces and the same tube contact guard.
 Default/legacy inputs retain their original method. Comparing different choices
 is a numerical-method comparison, never just a timestep comparison.
+
+For `energy_split`, optional `central_integrator="dop853_fixed"` replaces only
+the central RK4 with the fixed twelve-stage DOP853 principal tableau. All source,
+fluid/current/collision physics and diffusion halves remain. Other integrators
+reject this option. Resolved metadata records it; omitted/`rk4` preserves prior
+behavior. Read material_rk8.md: full splitting remains at most second order and
+there is no adaptive error controller or automatic accuracy guarantee.
