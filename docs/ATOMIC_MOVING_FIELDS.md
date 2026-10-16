@@ -32,9 +32,12 @@ remains3.9615498164e-18m, total-number change is zero and relative-energy change
 Evidence in outputs/precise_material_expansion, frozen source
 90ff816e6d506d80b1ec72283d1a9d7a80d3b605f677c18a38274ee1181ef08d.
 
-Run5888 is still live:32/64-cell neutral and16/32/64 charged affine histories
-remain pending. No precision/convergence or charged reacting adoption is claimed
-from the first neutral case. Frc-transport.5.5.3 remains IN_PROGRESS. The
+Run5888 subsequently completed the full32-cell neutral case in404steps:
+front error1.14908e-14m, velocity2.82853e-10m/s, relative energy2.90591e-14,
+population1.3824e-14 and minimum width4.06289e-23m. This refines space and the
+actual timestep together, not an isolated spatial-order measurement. It is
+still live:64-cell neutral and16/32/64 charged affine histories remain pending.
+No general charged reacting adoption is claimed. Frc-transport.5.5.3 remains IN_PROGRESS. The
 uncoarsened-cost run5491 has independently passed232283 cells/990.75MiB at its
 last saved step5 (10.475767ps); source work dominates. Its next step is still
 running, so the original20ns is not completed. Optional coarsened36957 is also

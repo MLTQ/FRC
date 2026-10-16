@@ -16,8 +16,8 @@ the first16-cell warm radiative expansion completes the original6.083704µs in
 velocity1.86719e-9m/s, population8.32e-15 and relative energy1.28083e-13.
 The exact formerly failed saved state also advances through its original step,
 with positive minwidth3.96155e-18m, unchanged total number and relative energy
--1.60e-15. Immutable first-case record and full raw history are saved.32/64-cell
-and charged affine cases remain pending; this is not charged-reaction adoption.
+-1.60e-15. Immutable complete-case records and full raw histories are saved.
+The64-cell and charged affine cases remain pending; this is not charged-reaction adoption.
 
 LIVE5491, PID26700: finer argon now has232283 cells at10.475767ps,990.75MiB peak
 RSS at its last accepted step5. Source halves27.80/271.42s vs transport0.360s;
@@ -26,6 +26,12 @@ so elapsed wall time can exceed that while a step runs. Full20ns remains unmet.
 LIVE36957, PID24256: optional coarsened experiment last printed200 steps,
 1.835213ns,1735cells. Keep all three imported source closures unchanged.
 frc-transport.5.5.3 remains IN_PROGRESS; full original FRC goal remains OPEN.
+The32-cell neutral case has now also completed6.083704µs in404 steps: front
+error1.14908e-14m, velocity2.82853e-10m/s, relative energy2.90591e-14,
+population1.3824e-14, minimum width4.06289e-23m. Spatial resolution and the
+actual timestep are refined together; no separate spatial-order claim.64-cell
+neutral and all charged affine cases remain pending. The two complete raw
+histories have immutable completed_decay_n16/n32.json records.
 No unit suite, viewer or poster changes, provider-data bundling or publication.
 
 ## Reaction assembly accelerated without density coarsening (2026-10-16)

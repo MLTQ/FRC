@@ -21,8 +21,12 @@ steps; independent front error1.87995e-13m, velocity1.86719e-9m/s, population
 completed_decay_n16.json, raw decimal-string states and budgets are retained.
 The exact previously failed step151 also succeeds at its original dt, with
 minwidth3.96155e-18m and relative energy-1.60e-15: previous_failure_replay.json.
-Only this first full case has completed at the checkpoint.32/64-cell neutral
-and16/32/64 charged affine cases are still running/queued; inspect actual
+The32-cell neutral case has also completed the same full duration in404steps:
+front error1.14908e-14m, velocity2.82853e-10m/s, relative energy2.90591e-14,
+population1.3824e-14 and minimum width4.06289e-23m. Its separate immutable
+completed_decay_n32.json and raw history are retained. Spatial resolution and
+the actual timestep change together; do not infer separate spatial order.
+The64-cell neutral and16/32/64 charged affine cases are still running/queued; inspect actual
 terminal result and scientific plot when complete. Do not count them early.
 
 Other confirmed LIVE jobs, with unchanged source:
