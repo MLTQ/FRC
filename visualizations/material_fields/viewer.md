@@ -50,3 +50,23 @@ Dense time labels use ns with two decimal places, exposing1.75ns-step rounding.
 Field-line segments are batched into256 color levels per draw, avoiding tens of
 thousands of canvas stroke calls. Every path vertex and actual stored field value
 is retained; this quantizes only rendered color, not geometry or scientific data.
+
+Detailed displays optionally attach float32 current textures to each frame.
+These load with the original line/cloud data in the same bounded cache. Manifest
+extrema include dense basis samples and take precedence over the old cloud-only
+extrema. A WebGL volume layer shares an orthographic camera with the line canvas;
+the original perspective is unchanged for older builders. All lengths retain
+one common scale; a 50 mm screen-plane bar makes magnification explicit.
+The detailed palette matches the volume shader. Signed volume colors are
+blue/white/red. Geometry overlays are optional and fit/focus adjust only camera.
+1/2/4 azimuthal copies give 96/192/384 paths for the current 96-path source;
+this is exact rotational symmetry, not new field integration or new 3-D modes.
+Opacity and threshold control only the illustrative volume transfer function.
+The current cloud is the visible fallback if WebGL2 cannot initialize.
+
+Detailed magnetic labels use mT, and large current legends use MA/m². Saved data
+remain in tesla and A/m²; shared and per-state scales use the same unit conversion.
+
+Detailed playback starts with a shared color scale, so the pulse brightens and
+fades against fixed extrema; per-state scaling remains an explicit option.
+The peak-current metric chooses A, kA or MA/m² according to its actual value.

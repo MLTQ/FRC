@@ -1,5 +1,51 @@
 # Resume the physical FRC simulation
 
+## Detailed current-volume visualization (2026-10-16)
+
+User requested a more detailed rendering inspired by a current-volume / field-line
+reference. Bead **frc-0o8** is complete for this bounded UI work. The new display is at
+http://127.0.0.1:8790/20mt/ in
+`outputs/material_experiment_volume_20mt_10ns_display`.
+It retains the previously displayed completed4000-step physical source:
+0.875ns integration, full3.5us,351 nearest-10ns saved states, actual9.625/10.5ns gaps.
+The old viewer remains at /rk8-20mt/. No solver files or physical states changed.
+
+Builder38812 EXIT0. Actual compatible-basis currents are sampled at65×257
+material labels and interpolated into96×384 meridional float32 textures,
+then rendered as an axisymmetric WebGL volume. All351 textures finite, with
+exactly zero current at unsupported/exterior texels. Boundary interpolation
+cells are conservatively omitted. Rotating the existing96 paths through the
+model's azimuthal symmetry gives384 magnetic paths; no invented 3-D instability.
+Shared color limits are the default, with explicit per-state mode, signed
+current components, opacity/threshold, linked cameras,50mm scale bars, and
+optional true-scale tube/coils. Rendering detail is not increased solver resolution.
+
+Browser end-to-end checks covered initial zero current, next9.625ns state,
+play/pause across the pulse, final3500ns state, signed azimuthal current, fixed
+and per-state scales, opacity, and true-scale chamber fit. No browser errors or
+warnings observed. Screenshot browser_view.jpg saved from actual playback; the
+user's current camera/control choices are left intact. No unit tests were run.
+
+The peak selected frame is118 at1180.375ns. Dense current maximum5.99775857MA/m²
+(previous quadrature/cloud5.99245459), traced/plasma B maximum24.04993736mT.
+All original raw-source identifiers remain in source.json. Generated textures
+(~198MiB) and linked original frames are local/Git-ignored; the builder,
+manifest, HTML, asset sources, documentation and screenshot are checkpointable.
+Regenerate with `python -m examples.material_volume_display
+outputs/material_experiment_rk8_20mt_10ns_display FRESH_OUTPUT` using the usual
+headless plotting environment. Private LXCat data and the user poster are untouched.
+
+Separately, the already-running higher-order half-step pulse92324 was collected
+EXIT0:8000/8000 accepted steps,3.5us,13763.454752s,dt0.4375ns,
+sourcef5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2.
+All raw states remain in
+`outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t8000`.
+No live pulse remains from this handoff. NEXT scientific action is the existing
+`examples.material_coil_plot --configured-fields` comparison against4000,
+changing only dt. It has not been run in this UI task; completion is not
+convergence. Beadsfrc-vacuum.3.3/.3.4 carry the terminal result and next action.
+The overarching FRC goal, front physics and transport requirements remain OPEN.
+
 ## Bounded LXCat continuation: coupled source comparison completed (2026-10-16)
 
 User authorized more work while discussing LXCat. Actual source progress:
