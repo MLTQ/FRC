@@ -46,3 +46,11 @@ the new output config and summary explicitly record the changed central method.
 method-neutral `central_change_j`; earlier frozen RK4 archives retain their
 original `central_rk4_change_j` key. Endpoint differences name the actual finest
 factor, never assume it is four. Changing the method is not a restart or repair.
+
+Higher-order run94170 completed both selected factors in296.846s, source
+df92f8cb55d196b0e89b3fad787044c4027be7585411ef99ee39c245bdfaab92.
+Losses at0.875/0.4375ns are2.79612e-8/4.56020e-10J. Endpoint relative B/J
+differences are1.42660e-5/6.30950e-5, and position mismatch7.69328e-9m.
+Outputs/material_hold_interval_dop853 in the main repository preserves every
+accepted state and inspected figures. This is a local method result; complete
+strong/weak pulses remain under study with the same physical inputs.
