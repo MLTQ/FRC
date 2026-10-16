@@ -88,8 +88,25 @@ LIVE13616: outputs/material_tube_independent_20mt_viscous_r4_z16_t4000.
 Same complete initial plasma, independent bias/long-array waveforms and0.875ns
 step, now with C1=0.5,C2=2 numerical bulk pressure. Frozen source
 05555dc9be49c3a1af9c31467fc713f4d5e395442328e9107eea19f68d0b3c75.
-This run has not yet established whether the end fold is resolved. Collect its
-actual terminal state; preserve failures and do not edit its source while live.
+By recorded1.40us (1600/4000steps), this run has passed the previous fold time
+without rejecting the mesh; it is still unfinished. Middle/max radii34.476/34.943mm,
+Joule heat132.433mJ, numerical ion heat10.900mJ and work residual/E0=5.2092e-6.
+Collect its actual terminal state; preserve failures and do not edit live source.
+Matching two-loop control84694 is also LIVE in
+outputs/material_tube_two_loop_20mt_viscous_r4_z16_t4000, same source, timestep and
+numerical viscosity. Compare these to isolate geometry from numerical changes.
 A completed damped trajectory would still need physical comparison and spatial
 assessment. It would not establish ionization, transport validity, confinement,
 three-dimensional stability or a laboratory design.
+
+## Prescribed field extent
+
+The independent circular-loop axis formula evaluated on these configured inputs
+gives-19.9mT at centre in both arrangements. Atz=0.35m the two-loop source is
+-0.63812mT and the long array is-17.14213mT:3.21% versus86.14% of centre magnitude.
+Their shared100uT central bias falls to3.2066uT there. The inspected figure in
+outputs/material_source_geometry_comparison shows both vacuum fields and their
+Bsource²/(2mu0) scale alongside the assumed initial on-axis pressure. Induced
+screening and evolving pressure/forces are not represented by those input curves.
+The result explains why equal centre fields do not give equal forcing along the
+tube; it does not establish a lab coil design or force-balanced plasma.

@@ -1,5 +1,44 @@
 # Active research: a credible experimental FRC simulation
 
+## Active paired pulse runs (2026-10-16)
+
+Checkpointb72ae0bb7 saves the nanosecond timing label, complete shock comparisons,
+optional numerical compression treatment and prior failed-run evidence. The new
+long-array pulse has passed the previous1.101625us mesh-fold time: at recorded
+1.40us (1600/4000steps,979.61s) middle/max radii34.476/34.943mm, Joule heat132.433mJ,
+numerical ion heat10.900mJ, work residual/E0=5.2092e-6. This is an unfinished
+trajectory, not a completed pulse or convergence/formation claim.
+
+Two actual scientific jobs remain LIVE and must be collected before source edits:
+-13616: outputs/material_tube_independent_20mt_viscous_r4_z16_t4000; nine-loop
+ formation array plus independent bias;1600/4000 at the last saved observation.
+-84694: outputs/material_tube_two_loop_20mt_viscous_r4_z16_t4000; matching two-loop
+ control; initial accepted step collected. Both request3.5us with0.875ns steps,
+ C1=0.5,C2=2 numerical compression pressure, full original physical terms and
+ exact exterior vacuum. Both source05555dc9be49c3a1af9c31467fc713f4d5e395442328e9107eea19f68d0b3c75.
+
+The matched control is necessary: comparing the new viscous half-dt array run
+only with the earlier two-loop nonviscous1.75ns run would mix geometry and
+numerical changes. Read MATERIAL_COMPRESSION.md. If both complete credibly, use
+the existing physical comparison on these matched runs, include the separately
+observed numerical heat, then build/inspect the actual3-D display. If either
+fails, preserve its terminal evidence and address that concrete failure. Do not
+restart live jobs from observation timeouts or substitute a partial prefix for a
+completed experiment. No new framework or unit tests; keep the overall goal open.
+
+The analytic prescribed-source comparison is in
+outputs/material_source_geometry_comparison (PNG inspected, PDF generated).
+Both centre fields are-19.9mT including bias, but at the initial plasma ends the
+source fields are-0.638mT (two loops) and-17.142mT (long array). That is3.21% versus
+86.14% of the centre magnitude. The same central Helmholtz bias is only3.207uT
+at those ends. These are vacuum input profiles, not actual screened fields or an
+equilibrium calculation. Hardware remains abstract prescribed waveforms.
+
+The existing completed viewer stays at127.0.0.1:8790/20mt/ (server90454) with its
+1.750ns integration label; its scientific data is unchanged. Preserve the user
+poster. No remote/publication. The app goal record still reports paused; this
+session is following the user's explicit continuation without marking it complete.
+
 ## Nanosecond integration and the strong-pulse compression limit (2026-10-15)
 
 Research resumed after the usage refresh. The displayed completed two-loop20mT
