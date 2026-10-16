@@ -50,3 +50,10 @@ radiative data with matched ADAS collision levels; it excludes the source's S
 ionization row only for the fixed-charge component. Ar II retains supplied
 term-averaged energies/A values and is not fine-structure line transfer.
 This progresses excitation physics but is not a complete cooling/charge model.
+
+The follow-on joint source also accepts personal ADF07 `szd97#ar_ar1.dat` for
+Ar II 2P/4D/4F ionization; state mapping and unresolved final products are
+explicit in docs/ATOMIC_NETWORK.md. All three exact personal files are now
+preserved outside Git in
+`/Users/max/Library/Application Support/FRC/personal-atomic-inputs/` as well as
+their original temporary paths. No provider tables/rates are bundled here.

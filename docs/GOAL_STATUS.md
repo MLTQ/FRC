@@ -1,5 +1,60 @@
 # Active research: a credible experimental FRC simulation
 
+## Joint atomic source completed; strong pulse exposes energy loss (2026-10-16)
+
+Previous turn was PROGRESS (eb0f0fe51/f838aeab0). This continuation combines
+resolved excitation, all charge stages, independently evolved electron number
+and thermal energy, and produced radiation. Read ATOMIC_NETWORK.md for equations,
+source assumptions and complete measured results. Full original scope stays open.
+
+Final atomic run 55867 EXIT0: 19 complete trajectories in 89.663 s, source
+25eb4512063bdfb10f3395c52d8f85b31f04d6d976854dd341de8b7e26448a33.
+outputs/atomic_network_sparse has all histories and inspected PNG/PDF. Initial
+all-Ar+ joint case ends mean charge 1.04927679, Te 2.31777975 eV, versus the old
+ground-only 1.21734553 / 4.91423878. The latter also changes the Ar II ground
+rate source; the separate two-channel ablation holds it fixed. New sourced Ar II
+4D/4F ionization contributes 36.5718% of events in this case, while other missing
+excited ionization populations reach 3.1480%. Ground-collapse final products,
+RR capture branching, missing channels and opacity still prevent a complete
+physical cooling model. New frc-transport.5.4 tracks these requirements.
+
+Time-halving (5/2.5 ns) changes population L1 by <=1.72801e-5 and Te by
+<=0.00104980 eV. Independent DI/RR limits show second-order decreases. Nucleus,
+charge and energy residuals across argon runs are <=2.72e-13, 1.41e-13 and
+4.90e-12 eV/nucleus; analytic heating quadrature is separately measured.
+Neutral 40 ns decay works with exactly zero electrons, agreeing with exp(-At)
+within 4.44e-16. The preceding dense exponential generated negative ~1e-18
+populations in a disconnected empty block; its terminal failure is preserved.
+Sparse exponential action fixes the structural issue without clipping/repair.
+Earlier completed source outputs/atomic_network is also retained.
+
+All three exact personal OPEN-ADAS inputs are preserved outside Git at
+/Users/max/Library/Application Support/FRC/personal-atomic-inputs/.
+The failed-step matrix contains provider rates and is private there too;
+repository archives retain accepted/rejected states, paths and hashes only. No raw
+provider tables/rates are bundled or published. LXCat terms remain unaccepted.
+
+TWO moving runs are confirmed LIVE, same frozen source
+577ad923bec574d77ff1d2fb329047eba8cd7be539acdb26090603748343bd0f:
+- 41479, private /private/tmp/frc-finite-drift, 4x16 energy-diffusion t4000,
+  latest saved 3500/4000 at 3086.487 s. Do not restart or alter imported source.
+- 82391, MAIN, same full 20 mT pulse at t8000 (0.4375 ns), latest saved
+  100/8000 at 90.145 s. Only evolution.steps differs from t4000.
+
+The finer run addresses concrete strong-pulse energy loss, not automatic generic
+refinement. At 1.26875->1.3125 us the coarse run loses 0.116612 mJ while both
+coil fields are constant and integrated external work is exactly unchanged.
+Maximum observed |work residual|/E0 reaches 0.00215453. Cumulative numerical
+mixing thermal residuals are ~1e-14 J, much smaller than that full-system loss;
+this does not identify the sole cause. Read MATERIAL_ENERGY_DIFFUSION.md. Collect
+both terminal outcomes and compare actual fields/energy before adoption claims.
+
+Next: strong-pulse energy/timestep behavior and missing atomic channels, then
+actual atom/photon/moving-source coupling, physical heat and edge/contact physics.
+No unit suite or verification framework. Exact exterior vacuum, original
+acceptance gates, user poster and local-only repository policy are preserved.
+The completed 10 ns viewers need no further rebuild/recheck. Keep frc-goal open.
+
 ## Resolved excitation completed; weak pulse agrees under time halving (2026-10-16)
 
 PROGRESS: implemented sourced excitation/de-excitation with independently evolved

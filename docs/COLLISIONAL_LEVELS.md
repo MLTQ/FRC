@@ -1,5 +1,10 @@
 # Resolved excitation with a finite electron-energy reservoir
 
+The follow-on joint charge/excitation source is now implemented and exercised;
+see ATOMIC_NETWORK.md. It evolves electron number and energy together, adds
+selected sourced Ar II metastable ionization, and quantifies missing channels.
+This document retains the earlier fixed-charge component evidence.
+
 Run 61889 completed all 16 cases in 13.710 s, exit 0. Full accepted population,
 electron-energy and produced-photon histories, source archive, input hashes and
 both inspected PNGs are in `outputs/collisional_levels`. Source:

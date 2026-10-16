@@ -1,5 +1,34 @@
 # Numerical thermal-energy transport in the moving pulse
 
+## Strong-pulse conservation observation and matching time control (2026-10-16)
+
+The weak-case agreement below does not extend to demonstrated strong-pulse
+accuracy. Live handle 41479 reached 3500/4000 steps (3.0625 us). Its maximum
+observed absolute external-work residual / E0 is 0.0021545345 at 2.275 us,
+with E0=0.0895071115121 J. Most observed loss occurs near the start of the
+constant-current hold. Between saved times 1.26875 and 1.3125 us, the bias/array
+vacuum-center fields stay [0.0001,-0.02] T, integrated external work stays
+0.253495534314572 J, but total energy falls from 0.342987094621427 to
+0.342870482854735 J: a 0.116611767 mJ loss with zero source-work increment.
+This interval cannot be explained solely by quadrature of a changing source.
+
+The added mixing halves' cumulative represented thermal-energy residuals remain
+around 1e-14 J per species, far smaller than the full-system loss. The dual
+entropy sampling matrix is one-hot, so its averaged h energy identity does apply
+to represented entropy. These observations do not by themselves identify the
+entire numerical cause or prove coupled physical accuracy.
+
+Matching full-pulse handle 82391 is now running in main, changing only 4000 to
+8000 steps (0.875 to 0.4375 ns). Its new config is
+`configs/material_tube_independent_20mt_energy_diffusion_t8000.json`; output is
+`outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t8000`.
+Both runs use unchanged source
+`577ad923bec574d77ff1d2fb329047eba8cd7be539acdb26090603748343bd0f`.
+Keep the main and private moving source closures frozen while they run. Collect
+actual terminal outcomes and use the existing field comparison. This control is
+motivated by measured strong-pulse energy loss; no convergence claim follows
+from its launch or from the small weak-pulse differences.
+
 ## Completed weak pulse and terminal pressure-switch comparison (2026-10-16)
 
 The implementation is now integrated into main as `f838aeab0` (the unchanged

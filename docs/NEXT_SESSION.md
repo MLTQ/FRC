@@ -1,5 +1,65 @@
 # Resume the physical FRC simulation
 
+## Joint atomic source complete; two strong-pulse runs live (2026-10-16)
+
+This turn made PROGRESS after eb0f0fe51. Read the newest GOAL_STATUS.md and
+ATOMIC_NETWORK.md. Atomic source now evolves 72 nucleus populations, independent
+electron number, electron thermal energy, produced photons and deposited heat.
+Supplied Ar II 2P/4D/4F ionization maps explicitly to excitation terms; no double
+counting or implicit ground rates on excited populations. Missing channels and
+unresolved final products remain material limitations, not physical zeros.
+
+Run 55867 EXIT0 in 89.663 s: all 19 complete trajectories, inspected PNG/PDF,
+outputs/atomic_network_sparse, source
+25eb4512063bdfb10f3395c52d8f85b31f04d6d976854dd341de8b7e26448a33.
+Independent DI/RR limits show second-order behavior. Neutral decay leaves
+electron number and energy exactly zero. Joint 5/2.5 ns comparisons and all
+number/charge/energy observations are saved; no replay/unit suite is needed
+without a concrete new solver change. Source-only physics is not moving coupling.
+
+Preserve earlier outputs/atomic_network (75960 EXIT0, source6102b74...85ce0).
+Intermediate outputs/atomic_network_zero_carrier (52694 EXIT1) preserves the
+first rejected neutral midpoint and accepted initial state: dense exponential
+created negative ~1e-18 populations in a disconnected empty charge block.
+Sparse exponential action fixed this, without clipping. The rate-containing
+failed-step matrix is private outside Git; path/hash are in neutral_failure.json.
+
+Exact personal OPEN-ADAS files now persist at
+/Users/max/Library/Application Support/FRC/personal-atomic-inputs/:
+arlike_mom08_ar0.dat, cllike_dcg07_ar1.dat, szd97_ar_ar1.dat.
+Use those explicit paths for future runs if the old /private/tmp inputs expire.
+Do not copy raw tables/rates into repository/source archives or public UI.
+Input hashes and limitations are in ATOMIC_NETWORK.md. LXCat terms remain
+unaccepted. New frc-transport.5.4 tracks missing excited charge-changing data,
+capture/final-state branching and consistent energy before physical adoption.
+
+TWO exact handles are confirmed LIVE; preserve both moving source closures:
+- 41479, cwd /private/tmp/frc-finite-drift, original new-method full 20 mT pulse,
+  outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t4000.
+  Latest saved 3500/4000 at 3086.487 s. Source unchanged.
+- 82391, cwd /Users/max/Code/FRC, matching full pulse with only steps changed
+  to 8000 (0.4375 ns). Config configs/material_tube_independent_20mt_energy_diffusion_t8000.json;
+  outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t8000.
+  Latest saved 100/8000 at 90.145 s. Do not stage these live outputs.
+Both source577ad923bec574d77ff1d2fb329047eba8cd7be539acdb26090603748343bd0f.
+Poll exact handles; observation timeouts are not terminal. Never restart from
+stale summary counts. Main atomic modules are outside the moving closure.
+
+The half-step pulse addresses measured energy loss during the constant-current
+hold: 1.26875->1.3125 us loses 0.116612 mJ at exactly unchanged external work.
+Max observed |work residual|/E0 is 0.00215453; numerical mixing's cumulative
+thermal residuals remain ~1e-14 J. Do not attribute this solely to source-work
+quadrature or declare the new method accurate. Collect both terminal outcomes,
+then use existing configured-fields comparisons and actual saved energy histories.
+A comparison to old upwind RK4 changes numerical spatial/time methods; only
+4000/8000 of this new method is a timestep comparison. No default fourth old-RK
+refinement, viewer rebuild or reporting framework.
+
+Next physical work remains missing atomic channels/final energies, photon
+absorption/transfer, actual moving reaction momentum/current/energy coupling,
+physical nonlocal heat and edge/contact conditions. Preserve exact vacuum,
+user poster and all original FRC acceptance gates. Keep full goal open; no remote.
+
 ## Atomic source and weak controls complete; collect strong pulse (2026-10-16)
 
 This checkpoint made PROGRESS on the full original goal. Read the newest
