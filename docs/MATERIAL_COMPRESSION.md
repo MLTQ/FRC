@@ -1,5 +1,56 @@
 # Numerical compression treatment and the long-array pulse
 
+## Full isolated timestep comparison (2026-10-16)
+
+The original long-array8000-step run88009 exited0 after all3.5us in5189.560s.
+Its0.4375ns step is half the completed4000-step run's0.875ns; initial plasma,
+coils, resistance, mesh, RK4 and C1=0.5/C2=2 are unchanged. Both use source
+05555dc9be49c3a1af9c31467fc713f4d5e395442328e9107eea19f68d0b3c75.
+All8000 raw states and the matching final digest are present.
+
+Complete existing configured-fields comparison18763 exited0, with81 exactly
+common physical times and6400 common material quadrature samples per time.
+PNG inspected; PDF and JSON saved in outputs/material_tube_array_timestep_comparison.
+Independent peak linkage calculation88092 also exited0 and saved its method
+and source/input identities there as peak_linkage.json. No unit suite was run.
+
+| Quantity |0.875ns|0.4375ns|
+|---|---:|---:|
+| Final Joule heat |238.0457mJ|239.6161mJ|
+| Final numerical ion heat |15.6337mJ|15.5278mJ|
+| Final particle RMS radius |25.3185mm|25.2778mm|
+| Final midplane surface radius |61.6000mm|60.7969mm|
+| Final mean Te /Ti |13.7391 /1.0639eV|13.7941 /1.0627eV|
+| Max observed absolute external-work residual /E0 |4.5985e-5|1.6904e-5|
+
+Despite similar integrated heat and bulk radius, actual final field differences
+are B8.2404%, induced B8.1240%, J20.5834% and bulk velocity3.0300% in volume-
+weighted relative vector L2. Final component RMS differences (r,theta,z) are
+B=(5.0392e-5,1.2006e-4,9.3474e-5)T and
+J=(4501.49,13995.31,14843.34)A/m2. Maximum material-position mismatch is2.4634mm.
+Across sampled times, vector B differences reach14.5805% and J71.9883%, both
+at1.575us. Induced B reaches35.4884% at2.275us and velocity21.9592% at1.6625us.
+Early relative component differences near zero amplitude are ill-conditioned;
+the saved absolute differences remain necessary. These are common material-
+label comparisons; each state's physical coordinates differ.
+
+At matched peak drive1.26875us, bias exterior/volume linkage discrepancy changes
+from+1.2567% to+1.1722%, array from-0.6184% to-0.6214%. Timestep refinement does
+not resolve the finite-space reciprocity discrepancy. Small energy residuals
+also do not certify detailed field accuracy. Two timestep levels do not establish
+convergence; the visible current structure remains materially time sensitive.
+
+Consequent next numerical action is a full third timestep level: new config
+configs/material_tube_independent_20mt_viscous_r4_z16_t16000.json changes only
+the timestep to0.21875ns (title descriptive), retaining the full3.5us pulse.
+Actual handle58668 runs it in the main checkout; source remains05555dc9...b3c75.
+The first attempted launch exited before simulation because the assumed config
+filename was absent; the input was then copied from the completed8000-step
+run's actual config. No simulation was restarted or overwritten.
+Original spatial refinement85554 remains live; compare it against the completed
+8000-step4x16 run when terminal. The paired-collision time/space studies have
+their own unchanged source in the isolated worktree. Keep frc-vacuum.3.3 open.
+
 ## Complete matching bias control (2026-10-16)
 
 Bias-only run 46579 exited 0 after all 4000 steps / 3.5 us in 2539.966 s.

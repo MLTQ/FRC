@@ -1,5 +1,66 @@
 # Paired finite-drift collision progress
 
+## First complete moving paired-collision pulse (2026-10-16)
+
+The full 4000-step pulse completed all 3.5 us with 0.875 ns steps, exact
+exterior vacuum, and the declared fixed lnLambda=10 paired Maxwellian law.
+Run52937 exited0 in2621.768s; all4000 raw states and the matching final digest
+are present in outputs/material_tube_independent_20mt_maxwellian_r4_z16_t4000.
+Its unchanged solver source is
+31721f1fef01b747862f5263f3ddb92e5dfbca0d3fc1995e5e03ebf229d17afc.
+
+The existing physical comparison now accepts different collision laws while
+requiring the same initial plasma, coils, mesh, timestep and numerical pressure.
+It names each changed physical input and weights drift content by actual
+J.E_collision, retaining J-squared separately. Run38724 exited0; its PNG was
+inspected and PDF saved in outputs/material_tube_array_collision_model_comparison.
+Code/config are committed locally as f5a7bb66d on codex/finite-drift-collisions.
+
+| Quantity at3.5us | Prescribed eta=1e-4 ohm m | Paired Maxwellian lnLambda=10 |
+|---|---:|---:|
+| Particle RMS radius |25.3185mm|22.9773mm|
+| Midplane surface radius |61.6000mm|55.2674mm|
+| Maximum surface radius |64.7229mm|62.7148mm|
+| Mean Te / Ti |13.7391 /1.0639eV|10.5335 /1.9953eV|
+| Total collision heat |238.0457mJ|109.0123mJ|
+| Numerical ion heat |15.6337mJ|32.0043mJ|
+| Max observed absolute work residual /E0 |4.5985e-5|6.1205e-4|
+
+The paired final RMS radius is9.247% smaller, but both exceed the initial
+18.7082mm. Paired minimum recorded midplane radius is32.7585mm. This is a
+changed exploratory trajectory, not convergence, formation or confinement.
+Paired electron/ion collision heat is108.5789 /0.43347mJ: the separate32.0043mJ
+numerical ion heat is substantial and cannot be presented as physical collision
+heating. The prior63.449mJ hypothetical drag integral on the old prescribed-eta
+trajectory did not predict the new109.0123mJ coupled result.
+
+At peak drive1.26875us, independent exterior/volume linkage differences are
++0.2057% for bias and-0.3863% for the array. Drift>=electron thermal speed
+contains1.261% of particles and4.129% of actual collision power. The extreme
+edge drift ratio alone does not quantify the bulk contribution.
+
+Completed diagnostic90288 exited0; both PNGs inspected and PDFs saved in
+outputs/material_array_maxwellian_collision_regime_content, diagnostic source
+a7d744618c104fb346c82d3934ef04c6e7cf7a19e657c94745087710da34faff.
+It explicitly labels paired power as the actual implemented law. Sparse-state
+drag integral109.0713mJ differs by0.0541% from the every-step109.0123mJ observation.
+This is sampling difference, not an energy repair or trajectory-accuracy metric.
+
+Transport limitations persist: at peak drive, strong-field electron parallel
+density Kn>=0.1 contains47.420% of particles and81.247% of actual drag power;
+ion density Kn>=0.1 contains34.068% and76.978%. At final time the electron
+parallel region contains89.199% of particles and85.016% of drag power. Over
+the sampled trajectory those electron/ion regions contain70.730% /65.960% of
+the drag integral. Regions overlap; conditional thermal coefficients, density
+gradients and fixed Maxwellians do not establish kinetic validity or heat loss.
+The maximum local collision relaxation rate times dt is0.07221, only one of
+the system's timescales. Actual spatial heat transport remains frc-transport.4.
+
+Paired time control33952 (8000steps,0.4375ns) and new spatial control49353
+(6x24 plasma,6 vacuum cells/12modes,8000steps) remain live on the isolated
+worktree. Full time/spatial comparisons are pending. Do not change their
+scientific source. Keep frc-transport.3 and the overarching goal open.
+
 ## Actual density scales expose bulk transport limits (2026-10-16)
 
 The existing collision diagnostic now evaluates every actual plasma quadrature

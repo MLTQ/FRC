@@ -1,5 +1,68 @@
 # Active research: a credible experimental FRC simulation
 
+## Completed paired pulse and unresolved timestep sensitivity (2026-10-16)
+
+The preceding UI-only turn made no new scientific progress: it rechecked an
+already delivered10ns replay. This continuation collected complete physical
+results and changed the next numerical action from evidence. The full original
+objective and acceptance beads remain open; no unit suite or new framework.
+
+Paired-collision4000-step run52937 completed3.5us (2621.768s,exit0). All raw
+states and final digest are present. Existing physical comparison38724 and
+actual transport review90288 completed, with all three scientific PNGs inspected
+and PDFs saved. Read FINITE_DRIFT_COLLISIONS.md for the complete measured table.
+At final time paired collision heat is109.0123mJ versus238.0457mJ prescribed eta;
+particle RMS radius is22.9773 versus25.3185mm. Both expand from18.7082mm.
+Numerical ion heat is32.0043mJ versus only0.43347mJ actual paired ion collision
+heat; this is not a physically validated ion-temperature prediction. The paired
+max observed work residual/E0 is6.1205e-4; its time comparison remains pending.
+At peak drive47.420% of particles and81.247% of actual drag power are in the
+conditional electron parallel density-Kn review region. Spatial/nonlocal heat
+transport remains required; fixed-log Maxwellian drag is not full transport.
+
+Code for actual/hypothetical collision labeling, physical comparisons and the
+new paired6x24 configuration is committed as f5a7bb66d on local branch
+codex/finite-drift-collisions at /private/tmp/frc-finite-drift. Scientific runner
+source remains31721f1fef01b747862f5263f3ddb92e5dfbca0d3fc1995e5e03ebf229d17afc.
+Main-checkout original solver remains unchanged. All outputs stay in the main
+/Users/max/Code/FRC/outputs directory; no remote exists or publication is needed.
+
+Original half-timestep run88009 completed all8000steps/3.5us (5189.560s,exit0).
+All raw states/final digest present. Existing configured field comparison18763
+and independent peak-linkage calculation88092 completed(exit0); PNG inspected,
+PDF saved in outputs/material_tube_array_timestep_comparison. ONLY dt changed
+from0.875ns to0.4375ns. Across81 common times/6400 material samples, final vector
+L2 differences are B8.240%,J20.583%,velocity3.030%,position mismatch2.463mm.
+Current difference reaches71.988% at1.575us despite similar heat/RMS radius and
+small energy errors. Detailed fields are not time-converged. Read
+MATERIAL_COMPRESSION.md. A full third level at0.21875ns/16000steps was therefore
+launched, preserving all physical/numerical terms and full3.5us duration.
+
+FOUR exact scientific handles were polled LIVE; counts below are observations:
+-58668 outputs/material_tube_independent_20mt_viscous_r4_z16_t16000,
+ first accepted step;0.21875ns,16000steps/full3.5us requested.
+-85554 outputs/material_tube_independent_20mt_viscous_r6_z24_t8000,
+ 3400/8000steps,5342.11s;original spatial control.
+Both use main source05555dc9be49c3a1af9c31467fc713f4d5e395442328e9107eea19f68d0b3c75.
+-33952 outputs/material_tube_independent_20mt_maxwellian_r4_z16_t8000,
+ 4900/8000steps,3202.66s;paired time control0.4375ns.
+-49353 outputs/material_tube_independent_20mt_maxwellian_r6_z24_t8000,
+ 300/8000steps,470.28s;paired spatial control,6x24/6vacuumcells12modes.
+Both use unchanged worktree source31721f1f...d17afc above.
+
+NEXT collect exact handles without restarting on observation timeouts. Use the
+existing worktree tool examples.material_coil_plot --configured-fields OUTPUT
+FIRST SECOND, with MPLBACKEND=Agg and writable caches, on terminal successful
+pairs: original8000/16000 for time; original4x16/6x24t8000 for space; paired
+4000/8000 for time; paired4x16/6x24t8000 for space. Do not claim convergence from
+two grids. Keep independent linkage, heat and conservation observations separate
+from field accuracy. Inspect actual failures if any. Neither checkout's live
+scientific source may change. Merge branch into main only after BOTH main jobs
+85554/58668 finish, not merely after the now-complete88009. Paired jobs stay in
+the worktree. Keep frc-transport.3,frc-vacuum.3.3 and frc-goal open. Pursue
+frc-transport.4's physically derived spatial heat evolution after complete paired
+comparisons. Preserve the user poster and existing10ns viewers.
+
 ## Bulk transport-scale evidence (2026-10-16)
 
 Previous goal turn was progress: main69a72827e saved the complete bias comparison,
