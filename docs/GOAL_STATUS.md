@@ -1,5 +1,33 @@
 # Active research: a credible experimental FRC simulation
 
+## Precise geometry passes the full warm reacting expansion (2026-10-16)
+
+Previous turn was progress: faster unchanged-physics atomic assembly and
+measured retained-resolution cost. This turn implements an explicit50-digit
+geometry path through material motion, nested fine-face velocities, union
+ordering, reaction quadrature/return, Gauss fields and decimal-string records.
+Physical N/U/momenta, matrices and fields retain the existing float64/factored
+representation. No physical-width coarsening, moved-apart endpoints, heat repair
+or omitted support. The earlier8-ULP internal-cut cleanup remains explicit.
+
+LIVE5888, PID28177, outputs/precise_material_expansion, source90ff816e...ef08d:
+the first16-cell warm radiative expansion completes the original6.083704µs in
+203 steps. Min retained width1.47475e-23m; independent front error1.87995e-13m,
+velocity1.86719e-9m/s, population8.32e-15 and relative energy1.28083e-13.
+The exact formerly failed saved state also advances through its original step,
+with positive minwidth3.96155e-18m, unchanged total number and relative energy
+-1.60e-15. Immutable first-case record and full raw history are saved.32/64-cell
+and charged affine cases remain pending; this is not charged-reaction adoption.
+
+LIVE5491, PID26700: finer argon now has232283 cells at10.475767ps,990.75MiB peak
+RSS at its last accepted step5. Source halves27.80/271.42s vs transport0.360s;
+next step is in progress. Its600s observation check is between coupled steps,
+so elapsed wall time can exceed that while a step runs. Full20ns remains unmet.
+LIVE36957, PID24256: optional coarsened experiment last printed200 steps,
+1.835213ns,1735cells. Keep all three imported source closures unchanged.
+frc-transport.5.5.3 remains IN_PROGRESS; full original FRC goal remains OPEN.
+No unit suite, viewer or poster changes, provider-data bundling or publication.
+
 ## Reaction assembly accelerated without density coarsening (2026-10-16)
 
 The previous turn corrected the continuation direction after user feedback;

@@ -1,5 +1,45 @@
 # Moving variable-species electrostatic research component
 
+## Actual precise-geometry source/motion evolution (2026-10-16)
+
+New precise_geometry/precise_material/precise_reactions implement50-digit
+physical-coordinate arithmetic through the complete coupled path. Float inputs
+are converted exactly; positions, nested shape fractions and fine-face rates
+retain decimal differences. Widths and local shape ratios are evaluated before
+conversion to float physical coefficients. All pressure/work, consistent mass,
+numerical Q, common-field force and exponential-midpoint source equations remain
+those of the existing material model. Neither heat nor geometry is repaired.
+
+Raw states store exact decimal strings for current and reference faces, plus
+the existing normalized N/U scales and physical velocities. The endpoint is
+reloaded without pickle and checked before reporting the case. This precision
+choice still has finite range/resolution; it is not arbitrary-precision fluid
+physics or a license to discard under-resolved occupied intervals.
+
+The first full warm neutral radiative expansion now completes its original
+6.083703793594587µs at16 mechanical cells, four initial fine cells per element,
+203 accepted steps. All species support endpoints remain; minimum actual width
+is1.4747502013e-23m. Independent affine front/velocity errors are
+1.8799545254e-13m/1.8671926227e-9m/s; exponential population error8.32e-15,
+photon error1.85962e-15J/m², relative full-energy error1.28083e-13. Physical-width
+coarsening is zero. The earlier explicitly declared8-ULP internal partition
+cleanup remains, and its field effects are observed, never repaired.
+
+Reconstructing the exact previously rejected151st state and using its original
+dt3.3468421949e-8s also succeeds through a complete coupled step. Minimum width
+remains3.9615498164e-18m, total-number change is zero and relative-energy change
+-1.60179e-15. This concrete failure replay is separate from the full trajectory.
+Evidence in outputs/precise_material_expansion, frozen source
+90ff816e6d506d80b1ec72283d1a9d7a80d3b605f677c18a38274ee1181ef08d.
+
+Run5888 is still live:32/64-cell neutral and16/32/64 charged affine histories
+remain pending. No precision/convergence or charged reacting adoption is claimed
+from the first neutral case. Frc-transport.5.5.3 remains IN_PROGRESS. The
+uncoarsened-cost run5491 has independently passed232283 cells/990.75MiB at its
+last saved step5 (10.475767ps); source work dominates. Its next step is still
+running, so the original20ns is not completed. Optional coarsened36957 is also
+live and remains unaccepted. Keep all imported source closures frozen.
+
 ## Faster reactions with retained density resolution (2026-10-16)
 
 The user correctly challenged inferring a need to coarsen from the old10000-cell

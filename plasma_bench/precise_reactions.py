@@ -1,0 +1,168 @@
+"""Conservative reaction gather/return with distinct precise material supports."""
+import numpy as np
+from scipy.constants import elementary_charge as EV, epsilon_0 as EPS0
+from scipy.linalg import solve_banded
+from .precise_geometry import decimal, widths, fraction, quadrature, interpolate, geometry_precision
+from .precise_material import PreciseMaterialSubcells, PreciseMaterialState, PreciseMaterialSet
+from .material_species_set import MaterialSetState
+from .material_reactions import MaterialReactionOverlap, ReactionOverlapState
+from .reactive_material import ReactiveMaterial, MaterialReservoirs
+
+
+class PreciseReactionOverlap(MaterialReactionOverlap):
+    @geometry_precision
+    def from_material(self, model, state, species):
+        species = np.asarray(species)
+        if (species.shape != (model.species,) or not np.issubdtype(species.dtype, np.integer)
+                or np.any(species < 0) or np.any(species >= len(self.number))):
+            raise ValueError('Atomic species index for every precise support required')
+        if not np.array_equal(model.mass, self.source.mass[species]) or not np.array_equal(model.charge, self.charge[species]):
+            raise ValueError('Identical material/reaction species masses and charges required')
+        model.validate(state)
+        edges = np.unique(np.r_[model.bounds, state.faces])
+        points, measure = quadrature(edges, self.quadrature)
+        sample = model.sample(state, points.ravel())
+        rows, network = [], self.source.network
+        for k in range(points.size):
+            atomic = np.zeros(self.source.base_size)
+            temperature = np.zeros(network.count+1)
+            velocity = np.zeros((network.count+1, 3))
+            active = sample['number'][:, k] > 0
+            ids = species[active]
+            if len(set(ids)) != len(ids):
+                raise ValueError('Overlapping same-species blocks need an explicit mixing closure')
+            atomic[self.number[ids]] = sample['number'][active, k]/self.density
+            if np.any(atomic[self.number[ids]] == 0):
+                raise ValueError('Positive density below atomic normalization range')
+            temperature[ids] = sample['temperature_ev'][active, k]
+            velocity[ids] = sample['velocity'][active, k]
+            atomic[network.thermal] = 1.5*atomic[network.electrons]*temperature[-1]
+            rows.append(self.source.initial(atomic, temperature[:-1], velocity))
+        return ReactionOverlapState(edges, points, measure,
+            np.asarray(rows).reshape(points.shape+(self.source.size,)), model.left_electric)
+
+    @geometry_precision
+    def totals(self, state):
+        f, source, network = self.fields(state), self.source, self.source.network
+        sums = self.density*np.sum(state.weights[..., None]*state.moments, axis=(0, 1))
+        numbers = sums[self.number]
+        relative_p = source.momentum_scale*sums[source.momentum].sum(axis=0)
+        mass = source.mass@numbers
+        energy = EV*(sums[source.energy].sum()+network.energy_ev@sums[:network.count]+
+                     sums[network.photons]-sums[network.heating])
+        energy += self.frame@relative_p+.5*mass*(self.frame@self.frame)
+        charge = f['charge_c_m3'].reshape(state.points.shape)
+        electric = np.r_[state.left_electric, state.left_electric+
+                         np.cumsum(np.sum(state.weights*charge, axis=1))/EPS0]
+        field = EPS0/6*np.sum(widths(state.edges)*(electric[:-1]**2+
+                             electric[:-1]*electric[1:]+electric[1:]**2))
+        return dict(numbers_m2=numbers, nuclei_m2=float(numbers[:-1].sum()),
+            charge_c_m2=float(EV*(numbers@self.charge)), mass_kg_m2=float(mass),
+            momentum_kg_per_m_s=relative_p+mass*self.frame,
+            matter_binding_photon_energy_j_m2=float(energy), electric_energy_j_m2=float(field),
+            energy_j_m2=float(energy+field), photon_energy_j_m2=float(EV*sums[network.photons]),
+            electric_edges_v_m=electric)
+
+
+@geometry_precision
+def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0,
+        cfl=.15, maximum_plasma_phase=.04, numerical_viscosity=(.5, 2.), viscosity_limiter='minmod'):
+    if not isinstance(coalesce_ulps, int) or coalesce_ulps < 0:
+        raise ValueError('Nonnegative integer explicitly declared ULP cleanup required')
+    source, network, values = overlap.source, overlap.source.network, state.moments
+    present = np.any(values[..., overlap.number] > 0, axis=1)
+    protected = np.r_[True, np.any(present[:-1] != present[1:], axis=1), True]
+    # Keep the earlier declared float-coordinate cleanup scale, not a new
+    # physical-width averaging option. Every species endpoint stays protected.
+    tolerance = decimal(coalesce_ulps*np.spacing(max(abs(float(x)) for x in state.edges)))
+    kept, i = list(range(len(state.edges))), 0
+    while tolerance and i < len(kept)-1:
+        a, b = kept[i:i+2]
+        if state.edges[b]-state.edges[a] <= tolerance:
+            if not protected[b]:
+                kept.pop(i+1)
+                continue
+            if not protected[a]:
+                kept.pop(i)
+                i = max(0, i-1)
+                continue
+        i += 1
+    edges = state.edges[kept]
+    groups = np.searchsorted(kept, np.arange(len(state.edges)-1), side='right')-1
+    right = fraction(state.points, edges[groups, None], edges[groups+1, None])
+    count, models, states, ids, records = len(edges)-1, [], [], [], []
+    for species, mass in enumerate(source.mass):
+        scale = float(values[..., overlap.number[species]].max())
+        if scale == 0:
+            continue
+        population_scale = overlap.density*scale
+        nn, ee = np.zeros(count), np.zeros(count)
+        ll, lr = np.zeros((count, 3)), np.zeros((count, 3))
+        np.add.at(nn, groups, np.sum(state.weights*(values[..., overlap.number[species]]/scale), axis=1))
+        pm = values[..., source.momentum[species]]/scale*source.momentum_scale
+        em = values[..., source.energy[species]]/scale*EV
+        np.add.at(ll, groups, np.sum(state.weights[..., None]*pm*(1-right[..., None]), axis=1))
+        np.add.at(lr, groups, np.sum(state.weights[..., None]*pm*right[..., None], axis=1))
+        np.add.at(ee, groups, np.sum(state.weights*em, axis=1))
+        occupied = nn > 0
+        expected = np.zeros(count, bool)
+        np.logical_or.at(expected, groups, present[:, species])
+        if np.any(expected & ~occupied):
+            raise ValueError('Positive normalized amount is unrepresentable; no discarded species')
+        pairs = np.flatnonzero(np.diff(np.r_[False, occupied, False])).reshape(-1, 2)
+        for first, last in pairs:
+            faces = edges[first:last+1]
+            model = PreciseMaterialSubcells(nn[first:last], mass, overlap.charge[species],
+                (state.edges[0], state.edges[-1]), faces, velocity_cells, number_scale=population_scale,
+                left_electric=state.left_electric, cfl=cfl, maximum_plasma_phase=maximum_plasma_phase,
+                numerical_viscosity=numerical_viscosity, viscosity_limiter=viscosity_limiter)
+            load = np.zeros((len(faces), 3))
+            load[:-1] += ll[first:last]
+            load[1:] += lr[first:last]
+            velocity = solve_banded((1, 1), model.matrix[0], model.restrict_load(load), check_finite=False)
+            vl, vr = model.fine_velocity(velocity[None, ...])
+            kinetic = mass*model.relative_numbers/6*np.sum(vl*vl+vl*vr+vr*vr, axis=1)
+            result = PreciseMaterialState(faces[None, :].copy(), velocity[None, ...],
+                                          (ee[first:last]-kinetic)[None, :])
+            model.validate(result)
+            records.append(dict(species=species, cells=last-first, minimum_width_m=float(widths(faces).min()),
+                support_decimal_m=[str(faces[0]), str(faces[-1])]))
+            models.append(model)
+            states.append(result)
+            ids.append(species)
+    if not models:
+        raise ValueError('No occupied support; retain exact vacuum without a matter solver')
+    model = PreciseMaterialSet(models, ids, reference_velocity=overlap.frame)
+    result = MaterialSetState(tuple(states))
+    model.validate(result)
+    amounts = overlap.density*np.sum(state.weights[..., None]*values[..., overlap.number], axis=1)
+    old = np.r_[state.left_electric, state.left_electric+np.cumsum(EV*(amounts@overlap.charge))/EPS0]
+    new_edges, new, _, new_energy = model.field(result)
+    delta = interpolate(state.edges, new_edges, new)-old
+    h = widths(state.edges)
+    old_energy = EPS0/6*np.sum(h*(old[:-1]**2+old[:-1]*old[1:]+old[1:]**2))
+    record = dict(blocks=records, removed_roundoff_edges=len(state.edges)-len(edges),
+        geometric_tolerance_m=float(tolerance), removed_density_edges=0, minimum_density_width_m=0.,
+        projection_field_energy_change_j_m2=float(new_energy-old_energy),
+        projection_field_maximum_change_v_m=float(abs(delta).max()),
+        projection_field_l2_change_v_sqrt_m=float(np.sqrt(np.sum(h*(delta[:-1]**2+delta[:-1]*delta[1:]+delta[1:]**2))/3)),
+        photon_energy_j_m2=float(EV*overlap.density*np.sum(state.weights*values[..., network.photons])),
+        input_heat_j_m2=float(EV*overlap.density*np.sum(state.weights*values[..., network.heating])),
+        binding_energy_j_m2=float(EV*np.sum(amounts[:, :network.count]*network.energy_ev)))
+    return model, result, record
+
+
+class PreciseReactiveMaterial(ReactiveMaterial):
+    def __init__(self, source, reference_density, *, quadrature=3, **controls):
+        super().__init__(source, reference_density, quadrature=quadrature, **controls)
+        self.overlap = PreciseReactionOverlap(source, reference_density, quadrature=quadrature)
+
+    def source_step(self, model, state, reservoirs, dt):
+        gathered = self.overlap.from_material(model, state, model.species_indices)
+        self.last_overlap = self.overlap.step(gathered, dt)
+        result, advanced, record = project_precise_reactions(self.overlap, self.last_overlap, **self.controls)
+        self.last_projection = record
+        ledger = MaterialReservoirs(reservoirs.photons_j_m2+record['photon_energy_j_m2'],
+            reservoirs.input_heat_j_m2+record['input_heat_j_m2'],
+            reservoirs.projection_field_change_j_m2+record['projection_field_energy_change_j_m2'])
+        return result, advanced, ledger

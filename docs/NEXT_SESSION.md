@@ -1,5 +1,47 @@
 # Resume the physical FRC simulation
 
+## Collect precise-geometry convergence (2026-10-16)
+
+New opt-in precise_geometry, precise_material and precise_reactions retain
+distinct supports using50-digit Decimal positions/differences and fine-face
+velocities. Physical state and force/energy coefficients remain float64 with
+the existing scaled species inventories. The original equations and exponential
+midpoint are unchanged. No physical-width averaging is used; the existing
+explicit8-ULP internal-cut cleanup still protects every species endpoint.
+Read companions before editing. This is actual coupled source/motion, not only
+a fixed-geometry diagnosis. Raw faces/reference faces are decimal strings and
+must never be rounded to float before subtraction or interval membership.
+
+LIVE5888, PID28177: `python -m examples.precise_material
+outputs/precise_material_expansion`. Frozen source
+90ff816e6d506d80b1ec72283d1a9d7a80d3b605f677c18a38274ee1181ef08d.
+Full first16-cell warm radiative expansion completes6.083703793594587µs in203
+steps; independent front error1.87995e-13m, velocity1.86719e-9m/s, population
+8.32e-15, relative energy1.28083e-13, min actual width1.47475e-23m. The immutable
+completed_decay_n16.json, raw decimal-string states and budgets are retained.
+The exact previously failed step151 also succeeds at its original dt, with
+minwidth3.96155e-18m and relative energy-1.60e-15: previous_failure_replay.json.
+Only this first full case has completed at the checkpoint.32/64-cell neutral
+and16/32/64 charged affine cases are still running/queued; inspect actual
+terminal result and scientific plot when complete. Do not count them early.
+
+Other confirmed LIVE jobs, with unchanged source:
+-5491/PID26700 retained-resolution argon: saved step5,10.475767ps,232283 cells,
+ peak990.75MiB. Actual source halves27.80/271.42s, motion0.360s. Full20ns still
+ requested. The600s observation bound is checked between coupled steps and
+ does NOT interrupt a long source call; wall time has exceeded that during
+ step6. Snapshots through5 are already saved. Poll before deciding terminal.
+-36957/PID24256 optional coarsened argon: last printed step200,1.835213ns,
+ 1735cells. This older runner saves states only at each case end.
+
+Keep imported Python files frozen until these jobs finish; documentation and
+independent files can change. Collect results, then continuefrc-transport.5.5.3
+through complete charged reacting20ns and measured field/current convergence.
+The precise path fixes the reproduced53-bit coordinate collapse in a full
+neutral case; it does not yet resolve general mesh growth, physical front
+accuracy, sources/collisions, cylindrical/coil/end coupling or FRC formation.
+All parent/full-goal gates stay OPEN. No unit tests or viewer rework.
+
 ## Collect the fine calculation; preserve geometry (2026-10-16)
 
 Concrete progress: new VectorizedAtomicMoments keeps identical physics and
