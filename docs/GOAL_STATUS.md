@@ -1,58 +1,64 @@
 # Active research: a credible experimental FRC simulation
 
-## Reactive moment frame failure resolved on complete trajectories (2026-10-16)
+## Reactive species now exchange collision momentum and heat (2026-10-16)
 
-Previous goal turn was NO PROGRESS on physics: it rechecked the completed 10 ns
-viewer. This continuation makes PROGRESS on the reaction source, preserving the
-actual failure and completing a coordinate change on full histories. The original
-FRC goal and every remaining physical/experimental acceptance gate stay OPEN.
+Previous turn made PROGRESS in cea155e26 (fixed-frame reaction histories).
+This continuation adds physical charged-pair collision/current/heat coupling to
+the local reacting species. The full original FRC goal remains OPEN. No unit
+suite, new verification framework or repeated viewer work.
 
-Collected 7072 EXIT1 in 832.137 s. All six independent DI/RR conversion limits,
-six unboosted argon histories and moving neutral decay succeed. Only the boosted
-heated case rejects at step 80 after 79 accepted states. Its captured population
-69 and momentum are zero while lab energy remains 5e-324 eV/nucleus. This is a
-finite-representation failure; outputs/atomic_moments_reordered preserves the
-accepted histories, rejected state, source and scientific figure. No state repair.
-Time halving in complete argon histories changes population L1 by <=1.72802e-5
-and Te by <=0.001049801 eV. Exact-zero-electron decay matches the analytic law.
+New CollisionalAtomicMoments retains every occupied charged heavy level and
+electrons with independent finite masses, momenta and energies. All charged pairs
+use the displaced-isotropic-Maxwellian Coulomb moments with declared lnLambda=10.
+The conservative COM-energy form retains both drag and thermal equilibration,
+while neutral scattering and charge exchange remain absent. Read
+plasma_bench/atomic_collisions.md and docs/ATOMIC_COLLISIONS.md for equations,
+assumptions, full numerical results and remaining spatial/field requirements.
 
-New FixedFrameAtomicMoments stores moments in a fixed translating frame and
-restores laboratory momentum, energy and current, retaining actual charge/mass
-residuals. Reaction rates, finite masses and positivity rules are unchanged.
-Run 95433 EXIT0 in 365.813 s: both complete 1400-step heated argon histories
-through 3.5 us succeed. A second, distinct frame has maximum differences from
-the Galilean-transformed unboosted reference: population L1 1.25376e-14,
-Te 5.32907e-14 eV, current 2.25265e-9 A/m² and species lab energy 8.59757e-13
-eV/nucleus. Lab energy budget drift <=1.93979e-11 eV/nucleus. These are coordinate
-consistency measurements, not new physical-rate accuracy or convergence proof.
-Complete states, fixed frame vectors and inspected PNG/PDF are preserved in
-outputs/atomic_moments_fixed_frame, source
-8ecabaefe7b52d082521657f438dfa851a6552732d71aed5ec8316abaa3d7734.
-Read docs/ATOMIC_MOMENTS.md and plasma_bench/atomic_frame.md; bead5.5 stays open.
+First unsplit run11914 EXIT1 is preserved in outputs/atomic_collisions,
+source73c68c8d711f4a8c7f5d7e807b03c763072c3f766de170b8213f6ae99db2bbc3.
+Independent collision limits completed, but newly born rare q9..15 populations
+acquired negative thermal energy at the first reacting step. The actual rejected
+state is saved; no populations or energies were repaired. Symmetric collision-
+half/reaction-full/collision-half integration keeps populations constant within
+collision updates while retaining both physical sources and their heat budgets.
 
-Two moving runs remain live by their exact handles; saved progress is a snapshot:
-- 82391 MAIN: 5100/8000 at 4583.587 s,
-  outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t8000;
-  source 577ad923bec574d77ff1d2fb329047eba8cd7be539acdb26090603748343bd0f.
-- 86765 PRIVATE /private/tmp/frc-finite-drift: 1650/4000
-  at 2875.418 s, output in MAIN
-  outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t4000;
-  source f5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2.
-Keep both imported moving closures frozen, do not merge private into MAIN, do not
-stage live output or restart because of an observation timeout. Collect actual
-terminal outcomes and use the existing actual-field comparison. Their central
-methods differ; that comparison alone is not timestep convergence.
+Revised19857 EXIT0 in311.275s: three complete independent collision comparisons
+plus both full700/1400-step heated argon histories through3.5us. Collision-limit
+drift errors decrease2.33708e-4/5.94782e-5/1.53257e-5 at100/200/400steps against
+existing independent velocity-space integrals. Finer reacting current magnitude
+falls14429.4034->0.016713821A/m²; Te2.502600597eV, ionT0.263221409eV,
+electronnumber0.683265616/nucleus. This is homogeneous local relaxation with no
+sustaining field, not a driven-plasma lifetime or confinement result.
 
-NEXT: collect the strong pulses and quantify actual full fields/energy, then
-continue reactive spatial/current coupling. The existing moving state fixes
-carrier weights and has only two entropies; changing its density/temperature
-from this source alone would omit neutral/charge-level momentum, particle flux,
-current inertia and energy. Retain explicit species transport and moments in the
-coupled state. Small-drift reactions cannot be installed unqualified in the
-large-drift pulse. Missing atomic channels/branching, neutral scattering, photon
-transport, heat flux and physical walls remain. Exact exterior vacuum, restricted
-personal data, user poster and finished 10 ns viewers are preserved; no unit
-suite, extra verification framework, remote or publication.
+Time-halving maximum populationL1/Te/current differences are1.72795e-5 /
+0.001049757eV /0.616047A/m². The small final current tail still differs3.74%.
+Energy-budget drift<=4.50795e-12eV/nucleus; number/mass<=2.724e-13,
+charge<=9.304e-14, scaledmomentum<=1.627e-13. One coarse Ar17+ population5e-324
+has represented zero temperature and uses the stated cold-species limit; fine
+has none. No floor. Complete arrays, source and inspected scientific PNG/PDF:
+outputs/atomic_collisions_split, source
+acc4681d50093851137f8254b2f20528b69e76f6a4439a711d21db0137b3f782.
+
+Two strong moving pulses remain LIVE by exact handles (saved snapshots):
+- 82391 MAIN: 6700/8000 at 6000.426 s,
+  outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t8000,
+  source577ad923bec574d77ff1d2fb329047eba8cd7be539acdb26090603748343bd0f.
+- 86765 PRIVATE /private/tmp/frc-finite-drift: 2450/4000
+  at 4248.246 s, output in MAIN
+  outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t4000,
+  sourcef5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2.
+Preserve both imported closures and live outputs. Do not merge private code while
+MAIN82391 is live, stage live data or restart from a polling timeout.
+
+NEXT: collect actual terminal strong runs, compare original4000/8000 fields for
+time sensitivity and new/old central methods with the existing field comparison.
+Continue species transport/current-inertia coupling: the moving state currently
+fixes carrier weights and has only two entropies. Do not imitate reactions by
+resetting n/T/current or discard neutral/charge-level momentum and fluxes.
+Atomic missing channels/branching, neutral transport, nonlocal heat, photons,
+real walls and model-validity gates remain. Preserve exact vacuum, private atomic
+inputs/pending LXCat permission, user poster and finished10ns viewers. No remote.
 
 ## Higher-order solver improves strong-pulse hold; full runs underway (2026-10-16)
 

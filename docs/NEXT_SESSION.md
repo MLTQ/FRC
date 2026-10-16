@@ -1,52 +1,54 @@
 # Resume the physical FRC simulation
 
-## Reaction moments now survive common bulk motion (2026-10-16)
+## Joint reacting/colliding source complete; strong pulses still live (2026-10-16)
 
-PROGRESS: 7072 collected actual EXIT1; all unboosted histories complete, boosted
-subnormal-energy failure preserved. Fixed-frame source implemented; 95433 EXIT0
-in 365.813 s with both complete 1400-step / 3.5 us heated argon histories. Read
-newest GOAL_STATUS.md and ATOMIC_MOMENTS.md. No unit suite or further viewer work.
+PROGRESS after cea155e26. New plasma_bench/atomic_collisions.py and example
+retain all charged-level/electron Coulomb pairs, reaction transfer and physical
+moment/energy budgets. Read newest GOAL_STATUS and ATOMIC_COLLISIONS.md.
+No unit suite or further10ns viewer work. Full original scope remains OPEN.
 
-New modules: plasma_bench/atomic_frame.py and examples/atomic_frame.py, each with
-companion. States are moments relative to the recorded fixed U. fields/generator
-use that frame; laboratory_state/observe explicitly restore physical lab values.
-Original reaction source/equations and all prior failures remain intact. No
-population floors, energy fixes, adaptive frame or mass changes. All original
-closure/data and floating-point limits still apply.
+11914 is TERMINAL EXIT1: outputs/atomic_collisions, source73c68c8d...2bbc3.
+Its three independent collision limits completed; both full reacting cases
+rejected first step with negative rare-charge thermal energy. Raw initial and
+rejected arrays are in first_rejected_state.npz. No provider matrix saved.
 
-Complete outputs to preserve:
-- outputs/atomic_moments_reordered: source5453c1ea...70174, 13 successful histories
-  plus failed boosted prefix. Actual boost_rejected_state.npz and diagnosis show
-  population69=0, energy5e-324. process_exit.json records observed EXIT1.
-- outputs/atomic_moments_fixed_frame: source
-  8ecabaefe7b52d082521657f438dfa851a6552732d71aed5ec8316abaa3d7734,
-  two successful full histories, both integration/lab states, frame vectors,
-  source and inspected scientific PNG/PDF. Different-frame maximum Te/current
-  differences5.32907e-14eV/2.25265e-9A/m²; lab energy drift<=1.93979e-11eV/nucleus.
-  Both atomic handles are terminal; do not poll/restart them as live jobs.
+19857 is TERMINAL EXIT0 in311.275s: outputs/atomic_collisions_split, source
+acc4681d50093851137f8254b2f20528b69e76f6a4439a711d21db0137b3f782.
+Three independent collision limits and full700/1400-step heated argon histories
+complete. Current now relaxes with charged-pair drag; energy heats species rather
+than disappearing. Finer finalcurrent0.016713821A/m² from14429.4034A/m²,
+Te2.502600597eV, ionT0.263221409eV. Time-halving maxcurrent difference0.616047A/m²;
+final tiny tail remains3.74% different. Read physical_readout.json for the one
+coarse subnormal cold population; fine has none. ScientificPNG inspected/PDF
+saved. This is local source evolution, not driven-field decay or formation.
+Do not repoll either atomic handle as a live process. Source is now free to extend.
 
-Two moving runs remain live by their exact handles; saved progress is a snapshot:
-- 82391 MAIN: 5100/8000 at 4583.587 s,
-  outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t8000;
-  source 577ad923bec574d77ff1d2fb329047eba8cd7be539acdb26090603748343bd0f.
-- 86765 PRIVATE /private/tmp/frc-finite-drift: 1650/4000
-  at 2875.418 s, output in MAIN
-  outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t4000;
-  source f5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2.
-Keep both imported moving closures frozen, do not merge private into MAIN, do not
-stage live output or restart because of an observation timeout. Collect actual
-terminal outcomes and use the existing actual-field comparison. Their central
-methods differ; that comparison alone is not timestep convergence.
+The time step is symmetric collision-half / reaction-full / collision-half;
+instantaneous generator still returns the summed physical source. Collisions
+advance all pairs together with populations held constant during each substep.
+No floors, energy corrections, hidden neutrals or physical coefficient changes.
+Fixed-frame and previous reaction-only results are preserved unchanged.
 
-NEXT after strong outcomes: existing configured-field comparison, then actual
-reactive species transport and current/energy feedback. Current moving fluid has
-fixed particles and two entropies; it cannot accept changing charge/neutral
-populations by merely resetting n or temperature. New coupling must retain heavy
-and electron momenta/energies, changing current inertia and species fluxes with
-exact vacuum; do not force it into the single-ion state or ignore large-drift
-closure failure. Bead frc-transport.5.5 and full goal remain open. Preserve
-private atomic-input restrictions/pending LXCat approval, the user poster and
-all original gates. Local Git only; no publication.
+Two strong moving pulses remain LIVE by exact handles (saved snapshots):
+- 82391 MAIN: 6700/8000 at 6000.426 s,
+  outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t8000,
+  source577ad923bec574d77ff1d2fb329047eba8cd7be539acdb26090603748343bd0f.
+- 86765 PRIVATE /private/tmp/frc-finite-drift: 2450/4000
+  at 4248.246 s, output in MAIN
+  outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t4000,
+  sourcef5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2.
+Preserve both imported closures and live outputs. Do not merge private code while
+MAIN82391 is live, stage live data or restart from a polling timeout.
+
+NEXT collect both strong pulses and use existing configured-field comparisons:
+old-central4000/8000 is time halving; old/newcentral4000 changes only method and
+is not convergence. Then extend the moving species state/current response with
+actual reacting charged and neutral momentum/energy/fluxes. Its fixed carriers
+and two entropies cannot accommodate this by resetting density or temperature.
+Retain small-drift reaction limits and the Coulomb/neutral/photon/atomic-data
+limitations. Keepfrc-transport.5.5, moving refinement and all goal gates open.
+Preserve exact exterior vacuum, private inputs and pendingLXCat permission,
+user poster and finished10ns viewers. Local Git only; no remote/publication.
 
 ## Higher-order central method: collect three exact live handles (2026-10-16)
 

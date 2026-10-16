@@ -125,3 +125,9 @@ OPEN-ADAS raw tables remain personal external inputs with recorded paths/hashes;
 there is no provider-data bundling, LXCat terms acceptance or publication.
 Bead frc-transport.5.5 tracks both these moment equations and the remaining
 physical/spatial/current coupling. The overarching FRC goal remains open.
+
+Charged-species Coulomb drag and heat now compose this source in
+`CollisionalAtomicMoments`. Read ATOMIC_COLLISIONS.md for the completed joint
+histories, independent collision comparison, preserved failed integration and
+remaining neutral/spatial/field limits. The reaction-only results above remain
+the same physical control; they have not been replaced with the colliding model.
