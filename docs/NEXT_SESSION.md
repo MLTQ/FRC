@@ -1,5 +1,36 @@
 # Resume the physical FRC simulation
 
+## Bounded LXCat continuation: coupled source comparison completed (2026-10-16)
+
+User authorized more work while discussing LXCat. Actual source progress:
+optional ground-Ar ionization now comes from the private BSR cross-section
+integral, with all other reactions and atomic energy levels unchanged. Run73644
+EXIT0:12 full3.5us histories,101.749s, source1fe8ad2f...5d087c. Results and
+source archive: `outputs/bsr_atomic_source`; PNG inspected/PDF saved. Read the
+measured section in `LXCAT_BSR_INPUT.md` and the three new module/example companions.
+No unit suite, data bundling, state repair or new verification framework.
+
+At10eV the new rate is0.593047 times the existing fit. In the heated10%-seed
+case, final electrons/nucleus change0.683902→0.626678 and peakTe17.18→21.10eV.
+This data sensitivity greatly exceeds the actual10/5/2.5ns time differences;
+number/charge/energy budgets remain explicit. It is not an experimental validation
+or a physical preparation/formation prediction. The300eV table limit and unknown
+rate tail are disclosed. Some BSR4p excitation thresholds differ from current
+NIST levels by0.112–0.167eV, so those rates were not silently grafted in.
+
+Taskfrc-transport.5.6 is complete as an opt-in comparison. Keep5.3/5.4 and full
+frc-goal OPEN. NEXT scientific priorities remain consistent front/support/thermal
+physics (frc-transport.5.5.1), existing pulse time comparison when complete, and
+physical adjudication/mapping of atomic inputs before moving adoption. The user
+has not requested another visualization rebuild; its current completed source
+remains appropriate. Raw personal inputs stay private outside Git.
+
+Only long pulse92324 remains uncollected: latest summary5000/8000,
+8604.717s, terminal:False. Its exact handle was verified
+live during this continuation. Preserve its source and unfinished outputs;
+collect actual termination, then compare with completed higher-order4000 through
+existing configured-field tooling. No new long pulse was launched or restarted.
+
 ## LXCat permission resolved; private data acquired (2026-10-16)
 
 User explicitly authorized acceptance for local research. LXCat terms are now

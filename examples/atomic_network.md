@@ -60,3 +60,7 @@ and0.00104980eV. All-argon number/charge/energy residuals are<=2.72e-13,
 Two excited channels contribute36.57% of ionization events in the initially
 all-Ar+ case, with other populated channels still missing. Full measured scope,
 old failure, independent convergence and next requirements: docs/ATOMIC_NETWORK.md.
+
+`examples.bsr_atomic_source` reuses `argon_models` and `evolve` for its matched
+full-history comparison, replacing only the ground-neutral ionization provider.
+The baseline model and this original example are unchanged.

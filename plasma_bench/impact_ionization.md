@@ -38,3 +38,8 @@ transport or recoil/three-fluid momentum exchange. A homogeneous source-only
 trajectory is an equation/component study, not a gas-preparation prediction.
 Before moving adoption, all applicable processes and the new particle/mass/
 current/energy transfers must be coupled explicitly with exact exterior vacuum.
+
+`ArgonGroundCrossSection` is an optional `AtomicNetwork` coefficient adapter
+that keeps this physical energy ladder and all higher-charge fits, replacing
+only ground-neutral argon with a private finite-domain cross-section integral.
+The original fit remains the default and the comparison control.
