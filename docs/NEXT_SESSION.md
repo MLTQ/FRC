@@ -1,5 +1,54 @@
 # Resume the physical FRC simulation
 
+## Research bookmark before credit pause (2026-10-16)
+
+User requested wrap-up, continuation beads, then a refresh of the 3-D visualization.
+The overarching FRC objective remains OPEN; the goal is paused. No new scientific
+runs should be launched during this wrap-up.
+
+The moving full-species Euler–Poisson component now evolves integrated number,
+three momenta and total energy on moving control volumes, with Gauss-consistent
+longitudinal field/work and empty exterior field energy. This is solver progress,
+NOT an adopted or validated formation boundary. Read `ATOMIC_MOVING_FIELDS.md`
+and the atomic_moving, species_ale_flux and species_reconstruction companions.
+Bead **frc-transport.5.5.1** contains the concrete continuation requirements;
+parent frc-transport.5.5 and frc-goal remain open.
+
+Latest full attempt83790 EXIT1 in53.439s, `outputs/atomic_moving_conservative`,
+source c96f8697718d8fff478e95f2aca00c635c0655608c96f9247ea8f823ed354e7e.
+Six neutral/charged analytic histories complete, but neutral front errors
+1.54/1.29/5.26mm are not converged and charged front errors19.91/16.14/13.40mm
+remain large. The electron–ion32-cell history completes20ns;64/128 stop at
+13.4072/3.65695ns with actual stage4 ion thermal failures in tiny numerical tails.
+Raw accepted states, rejected stages and all earlier failed attempts are saved.
+The corrected annotated PNG was visually inspected; PDF also saved. It explicitly
+labels the unequal final times, which must not be treated as convergence evidence.
+No floors, clipping, energy repair or formation exterior change were introduced.
+
+NEXT: evolve consistent front/pressure dynamics and individual species support
+when electrons outrun ions. Resolve local thermal admissibility without deleting
+nonzero matter or repairing energy. Retain the independent rarefaction/charged
+reference, all32/64/128 grids and full20ns plasma target; require converging front
+positions and completed equal-time field/current comparisons before adoption.
+
+Only long-running job92324 remains LIVE, exact handle verified at3000/8000,
+5114.818s saved elapsed, `outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t8000`.
+Source f5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2,
+dt0.4375ns, requested3.5us. Preserve its imported source and live output; a timeout
+is not a failure or reason to restart. On actual terminal success, use the existing
+configured-field comparison against completed higher-order4000. Preserve a failure
+if it stops. Do not stage incomplete live outputs.
+
+Latest completed integrated3-D source is
+`outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t4000`:
+86765 EXIT0,4000steps,0.875ns,3.5us,6904.864s. Display refresh will use this source
+with nearest10ns saved-state sampling. It is an exploratory pre-ionized coarse
+model; numerical diffusion, current convergence and physical validity remain
+unresolved. The newer1-D prototype is not a3-D formation result.
+
+Preserve private atomic inputs/LXCat permission state and the user-modified poster.
+No unit suite, publication or remote. Local issue export and Git checkpoints only.
+
 ## Spatial field/species equations exercised; one moving pulse remains live (2026-10-16)
 
 The preceding turn was NO PROGRESS on physics (completed viewer reconfirmation).
