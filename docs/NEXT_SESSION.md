@@ -1,5 +1,53 @@
 # Resume the physical FRC simulation
 
+## Apply the diagnosed mass arithmetic fix, retaining all cuts (2026-10-16)
+
+This turn isolated the charged source-return failure without coarsening. Read
+mass_scaling.md, subcycled_material.md and the two subcycled example companions.
+`solve_mass_banded` is implemented but NOT yet wired into precise_reactions.py:
+its imported closure is frozen by live5888. After that run is terminal, replace
+the unscaled P1 return solve with this same-equation diagonal equilibration.
+The new argon driver exposes --coalesce-ulps and defaults to0; use fresh output
+folders and full20ns. Compare10/5/2.5ns reaction intervals separately from the
+picosecond acoustic/plasma transport steps. Do not claim source convergence
+from the neutral commuting limit or from one successful interval.
+
+Evidence now terminal:
+- outputs/subcycled_affine: EXIT0, source1e20c7df...716aa, full6.083704us,
+  20 source intervals,213 transport steps, energy1.12e-13relative,front1.81e-13m.
+- outputs/reactive_material_argon_subcycled_10ns and _5ns: EXIT1, source
+  87f2c0b6...abcf1, completed coupled times10ns and0ns, original target20ns.
+  All transport steps of the failed intervals completed; final reaction return
+  rejected negative U. Actual source snapshots are rejected_source.npz.
+  projection_failure_diagnosis/resolution_diagnosis show huge artificial
+  velocities despite warm slow source particles. ULP0 alone does not fix it.
+  projection_linear_solve_diagnosis and balanced_projection_replay demonstrate
+  SAME mass/load solved with scaling and independently100-digit arithmetic.
+  Both snapshots succeed at32 velocity cells with every density cut retained;
+  maximum normalized velocity discrepancy2.65e-15, positive minimum T.
+  Matrix condition~1e29/1e46 becomes~9.39/3.05 after coordinate scaling.
+- outputs/reactive_material_argon_fine_vector: EXIT1, full20ns request,
+  6 accepted steps12.62617ps,826917 cells,2469MiB peak,1575.19s. Resource
+  observation bounds are user-independent run settings, not machine limits.
+  All accepted raw snapshots retained, terminal summary saved.
+- outputs/reactive_material_argon_coarsened_f01: stopped EXIT130 after first32
+  case failed at2.36445ns; termination.json supersedes stale terminal=false.
+ 64 case last printed140 steps,0.230827ns; unwritten history unavailable.
+
+STILL LIVE5888/PID28177: original full precise_material expansion study,
+source90ff816e...ef08d, outputs/precise_material_expansion.16/32 neutral complete;
+64 neutral last printed step700,5.021172us of6.083704us. Charged16/32/64 follow.
+Poll exact handle, inspect final figure, and only then edit its imported core.
+Do not restart on a timeout or treat queued cases as completed. No other
+simulation is live at this checkpoint. Parent issues and full FRC goal stay open.
+
+The main/default physical-width averaging remains0. Keep all species, physical
+masses and exact vacuum; never repair heat or drop rare carriers. Source
+intervals are a disclosed temporal approximation needing refinement, not a
+hidden increase in the actual transport timestep. Poster SHA remains
+ a783f7cda0f4a249cc4c23ead61debbdf89d356436a2a3dab2189029c6d5deca.
+No unit tests or publication. About445MiB free disk when last inspected.
+
 ## Collect precise-geometry convergence (2026-10-16)
 
 New opt-in precise_geometry, precise_material and precise_reactions retain

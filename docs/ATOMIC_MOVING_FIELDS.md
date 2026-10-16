@@ -1,5 +1,44 @@
 # Moving variable-species electrostatic research component
 
+## Source subcycling and physical mass-system arithmetic (2026-10-16)
+
+SubcycledReactiveMaterial composes source(dt/2), repeated actual material RK4
+steps spanningdt, source(dt/2). Every internal step is at most half the freshly
+computed acoustic/plasma restriction. Source intervals are explicit temporal
+approximations; they are not animation spacing or the material timestep.
+The full independent neutral affine decay completes6.083704us in20 intervals
+and213 transport steps: front1.81e-13m, velocity1.77e-9m/s, population8.96e-16,
+photon1.39e-16J/m2 and total-energy1.12e-13relative error. Source1e20c7df...716aa,
+outputs/subcycled_affine. The commuting neutral limit cannot establish charged
+source-interval accuracy.
+
+The full20ns charged argon requests using10ns/5ns source intervals both reject
+final source projection.10ns coupled evolution is accepted in the first case;
+none in the second. Their failed intervals completed288/325 internal transport
+steps before source return. The first accepted10ns interval used527 actual
+steps,2.078–25.922ps, with1.78e-11 relative energy error. These are incomplete
+charged trajectories, source87f2c0b6...abcf1, with raw rejected source preserved.
+
+Actual projected rare-species mass matrices have condition numbers~1e29/1e46.
+Unscaled band elimination returns velocities up to2.47e8m/s from slow warm
+source material, so recovered U=E-K is strongly negative. This is not harmless
+negative roundoff heat. Removing ULP cleanup alone does not resolve it; finer
+velocity spaces resolve only some saved cases. Instead, D=sqrt(diag(M)) gives
+A=D^-1 M D^-1 with condition~9.39/3.05. Solving Ay=D^-1b and v=D^-1y is exactly
+the original Mv=b without regularization or changed mesh. Both rejected source
+snapshots project successfully with all density cuts retained, and separate
+100-digit tridiagonal elimination agrees within2.65e-15 relative maximum
+velocity. The new mass_scaling helper is not yet used by the live frozen core.
+A full evolved charged refinement remains the required next assessment.
+
+The fine-vector growth run terminates at its observation bounds after6 steps,
+12.62617ps,826917 cells,2469MiB peak and1575.19s; no full20ns success or hardware
+exhaustion claim. The optional physical-width trial is stopped EXIT130 after
+its saved32-cell failure;64 unwritten prefix is unavailable. All raw sources,
+accepted states and exact failures remain. Physical-width coarsening is off;
+new subcycling CLI also defaults ULP cleanup to0. No discarded population,
+thermal reset, changed mass, numerical atmosphere or formation adoption.
+
 ## Actual precise-geometry source/motion evolution (2026-10-16)
 
 New precise_geometry/precise_material/precise_reactions implement50-digit

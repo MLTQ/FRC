@@ -1,5 +1,41 @@
 # Active research: a credible experimental FRC simulation
 
+## Finer density retained; mass-solve failure isolated (2026-10-16)
+
+The main path still has zero physical-width coarsening. The new subcycled
+argon driver now also defaults to zero ULP cleanup, preserving every distinct
+density boundary. Earlier recorded attempts explicitly used8-ULP cleanup.
+The old coarsened trial36957 was stopped EXIT130 after its saved32-cell case
+failed at2.36445ns of20ns; its unwritten64-cell prefix is unavailable.
+
+The retained-resolution cost run5491 finished EXIT1 at its declared observation
+bounds:826917 density cells,12.62617ps of20ns,2469MiB peak,1575.19s wall time.
+This measures this representation's growth; it does not demonstrate exhausted
+hardware or justify coarsening. All accepted states are saved.
+
+New SubcycledReactiveMaterial separates explicit reaction intervals from fine
+actual transport steps. The full independent neutral affine/decay run succeeds
+through6.083704us in213 transport steps, energy error1.12e-13relative and front
+error1.81e-13m. This commuting limit does not certify charged source timing.
+The charged10ns/5ns interval attempts both fail source-return projection, after
+all transport in the failed interval completes. Coupled times are10ns/0ns of
+20ns. Source states remain warm, but unscaled mass solves create enormous
+velocities in rare species and negative recovered heat.
+
+On both exact rejected snapshots, diagonal equilibration of the SAME physical
+mass equation succeeds with ZERO edge cleanup. A separate100-digit elimination
+agrees to2.65e-15 relative maximum velocity. New mass_scaling.py implements this
+coordinate scaling with no density floor, regularization, thermal repair or
+changed resolution. It is not yet connected to the precise production return:
+run5888 still imports that source and must finish first. Its64-cell neutral
+case last printed step700 at5.021172us; charged affine cases remain queued.
+
+NEXT collect5888, then use the scaled mass solve in precise reaction return
+and complete charged20ns runs with declared source-interval refinement and
+zero cleanup. Inspect actual field/current errors, not only conserved totals.
+Sources/raw evidence are in the named output folders; see NEXT_SESSION.
+All FRC gates remain open. No unit suite, viewer/poster edit or publication.
+
 ## Precise geometry passes the full warm reacting expansion (2026-10-16)
 
 Previous turn was progress: faster unchanged-physics atomic assembly and
