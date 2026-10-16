@@ -1,5 +1,49 @@
 # Active research: a credible experimental FRC simulation
 
+## Higher-order solver improves strong-pulse hold; full runs underway (2026-10-16)
+
+Previous goal turn made PROGRESS in 2abe84c87. This turn implements a concrete
+time-integration improvement and completes its actual-state comparison. The full
+original FRC goal remains OPEN. No unit suite or new verification framework.
+Read the newest MATERIAL_ENERGY_DIFFUSION.md for equations, data and limitations.
+
+Private checkout `/private/tmp/frc-finite-drift`, commit fbbaf8e9f, adds optional
+`central_integrator="dop853_fixed"` to the existing energy split. The twelve-stage
+principal tableau advances every physical variable and source at its stage time.
+Default RK4 and the outer numerical thermal diffusion are unchanged; the entire
+split method remains at most second order, with fixed input steps and no adaptive
+error control, state clipping or energy repair. Main moving source stays frozen.
+
+Actual saved-state hold 94170 EXIT0 in 296.846 s: all 50/100 steps complete from
+identical archived initial arrays over 43.75 ns, zero external source work.
+At 0.875 ns, energy loss falls from 1.16612e-4 J with RK4 to 2.79612e-8 J,
+about 4170 times smaller. At 0.4375 ns the new method loses 4.56020e-10 J.
+Higher-order endpoint differences under halving are B 1.42660e-5, J 6.30950e-5,
+velocity 7.89530e-6, position 7.69328e-9 m in the existing physical norms.
+These local results support full-pulse study, not whole-pulse/spatial accuracy.
+All states/source and inspected PNG/PDF are in outputs/material_hold_interval_dop853,
+source df92f8cb55d196b0e89b3fad787044c4027be7585411ef99ee39c245bdfaab92.
+
+THREE exact handles confirmed LIVE; counts are saved observations:
+- 82391 MAIN: previous central RK4 full 20 mT pulse, 8000 steps requested;
+  saved 1900/8000 at 1731.194 s. Source577ad923...bd0f unchanged.
+- 91606 PRIVATE: new central method, weak 0.5 mT 4x8 pulse, 800 steps;
+  saved 200/800 at 217.705 s.
+- 86765 PRIVATE: new central method, strong 20 mT 4x16 pulse, 4000 steps;
+  saved 50/4000 at 91.447 s.
+Both private pulses have source
+f5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2.
+Preserve both source closures, all live outputs and original failed/completed
+methods. Do not restart on an observation timeout or merge private code into
+the running main closure. Collect terminal results and use the existing actual
+field comparison, explicitly naming central_integrator as a changed input.
+
+Next: completed weak method control, full strong outcomes and actual-field
+differences before adoption; then physical atom/photon/moving and heat/edge
+coupling. Do not substitute another blanket refinement or reporting framework.
+Exact vacuum, original acceptance gates, user poster, completed 10 ns viewers
+and local-only/no-publication policy remain unchanged.
+
 ## Strong pulse completed; local timestep loss isolated (2026-10-16)
 
 PROGRESS: complete strong pulse 41479 and actual-field comparison 99873 exited

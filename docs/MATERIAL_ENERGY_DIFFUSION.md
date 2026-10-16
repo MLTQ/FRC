@@ -1,5 +1,59 @@
 # Numerical thermal-energy transport in the moving pulse
 
+## Higher-order central advance improves the actual hold (2026-10-16)
+
+The localized central RK4 loss motivated an optional fixed twelve-stage DOP853
+principal advance, implemented in `/private/tmp/frc-finite-drift` at `fbbaf8e9f`.
+Main's running pulse source is untouched. The configuration option is
+`central_integrator="dop853_fixed"` alongside the existing `energy_split` and
+`central_energy_diffusion`. Omitted/`rk4` preserves the prior method. The complete
+physical derivative is evaluated at every stage: momentum, coordinates, rotation,
+both entropies, finite-mass current, prescribed coils, collisions and vacuum.
+No energy correction, clipping, atmosphere or changed physical coefficient is
+introduced. Read the private module's `plasma_bench/material_rk8.md`.
+
+The tableau is supplied by installed SciPy 1.18.1's DOP853 class. Its principal
+method is eighth order for smooth ODEs; see the
+[official SciPy documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.DOP853.html).
+We use fixed input steps, without embedded error control or dense output.
+The unchanged outer diffusion splitting remains at most second order; this
+is not an eighth-order claim for the whole solver or for nonsmooth terms.
+
+Run 94170 exited 0 in 296.846 s. It reuses the identical actual step-1450
+initial arrays, physical inputs and 43.75 ns constant-current hold. Both complete
+50/100-step trajectories, exact source, arrays and inspected PNG/PDF are in
+`outputs/material_hold_interval_dop853`, source
+`df92f8cb55d196b0e89b3fad787044c4027be7585411ef99ee39c245bdfaab92`.
+
+| Central method | Outer step | Energy change over hold |
+|---|---:|---:|
+| Prior RK4 | 0.875 ns | -1.1661176663e-4 J |
+| Fixed DOP853 | 0.875 ns | -2.7961234994e-8 J |
+| Fixed DOP853 | 0.4375 ns | -4.5601994403e-10 J |
+
+The same-step energy loss falls by about 4170 times. Directly measured diffusion
+energy increments are +8.94e-15/+1.62e-14 J, leaving the small remaining loss
+in the central advance. Against the finer higher-order trajectory, the coarse
+endpoint has relative B/J/velocity differences 1.42660e-5/6.30950e-5/7.89530e-6
+and maximum material-position difference 7.69328e-9 m (6400 physical quadrature
+points, actual finer volume). These differences are small in this particular
+hold; they do not establish whole-pulse, mesh or experimental accuracy. Earlier
+RK4 results and failed methods remain preserved, not overwritten.
+
+Two complete configured pulses are now LIVE in the private checkout:
+- 91606: weak 0.5 mT, 4x8, 800 steps, 4.375 ns;
+  `outputs/material_tube_weak_rk8_energy_diffusion_r4_z8_t800`.
+- 86765: strong 20 mT, 4x16, 4000 steps, 0.875 ns;
+  `outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t4000`.
+Their imported source is
+`f5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2`.
+Only the central integrator input changes from their corresponding prior runs.
+The old-method finer full pulse 82391 remains LIVE in MAIN, source577ad923...bd0f.
+Keep both source closures frozen. Collect real terminal results, then use the
+existing configured-field comparison, which now names central_integrator too.
+Do not confuse a central-method comparison with timestep convergence. All
+physical heat/reaction/radiation/edge and formation acceptance gates stay open.
+
 ## Completed strong pulse: local loss is in central time integration (2026-10-16)
 
 Strong pulse 41479 exited 0 after all 4000 steps through 3.5 us in 3524.619 s.

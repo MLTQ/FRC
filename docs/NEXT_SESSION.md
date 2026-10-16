@@ -1,5 +1,46 @@
 # Resume the physical FRC simulation
 
+## Higher-order central method: collect three exact live handles (2026-10-16)
+
+PROGRESS: optional fixed DOP853 central advance is implemented in the private
+checkout at fbbaf8e9f. Actual-state hold 94170 EXIT0 in 296.846 s, all 150 steps.
+Read newest GOAL_STATUS.md and MATERIAL_ENERGY_DIFFUSION.md. At the unchanged
+0.875 ns step, hold loss decreases 4170-fold to 2.79612e-8 J; halving gives
+4.56020e-10 J and endpoint B/J differences 1.42660e-5/6.30950e-5. Small local
+differences do not prove full-pulse or mesh accuracy. No unit suite is needed.
+
+Private implementation `/private/tmp/frc-finite-drift`, codex/finite-drift-collisions:
+plasma_bench/material_rk8, central_step hook in material_energy_diffusion,
+builder option central_integrator="dop853_fixed", updated existing comparison
+and hold example. The full split is still at most second order; no adaptive
+controller, energy correction or physical model change. Default RK4 is preserved.
+Do not merge this into MAIN while82391 is running; both imported closures freeze.
+
+LIVE handles and authoritative locations (all re-polled this turn):
+- 82391 MAIN: outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t8000;
+  old central RK4, saved1900/8000 at1731.194s, source577ad923...bd0f.
+- 91606 PRIVATE: output in MAIN at outputs/material_tube_weak_rk8_energy_diffusion_r4_z8_t800;
+  saved200/800 at217.705s. Config in private configs/ with the same basename.
+- 86765 PRIVATE: output in MAIN at outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t4000;
+  saved50/4000 at91.447s. Private config material_tube_independent_20mt_rk8_energy_diffusion_t4000.json.
+Both private runs have source
+f5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2.
+Do not stage live outputs or restart from polling timeouts. Collect exact handles.
+
+Next after91606 succeeds: use the existing private
+examples.material_coil_plot --configured-fields with the completed weak
+outputs/material_tube_weak_energy_diffusion_r4_z8_t800 and new weak output.
+Only central_integrator changes; this is a method control, not time convergence.
+Collect both full strong runs and compare actual physical fields/energy before
+adopting the new central method or choosing another refinement. Main source
+577ad923...bd0f and private sourcef5ddb118...28f2 must remain unchanged meanwhile.
+
+Completed new output outputs/material_hold_interval_dop853 preserves all states,
+source df92f8cb...faab92 and inspected PNG/PDF. The earlier RK4 hold, full pulses
+and failures remain intact. Keep all physical coupling, transport/edge and FRC
+acceptance gates open; the 10 ns viewer needs no more work. Preserve user poster,
+personal atomic-input restrictions and pending LXCat permission. No remote.
+
 ## Collect finer full pulse; central time error now localized (2026-10-16)
 
 This continuation made PROGRESS. Read the newest GOAL_STATUS.md and
