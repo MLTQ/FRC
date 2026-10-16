@@ -1,5 +1,57 @@
 # Resume the physical FRC simulation
 
+## Bulk transport-scale evidence (2026-10-16)
+
+Previous goal turn was progress: main69a72827e saved the complete bias comparison,
+raw control trajectory and measured numerical field sensitivity; local branch
+350f14014 added the configured actual-field comparison. This continuation kept
+both scientific source closures unchanged while completing an actual-plasma
+transport review on the original complete long-array trajectory.
+
+Existing material_collision_diagnostic now differentiates the actual n0/det(F)
+density map and measures conditional thermal mean-free-path content relative to
+density scales, including the direction along B. Full10579 exits0; independent
+actual-map derivative comparison83409 exits0, with second-order central-difference
+agreement (2.8e-6 ->7e-7 when interval halves). Code50bdadad0 is saved on isolated
+codex/finite-drift-collisions, /private/tmp/frc-finite-drift. Data, frozen source,
+PNG/PDF and derivative recipe are in outputs/material_array_collision_regime_content;
+source68546fde89b65e5a2e705aba9ba766b281888318c794c9b841420384a76998da.
+Scientific region-content PNG inspected. Read FINITE_DRIFT_COLLISIONS.md.
+
+At original peak drive1.26875us,47.120% of particles and78.861% of hypothetical
+log10 drag power occupy magnetized regions with parallel density Kn>=.1.
+Initial weak-field electron density Kn>=.1 contains99.179% of particles; final
+parallel review contains92.720%. This is bulk transport-scale evidence, not just
+an edge maximum. Conditional NRL thermal rates and density-only gradients do not
+prove kinetic validity or predict heat escape. They omit temperature/field scales
+and intercell jumps. Newfrc-transport.4 tracks actual directional/nonlocal thermal
+evolution with a physical vacuum-edge/end energy treatment. No scalar diffusion,
+flux limiter, coefficient floor, atmosphere or altered live trajectory was added.
+
+FOUR exact handles were polled LIVE; saved counts remain observations:
+-52937 outputs/material_tube_independent_20mt_maxwellian_r4_z16_t4000,
+ 2400/4000steps,1626.32s; at2.1us work residual/E0=-6.1201e-4,
+ meanTe/Ti12.8714/3.1059eV,collision heat94.2076mJ,numerical ion heat29.1075mJ.
+ This is an unfinished pulse; its larger energy residual needs complete time
+ comparison, not a correction or truncated-success claim.
+-33952 outputs/material_tube_independent_20mt_maxwellian_r4_z16_t8000,
+ 2200/8000steps,1492.57s;0.4375ns/full3.5us requested.
+Both use unchanged worktree source31721f1fef01b747862f5263f3ddb92e5dfbca0d3fc1995e5e03ebf229d17afc.
+-88009 outputs/material_tube_independent_20mt_viscous_r4_z16_t8000,
+ 5600/8000steps,3700.30s; original time refinement.
+-85554 outputs/material_tube_independent_20mt_viscous_r6_z24_t8000,
+ 2300/8000steps,3674.22s; original spatial refinement.
+Both retain source05555dc9be49c3a1af9c31467fc713f4d5e395442328e9107eea19f68d0b3c75.
+
+NEXT collect complete results from those four handles. Do not restart on timeout
+or edit their scientific source. Use existing configured field comparison for
+original time then spatial controls, and paired4000/8000. Inspect actual failures
+if any. Repeat physical region analysis on completed paired states (label actual
+versus hypothetical collision power correctly), then pursue frc-transport.4.
+Merge local branch into main only after both original-source jobs finish. Keep
+full original goal and frc-transport.3/frc-vacuum.3.3 open. No unit tests or
+recursive verification framework. Preserve user poster and10ns viewers; no remote.
+
 ## Completed bias comparison and measured field sensitivity (2026-10-16)
 
 Previous goal turn was progress: paired collision coupling was committed in the

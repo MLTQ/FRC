@@ -1,5 +1,56 @@
 # Paired finite-drift collision progress
 
+## Actual density scales expose bulk transport limits (2026-10-16)
+
+The existing collision diagnostic now evaluates every actual plasma quadrature
+sample of the complete original prescribed-eta array trajectory. It combines
+conditional [NRL thermal coefficients](https://www.govinfo.gov/content/pkg/GOVPUB-D210-PURL-LPS118567/pdf/GOVPUB-D210-PURL-LPS118567.pdf)
+(printed pp.34,37–39) with the physical density gradient and actual B direction.
+These near-thermal, weak-coupling estimates do not supply a finite-drift cutoff
+or guarantee a local transport closure. Density scales omit temperature/field
+gradients, cell-interface jumps and nonlocal distributions.
+
+For the actual Q1 meridional map A=dx/da, det(F)=(R/r)det(A), so
+`grad_x ln(n)=A^-T[grad_a ln(n0)-grad_a ln(det(F))]`. The configured initial
+profile gives grad ln(n0) exactly; analytic bilinear-map mixed derivatives
+supply the remaining terms. No cloud interpolation or density floor is used.
+The initial gradient agrees with its independent closed form to2.02e-16
+relative L2. Independent central differences of saved density/coordinate maps
+at initial, peak and final states reduce error from2.76–2.79e-6 to6.91–6.98e-7
+when the differencing interval halves. This supports the diagnostic derivative,
+not trajectory accuracy or model validity. Formula/recipe and values are saved.
+
+Review masks use existing conservative thresholds: thermal log<5, or mean free
+path divided by density scale >=0.1. Electron weak/strong-field groups separate
+at omega_ce/nu_ei=1; in the strong group the density derivative is along B.
+Regions overlap. Ratios are warnings to examine physics, not validity theorems.
+
+| Actual saved state | Review region | Particle fraction | Candidate drag-power fraction |
+|---|---|---:|---:|
+| Initial | Weak-field electron density Kn>=0.1 | 99.179% | undefined, zero current |
+| 1.26875 us | Strong-field electron parallel density Kn>=0.1 | 47.120% | 78.861% |
+| 1.26875 us | Ion isotropic density Kn>=0.1 | 30.794% | 67.665% |
+| 3.5 us | Strong-field electron parallel density Kn>=0.1 | 92.720% | 93.605% |
+
+Initial unavailable thermal coefficients occupy only3.25e-9 of particles;
+small positive thermal logs occupy1.553%. Thus the observed transport-scale
+problem extends far beyond the dilute cold edge. Along the unchanged original
+trajectory, strong-field parallel review regions account for61.994% of the
+hypothetical fixed-log10 drag integral, ion density review regions40.398%,
+and small thermal logs2.923%. These are path sensitivities, not predicted heat
+losses or a new coupled trajectory. Candidate power differs from original eta J².
+
+Full diagnostic10579 and independent derivative calculation83409 exited0.
+Evidence: outputs/material_array_collision_regime_content; source
+68546fde89b65e5a2e705aba9ba766b281888318c794c9b841420384a76998da.
+The new scientific region-content PNG was inspected; PDFs generated. Code is
+local branch commit50bdadad0, with running solver source31721f1f...d17afc unchanged.
+No unit suite or new verification framework. Newfrc-transport.4 tracks physically
+derived directional/nonlocal heat evolution and explicit vacuum-edge/end energy
+assumptions. Paired drag/species exchange has no spatial heat flux and cannot
+resolve this by itself. Complete paired-pulse/time comparisons remain first;
+repeat the region analysis on their actual states before choosing a heat closure.
+
 The current formation exploration combines prescribed scalar resistance with
 small-drift electron-ion temperature exchange. In the completed long-array run,
 7.985% of instantaneous peak-drive Joule power lies at drift above the electron
