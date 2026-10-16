@@ -1,5 +1,52 @@
 # Resume the physical FRC simulation
 
+## Radiative recombination and photon energy now evolve (2026-10-16)
+
+The previous turn was progress: local commit2ea9d1905 saved the completed
+ionization component and its evidence, and exact live pulse handles were
+polled. This continuation adds RR charge/electron/photon source physics.
+Read docs/RADIATIVE_RECOMBINATION.md and the two radiative_recombination
+module companions before further changes. Existing moving source is untouched.
+
+Complete source run3052 exited0 in11.218s:15 RR/reference trajectories plus
+four matched DI-only controls, frozen source5523f224514cdfd8c3d182612e3ebd500f2d4a038f035f9c9fe80bac0098778a,
+outputs/radiative_recombination; PNG inspected, PDF saved. Independent analytic
+recombination ion-fraction errors2.90594e-8/1.84431e-9/1.15861e-10 for50/100/200
+steps show fourth-order convergence. Published original atomic rates give
+228 comparison points/12 stages; maximum fitted-rate deviation3.802%, not
+experimental validation. Missing original stages are explicit.
+
+At fixed initial-central N8.9614e19m^-3, allAr+,Te10eV,3.5us, the added RR
+emits0.001592019eV/nucleus and ends meancharge1.217345591,Te4.914237577eV.
+This loss is small relative to about6eV/nucleus spent in further ionization;
+missing excitation/line radiation is NOT shown small. A1eV source-only1ms
+case ends meancharge.970377511,Te1.013045356eV,photons.492284246eV/nucleus:
+remaining electrons warm while total electron energy falls, because capture
+preferentially removes slow electrons. It is not an afterglow prediction.
+
+Limits remain consequential: low-charge RR uses archival fits with unknown
+validity intervals; modern q>=3 fits and original inputs are separately
+archived. Capture energy differentiates a fitted Maxwellian rate. Instantaneous
+ground-state cascade and unrestricted photon escape are explicit assumptions,
+not established for the tube. No DR/three-body, excited/metastable storage,
+line cooling, opacity or neutral/momentum/current coupling yet. No clipping,
+floors, repairs, unit suite, new framework or hardware design.
+
+FOUR exact handles polled LIVE. Latest saved observations (not liveness proof):
+16339 paired4x16t16000:4200/16000,2675.463s;49353 paired6x24t8000:3500/8000,
+5418.268s. Both run from /private/tmp/frc-finite-drift,source31721f1f...d17afc.
+58668 original4x16t16000:8000/16000,5040.010s;85554 original6x24t8000:
+6600/8000,10270.710s. Both main05555dc9...b3c75. Re-poll exact handles;
+never restart solely on observation timeout. Do not merge paired moving code
+until both original jobs finish. Collect complete trajectories and existing
+configured-fields comparisons when terminal; no need rerun old controls.
+
+NEXT prioritize low-charge excitation/metastable energy and radiation, DR and
+three-body rates, photon escape/absorption validity, then explicit new-species
+mass/momentum/current transfers. Continue heat/physical-edge work and collect
+the live pulse comparisons. frc-transport.5/.4/.3,frc-vacuum.3.3 and the full
+goal remain open. Preserve existing10ns viewers and user poster; local/no remote.
+
 ## Direct ionization and atomic energy now evolve (2026-10-16)
 
 The previous goal turn was progress:ea2396471 preserved the paired8000 pulse,
