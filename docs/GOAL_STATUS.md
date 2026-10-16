@@ -1,5 +1,57 @@
 # Active research: a credible experimental FRC simulation
 
+## Finite-drift collision model and measured sensitivity (2026-10-16)
+
+Previous goal turn was progress, committed as b4bb4a1da: complete matched coil
+comparison, array display and three physical controls launched. This continuation
+kept their scientific source unchanged and implemented a paired physical collision
+component. Read FINITE_DRIFT_COLLISIONS.md and the new module companion.
+
+plasma_bench/maxwellian_pair_collisions.py evaluates Landau momentum and species
+heat moments for displaced isotropic Maxwellians, with explicit positive Coulomb
+logarithm. Force is paired and the species heat sum restores lost drift energy;
+no drag/heat clipping, floor or atmosphere. This is not yet installed in the moving
+coil solver; anisotropy, screening/cutoff and kinetic validity remain unresolved.
+
+Complete source-relaxation run 53955 exited 0. Two cases (equal masses and physical
+electron/Ar) at 100/200/400 steps agree with independent velocity-space-integral
+trajectories, with roughly fourth-order time convergence. Fine relative-drift
+errors 1.390e-7 / 1.285e-7, energy drifts 6.418e-8 / 5.964e-8. Equal masses reach
+the independently predicted 5 eV equilibrium; Ar temperatures equilibrate much
+more slowly than current. Evidence: outputs/maxwellian_pair_relaxation, source
+79b7bf4c446736318c5f970ca50bcce508a9bf269ed27bdd02477f3d4e889080.
+
+Actual-pulse postprocessing 61137 also exited 0:
+outputs/material_array_collision_sensitivity, source
+ae11182af08eb9de9989fd250a5113268ee9ca50d4c75396e7d707fdc53c6810.
+On unchanged original states, declared lnLambda=10 gives finite-drift drag path
+integral 63.449 mJ versus 77.678 mJ small-drift Maxwellian and 236.381 mJ original
+prescribed eta on the same sparse samples. This is not a changed-transport pulse
+or prediction of its eventual heating. Original every-step Joule heat remains
+238.046 mJ. Candidate max local relaxation rate times original dt is 0.07222,
+which is not a full-system stability certificate. Both new scientific PNGs were
+inspected; PDFs generated. No unit tests or new verification framework.
+
+The same THREE actual physical handles were re-polled LIVE:
+- 88009: outputs/material_tube_independent_20mt_viscous_r4_z16_t8000,
+  recorded 2100/8000 steps, 1315.82 s, nonterminal.
+- 85554: outputs/material_tube_independent_20mt_viscous_r6_z24_t8000,
+  recorded 800/8000 steps, 1208.26 s, nonterminal.
+- 46579: outputs/material_tube_bias_only_viscous_r4_z16_t4000,
+  recorded 1750/4000 steps, 1040.76 s, nonterminal.
+All keep source 05555dc9be49c3a1af9c31467fc713f4d5e395442328e9107eea19f68d0b3c75;
+current recursive source identity was checked unchanged. Counts are observations,
+not completion. Do not restart from timeouts or modify their source while live.
+
+NEXT collect complete physical controls/refinements and compare as below. New
+frc-transport.3 tracks replacing prescribed resistance and small-drift exchange
+with one paired collision closure in the moving solver. Add/reuse a collision
+hook in MaterialVectorCurrent and MaterialCoilCurrent only after live source
+restrictions end; avoid double counting or a copied divergent solver. Then evolve
+complete physical trajectories with conservation and numerical sensitivity.
+The full original goal remains open. Preserve user poster, old displays and all
+raw states; no remote publication. Existing /20mt/ and /array20mt/ views remain.
+
 ## Completed coil comparison and live physical refinements (2026-10-16)
 
 The previous goal turn made progress: the requested 10 ns animation was completed
