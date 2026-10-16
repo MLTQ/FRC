@@ -63,6 +63,7 @@ def configured_fields(destination, sources):
     common = gcd(a['steps'], b['steps'])
     indices = np.unique(np.rint(np.linspace(0, common, min(81, common+1))).astype(int))
     numerical = [dict(mesh=c['mesh'], dt=d['dt'], integrator=d.get('integrator', 'rk4'),
+                      entropy_transport=c.get('entropy_transport', 'upwind'),
                       numerical_bulk_viscosity=c.get('numerical_bulk_viscosity')) for c, (p, d) in zip(configs, runs)]
     changes = [k for k in numerical[0] if numerical[0][k] != numerical[1][k]]
     summary = dict(scope='Complete saved trajectories at common material labels, not common physical positions. Differences measure numerical sensitivity, not experimental accuracy or convergence from two runs.',
