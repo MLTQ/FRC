@@ -1,5 +1,56 @@
 # Resume the physical FRC simulation
 
+## Atomic source and weak controls complete; collect strong pulse (2026-10-16)
+
+This checkpoint made PROGRESS on the full original goal. Read the newest
+GOAL_STATUS.md, COLLISIONAL_LEVELS.md and MATERIAL_ENERGY_DIFFUSION.md.
+Do not repeat the completed10ns viewer work; it is already served and observed.
+No unit suite/new verification framework; prioritize physical simulation.
+
+NEW completed atomic source: main plasma_bench/adf04_levels and collisional_levels,
+examples/collisional_levels and all companions. Run61889 EXIT0,16 complete
+cases,13.710s; source4096b6aae2627eef2c7ee1f8ba3d4c99310305bd319f01c64ce1d0b5d22c01db.
+outputs/collisional_levels has all histories and both inspected PNGs. Personal
+OPEN-ADAS raw inputs are only in/private/tmp/frc-openadas-personal, explicit
+paths/hashes in summary; do not bundle rates/raw data or publish them. No LXCat
+terms acceptance. Ar I15 levels use matched NIST energies/A, exclude S only for
+fixed-charge comparison; Ar II40LS terms are not resolved fine-structure lines.
+Finite electron/atomic/produced-photon energy is evolved conservatively without
+repair. Closed Boltzmann limit agrees; actual transient differences remain.
+Produced radiation must not be called escaped/net physical cooling.
+
+NEXT atomic action: connect excitation to consistent charge/electron-number and
+energy accounting; assess required excited-state processes/thresholds before
+moving integration. The finite-frequency photon correction in5.2 and existing
+opacity/absorption problem still preclude an unqualified optically thin sink.
+Physical heat transport, edges/contact and formation validity remain required.
+
+Weak9903/17128 EXIT0 at800/1600steps. Existing comparison38599 EXIT0,
+outputs/material_tube_weak_energy_diffusion_timestep_comparison, PNG inspected.
+Onlydt4.375->2.1875ns; final relative B/J5.63726e-6/1.11669e-5.
+Weak-case agreement does not establish strong or spatial convergence.
+
+Old95749 now EXIT1:3773accepted/8000,attempt3774 failed negative-pressure
+branch convergence,3363.947s. Preserve outputs/material_tube_independent_20mt_viscous_split_r4_z16_t8000.
+Accepted endpoint1.6506875us; periodic diagnostics end3700/1.61875us. No restart.
+
+Numerical thermal diffusion was integrated into MAIN asf838aeab0; private
+implementatione0f7c5376 is unchanged. Source in both moving checkouts is
+577ad923bec574d77ff1d2fb329047eba8cd7be539acdb26090603748343bd0f.
+ONLY LIVE handle41479, cwd/private/tmp/frc-finite-drift, config
+configs/material_tube_independent_20mt_energy_diffusion_t4000.json,
+output main outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t4000.
+Full20mT paired collisions,4x16,4000steps/3.5us,0.875ns, numerical energy_split.
+Latest actual handle printed2000/4000. Poll this exact handle; saved counts are
+not terminal evidence. Keep private imported sources frozen and do not stage
+live outputs. Collect complete trajectory/failure before interpretation. On
+success use existing configured-fields comparison against paired RK4, explicitly
+reporting changed numerical flux/integrator; do not call it time convergence.
+
+Keepfrc-vacuum.3.4/.3.3, transport children andfrc-goal OPEN. Preserve exact
+vacuum and user poster. No remote/publication. Full requirements remain in
+ORIGINAL_PROJECT_REQUEST.md andfrc-goal; this is component progress only.
+
 ## Numerical thermal-energy flux implemented; collect full pulses (2026-10-16)
 
 PROGRESS after a2e0391f9: actual new moving-solver numerical flux is implemented

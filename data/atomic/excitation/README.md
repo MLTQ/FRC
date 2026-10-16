@@ -22,7 +22,7 @@ Do not replace current ASD values with older Handbook values: some visible-line
 probabilities differ. The model computes vacuum frequency from level energies
 for consistent energy bookkeeping, retaining tabulated wavelengths separately.
 
-This is a bounded set, not a complete argon atomic model. There are no collision
+This is a bounded set, not a complete argon atomic model. This directory contains no collision
 cross sections, higher-state cascades, Ar II excitation, metastable destruction,
 excited-state ionization, pressure broadening or line-transfer data here.
 No missing transition is certified zero. Natural plus thermal widths alone
@@ -33,3 +33,20 @@ requires user confirmation of that site's terms; it has not been accepted or
 downloaded. Never treat other datasets' non-Maxwellian E/N-dependent rate tables
 as Maxwellian temperature rates. CHIANTI's public Ar list starts at Ar III and
 does not supply the missing neutral/Ar II rates.
+
+## Personal local excitation inputs (2026-10-16)
+
+Public OPEN-ADAS inputs `arlike_mom08#ar0.dat` (15 Ar I levels) and
+`cllike_dcg07#ar1.dat` (40 Ar II LS terms) were used for local personal research.
+They remain outside the repository in `/private/tmp/frc-openadas-personal/`;
+raw files and reconstructed rate arrays are not bundled with code or archives.
+Exact links, identities, assumptions and completed results are documented in
+`docs/COLLISIONAL_LEVELS.md`. The generic reader requires explicit local paths.
+These are supplied Maxwellian effective collision strengths, not the pending
+LXCat BSR cross-section download. No LXCat terms were accepted.
+
+The Ar I excitation study explicitly uses this directory's current NIST
+radiative data with matched ADAS collision levels; it excludes the source's S
+ionization row only for the fixed-charge component. Ar II retains supplied
+term-averaged energies/A values and is not fine-structure line transfer.
+This progresses excitation physics but is not a complete cooling/charge model.

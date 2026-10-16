@@ -1,5 +1,55 @@
 # Numerical thermal-energy transport in the moving pulse
 
+## Completed weak pulse and terminal pressure-switch comparison (2026-10-16)
+
+The implementation is now integrated into main as `f838aeab0` (the unchanged
+local implementation commit was `e0f7c5376`). The private checkout remains frozen
+while strong-pulse handle 41479 runs. Earlier running-status paragraphs below
+are historical; only 41479 remains live at this checkpoint.
+
+Both complete 0.5 mT, 4x8 weak-array controls finished through 3.5 us: handle
+9903 exited 0 after 800 steps in 470.061 s; 17128 exited 0 after 1600 steps in
+878.699 s. Their frozen source is
+`577ad923bec574d77ff1d2fb329047eba8cd7be539acdb26090603748343bd0f`.
+Full histories are in `outputs/material_tube_weak_energy_diffusion_r4_z8_t800`
+and `outputs/material_tube_weak_energy_diffusion_r4_z8_t1600`.
+
+Existing configured-field comparison 38599 exited 0. Its inspected PNG, PDF and
+JSON are in `outputs/material_tube_weak_energy_diffusion_timestep_comparison`.
+Only dt changes: 4.375 to 2.1875 ns. The comparison uses 81 common actual times
+and 3200 material quadrature points, with no temporal interpolation or repairs.
+
+| Measured quantity | 800 steps | 1600 steps |
+|---|---:|---:|
+| Maximum observed external-work residual / E0 |3.07170e-8|1.01524e-8|
+| Maximum observed response-work residual / E0 |7.10122e-8|2.27172e-8|
+| Final collision heat |0.154041857 mJ|0.154041782 mJ|
+| Final particle RMS radius |27.492161008 mm|27.492161010 mm|
+| Final maximum/middle radius |54.424296608 mm|54.424296561 mm|
+| Final mean Te / Ti |3.493268384 / 0.375930388 eV|3.493268382 / 0.375930388 eV|
+| Numerical bulk-viscous heat |0 J|0 J|
+
+Final relative vector differences are total B 5.63726e-6, induced B 1.26301e-5,
+J 1.11669e-5 and velocity 4.43923e-9. Maximum material-position mismatch is
+1.88272e-10 m. Across the sampled pulse, maximum total-B difference is
+7.98856e-6, induced-B difference 0.00104722 and J difference 0.00119420;
+all three maxima occur at 0.2625 us. Small early reference signals affect the
+component-relative ratios. These are small measured time-halving differences
+for this weak case, not a spatial-convergence or strong-pulse result.
+
+Fine-run cumulative numerical energy redistribution is
+[9.0517794e-6, 1.3166376e-11] J for electrons/ions. This measures redistribution,
+not generated heat. Corresponding entropy production / kB is
+[2.7122920e13, 4.2180027e8], with represented thermal-energy residuals
+[-6.96610e-15, -1.22513e-15] J. Physical nonlocal heat remains absent.
+
+The old original-resistance pressure-switch run 95749 exited 1 after 3773
+accepted steps, at 1.6506875 us. Attempt 3774 failed with
+`Upwind midpoint negative-pressure branch did not converge`. Its accepted prefix
+and failure are preserved without repair; see MATERIAL_COMPRESSION.md. The
+strong 20 mT energy-diffusion run 41479 is still running. Collect that actual
+terminal result before interpreting this method's strong-pulse behavior.
+
 The third timestep refinement did not settle detailed fields: paired final B/J
 differences increased from10.19%/20.91% to12.44%/25.36%. The existing upstream
 entropy flux is continuous through zero current, but its energy-paired pressure

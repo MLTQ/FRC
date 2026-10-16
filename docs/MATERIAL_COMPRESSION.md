@@ -1,5 +1,29 @@
 # Numerical compression treatment and the long-array pulse
 
+## Pressure-switch split stopped before the full pulse (2026-10-16)
+
+Run 95749 is terminal, exit 1 in 3363.947 s. It accepted 3773 of 8000 steps
+(1.6506875 us at 0.4375 ns) before attempt 3774 failed with
+`Upwind midpoint negative-pressure branch did not converge`. This was the
+original-resistance strong pulse with numerical bulk pressure, not the newer
+paired-collision energy-diffusion method. Source remains
+`31721f1fef01b747862f5263f3ddb92e5dfbca0d3fc1995e5e03ebf229d17afc`.
+All accepted states and the failure are retained in
+`outputs/material_tube_independent_20mt_viscous_split_r4_z16_t8000`.
+
+The last periodic diagnostics are at step 3700 (1.61875 us), earlier than the
+last accepted state. At that periodic time, collision/Joule heat is 165.6035 mJ,
+numerical ion heat 12.8843 mJ, mean Te/Ti 16.0250/1.64966 eV, particle RMS radius
+19.4670 mm and maximum radius 34.6898 mm. The maximum observed absolute
+external-work residual / E0 is 5.38531e-7. Response-work integration is undefined
+for this split method. These observations are not full-pulse endpoints or proof
+of field accuracy. No failed state was repaired and the run was not restarted.
+
+The alternative numerical energy-diffusion method is integrated in main;
+its complete weak controls and still-running strong pulse are documented in
+MATERIAL_ENERGY_DIFFUSION.md. Physical heat transport and edge physics remain
+open, along with field/current time and spatial convergence.
+
 ## Third original timestep: field convergence still absent (2026-10-16)
 
 The original prescribed-resistance pulse completed 16000 steps over 3.5 us

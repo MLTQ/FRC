@@ -1,5 +1,55 @@
 # Active research: a credible experimental FRC simulation
 
+## Resolved excitation completed; weak pulse agrees under time halving (2026-10-16)
+
+PROGRESS: implemented sourced excitation/de-excitation with independently evolved
+electron and produced-photon energies; completed 16 full histories against a
+finite-reservoir Boltzmann limit; collected both weak moving pulses and their
+actual-field comparison; preserved the old strong split failure. No unit suite
+or new verification framework. The full original FRC objective remains OPEN.
+
+Read docs/COLLISIONAL_LEVELS.md. Run61889 EXIT0,13.710s, source
+4096b6aae2627eef2c7ee1f8ba3d4c99310305bd319f01c64ce1d0b5d22c01db.
+outputs/collisional_levels contains all accepted histories and inspected PNGs.
+Ar I uses15 matched NIST levels/A plus OPEN-ADAS Maxwellian collisions; Ar II
+uses40 supplied LS terms. Exact local input paths/hashes and exclusions are
+explicit. Restricted raw inputs remain outside Git in/private/tmp/frc-openadas-personal;
+no raw tables or reconstructed rates are archived/published. LXCat permission
+remains pending and its terms unaccepted. Six3.5us radiation pairs have maximum
+10/5ns temperature/population differences4.31568e-4eV/4.28399e-5 and relative
+energy drift<=5.89306e-13. Independent closed equilibrium temperature error is
+<=1.05e-10eV, but transient100/50ns difference reaches0.0242344eV. Produced
+radiation is NOT established escape/net cooling; charge, moving-plasma and
+photon-absorption coupling remain absent. Keepfrc-transport.5.3/.5 open.
+
+Weak0.5mT4x8 controls9903/17128 EXIT0,800/1600steps through3.5us.
+Comparison38599 EXIT0:81 actual common times,3200 physical samples, only dt
+4.375->2.1875ns. Final relative B/J differences5.63726e-6/1.11669e-5;
+max observed external-work/E0 decreases3.07170e-8->1.01524e-8.
+Read docs/MATERIAL_ENERGY_DIFFUSION.md for full metrics, numerical diffusion and
+limitations. This weak result does not establish spatial or strong convergence.
+
+Old95749 EXIT1 after3773accepted/8000,1.6506875us,3363.947s. Attempt3774:
+Upwind midpoint negative-pressure branch did not converge. All accepted states
+and failure preserved; periodic diagnostics end3700, not3773. Source31721f1f...
+d17afc. No restart/repair. See new top of MATERIAL_COMPRESSION.md.
+
+With95749 terminal, numerical energy diffusion is integrated into MAIN commit
+f838aeab0 (private originale0f7c5376). Main and private moving source now both
+577ad923bec574d77ff1d2fb329047eba8cd7be539acdb26090603748343bd0f.
+ONLY41479 remains LIVE: private full20mT4x16t4000 energy_split,0.875ns, output
+outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t4000.
+Its exact handle printed2000/4000 on the latest poll; this is not completion.
+Keep/private/tmp/frc-finite-drift source frozen. Collect its real terminal
+outcome; preserve any failure. Use existing physical comparisons after success,
+distinguishing a numerical-method comparison from timestep convergence.
+
+Requested10ns animation is already complete and observed in the live browser:
+http://127.0.0.1:8790/20mt/,351 actual states,1.75ns integration,8.75/10.5ns
+display gaps around10ns targets. Do not repeatedly rebuild/recheck this viewer
+as the next goal action. Advance physical coupling and the strong pulse instead.
+Exact vacuum, original acceptance gates, user poster and local-only policy stay.
+
 ## Conservative numerical thermal transport under full-pulse study (2026-10-16)
 
 Previous turn was PROGRESS: a2e0391f9 preserved the completed radiation/raw-count
