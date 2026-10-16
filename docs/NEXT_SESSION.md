@@ -1,5 +1,38 @@
 # Resume the physical FRC simulation
 
+## Radiation comparison completed; collect moving calculations next (2026-10-16)
+
+Progress: run67602 EXIT0,33 complete trajectories,611.819s. New dipole
+polarization and original ORNL channel-count comparison are saved in
+outputs/resonance_channel_experiment; sourcec4c7fbbdabbd4300e915d9a900838d484606557275b54a3c80072910b43a594b.
+Read the new top of docs/RESONANCE_EXPERIMENT.md for full equations, rates,
+uncertainties and independent angular/vacuum measurements. Polarization does
+not resolve42mTorr disagreement. Rare formal unsigned relative detuning1.00811
+exceeds narrow-line validity; no clipping or rate fitting. Newfrc-transport.5.2
+tracks physically sourced finite-frequency radiation and matter/photon energy
+before moving coupling. Keep5.1/5 and the entire FRC goal OPEN.
+
+Paired16339 has now EXITED0:16000/16000,3.5us,10079.790s. All16000 accepted
+states and matching final digest are saved. Existing comparison82443 EXIT0 in
+outputs/material_tube_maxwellian_timestep_8000_16000_comparison; PNG inspected.
+Only dt0.4375->0.21875ns changes,81 common times,6400 actual-basis samples.
+Final B12.4377%,J25.3573%,velocity1.5330%,position3.6924mm; max work/E0
+3.66412e-6. Final field differences exceed the preceding halving. Read the new
+top of FINITE_DRIFT_COLLISIONS.md; no convergence claim or automatic doubling.
+
+ONLY95749 remains LIVE: original-resistance split+bulk-pressure4x16t8000 in
+MAIN, source31721f1fef01b747862f5263f3ddb92e5dfbca0d3fc1995e5e03ebf229d17afc.
+Latest saved2300/8000 at2054.913s. Collect its full result before comparing
+the changed time method. Keep its moving source closure unchanged. Saved counts
+are observations, not liveness evidence; poll the exact handle, never restart.
+
+Existing10ns /20mt/ and /array20mt/ viewers are complete and browser-checked;
+do not repeatedly rebuild/reverify them. Opening the requested view was queued.
+No unit suite or verification framework was added. Preserve the user poster,
+exact vacuum and raw failures. No remote. LXCat permission is still pending;
+do not accept its terms. Next simulation work remains physical edge/heat/species
+coupling and numerical edge/current/entropy sensitivity, alongside radiation.
+
 ## Original time refinement completed; switch treatment under study (2026-10-16)
 
 Previous goal turn was NO PROGRESS on the full simulation: it reconfirmed the

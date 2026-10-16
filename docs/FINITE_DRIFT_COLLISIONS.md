@@ -1,5 +1,43 @@
 # Paired finite-drift collision progress
 
+## Third timestep completes, without field convergence (2026-10-16)
+
+Run16339 exited0 after10079.790s: all16000 steps and3.5us completed at
+dt0.21875ns. All16000 accepted arrays and the matching final digest are saved
+in outputs/material_tube_independent_20mt_maxwellian_r4_z16_t16000. The frozen
+source remains31721f1fef01b747862f5263f3ddb92e5dfbca0d3fc1995e5e03ebf229d17afc.
+The final state SHA256 is2b1d6eed5fd7b047ebf140b9f126333fa33336643fdef1ec0bb88357a69fdb1a.
+
+Existing comparison82443 exited0; JSON and inspected PNG/PDF are in
+outputs/material_tube_maxwellian_timestep_8000_16000_comparison. It compares81
+exactly common times using6400 actual material-basis samples, with unchanged
+physical inputs, grid, paired collision closure and numerical bulk pressure.
+Only dt changes0.4375->0.21875ns. There is no temporal interpolation or repair.
+
+| Quantity | 8000 steps | 16000 steps |
+|---|---:|---:|
+| Final collision heat |107.87175mJ|108.45530mJ|
+| Final numerical ion heat |32.33839mJ|32.13273mJ|
+| Final physical ion collision heat |0.434228mJ|0.433468mJ|
+| Final particle RMS radius |22.95181mm|22.96249mm|
+| Final middle / maximum radius |54.71491 /64.31159mm|54.46630 /65.11235mm|
+| Final mean Te / Ti |10.45687 /2.00251eV|10.47817 /1.99207eV|
+| Max observed absolute external-work residual /E0 |8.95750e-5|3.66412e-6|
+
+Final relative differences are B12.43774%, induced B12.30775%, J25.35735%,
+velocity1.53297% and maximum position3.692395mm. Over the full pulse B reaches
+20.15960% at2.8875us, J44.65518% at2.1875us and velocity20.04928% at2.05625us.
+The prior4000/8000 final B/J differences were10.1933%/20.9077%; this halving
+does not show diminishing final field differences. Better energy accounting and
+stable bulk heat/radius are insufficient to establish time convergence.
+
+Do not automatically launch another timestep doubling. The live original-
+resistance split+bulk-pressure run95749 tests a different existing integration
+method; collect its complete result next. The spatial contact limit and physical
+edge/current/entropy treatment remain unresolved. Neither this pulse nor the
+paired local Maxwellian closure establishes formation, kinetic validity or
+confinement. Keepfrc-transport.3,frc-vacuum.3.3 and the full goal OPEN.
+
 ## Moving paired closure integrated into the main checkout (2026-10-16)
 
 After original run 58668 exited successfully, the exercised paired-collision

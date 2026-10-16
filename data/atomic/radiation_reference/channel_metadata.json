@@ -1,0 +1,38 @@
+{
+  "source_pdf": "ornl-tm-4368.pdf",
+  "source_sha256": "4384a9db70990593e15656494b401088c8df3171dbb329863d1c957ae41c61e9",
+  "timing": "Reverse TPHC: photon starts; delayed preceding proton pulse stops. Higher channel means earlier physical time. Exact t=0 is uncalibrated (printed pp21-23).",
+  "counts": "Unreduced Appendix2 counts, visually transcribed. Brackets around run151 channels70-81 are annotations, not digits: channel81 is452, not OCR4523. Printed zeros and edge channels remain stored.",
+  "background": "Expected counts per channel = photon_background_per_s*acquisition_s*channel_width_us/pulse_period_us, following Appendix2 introduction, printed114.",
+  "alignment": "Use first_full_channel as first full decay bin; the next larger channel contains the onset transition. Start of the first full bin after excitation is uncertain within one channel. Store that uncertainty, do not fit time zero to a preferred decay.",
+  "runs": [
+    {
+      "run": 151,
+      "pressure_torr": 0.0147,
+      "printed_page": 124,
+      "pdf_page": 135,
+      "channel_width_us": 0.3289,
+      "pulse_period_us": 32.0,
+      "proton_charge_c": 0.00072,
+      "acquisition_s": 10800.0,
+      "photon_background_per_s": 0.53,
+      "first_full_channel": 81,
+      "onset_channel": 82,
+      "early_table_rate_per_us": 0.468
+    },
+    {
+      "run": 197,
+      "pressure_torr": 0.042,
+      "printed_page": 127,
+      "pdf_page": 138,
+      "channel_width_us": 0.3289,
+      "pulse_period_us": 32.0,
+      "proton_charge_c": 0.0032,
+      "acquisition_s": 35600.0,
+      "photon_background_per_s": 0.5,
+      "first_full_channel": 77,
+      "onset_channel": 78,
+      "early_table_rate_per_us": 0.31
+    }
+  ]
+}

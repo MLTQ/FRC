@@ -3,6 +3,7 @@ import numpy as np
 from scipy.constants import c
 from scipy.special import voigt_profile
 from .resonance_transport import isotropic, redistribute
+from .resonance_polarization import dipole_emission, observer_stokes
 
 
 def resonant_decorrelation_rate(model, line, density_m3):
@@ -13,7 +14,9 @@ def resonant_decorrelation_rate(model, line, density_m3):
 
 def axial_transport(model, line, density_m3, temperature_j, radius_m, length_m,
                     beam_radius_m, aperture_radius_m, slit_width_m, edges_s,
-                    packets, seed, *, decorrelation_rate_s=0., progress=None):
+                    packets, seed, *, decorrelation_rate_s=0., progress=None,
+                    scattering='isotropic', detector_period_s=None,
+                    spectral_thresholds_relative=()):
     """Each random history represents all initial axial source positions.
 
     The surviving source interval is intersected with the finite end boundaries
@@ -28,6 +31,15 @@ def axial_transport(model, line, density_m3, temperature_j, radius_m, length_m,
         raise ValueError('Physical finite cylinder, beam, aperture and nonnegative rates required')
     if model.lower[line] != 0 or model.decay_rate[model.upper[line]] != model.A[line]:
         raise ValueError('Single-branch ground resonance required')
+    if scattering not in ('isotropic', 'dipole'):
+        raise ValueError('Explicit isotropic or dipole scattering required')
+    if scattering == 'dipole' and (model.weight[0] != 1 or model.weight[model.upper[line]] != 3):
+        raise ValueError('Dipole mode requires an isolated J=0-1-0 transition')
+    if detector_period_s is not None and (not np.isfinite(detector_period_s) or detector_period_s <= 0):
+        raise ValueError('Positive finite pulse period required')
+    cuts = np.asarray(spectral_thresholds_relative, float)
+    if cuts.ndim != 1 or not np.isfinite(cuts).all() or np.any(cuts <= 0):
+        raise ValueError('Positive finite relative spectral thresholds required')
     edges = np.asarray(edges_s, float)
     if edges[0] != 0 or np.any(np.diff(edges) <= 0):
         raise ValueError('Increasing detector time edges beginning at zero required')
@@ -40,10 +52,18 @@ def axial_transport(model, line, density_m3, temperature_j, radius_m, length_m,
     position = np.column_stack((radial*np.cos(phi), radial*np.sin(phi), np.zeros(packets)))
     initial_xy = position[:, :2].copy()
     low = np.full(packets, -length_m/2); high = -low
-    clock = np.zeros(packets); direction = isotropic(rng, packets)
+    clock = np.zeros(packets)
+    if scattering == 'dipole':
+        dipoles = isotropic(rng, packets)
+        direction, polarization = dipole_emission(rng, dipoles)
+    else:
+        direction = isotropic(rng, packets)
     velocity = rng.normal(size=(packets, 3)); rest = damping*rng.standard_cauchy(packets)
     offset = rest+np.sum(velocity*direction, axis=1); observer_offset = rest+velocity[:, 0]
     histogram = np.zeros(len(edges)-1); integral = np.zeros(packets); outside = 0.
+    stokes_histogram = np.zeros((len(histogram), 3)); stokes_integral = np.zeros((packets, 3))
+    spectral_histogram = np.zeros((len(histogram), len(cuts))); spectral_integral = np.zeros(len(cuts))
+    polarization_traces = []
     exits = []; traces = []; escaped_weight = np.zeros(packets); mean_exit = np.zeros(packets)
     absorption_weight = np.zeros(packets); excited_time = np.zeros(packets)
     collision_weight = np.zeros(packets); emission_weight = np.zeros(packets)
@@ -65,6 +85,10 @@ def axial_transport(model, line, density_m3, temperature_j, radius_m, length_m,
             reset = rng.random(len(alive)) < -np.expm1(-decorrelation_rate_s*hold)
             ids = alive[reset]
             collision_weight[ids] += weight[reset]
+            if scattering == 'dipole':
+                dipoles[ids] = isotropic(rng, len(ids))
+                direction[ids], polarization[ids] = dipole_emission(rng, dipoles[ids])
+                u[reset] = direction[ids]
             v = rng.normal(size=(len(ids), 3)); rest = damping*rng.standard_cauchy(len(ids))
             offset[ids] = rest+np.sum(v*u[reset], axis=1)
             observer_offset[ids] = rest+v[:, 0]
@@ -80,13 +104,24 @@ def axial_transport(model, line, density_m3, temperature_j, radius_m, length_m,
         viewed_high = np.minimum(high[alive], -p[:, 2]+cap)
         viewed_length = np.maximum(viewed_high-viewed_low, 0.)
         distance_view = np.sqrt(radius_m**2-p[:, 1]**2)-p[:, 0]
-        score = viewed_length/length_m*np.exp(
-            -strength*voigt_profile(observer_offset[alive], 1., damping)*distance_view)/(4*np.pi)
+        transmission = viewed_length/length_m*np.exp(
+            -strength*voigt_profile(observer_offset[alive], 1., damping)*distance_view)
+        angular = observer_stokes(dipoles[alive]) if scattering == 'dipole' else np.tile([1/(4*np.pi), 0., 0.], (len(alive), 1))
+        stokes = transmission[:, None]*angular; score = stokes[:, 0]
         arrival = emission+distance_view/c
-        index = np.searchsorted(edges, arrival, side='right')-1
+        detector_time = arrival if detector_period_s is None else np.remainder(arrival, detector_period_s)
+        index = np.searchsorted(edges, detector_time, side='right')-1
         in_bins = (index >= 0) & (index < len(histogram))
         histogram += np.bincount(index[in_bins], weights=score[in_bins], minlength=len(histogram))
         integral[alive] += score; outside += float(score[~in_bins].sum())
+        stokes_integral[alive] += stokes
+        for component in range(3):
+            stokes_histogram[:, component] += np.bincount(index[in_bins], weights=stokes[in_bins, component], minlength=len(histogram))
+        relative_frequency = abs(observer_offset[alive])*sigma[line]/model.frequency[line]
+        for j, cut in enumerate(cuts):
+            wing_score = score*(relative_frequency > cut)
+            spectral_integral[j] += wing_score.sum()
+            spectral_histogram[:, j] += np.bincount(index[in_bins], weights=wing_score[in_bins], minlength=len(histogram))
 
         a = np.sum(u[:, :2]**2, axis=1); b = np.sum(p[:, :2]*u[:, :2], axis=1)
         inside = radius_m**2-np.sum(p[:, :2]**2, axis=1)
@@ -124,19 +159,31 @@ def axial_transport(model, line, density_m3, temperature_j, radius_m, length_m,
         for local in np.flatnonzero(alive < 4):
             traces.append([int(alive[local]), generation, float(emission[local]), float(end[local]),
                            *moved[local], float(new_low[local]), float(new_high[local]), float(offset[alive[local]])])
+            if scattering == 'dipole':
+                k = alive[local]
+                polarization_traces.append([int(k), generation, *dipoles[k], *direction[k], *polarization[k]])
         alive = alive[survives & ~radial_exit]
         if progress is not None and generation % 1000 == 0:
             progress(generation, len(alive))
         if not len(alive):
             break
         absorption_weight[alive] += (high[alive]-low[alive])/length_m
-        outgoing = isotropic(rng, len(alive))
+        if scattering == 'dipole':
+            dipoles[alive] = polarization[alive]
+            outgoing, polarization[alive] = dipole_emission(rng, dipoles[alive])
+        else:
+            outgoing = isotropic(rng, len(alive))
         offset[alive], observer_offset[alive] = redistribute(
             rng, offset[alive], direction[alive], outgoing, damping, observer=True)
         direction[alive] = outgoing
     else:
         raise RuntimeError('Live axial source remains; generation limit is not escape')
     return dict(detector_time_edges_s=edges, detector_probability_per_sr=histogram/packets,
+        scattering=scattering, detector_period_s=np.nan if detector_period_s is None else detector_period_s,
+        detector_stokes_per_sr=stokes_histogram/packets, detector_packet_stokes_integral_per_sr=stokes_integral,
+        spectral_thresholds_relative=cuts, detector_spectral_tail_probability_per_sr=spectral_histogram/packets,
+        detector_spectral_tail_integral_per_sr=spectral_integral/packets,
+        example_polarization_events=np.asarray(polarization_traces),
         detector_packet_integral_per_sr=integral, detector_outside_time_probability_per_sr=outside/packets,
         escaped_source_weight=escaped_weight, mean_exit_time_per_history_s=mean_exit,
         absorption_source_weight=absorption_weight, excited_residence_per_history_s=excited_time,

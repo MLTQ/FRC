@@ -1,5 +1,50 @@
 # Active research: a credible experimental FRC simulation
 
+## Polarized radiation compared with original detector counts (2026-10-16)
+
+Progress: run67602 completed all33 stationary radiation trajectories in611.819s.
+The solver now supports opt-in electric-dipole polarization memory and observer
+I/Q/U for an isolated zero-field J=0-1-0 line; the scalar control is retained.
+Original ORNL runs151/197 were visually transcribed, including reverse timing,
+reported backgrounds and uncertain within-channel time zero. All three offsets
+and four fixed windows are retained. Read docs/RESONANCE_EXPERIMENT.md for the
+equations, assumptions, complete measurements and independent angular/vacuum
+limits; outputs/resonance_channel_experiment preserves histories and inspected
+PNG, with sourcec4c7fbbdabbd4300e915d9a900838d484606557275b54a3c80072910b43a594b.
+
+Polarization does not resolve the experimental discrepancy. At42mTorr over24
+bins, measured decay is0.32050+/-0.00791/us, scalar0.26440+/-0.00283 and dipole
+0.25598+/-0.00496. No physical rate or time shift was fitted. A rare unsigned
+relative detuning1.00811 explicitly exceeds the inherited narrow-line model.
+No photon/frequency was clipped; small integrated detector-tail weight does not
+establish coupled energy accuracy. New beadfrc-transport.5.2 requires sourced
+finite-frequency radiation and matter/photon energy exchange before moving
+plasma coupling. Child5.1, parent5 and the full original FRC goal remain OPEN.
+
+The completed10ns animation remains at http://127.0.0.1:8790/20mt/:351 actual
+saved states,0..3.5us,1.75ns solver steps and8.75/10.5ns display gaps. It has
+already undergone browser end-to-end playback checks; no rebuild or unit suite
+was needed here. The independent-array10ns view remains at /array20mt/.
+
+Paired16339 then EXITED0:16000/16000,3.5us,10079.790s, unchanged source31721f1f...
+d17afc. All arrays and matching final digest are preserved. Comparison82443
+EXIT0 measured81 common times and6400 actual-basis points; PNG inspected.
+Only dt0.4375->0.21875ns changed. Final B12.4377%,J25.3573%,velocity1.5330%
+and position3.6924mm differences do not establish time convergence. Final B/J
+differences exceed the previous halving despite work/E0 improving to3.66412e-6.
+Read the new top of FINITE_DRIFT_COLLISIONS.md. Do not automatically double
+timesteps again; use the concrete numerical-method evidence and edge physics.
+
+ONLY95749 remains LIVE: original-resistance split+bulk-pressure4x16t8000 in
+MAIN, same source31721f1f...d17afc. Latest saved2300/8000,2054.913s is an
+observation, not terminal evidence. Do not restart or modify its moving source.
+Collect the complete result before interpreting the changed time method.
+
+Next physical work remains edge/current/entropy spatial treatment, heat and
+species coupling, wall-contact physics, and the sourced radiation correction.
+Pending LXCat terms remain unaccepted. Exact vacuum, raw failures, user poster,
+all original acceptance gates and local-only repository policy are preserved.
+
 ## Original time refinement completed; switch treatment under study (2026-10-16)
 
 Previous goal turn was NO PROGRESS on the full simulation: it reconfirmed the

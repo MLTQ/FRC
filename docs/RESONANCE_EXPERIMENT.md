@@ -1,5 +1,86 @@
 # Argon radiation: finite-cell detector comparison
 
+## Polarization and original channel counts (2026-10-16)
+
+The radiation solver now has opt-in electric-dipole polarization memory for an
+isolated zero-field J=0-1-0 transition. Initial excitation is unaligned; each
+resonant collision resets orientation as well as frequency. That orientation
+reset is an assumption, not a measured depolarization rate. The scalar model is
+retained. Actual and observer rays share the same conditional absorbing atom;
+the detector records I,Q,U and spectral-tail contributions. Neither rates nor
+photon inventories are fitted or repaired. See resonance_polarization.md and
+examples/resonance_channel_experiment.md for equations and limits.
+
+ORNL raw runs151/197 are now visually transcribed in channel_counts.csv with
+their original metadata. Reverse timing is documented on printed21-23. Higher
+channel is earlier; the first full decay bins are81/77. Run151 channel81 is452,
+not the OCR4523 (the last mark is a bracket). Expected background counts per
+channel are58.8319875/182.950625 from the report's acquisition/rate/period data.
+Absolute time zero was not calibrated. All offsets0,0.5,1 channel are retained;
+none was fitted to favor a model. Exact half-channel detector bins are folded
+by the32us repetition period; actual histories and exits remain unfolded.
+
+Run67602 exited0 after611.819s:33 complete trajectories, including65536 vacuum
+histories and2 pressures x2 scattering laws x8 batches of4096 histories.
+All raw exits, detector/Stokes/spectral scores, inputs and frozen source remain
+in `outputs/resonance_channel_experiment`; the scientific PNG was inspected.
+Source `c4c7fbbdabbd4300e915d9a900838d484606557275b54a3c80072910b43a594b`.
+This source change does not enter either live moving-plasma calculation.
+
+Rates below are /us. Data errors are conditional Poisson expected-Fisher
+standard errors with fixed reported background; simulated errors are whole-batch
+jackknife standard errors. These are not the report's Table1 error estimates.
+The simulated values use the nominal half-channel offset; every offset/window
+is stored. Longer windows need not share the reported early-time slope.
+
+| Pressure | Full fit window | Raw-count rate | Scalar scattering | Dipole scattering |
+|---|---:|---:|---:|---:|
+|14.7mTorr|1.9734us|0.51948 +/-0.05189|0.42941 +/-0.01979|0.41697 +/-0.01190|
+|14.7mTorr|2.9601us|0.48129 +/-0.03251|0.42813 +/-0.01491|0.42325 +/-0.01143|
+|14.7mTorr|4.9335us|0.49452 +/-0.02147|0.42668 +/-0.00577|0.42338 +/-0.00888|
+|14.7mTorr|7.8936us|0.49234 +/-0.01796|0.44540 +/-0.00339|0.43731 +/-0.00630|
+|42mTorr|1.9734us|0.26705 +/-0.03181|0.27324 +/-0.01920|0.27636 +/-0.02846|
+|42mTorr|2.9601us|0.30797 +/-0.01917|0.26768 +/-0.00851|0.27701 +/-0.01526|
+|42mTorr|4.9335us|0.33092 +/-0.01128|0.26907 +/-0.00689|0.25559 +/-0.00682|
+|42mTorr|7.8936us|0.32050 +/-0.00791|0.26440 +/-0.00283|0.25598 +/-0.00496|
+
+For the42mTorr longest window, all three offsets give scalar0.26333-0.26535
+and dipole0.25598-0.26011. Polarization and time-zero uncertainty do not remove
+the mismatch. In the count overlays only one intensity multiplier is fitted
+(unknown excitation yield/detection efficiency), never a physical rate or time
+shift. Conditional Poisson deviances for24 bins are29.79/31.09 at14.7mTorr
+and73.71/103.93 at42mTorr (scalar/dipole). These do not include Monte Carlo
+uncertainty and are not calibrated goodness-of-fit p-values. Keep both models;
+neither is an experimentally validated radiation closure for moving plasma.
+
+Independent dipole direction moments are(0.200219,0.399408,0.400373), against
+(1/5,2/5,2/5), with SEM(0.000591,0.000859,0.000859). Unpolarized beam
+<cos^2(theta)>=0.398317 +/-0.000860 against2/5. Vacuum detector intensity is
+(5.67132 +/-0.00993)e-5/sr against5.684105e-5/sr; Q,U agree with zero within
+their sampled errors. Side escape0.854066 +/-0.000677 vs0.854287. Mean vacuum
+exit1.909965 +/-0.007269ns differs from1.927924ns by-2.47 standard errors;
+retain this fluctuation. Its sampled excited hold is1.861735 +/-0.007268ns
+vs1.879699ns; flight time0.0482302 +/-0.0000692ns agrees with0.0482243ns.
+The vacuum case was not repeated to select a closer result. Maximum source
+inventory residual across absorbing trajectories is1.11e-15.
+
+Dipole time-integrated Q/I is-2.98%/-3.84% at14.7/42mTorr (Q positive along
+the tube axis); instrument polarization sensitivity remains unmeasured.
+For42mTorr dipole histories, detector intensity fractions beyond relative
+frequency detuning1e-4,1e-3,1e-2 are1.628%,0.1887%,0.01685%. These are
+sampled integrated contributions, not bounds on every time bin or a measured
+spectral response. Formal detuning reaches1.00811 times the line frequency!
+That explicitly exceeds the narrow-line, constant-hnu0 approximation; the
+saved maximum is unsigned. No frequency or photon was clipped. Small detected
+tail weight does not validate a coupled photon-energy budget or the unbounded
+emission model. A physically justified finite-frequency kernel and energy
+exchange are required before coupling this component to plasma energy.
+
+Next radiation work: resolve source/optical and redistribution assumptions with
+independent physical inputs, including the far-wing validity problem; do not
+tune rates to the raw counts. Collisional excitation data and moving species/
+energy coupling remain open. Pending LXCat terms have not been accepted.
+
 ## Completed calculations (2026-10-16)
 
 The radiation component now supports distributed excitation, a narrow side

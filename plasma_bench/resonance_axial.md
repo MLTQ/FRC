@@ -21,6 +21,22 @@ finite cylinder ends and the complete 3D random flight and conditional thermal
 frequency distribution. It is specific to a uniform axial source and homogeneous
 gas, not an assumption valid for general nonuniform FRC plasma.
 
+Optional `scattering='dipole'` preserves photon linear polarization using
+`resonance_polarization`; default `isotropic` retains the earlier scalar law.
+In dipole mode the observer's 1/(4 pi) is replaced by the dipole angular I,Q,U.
+The same conditional absorbing atom sets actual and observer frequencies.
+Initial excitation is unaligned; at each resonant reset both dipole orientation
+and frequency are randomized. The orientation reset is a declared assumption,
+not a separately measured depolarization rate. No magnetic precession is present.
+
+Optional `detector_period_s` folds only detector arrival time modulo the pulse
+period, modeling the linear superposition of identical impulsive weak sources.
+Actual histories and exit times remain unfolded and complete. No surviving
+quantum is reset at a pulse. `spectral_thresholds_relative` observes detector
+weight beyond specified |nu-nu0|/nu0; it never filters or changes a photon.
+Returned Stokes histograms, integrated Stokes, spectral tails and first-four
+polarization event traces retain these assumptions for direct count comparisons.
+
 `resonant_decorrelation_rate` uses ORNL-TM-4368 printed p35:
 nu_c = 0.904 A (g_upper/g_ground) N lambda^3 / (6 pi^2), citing Berman & Lamb,
 Phys. Rev. 187, 221 (1969). It adds nu_c/(4 pi) to the Lorentz frequency HWHM.

@@ -39,3 +39,21 @@ resonance. The report gives `nu_c/A=1.737*P_Torr` at 293 K for its atomic inputs
 Decorrelation means losing memory of the absorbed frequency and re-emitting
 from the full Voigt profile; it is not quenching. This is a sourced model
 assumption, not a modern measured collision cross section or a fitted rate.
+
+`channel_counts.csv` and `channel_metadata.json` preserve visually checked raw
+Appendix 2 data for runs151/197 (printed124/127, PDF135/138). Run151 has100
+printed channels; run197 has128. Brackets around run151 channels70-81 are marks,
+not count digits: channel81 is452, NOT the OCR4523. Run197 channel3 is345.
+All printed zeros and electronics-edge channels remain in the raw table.
+
+Printed21-23 describe reverse timing: the photon starts the ramp and a delayed
+signal from the preceding proton pulse stops it. Higher channel is earlier.
+The absolute excitation time was not calibrated; both channel widths are
+0.3289us and pulse periods32us. The visible onset channels are82/78; the first
+full decay bins are81/77. Their start after excitation is treated as uncertain
+within one channel, not fitted to match a model. Acquisition/background entries
+give58.8319875 and182.950625 expected background counts per channel by the
+Appendix2 recipe background_rate*acquisition_time*channel_width/pulse_period.
+The reported background has no supplied uncertainty; fixed-background inference
+must be labeled conditional. The marked run151 interval may denote a fit but
+the report does not identify that annotation, so it does not select our window.
