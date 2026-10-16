@@ -1,5 +1,52 @@
 # Resume the physical FRC simulation
 
+## Reactive moment source underway; weak higher-order control complete (2026-10-16)
+
+PROGRESS this turn: complete weak higher-order pulse91606 and comparison51619;
+new species momentum/energy reaction source; six analytic conversions and one
+corrected complete all-ion argon trajectory. Read newest GOAL_STATUS.md,
+ATOMIC_MOMENTS.md and MATERIAL_ENERGY_DIFFUSION.md. No unit tests or viewer work.
+
+THREE live handles were re-polled; preserve their source closures:
+-82391 MAIN, outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t8000,
+  old central RK4, latest saved3500/8000 at3161.369s, source577ad923...bd0f.
+-86765 PRIVATE /private/tmp/frc-finite-drift,
+  output in MAIN outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t4000,
+  latest800/4000 at1411.392s, sourcef5ddb118...28f2. Private HEADacf1e0f43;
+  implementationfbbaf8e9f. Do not merge into MAIN while82391 runs.
+-7072 MAIN, outputs/atomic_moments_reordered, source
+  5453c1ea52380e61dd5330e4cc5947df9eb65f036f5fa85eaa9eb1fb03170174.
+  Six analytic cases and all_ion_700 complete; remaining fine/seed/heated/boost/
+  neutral-decay cases pending. Do not change atomic_moments or its imported code.
+Never stage these live outputs or restart because of a polling timeout.
+
+Weak91606 EXIT0 in863.152s,800steps; comparison51619 EXIT0. Complete outputs:
+outputs/material_tube_weak_rk8_energy_diffusion_r4_z8_t800 and
+outputs/material_tube_weak_rk8_vs_rk4_energy_diffusion_r4_z8_t800.
+Only central_integrator changes; final B/J differences5.79150e-6/1.14628e-5.
+PNG inspected, arrays/PDF preserved. This is weak method agreement, not a strong
+or spatial accuracy claim. Collect both strong runs and existing field comparison.
+
+AtomicMoments adds actual level/electron momenta and lab energies, with physical
+charge-dependent masses and explicit reaction transfer. It is a homogeneous
+small-drift closure, not yet spatial/field integration; strong-pulse drift may
+violate its ordering. Newfrc-transport.5.5 retains that full coupling requirement.
+Initial94014 is TERMINAL EXIT1 despite original summary terminal=false:
+outputs/atomic_moments/process_exit.json records the actual postprocessing crash.
+Tiny-population mass-product underflow caused physical-state rejection first;
+actual rejected endpoint and accepted midpoint are preserved. No generator or
+provider-rate arrays saved. Revised arithmetic avoids the underflow denominator;
+no populations, energies or momenta are clipped. Complete-source representability
+and frame-invariance evidence still require7072's terminal result.
+
+NEXT collect7072. Preserve any new failure and inspect its actual rejected state;
+do not weaken thermal positivity or invent population floors. Then quantify all
+completed moment/current/energy histories and boost comparison, update the model
+limits, and continue actual spatial/current coupling. The six analytic limits
+and one successful argon history do not establish a complete physical closure.
+Exact vacuum, private atomic-input policy/pending LXCat permission, user poster
+and original FRC acceptance gates remain; no remote or publication.
+
 ## Higher-order central method: collect three exact live handles (2026-10-16)
 
 PROGRESS: optional fixed DOP853 central advance is implemented in the private

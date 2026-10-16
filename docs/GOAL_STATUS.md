@@ -1,5 +1,53 @@
 # Active research: a credible experimental FRC simulation
 
+## Weak pulse completed; reactive species moments now evolving (2026-10-16)
+
+Previous turn made PROGRESS in cb3bbfe9f/private fbbaf8e9f. This continuation
+completes the weak higher-order pulse and adds actual atomic momentum/energy
+transfer. Full original scope remains OPEN. No unit suite or recursive framework.
+
+Weak pulse91606 EXIT0: all800 steps/3.5us,863.152s. Existing physical-field
+comparison51619 EXIT0,81 times/3200 points, only central_integrator changed.
+Final relative B/J differences5.79150e-6/1.14628e-5, position1.82922e-10m;
+max external-work/E0 new3.19813e-8 versus old3.07170e-8. Agreement in this weak
+regime does not establish strong accuracy or another time-convergence result.
+Read newest MATERIAL_ENERGY_DIFFUSION.md; complete arrays and inspected PNG/PDF
+are preserved. Private strong86765 and MAIN finer82391 remain LIVE.
+
+New plasma_bench/atomic_moments and its example evolve independent level/electron
+momenta and lab translational energies alongside the complete supplied atomic
+network. Charge-dependent physical masses, donor ionization moments, and derived
+capture centre-of-mass/photon energy partition retain number, charge, mass,
+vector momentum and energy without repairs. Small relative drift, neglected
+photon recoil/momentum, missing atomic channels, neutral scattering and absent
+spatial/field coupling remain explicit. This is not installed in the moving
+pulse. Read docs/ATOMIC_MOMENTS.md and new beadfrc-transport.5.5.
+
+Initial run94014 EXIT1 is preserved in outputs/atomic_moments. Six independent
+conversion histories, two seeded argon histories and moving-neutral decay
+completed, but other prefixes failed when tiny populations multiplied by kilogram
+masses underflowed. The actual first rejected endpoint has population4.8e-322.
+A later failed-prefix comparison also raised; process_exit.json records actual
+termination. No provider matrix/rates are archived or state values clipped.
+
+Reordered arithmetic keeps dimensionless ratios representable. Revised7072 is
+LIVE in outputs/atomic_moments_reordered, frozen source
+5453c1ea52380e61dd5330e4cc5947df9eb65f036f5fa85eaa9eb1fb03170174.
+Its six independent conversion histories show approximately second-order error
+decrease, and the previously failing all-ion700-step argon trajectory now
+completes (Te2.31778445eV, charge1.04927407, energy drift4.65405e-12eV/nucleus).
+Finer/remaining argon and boosted trajectories are pending. No full pass claim.
+
+Three exact handles confirmed live:82391 MAIN old-central full pulse, latest
+saved3500/8000 at3161.369s, source577ad923...bd0f;86765 PRIVATE new-central full
+pulse, latest800/4000 at1411.392s, sourcef5ddb118...28f2;7072 MAIN atomic source.
+Keep all three imported closures frozen, preserve all live outputs, and collect
+actual terminal results before source changes or adoption claims. Do not restart
+from an observation timeout. Next resolve remaining atomic representability/
+frame comparisons and full strong fields, then actual spatial/current coupling.
+Exact exterior vacuum, all original acceptance gates, personal data restrictions,
+the user poster and completed10ns viewers are preserved; no remote/publication.
+
 ## Higher-order solver improves strong-pulse hold; full runs underway (2026-10-16)
 
 Previous goal turn made PROGRESS in 2abe84c87. This turn implements a concrete

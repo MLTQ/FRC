@@ -1,5 +1,27 @@
 # Numerical thermal-energy transport in the moving pulse
 
+## Complete weak pulse with the higher-order centre (2026-10-16)
+
+Run 91606 exited 0 after all 800 steps through 3.5 us in 863.152 s, source
+f5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2.
+`outputs/material_tube_weak_rk8_energy_diffusion_r4_z8_t800` preserves the full
+trajectory. At the same 4.375 ns outer step, only central_integrator differs
+from the prior weak RK4 pulse. The physical source, grid and diffusion match.
+
+Existing comparison 51619 exited 0 at 81 common times and 3200 actual-basis
+points. JSON and inspected PNG/PDF are in
+`outputs/material_tube_weak_rk8_vs_rk4_energy_diffusion_r4_z8_t800`.
+Final relative total B/J/velocity differences are
+5.79150e-6 / 1.14628e-5 / 3.45400e-9; maximum material-position difference is
+1.82922e-10 m. This is a central-method comparison, not a new time-convergence
+result or experimental validation. It supports agreement in this weak regime.
+
+The new run ends with external/response work residuals divided by E0 of
+-2.23777e-8 / +5.36416e-8, collision heat 0.154041790 mJ and mean Te/Ti
+3.493268384 / 0.375930388 eV. The strong higher-order run 86765 and previous
+central-RK4 finer run 82391 remain LIVE; weak agreement cannot replace their
+complete results. Keep both moving source closures frozen.
+
 ## Higher-order central advance improves the actual hold (2026-10-16)
 
 The localized central RK4 loss motivated an optional fixed twelve-stage DOP853
