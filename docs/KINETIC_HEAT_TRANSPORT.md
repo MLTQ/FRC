@@ -96,6 +96,31 @@ roundoff is below3.25e-12. All sampled collisional quadratic free-energy
 increments are negative. Periodicity fixes the spatial mean energy, so this
 does not demonstrate a physical boundary heat budget.
 
+## Independent published nonlocal coefficient (2026-10-16)
+
+Brodrick et al., [Table I and Eq.23](https://arxiv.org/pdf/1704.08963), report
+the stationary Z=1 long-wavelength correction `kappa/kappa_local=1-b*x²+...`
+with b=43.5 and x=k*lambda_ei^(B). In our normalization x=3*sqrt(pi/2)*K.
+Their value comes from a separate kinetic velocity representation and is
+rounded. It is an independent numerical baseline, not an experimental result.
+
+The existing saved degree20/24/28 operators give b=43.59610 /43.56493 /
+43.54514, respectively. The last is0.1038% above that published value. This
+uses the analytic derivative of the stationary kinetic response, normalized
+by each degree's own local conductivity, without fitting the collision matrix.
+Six finite small wavenumbers per degree also retain the directly solved
+response. The one-off calculation completed with exit0; source, input hashes,
+formulas and values are saved in outputs/kinetic_heat_published_comparison.
+
+At shorter wavelengths the paper's SPRING curve reports the modulus of a
+complex modal conductivity. Our instantaneous real heat/temperature ratios
+from a Maxwellian initial perturbation are a different observable; direct
+comparison with that curve or its fit is not a validated error measurement.
+The saved transient ratios retain their late-interval variation, but no
+short-wavelength published agreement is claimed. This result supports the
+long-wavelength collision response; moving, nonlinear and boundary heat
+transport still require physical evolution. No unit suite was added or run.
+
 ## Next physical work
 
 Use these complete kinetic histories as references for spatial heat evolution,

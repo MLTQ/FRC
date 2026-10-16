@@ -1,5 +1,43 @@
 # Paired finite-drift collision progress
 
+## Completed paired timestep comparison (2026-10-16)
+
+Run33952 exited0 after all8000steps/3.5us in5172.282s. Its source remains
+31721f1fef01b747862f5263f3ddb92e5dfbca0d3fc1995e5e03ebf229d17afc;
+all8000 raw states and the final matching digest are present in
+outputs/material_tube_independent_20mt_maxwellian_r4_z16_t8000.
+Comparison13672 exited0 using the existing actual-basis comparison; its PNG
+was inspected and PDF saved in outputs/material_tube_maxwellian_timestep_comparison.
+Only dt changes, from0.875 to0.4375ns. The same81 common times and6400
+material quadrature samples measure each physical component using actual
+second-run volume weights. No temporal interpolation or state repair is used.
+
+| Quantity | 4000 steps | 8000 steps |
+|---|---:|---:|
+| Final collision heat |109.01233mJ|107.87175mJ|
+| Final numerical ion heat |32.00428mJ|32.33839mJ|
+| Final physical ion collision heat |0.433473mJ|0.434228mJ|
+| Final particle RMS radius |22.97734mm|22.95181mm|
+| Final middle / maximum radius |55.26742 /62.71483mm|54.71491 /64.31159mm|
+| Final mean Te / Ti |10.53349 /1.99530eV|10.45687 /2.00251eV|
+| Max observed absolute external-work residual /E0 |6.12049e-4|8.95750e-5|
+
+The small bulk changes do not establish field accuracy. Final relative vector
+differences are B10.1933%, induced B10.0786%, J20.9077%, velocity2.4197%;
+maximum physical-position mismatch is4.32214mm. Across the sampled history,
+B reaches20.3696% at2.84375us, J62.3226% at2.58125us, and velocity18.3392%
+at1.53125us. The fine run is a comparison reference, not presumed truth.
+Numerical ion heating remains much larger than physical ion collision heating.
+
+This result triggered a third full paired pulse at0.21875ns/16000steps,
+live handle16339, outputs/material_tube_independent_20mt_maxwellian_r4_z16_t16000.
+Its config is saved in branch60f76e4e4 at
+configs/material_tube_independent_20mt_maxwellian_t16000.json. All physical
+inputs, numerical pressure coefficients and scientific source are unchanged.
+The separate6x24 spatial control49353 remains live. Collect complete results
+and compare8000/16000 with the existing tool; do not infer convergence from
+smaller energy error alone. Keepfrc-transport.3 and the full goal open.
+
 ## First complete moving paired-collision pulse (2026-10-16)
 
 The full 4000-step pulse completed all 3.5 us with 0.875 ns steps, exact

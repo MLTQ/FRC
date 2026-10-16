@@ -59,3 +59,10 @@ Maxwellian speed integral 64*sqrt(2/pi)/Z. Full electron thermalization remains
 enabled in the actual temperature-wave evolutions. The example also compares
 collisionless evolution with an independently derived Gaussian-characteristic
 Volterra solution. No tests or pass/fail framework is required by this module.
+
+The completed saved operators also reproduce the stationary Z=1 leading
+nonlocal coefficient from Brodrick et al., Table I: degree28 gives43.5451
+against published43.5. The derivation and input-identified one-off calculation
+are in outputs/kinetic_heat_published_comparison. This coefficient uses the
+stationary non-temperature subspace and each degree's own local conductivity;
+it is not a comparison of the time-dependent short-wave modal conductivity.

@@ -1,5 +1,61 @@
 # Active research: a credible experimental FRC simulation
 
+## Paired pulse time sensitivity and published heat coefficient (2026-10-16)
+
+The previous user turn was a UI recheck with no new scientific progress.
+This continuation collected the completed paired half-timestep pulse and used
+its field differences to launch a necessary third full timestep level. The
+original sandbox objective and all remaining acceptance gates stay open.
+
+Paired run33952 completed8000steps/3.5us (5172.282s,exit0), with all8000 raw
+states and matching final digest. Source remains31721f1fef01b747862f5263f3ddb92e5dfbca0d3fc1995e5e03ebf229d17afc.
+Existing actual-basis comparison13672 exited0; PNG inspected, PDF saved in
+outputs/material_tube_maxwellian_timestep_comparison. Onlydt differs from the
+4000-step run. Final vector differences: B10.1933%, J20.9077%, velocity2.4197%,
+maximum position mismatch4.32214mm. Sampled J difference peaks62.3226% at2.58125us.
+Collision heat changes109.0123 to107.8718mJ; numerical ion heat32.0043 to32.3384mJ,
+far above fine physical ion collision heat0.43423mJ. Max work residual/E0 improves
+6.12049e-4 to8.95750e-5, but detailed fields are NOT time-converged. Read
+FINITE_DRIFT_COLLISIONS.md. No unit tests or new framework.
+
+New paired16000 configuration is committed as60f76e4e4 on the isolated branch
+codex/finite-drift-collisions at /private/tmp/frc-finite-drift. The full3.5us
+pulse is running at0.21875ns with unchanged physical and numerical-pressure
+inputs, source31721f1f...d17afc. All results stay in the main outputs directory.
+Main pulse source remains05555dc9be49c3a1af9c31467fc713f4d5e395442328e9107eea19f68d0b3c75.
+Do not merge the paired moving code while the original main jobs remain live.
+
+The completed kinetic operators independently reproduce the published Z=1
+stationary leading nonlocal coefficient b=43.5: degrees20/24/28 give43.59610 /
+43.56493 /43.54514. Finest difference0.1038%, no fitted matrix. One-off analysis
+and input hashes are in outputs/kinetic_heat_published_comparison. Read
+KINETIC_HEAT_TRANSPORT.md for normalization and scope. The paper's short-wave
+SPRING curve is a complex modal conductivity modulus, not our instantaneous
+real transient heat/temperature ratio; no short-wave published accuracy claim.
+This remains a uniform periodic limit, not heat transport through a plasma edge.
+
+FOUR pulse handles were actually polled LIVE. Most recent saved observations:
+-16339 paired4x16t16000:400/16000,257.895s;0.21875ns,
+ outputs/material_tube_independent_20mt_maxwellian_r4_z16_t16000.
+-49353 paired6x24t8000:2000/8000,3102.810s;0.4375ns,
+ outputs/material_tube_independent_20mt_maxwellian_r6_z24_t8000.
+Both use worktree source31721f1f...d17afc.
+-58668 original4x16t16000:4200/16000,2625.143s;0.21875ns,
+ outputs/material_tube_independent_20mt_viscous_r4_z16_t16000.
+-85554 original6x24t8000:5100/8000,7948.597s;0.4375ns,
+ outputs/material_tube_independent_20mt_viscous_r6_z24_t8000.
+Both use main source05555dc9...b3c75. Saved counts are observations, not liveness
+proof; re-poll exact handles. Never restart from an observation timeout.
+
+NEXT collect complete original/paired16000 and spatial8000 results and use the
+existing --configured-fields comparison from the isolated worktree. Keep source
+closures intact. In parallel, continue the missing nonuniform heat evolution
+with finite current and explicit edge/end energy/particle assumptions; the
+periodic zero-current infinite-ion-mass limit cannot be installed into formation.
+No converged formation, physical transport, stability or confinement is claimed.
+Keepfrc-transport.3/.4,frc-vacuum.3.3 and the full goal open. Existing10ns viewers
+and the user poster are unchanged; all research stays local with no remote.
+
 ## Linear kinetic heat transport completed (2026-10-16)
 
 Previous goal turn was progress:66ca30ac2 saved complete paired collision and
