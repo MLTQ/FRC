@@ -1,40 +1,44 @@
 # Active research: a credible experimental FRC simulation
 
-## Finer density retained; mass-solve failure isolated (2026-10-16)
+## Moving velocity mesh retained through reactions (2026-10-16)
 
-The main path still has zero physical-width coarsening. The new subcycled
-argon driver now also defaults to zero ULP cleanup, preserving every distinct
-density boundary. Earlier recorded attempts explicitly used8-ULP cleanup.
-The old coarsened trial36957 was stopped EXIT130 after its saved32-cell case
-failed at2.36445ns of20ns; its unwritten64-cell prefix is unavailable.
+This continuation made two concrete solver changes: diagonal scaling of the
+physical mass equations, and preservation of existing moving velocity knots
+through reaction return. No physical-width or ULP coarsening is used by the
+new charged runs. Physical masses, all populated species, exact vacuum and
+strict rejection of negative thermal energy remain.
 
-The retained-resolution cost run5491 finished EXIT1 at its declared observation
-bounds:826917 density cells,12.62617ps of20ns,2469MiB peak,1575.19s wall time.
-This measures this representation's growth; it does not demonstrate exhausted
-hardware or justify coarsening. All accepted states are saved.
+The full precise-geometry study is terminal: all six neutral/charged affine
+cases completed. The finest neutral front error is 4.79e-16 m; finest charged
+energy error is 3.27e-15 relative. Raw precise histories and inspected plots
+are saved. Geometry bug frc-transport.5.5.3 is closed; thermal/current transfer
+accuracy remains open in frc-transport.5.5.1/.2.
 
-New SubcycledReactiveMaterial separates explicit reaction intervals from fine
-actual transport steps. The full independent neutral affine/decay run succeeds
-through6.083704us in213 transport steps, energy error1.12e-13relative and front
-error1.81e-13m. This commuting limit does not certify charged source timing.
-The charged10ns/5ns interval attempts both fail source-return projection, after
-all transport in the failed interval completes. Coupled times are10ns/0ns of
-20ns. Source states remain warm, but unscaled mass solves create enormous
-velocities in rare species and negative recovered heat.
+With balanced mass solves, the original 32-cell reacting case completed the
+full 20 ns in 815 actual transport steps, with 21,343 density cells, minimum
+width 9.59e-25 m and relative energy change 4.24e-11. This is not converged
+adoption: the 5 ns source interval and 64-cell refinements failed later source
+return, after completing the internal transport of their rejected intervals.
 
-On both exact rejected snapshots, diagonal equilibration of the SAME physical
-mass equation succeeds with ZERO edge cleanup. A separate100-digit elimination
-agrees to2.65e-15 relative maximum velocity. New mass_scaling.py implements this
-coordinate scaling with no density floor, regularization, thermal repair or
-changed resolution. It is not yet connected to the precise production return:
-run5888 still imports that source and must finish first. Its64-cell neutral
-case last printed step700 at5.021172us; charged affine cases remain queued.
+A complete matched zero-source control identified a major transfer error:
+rebuilding the velocity mesh every 10/5 ns changes final current by 55.020% /
+65.369%, despite near energy conservation. Preserving the old moving knots
+reduces those differences to 0.01021% / 0.02575%; electric differences fall
+from 7.423% / 8.009% to about 0.000031%. Both corrected controls complete 20 ns.
+Residuals include numerical transfer and actual-step grouping, not physical
+reactions. Measured comparison and inspected figure: outputs/reaction_remap_retained_knots.
 
-NEXT collect5888, then use the scaled mass solve in precise reaction return
-and complete charged20ns runs with declared source-interval refinement and
-zero cleanup. Inspect actual field/current errors, not only conserved totals.
-Sources/raw evidence are in the named output folders; see NEXT_SESSION.
-All FRC gates remain open. No unit suite, viewer/poster edit or publication.
+The corrected reacting 5 ns-interval attempt still fails a later thermal
+projection: 5 ns coupled time accepted, next 5 ns transport complete, final
+source return rejected. Its source and steps are retained; no heat repair.
+A fresh 10 ns-interval run17499 is LIVE with inherited knots and complete
+projection metadata; first 10 ns accepted, full 20 ns still pending. Read
+NEXT_SESSION before editing its frozen source or interpreting older outputs.
+
+Next resolve local admissibility of reaction return, especially newly born
+species, then complete source/space refinement and current accuracy. These
+planar component calculations are not FRC formation or lab recommendations.
+The full original goal stays open. No unit suite, viewer/poster edit or publication.
 
 ## Precise geometry passes the full warm reacting expansion (2026-10-16)
 

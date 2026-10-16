@@ -3,7 +3,8 @@ from dataclasses import dataclass
 from decimal import Decimal
 import numpy as np
 from scipy.constants import elementary_charge as EV, epsilon_0 as EPS0
-from scipy.linalg import eigh, solve_banded
+from scipy.linalg import eigh
+from .mass_scaling import solve_mass_banded
 from .precise_geometry import coordinates, decimal, widths, fraction, interpolate, geometry_precision
 from .species_material import MaterialSpecies, SpeciesMaterialState
 from .material_subcells import MaterialSubcells
@@ -20,7 +21,8 @@ class PreciseMaterialState(SpeciesMaterialState):
 
 class PreciseMaterialSubcells(MaterialSubcells):
     @geometry_precision
-    def __init__(self, numbers, mass, charge, bounds, faces, velocity_cells, *, number_scale=None, **controls):
+    def __init__(self, numbers, mass, charge, bounds, faces, velocity_cells, *, number_scale=None,
+                 velocity_faces=None, **controls):
         numbers = np.asarray(numbers, float)
         self.number_scale = float(numbers.max()) if number_scale is None else float(number_scale)
         if not np.isfinite(self.number_scale) or self.number_scale <= 0:
@@ -34,9 +36,18 @@ class PreciseMaterialSubcells(MaterialSubcells):
         if (self.reference_faces.shape != (self.cells+1,) or np.any(widths(self.reference_faces) <= 0)
                 or not isinstance(velocity_cells, int) or velocity_cells < 1):
             raise ValueError('Ordered precise density faces and positive velocity resolution required')
-        target = self.reference_faces[0]+(self.reference_faces[-1]-self.reference_faces[0])*coordinates(
-            (1-np.cos(np.linspace(0, np.pi, velocity_cells+1)))/2)
-        self.velocity_indices = np.unique(np.argmin(abs(self.reference_faces[:, None]-target[None, :]), axis=0))
+        if velocity_faces is None:
+            target = self.reference_faces[0]+(self.reference_faces[-1]-self.reference_faces[0])*coordinates(
+                (1-np.cos(np.linspace(0, np.pi, velocity_cells+1)))/2)
+            self.velocity_indices = np.unique(np.argmin(abs(self.reference_faces[:, None]-target[None, :]), axis=0))
+        else:
+            coarse = coordinates(velocity_faces)
+            if (coarse.ndim != 1 or len(coarse) < 2 or np.any(widths(coarse) <= 0) or
+                    coarse[0] != self.reference_faces[0] or coarse[-1] != self.reference_faces[-1]):
+                raise ValueError('Ordered velocity faces spanning the complete occupied support required')
+            self.velocity_indices = np.searchsorted(self.reference_faces, coarse)
+            if not np.array_equal(self.reference_faces[self.velocity_indices], coarse):
+                raise ValueError('Every velocity face must be an existing precise density face')
         self.velocity_cells = len(self.velocity_indices)-1
         coarse = self.reference_faces[self.velocity_indices]
         self.owner = np.searchsorted(coarse, self.reference_faces[:-1], side='right')-1
@@ -140,8 +151,7 @@ class PreciseMaterialSubcells(MaterialSubcells):
         weight = EV*self.charge[0]*self.relative_numbers[k]/self.validate(state)[0, k]*h/2
         np.add.at(force[0, :, 2], owner, weight*np.sum(field*(1-right), axis=1))
         np.add.at(force[0, :, 2], owner+1, weight*np.sum(field*right, axis=1))
-        acceleration = solve_banded((1, 1), self.matrix[0]/self.mass_scale,
-                                   force[0]/self.mass_scale, check_finite=False)[None, ...]
+        acceleration = solve_mass_banded(self.matrix[0], force[0])[None, ...]
         # Keep the small differential motion between fine faces before rounding.
         vz = coordinates(state.velocity[0, :, 2])
         endpoints = self.exact_left_shape*vz[j, None]+self.exact_right_shape*vz[j+1, None]

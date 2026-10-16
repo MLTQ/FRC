@@ -21,3 +21,9 @@ Every diagonal entry must be strictly positive. Nonfinite/unrepresentable
 results reject; the helper does not hide singular physical matrices. Sequential
 division avoids unnecessarily underflowing products of diagonal scale factors.
 Physical fields and coefficients remain float64.
+
+The precise reaction-return and material-acceleration paths use this helper.
+Their mass matrices and right-hand sides keep the original equations; source
+projection and subsequent motion must both avoid the demonstrated unscaled
+solve failure. Other historical solvers and the acoustic eigenproblem are
+unchanged.

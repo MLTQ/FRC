@@ -35,7 +35,8 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0):
     began = time.perf_counter()
     report = dict(terminal=False, source_sha256=identity['source_sha256'], requested_time_s=20e-9,
         completed_time_s=0., source_interval_s=source_interval_ns*1e-9, transport_fraction=.5,
-        velocity_cells=cells, geometry_decimal_digits=DIGITS, minimum_density_width_m=0., coalesce_ulps=coalesce_ulps,
+        velocity_cells=cells, preserve_velocity_knots=True, geometry_decimal_digits=DIGITS,
+        minimum_density_width_m=0., coalesce_ulps=coalesce_ulps,
         intervals=[], failure=None, minimum_free_disk_bytes=256*2**20,
         inputs=dict(ionization_sha256=ion.input_sha256, recombination_sha256=rr.input_sha256),
         scope='Full original20ns ground-ladder argon target. Physical masses, all species, '
@@ -81,8 +82,11 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0):
                     key: np.asarray([r[key] for r in solver.last_transport]) for key in solver.last_transport[0]})
             if solver.last_overlap is not None:
                 r = solver.last_overlap
+                knots = {} if solver.last_velocity_knots is None else {
+                    f'velocity_knots_species{index}_decimal_m': points.astype(str)
+                    for index, points in solver.last_velocity_knots.items()}
                 np.savez_compressed(out/'rejected_source.npz', edges_decimal_m=r.edges.astype(str),
-                    points_decimal_m=r.points.astype(str), weights_m=r.weights, moments=r.moments)
+                    points_decimal_m=r.points.astype(str), weights_m=r.weights, moments=r.moments, **knots)
             break
         model, state, ledger = new_model, new_state, new_ledger
         elapsed = min(elapsed+dt, report['requested_time_s'])
@@ -96,6 +100,7 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0):
             minimum_transport_dt_s=min(r['dt_s'] for r in solver.last_transport),
             maximum_transport_dt_s=max(r['dt_s'] for r in solver.last_transport),
             occupied_density_cells=sum(m.cells for m in model.models),
+            actual_velocity_cells_by_block=[m.velocity_cells for m in model.models],
             minimum_width_m=min(float(widths(s.faces).min()) for s in state.blocks),
             atomic_numbers_m2=budget['atomic_numbers_m2'].tolist(),
             full_energy_j_m2=budget['full_energy_j_m2'], relative_energy_error=(budget['full_energy_j_m2']-energy0)/energy0,

@@ -1,52 +1,69 @@
 # Resume the physical FRC simulation
 
-## Apply the diagnosed mass arithmetic fix, retaining all cuts (2026-10-16)
+## Resolve the remaining reaction-return thermal failure (2026-10-16)
 
-This turn isolated the charged source-return failure without coarsening. Read
-mass_scaling.md, subcycled_material.md and the two subcycled example companions.
-`solve_mass_banded` is implemented but NOT yet wired into precise_reactions.py:
-its imported closure is frozen by live5888. After that run is terminal, replace
-the unscaled P1 return solve with this same-equation diagonal equilibration.
-The new argon driver exposes --coalesce-ulps and defaults to0; use fresh output
-folders and full20ns. Compare10/5/2.5ns reaction intervals separately from the
-picosecond acoustic/plasma transport steps. Do not claim source convergence
-from the neutral commuting limit or from one successful interval.
+Read precise_material.md, precise_reactions.md, mass_scaling.md and the
+subcycling/remap-control example companions. Two implemented changes now
+matter: diagonally equilibrated mass solves for reaction return AND material
+acceleration; inherited velocity knots rather than a newly rebuilt cosine mesh.
+Existing velocity knots still inside a resulting support are all retained,
+with new support ends added. New species/blocks without old knots use the
+initial target mesh. No density cuts or inherited knots are removed to satisfy
+a quota. Actual per-block velocity counts can grow and are recorded.
 
-Evidence now terminal:
-- outputs/subcycled_affine: EXIT0, source1e20c7df...716aa, full6.083704us,
-  20 source intervals,213 transport steps, energy1.12e-13relative,front1.81e-13m.
-- outputs/reactive_material_argon_subcycled_10ns and _5ns: EXIT1, source
-  87f2c0b6...abcf1, completed coupled times10ns and0ns, original target20ns.
-  All transport steps of the failed intervals completed; final reaction return
-  rejected negative U. Actual source snapshots are rejected_source.npz.
-  projection_failure_diagnosis/resolution_diagnosis show huge artificial
-  velocities despite warm slow source particles. ULP0 alone does not fix it.
-  projection_linear_solve_diagnosis and balanced_projection_replay demonstrate
-  SAME mass/load solved with scaling and independently100-digit arithmetic.
-  Both snapshots succeed at32 velocity cells with every density cut retained;
-  maximum normalized velocity discrepancy2.65e-15, positive minimum T.
-  Matrix condition~1e29/1e46 becomes~9.39/3.05 after coordinate scaling.
-- outputs/reactive_material_argon_fine_vector: EXIT1, full20ns request,
-  6 accepted steps12.62617ps,826917 cells,2469MiB peak,1575.19s. Resource
-  observation bounds are user-independent run settings, not machine limits.
-  All accepted raw snapshots retained, terminal summary saved.
-- outputs/reactive_material_argon_coarsened_f01: stopped EXIT130 after first32
-  case failed at2.36445ns; termination.json supersedes stale terminal=false.
- 64 case last printed140 steps,0.230827ns; unwritten history unavailable.
+LIVE17499: examples.reactive_material_subcycling
+outputs/reactive_material_argon_retained_knots_10ns --source-step-ns 10
+--cells 32 --coalesce-ulps 0. Source 552213d640f98cfcf49d5679fcdc6535050e940b31a62f42dda4dc8ff66f46ef.
+The first 10 ns has completed in 527 transport steps, with 1691 density cells
+and 32/34 velocity cells per block. The second interval is in progress.
+Poll this exact handle; do not restart on timeout. Keep its imported Python
+closure unchanged until it is terminal. No other simulation remains live.
 
-STILL LIVE5888/PID28177: original full precise_material expansion study,
-source90ff816e...ef08d, outputs/precise_material_expansion.16/32 neutral complete;
-64 neutral last printed step700,5.021172us of6.083704us. Charged16/32/64 follow.
-Poll exact handle, inspect final figure, and only then edit its imported core.
-Do not restart on a timeout or treat queued cases as completed. No other
-simulation is live at this checkpoint. Parent issues and full FRC goal stay open.
+Its rejected_source.npz, if created, now includes exact inherited mesh arrays
+named velocity_knots_species*_decimal_m. Reconstruct those Decimal arrays and
+pass the mapping into project_precise_reactions; do not silently rebuild the
+old cosine space when replaying a retained-knot failure. Stage source/knots are
+cleared before each source call so older data cannot masquerade as a new failure.
+The earlier retained-knots 5 ns attempt predates this extra metadata; its last
+failed projection needs evolution replay to recover the exact knots.
 
-The main/default physical-width averaging remains0. Keep all species, physical
-masses and exact vacuum; never repair heat or drop rare carriers. Source
-intervals are a disclosed temporal approximation needing refinement, not a
-hidden increase in the actual transport timestep. Poster SHA remains
- a783f7cda0f4a249cc4c23ead61debbdf89d356436a2a3dab2189029c6d5deca.
-No unit tests or publication. About445MiB free disk when last inspected.
+Terminal evidence:
+- precise_material_expansion,5888 EXIT0, source90ff816e...ef08d: all six full
+  affine cases, raw precise histories and inspected figure. Geometry bug5.5.3
+  CLOSED; thermal/current accuracy and the original full goal remain open.
+- subcycled_affine_balanced,14306 EXIT0, source20b0b39b...9f861: full6.083704us,
+  213 transport steps, energy1.1154e-13 relative, front1.8145e-13m.
+- reactive_material_argon_balanced_10ns,89197 EXIT0, sourcec8eebf7d...74010:
+  full20ns,815steps,21343 density cells,minwidth9.59274e-25m,energy4.24338e-11.
+  Its source-free field comparison is NOT isolated reaction error: numerical
+  representations differ. A matched zero-source control follows below.
+- reactive_material_argon_balanced_5ns,91261 EXIT1,119.679s:5ns coupled accepted,
+  next5ns transport completed (205 steps), final source projection rejected.
+  Same sourcec8eebf7d. Balanced snapshot projections still reject at32..512
+  velocity cells; constant1m/s reproduction error<=8.02e-13, within-cell density
+  variation<=9.66e-13. The actual source is warm; a projected rare velocity can
+  overshoot its source enough to make U=E-K negative. No clipping.
+- reactive_material_argon_balanced_n64_10ns,97915 EXIT1,603.798s:10ns accepted,
+  next10ns transport completed (578 steps), final source projection rejected.
+- reaction_remap_control,81579 EXIT0,96.808s,9ea80ada...f90663: full20ns matched
+  DI/RR-disabled direct/10ns/5ns cases. Rebuilt meshes produce J differences
+  55.020%/65.369%, E7.423%/8.009%. Conservation alone hid large transfer error.
+- reaction_remap_retained_knots,3944 EXIT0,127.719s,678de51a...3783fd:
+  all three full20ns cases. Retained knots reduce J to0.01021%/0.02575% and
+  E to0.00003142%/0.00003092%. Residual includes transfer and step grouping.
+  Inspected remap_effect.png/pdf and measured_comparison.json are saved.
+- reactive_material_argon_retained_knots_5ns,77564 EXIT1,150.608s,
+  source8b5c97f6...5e98167: first5ns accepted, next5ns transport complete in273
+  steps, then source return rejects negative thermal energy. Do not claim
+  exact failed species/basis without replay: this attempt did not save knots.
+
+NEXT inspect17499 outcome and its exact source/knot projection; identify whether
+failure is in a newly created species without inherited knots or a changing
+mixture within an old support. Preserve all physical moments and supports;
+derive a locally admissible representation instead of clipping heat or merely
+raising uniform resolution again. Continue the full20ns source/space studies
+and measured current accuracy before formation adoption. No unit tests.
+Poster remains untouched, SHA a783f7cda0f4a249cc4c23ead61debbdf89d356436a2a3dab2189029c6d5deca.
 
 ## Collect precise-geometry convergence (2026-10-16)
 

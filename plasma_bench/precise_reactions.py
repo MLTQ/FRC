@@ -1,7 +1,7 @@
 """Conservative reaction gather/return with distinct precise material supports."""
 import numpy as np
 from scipy.constants import elementary_charge as EV, epsilon_0 as EPS0
-from scipy.linalg import solve_banded
+from .mass_scaling import solve_mass_banded
 from .precise_geometry import decimal, widths, fraction, quadrature, interpolate, geometry_precision
 from .precise_material import PreciseMaterialSubcells, PreciseMaterialState, PreciseMaterialSet
 from .material_species_set import MaterialSetState
@@ -66,12 +66,15 @@ class PreciseReactionOverlap(MaterialReactionOverlap):
 
 @geometry_precision
 def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0,
-        cfl=.15, maximum_plasma_phase=.04, numerical_viscosity=(.5, 2.), viscosity_limiter='minmod'):
+        velocity_knots=None, cfl=.15, maximum_plasma_phase=.04,
+        numerical_viscosity=(.5, 2.), viscosity_limiter='minmod'):
     if not isinstance(coalesce_ulps, int) or coalesce_ulps < 0:
         raise ValueError('Nonnegative integer explicitly declared ULP cleanup required')
     source, network, values = overlap.source, overlap.source.network, state.moments
     present = np.any(values[..., overlap.number] > 0, axis=1)
     protected = np.r_[True, np.any(present[:-1] != present[1:], axis=1), True]
+    if velocity_knots:
+        protected |= np.isin(state.edges, np.concatenate(list(velocity_knots.values())))
     # Keep the earlier declared float-coordinate cleanup scale, not a new
     # physical-width averaging option. Every species endpoint stays protected.
     tolerance = decimal(coalesce_ulps*np.spacing(max(abs(float(x)) for x in state.edges)))
@@ -112,20 +115,28 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
         pairs = np.flatnonzero(np.diff(np.r_[False, occupied, False])).reshape(-1, 2)
         for first, last in pairs:
             faces = edges[first:last+1]
+            inherited = None
+            if velocity_knots is not None and species in velocity_knots:
+                old = velocity_knots[species]
+                inside = old[(old >= faces[0]) & (old <= faces[-1])]
+                if len(inside):
+                    inherited = np.unique(np.r_[faces[0], inside, faces[-1]])
             model = PreciseMaterialSubcells(nn[first:last], mass, overlap.charge[species],
                 (state.edges[0], state.edges[-1]), faces, velocity_cells, number_scale=population_scale,
+                velocity_faces=inherited,
                 left_electric=state.left_electric, cfl=cfl, maximum_plasma_phase=maximum_plasma_phase,
                 numerical_viscosity=numerical_viscosity, viscosity_limiter=viscosity_limiter)
             load = np.zeros((len(faces), 3))
             load[:-1] += ll[first:last]
             load[1:] += lr[first:last]
-            velocity = solve_banded((1, 1), model.matrix[0], model.restrict_load(load), check_finite=False)
+            velocity = solve_mass_banded(model.matrix[0], model.restrict_load(load))
             vl, vr = model.fine_velocity(velocity[None, ...])
             kinetic = mass*model.relative_numbers/6*np.sum(vl*vl+vl*vr+vr*vr, axis=1)
             result = PreciseMaterialState(faces[None, :].copy(), velocity[None, ...],
                                           (ee[first:last]-kinetic)[None, :])
             model.validate(result)
             records.append(dict(species=species, cells=last-first, minimum_width_m=float(widths(faces).min()),
+                velocity_cells=model.velocity_cells, inherited_velocity_faces=inherited is not None,
                 support_decimal_m=[str(faces[0]), str(faces[-1])]))
             models.append(model)
             states.append(result)
@@ -153,14 +164,26 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
 
 
 class PreciseReactiveMaterial(ReactiveMaterial):
-    def __init__(self, source, reference_density, *, quadrature=3, **controls):
+    def __init__(self, source, reference_density, *, quadrature=3, preserve_velocity_knots=True, **controls):
         super().__init__(source, reference_density, quadrature=quadrature, **controls)
         self.overlap = PreciseReactionOverlap(source, reference_density, quadrature=quadrature)
+        self.preserve_velocity_knots = bool(preserve_velocity_knots)
+        self.last_velocity_knots = None
 
     def source_step(self, model, state, reservoirs, dt):
+        self.last_overlap = None
+        self.last_velocity_knots = None
         gathered = self.overlap.from_material(model, state, model.species_indices)
         self.last_overlap = self.overlap.step(gathered, dt)
-        result, advanced, record = project_precise_reactions(self.overlap, self.last_overlap, **self.controls)
+        knots = None
+        if self.preserve_velocity_knots:
+            knots = {}
+            for index, block, values in zip(model.species_indices, model.models, state.blocks):
+                knots.setdefault(int(index), []).append(values.faces[0, block.velocity_indices])
+            knots = {index: np.unique(np.concatenate(values)) for index, values in knots.items()}
+        self.last_velocity_knots = knots
+        result, advanced, record = project_precise_reactions(self.overlap, self.last_overlap,
+            velocity_knots=knots, **self.controls)
         self.last_projection = record
         ledger = MaterialReservoirs(reservoirs.photons_j_m2+record['photon_energy_j_m2'],
             reservoirs.input_heat_j_m2+record['input_heat_j_m2'],

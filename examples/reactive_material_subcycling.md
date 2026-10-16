@@ -8,6 +8,11 @@ to zero, retaining every distinct density cut. The earlier recorded10ns/5ns
 attempts used8-ULP internal cleanup; that remains an explicit comparison option
 and still protects every species endpoint. Existing atomic/closure limits remain.
 
+Reaction return now preserves existing velocity knots and records the actual
+per-block velocity-cell counts. The CLI cell count sets the initial mesh and
+new-species target; inherited knots and new support endpoints can increase it.
+Saved indices define the actual mesh. No knot is removed to enforce a quota.
+
 `--source-step-ns` chooses a disclosed source interval (default10ns), not the
 motion timestep. Within it the material equations/fields use actual RK4 steps
 at half their current acoustic/plasma bound. Every accepted internal dt and
@@ -23,6 +28,10 @@ Source/input identities, initial state and actual internal step sizes retain
 reproducible evolution. A rejected source/transport interval retains its last
 source and internal diagnostics but does not advance completed coupled time.
 No clipping, hidden retry or shortened success. Disk reserve remains256MiB.
+Rejected-source archives now include `velocity_knots_species*_decimal_m` so
+the actual inherited projection can be reconstructed. The first retained-knot
+5ns attempt predates this extra metadata; its complete source and transport
+step records remain, but its failing transfer requires evolution replay.
 
 Use `python -m examples.reactive_material_subcycling FRESH_OUTPUT
 --source-step-ns 10 --cells 32`. This is an opt-in coupled research calculation,
