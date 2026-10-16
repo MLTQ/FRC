@@ -1,5 +1,51 @@
 # Numerical compression treatment and the long-array pulse
 
+## Third original timestep: field convergence still absent (2026-10-16)
+
+The original prescribed-resistance pulse completed 16000 steps over 3.5 us
+(session 58668, exit 0, 10186.854 s). All 16000 accepted states and the matching
+final digest are retained in
+`outputs/material_tube_independent_20mt_viscous_r4_z16_t16000`.
+Its source is unchanged:
+`05555dc9be49c3a1af9c31467fc713f4d5e395442328e9107eea19f68d0b3c75`.
+
+The existing actual-field comparison completed (54528, exit 0); its JSON and
+inspected PNG/PDF are in
+`outputs/material_tube_array_timestep_8000_16000_comparison`.
+Only dt changes, from 0.4375 to 0.21875 ns. The same 81 common saved times and
+6400 material quadrature samples use the second run's actual volume. There is
+no interpolation in time, new fit or repair of either trajectory.
+
+| Quantity | 8000 steps | 16000 steps |
+|---|---:|---:|
+| Final Joule heat |239.616087 mJ|237.561459 mJ|
+| Final numerical ion heat |15.527827 mJ|15.574380 mJ|
+| Final particle RMS radius |25.277822 mm|25.323649 mm|
+| Final middle / maximum radius |60.796912 / 64.214075 mm|61.120178 / 64.880913 mm|
+| Final mean Te / Ti |13.794141 / 1.062740 eV|13.714015 / 1.066903 eV|
+| Max observed absolute work residual / E0 |1.690418e-5|9.817969e-6|
+
+Final vector differences are B 7.5666%, induced B 7.4594%, J 18.6568% and bulk
+velocity 3.4036%; maximum material-position mismatch is 8.06427 mm. Across the
+sampled history, B reaches 20.7074% at 1.400 us, J 88.4446% at 1.70625 us and
+velocity 30.8887% at 1.6625 us. The preceding 4000/8000 comparison gave final
+B 8.2404%, J 20.5834% and position mismatch 2.46342 mm. These three trajectories
+do not show settled temporal convergence. Better integrated work balance and
+nearly unchanged bulk radii do not establish local field or edge accuracy.
+
+Next method study: the existing implicit entropy/current-switch method now runs
+the same strong pulse WITH the same declared numerical bulk pressure. The older
+strong split failure lacked that compression treatment. New config is
+`configs/material_tube_independent_20mt_viscous_split_t8000.json`, output
+`outputs/material_tube_independent_20mt_viscous_split_r4_z16_t8000`, live handle
+95749. It retains prescribed eta=1e-4 ohm m, 4x16 mesh, 0.4375 ns steps, all
+physical terms, exact exterior vacuum and unchanged wall-contact rejection.
+Its source is `31721f1fef01b747862f5263f3ddb92e5dfbca0d3fc1995e5e03ebf229d17afc`.
+The discontinuous upwind pressure trace is a known numerical mechanism, not a
+proven sole cause of these differences. Collect the full result before claiming
+improvement; retain failure states if it stops. No fourth RK refinement was
+launched, and no unit suite or new verification framework was added.
+
 ## Complete spatial comparison (2026-10-16)
 
 Original spatial run 85554 exited 0: all 8000 steps / 3.5 us in 12445.786 s,

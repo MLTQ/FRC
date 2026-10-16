@@ -71,7 +71,7 @@ class MaterialCoilCurrent(MaterialVacuumCurrent):
         thermal=self.species.pair(state.fluid,a,drift)
         curlw=np.column_stack([v@w for v in a['curl']])
         forcing_physical=self.delta*np.cross(drift,total+self.mu/E*curlw)-self.mu/E*np.cross(drift,a['vorticity'])
-        n=a['fields']['n'].ravel();forcing_physical+=self.resistivity*E*n[:,None]*drift
+        n=a['fields']['n'].ravel();forcing_physical+=a['collision_electric']
         forcing=sum(maps[i].T@(self.particles*forcing_physical[:,i]) for i in range(3))+thermal['reduced_forcing']
         source_material=-source['potential_time_rate']+np.cross(a['velocity'],source['magnetic'])
         drive=sum(maps[i].T@(self.particles*source_material[:,i]) for i in range(3))

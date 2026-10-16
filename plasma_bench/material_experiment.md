@@ -64,3 +64,12 @@ mechanical power and the heat represented by entropy are retained in the energy
 diagnostic. Numerical heating/pressure are reported separately from Joule heat.
 Scalar bulk diffusion vanishes in expansion and with mesh size in smooth flow;
 it does not guarantee an untangled multidimensional mesh or physical shock heating.
+
+Optional `collision_model={"kind":"maxwellian_pair","coulomb_log":10.0}`
+selects paired finite-drift Landau moments. Set plasma's prescribed resistivity
+to zero; separate temperature exchange is disabled because the pair already
+contains it. The actual force and both species heats come from the same collision
+calculation. The declared positive log is fixed, not a validated cutoff model.
+RK4 is required for these experiments while split-path behavior remains unmeasured.
+Omitting the option preserves the original prescribed-resistance model. Resolved
+metadata records the choice and unresolved Maxwellian/kinetic/screening limits.

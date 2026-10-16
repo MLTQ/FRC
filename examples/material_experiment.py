@@ -37,6 +37,7 @@ def run(config_path, destination):
         state = MaterialCurrentState(fluid.initial, np.zeros(model.space.magnetic_count))
         previous = model.response(state, time=0.); energy0 = previous['total_energy']
         work = 0.; response_work = 0.; heat = 0.; viscous_heat = 0.
+        collision_species_heat = np.zeros(2)
         group_work = np.zeros(len(model.source_groups)); group_response_work = group_work.copy()
         field_per_amp = np.array([group['vacuum_center_field_per_amp_t'] for group in metadata['source_groups']])
         record.update(steps=steps, dt=dt, duration=duration, initial_total_energy_j=energy0)
@@ -62,6 +63,12 @@ def run(config_path, destination):
                 source_linkage_wb=a['source_linkage_wb'], total_energy_j=a['total_energy'],
                 response_energy_j=a['response_energy'], external_work_j=work,
                 source_response_work_j=response_work if integrator=='rk4' else None, joule_heat_j=heat,
+                collision_heat_species_j=collision_species_heat.tolist(),
+                collision_heat_species_power_w=a['collision_heat_species_power'].tolist(),
+                collision_power_residual_w=a['collision_power_residual'],
+                collision_entropy_rate_over_kB_s=a['collision_entropy_rate_over_kB'],
+                maximum_collision_relaxation_s=a['maximum_collision_relaxation_s'],
+                maximum_collision_relaxation_times_dt=a['maximum_collision_relaxation_s']*dt,
                 numerical_viscous_heat_j=viscous_heat,
                 numerical_viscous_pressure_max_pa=a['numerical_viscous_pressure_max'],
                 numerical_viscous_power_residual_w=a['numerical_viscous_power_residual'],
@@ -105,6 +112,7 @@ def run(config_path, destination):
             if integrator == 'rk4':
                 group_response_work += .5*dt*(previous['source_group_response_powers_w']+a['source_group_response_powers_w'])
             heat += .5*dt*(previous['joule_power']+a['joule_power'])
+            collision_species_heat += .5*dt*(previous['collision_heat_species_power']+a['collision_heat_species_power'])
             viscous_heat += .5*dt*(previous['numerical_viscous_power']+a['numerical_viscous_power'])
             state = next_state; previous = a; record['completed_steps'] = step
             raw = out/f'step_{step:05}.npz'; np.savez_compressed(raw, **arrays(state))

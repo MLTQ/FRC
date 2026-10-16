@@ -142,9 +142,13 @@ def build(config):
     integrator = config.get('integrator', 'rk4')
     if integrator not in ('rk4', 'split'):
         raise ValueError('Supported time integrators: rk4 or split')
+    collisions = config.get('collision_model')
+    if collisions is not None and integrator != 'rk4':
+        raise ValueError('Paired collision experiments currently require the complete coupled RK4 path')
     solver = TubeMaterialSplitCurrent if integrator == 'split' else TubeMaterialCoilCurrent
     model = solver(fluid, space, vacuum, source_groups=groups,
-        resistivity=plasma['prescribed_resistivity_ohm_m'], coulomb_exchange=True,
+        resistivity=plasma['prescribed_resistivity_ohm_m'], coulomb_exchange=collisions is None,
+        collision_model=collisions,
         tube_radius=tube['radius_m'], tube_half_length=tube['length_m']/2,
         numerical_bulk_viscosity=config.get('numerical_bulk_viscosity'))
     metadata = dict(central_density_m3=float(center_density), ion_inventory=float(fluid.particles.sum()),
@@ -152,10 +156,11 @@ def build(config):
         neutral_density_before_preparation_m3=float(neutral_density), ion_mass_kg=float(fluid.ion_mass),
         vacuum_center_field_per_amp_t=group_metadata[0]['vacuum_center_field_per_amp_t'] if len(groups)==1 else None,
         source_groups=group_metadata, actual_initial_entropy=fluid.initial.entropy[0, 0].tolist(),
-        numerical_bulk_viscosity=model.numerical_bulk_viscosity,
+        numerical_bulk_viscosity=model.numerical_bulk_viscosity, collision_model=model.collision_model,
         assumptions=['All initial gas inventory is assumed prepared as the declared compact singly ionized plasma.',
             'No ionization, recombination, neutrals, radiation or preparation energy is evolved.',
             'Quartz is represented only as a nonconducting, nonmagnetic contact limit; no wall or sheath model.',
-            'Scalar resistivity is prescribed. Coulomb temperature exchange remains conditional.',
+            ('Scalar resistivity is prescribed. Coulomb temperature exchange remains conditional.' if collisions is None else
+             'Paired displaced-isotropic-Maxwellian drag and heat replace prescribed resistance and separate exchange; the supplied fixed Coulomb logarithm is a declared approximation. Screening, anisotropy and kinetic validity are unresolved.'),
             'Cold dilute edge, first-order entropy diffusion and current time sensitivity remain unresolved.'])
     return fluid, model, metadata

@@ -1,5 +1,29 @@
 # Paired finite-drift collision progress
 
+## Moving paired closure integrated into the main checkout (2026-10-16)
+
+After original run 58668 exited successfully, the exercised paired-collision
+solver, experiment configs and existing field/physical-comparison tools were
+integrated from `codex/finite-drift-collisions` into the main checkout. This
+preserves the earlier complete trajectories and all newer atomic/radiation
+work. No live source was changed. The resulting experiment source identity is
+the same `31721f1fef01b747862f5263f3ddb92e5dfbca0d3fc1995e5e03ebf229d17afc`
+as the archived paired runs. Prescribed-resistance mode remains explicit and
+available; paired mode still replaces both prescribed resistance and separate
+temperature exchange with one force/heat law, without double counting.
+
+Paired 16000-step run 16339 remains live in `/private/tmp/frc-finite-drift`;
+its latest saved diagnostic at this checkpoint was 12800/16000, not a completed
+pulse. Poll that exact handle and use the now-integrated
+`examples.material_coil_plot --configured-fields` for the full 8000/16000
+comparison after successful termination. Keep this private worktree unchanged.
+
+Main now also runs the original-resistance strong pulse with the existing split
+entropy/current integrator and numerical bulk pressure (95749); see the new
+top section of MATERIAL_COMPRESSION.md. Do not change its source while live.
+This is numerical-method work; it does not resolve the paired fine-grid wall
+contact, physical heat flux, ionization, kinetic validity or confinement.
+
 ## Finer mesh reaches the wall-contact model limit (2026-10-16)
 
 Spatial run 49353 terminated with exit 1 after 9473.880 s. It accepted 6147 of

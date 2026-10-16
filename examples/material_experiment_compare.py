@@ -21,6 +21,8 @@ def drift_content(response):
     weights = {'volume': volume, 'particle': n*volume,
                'electron_thermal_energy': n*te*volume,
                'current_squared_volume': (E*n)**2*drift2*volume}
+    if 'collision_electric' in response:
+        weights['collision_drag_power'] = volume*E*n*np.sum(response['drift']*response['collision_electric'],axis=1)
     return dict(maximum_drift_over_electron_thermal_speed=float(ratio.max()),
         scope='Actual quadrature; current-squared volume weights equal Joule-power weights only for the prescribed uniform scalar resistivity. Thresholds describe content, not a validity theorem.',
         thresholds=[dict(drift_over_thermal=threshold,
@@ -40,17 +42,28 @@ def compare(destination, control_path, pulse_path):
             raise ValueError('Complete successful trajectories required')
         runs.append((path, data))
     first, second = [data for path, data in runs]
-    for key in ('tube', 'plasma', 'mesh', 'evolution'):
+    for key in ('tube', 'mesh', 'evolution'):
         if first['config'][key] != second['config'][key]:
             raise ValueError('Matching chamber, plasma and evolution required')
+    initial_plasmas=[{k:v for k,v in d['config']['plasma'].items() if k!='prescribed_resistivity_ohm_m'} for d in (first,second)]
+    if initial_plasmas[0]!=initial_plasmas[1] or any(first['config'].get(k)!=second['config'].get(k) for k in ('numerical_bulk_viscosity',)) or first.get('integrator','rk4')!=second.get('integrator','rk4'):
+        raise ValueError('Matching initial plasma and numerical treatment required for a physical comparison')
+    closures=[d['config'].get('collision_model') or dict(kind='prescribed_resistivity',resistivity_ohm_m=d['config']['plasma']['prescribed_resistivity_ohm_m']) for d in (first,second)]
+    same_sources=source_configs(first['config'])==source_configs(second['config'])
     out.mkdir(); fig, axes = plt.subplots(2, 3, figsize=(15, 8.6), constrained_layout=True)
-    record = {'scope': 'Actual saved trajectories; exploratory pre-ionized plasma, not converged formation or confinement.', 'runs': {}}
+    record = {'scope': 'Actual saved trajectories; exploratory pre-ionized plasma, not converged formation or confinement.',
+              'changed_physical_inputs':(['source_groups'] if not same_sources else [])+(['collision_model'] if closures[0]!=closures[1] else []),'runs': {}}
     colors = ['#4b7281', '#b84b33']
     labels = []
     for data in (first, second):
         pulsed = [g for g in source_configs(data['config']) if g['pulse_center_t']['amplitude'] != 0.]
         labels.append('Bias only' if not pulsed else ' + '.join(
             f"{abs(g['pulse_center_t']['amplitude'])*1e3:g} mT · {len(g['coils_radius_z_turns'])} pulse coils" for g in pulsed))
+    if closures[0]!=closures[1]:
+        for i,closure in enumerate(closures):
+            collision_label=(f"Paired Maxwellian · lnΛ={closure['coulomb_log']:g}" if closure['kind']=='maxwellian_pair' else
+                             f"Prescribed η={closure['resistivity_ohm_m']:g} Ω m")
+            labels[i]=collision_label if same_sources else labels[i]+' · '+collision_label
     field_cap = max(abs(x) for path, data in runs for x in data['records'][-1]['plasma_bz_range_t'])*1e6
     increment = 10**(np.floor(np.log10(field_cap))-1) if field_cap else 1.
     field_cap = max(increment, np.ceil(field_cap/increment)*increment)
@@ -67,7 +80,7 @@ def compare(destination, control_path, pulse_path):
         axes[0, 1].plot(t, [r['maximum_plasma_radius_m']*1e3 for r in rows], color=color, label=label+' · max')
         axes[0, 1].plot(t, np.array(midplane_radius)*1e3, '--', color=color, label=label+' · middle')
         axes[0, 1].plot(t, np.array(rms_radius)*1e3, ':', color=color, label=label+' · particle RMS')
-        axes[0, 2].plot(t, [r['joule_heat_j']*1e3 for r in rows], color=color, label=label+' · Joule')
+        axes[0, 2].plot(t, [r['joule_heat_j']*1e3 for r in rows], color=color, label=label+' · collision heat')
         numerical_heat = [r.get('numerical_viscous_heat_j') for r in rows]
         if all(value is not None for value in numerical_heat):
             axes[0, 2].plot(t, np.array(numerical_heat)*1e3, '--', color=color,
@@ -87,7 +100,7 @@ def compare(destination, control_path, pulse_path):
         axis.set(xlabel='Axial position z [cm]', ylabel='Radius r [cm]', title=f"{label}: final Bz and flux\n{data['duration']*1e6:g} µs; radial scale expanded")
         fig.colorbar(artist, ax=axis, label='Axial field Bz [µT]', shrink=.8)
         record['runs'][path.name] = dict(source_sha256=data['source_sha256'], summary_sha256=sha(path/'summary.json'),
-            label=label, particle_rms_radius_history_m=rms_radius,
+            label=label, collision_model=closures[run_index], particle_rms_radius_history_m=rms_radius,
             midplane_radius_history_m=midplane_radius, time_history_s=[r['time'] for r in rows],
             joule_heat_history_j=[r['joule_heat_j'] for r in rows],
             numerical_viscous_heat_history_j=numerical_heat,
@@ -101,15 +114,16 @@ def compare(destination, control_path, pulse_path):
                 'plasma_bz_range_t', 'peak_current_components_a_m2', 'joule_heat_j', 'external_work_j',
                 'particle_mean_temperature_ev', 'maximum_drift_over_electron_thermal_speed')})
         record['runs'][path.name]['final']['numerical_viscous_heat_j'] = numerical_heat[-1]
+        record['runs'][path.name]['final']['collision_heat_species_j'] = rows[-1].get('collision_heat_species_j')
         # Compare independently reconstructed exterior coil flux with the
         # volume-current linkage, using the actual peak-drive saved state.
         peak = max(rows, key=lambda row: abs(row['nominal_vacuum_center_field_t']))
         peak_state = state_at(path, peak.get('step', 0))
-        response = model.response(peak_state, rate=False, time=peak['time'])
+        response = model.response(peak_state, time=peak['time'])
         record['runs'][path.name]['drift_content'] = {
             'peak_drive': dict(time_s=peak['time'], **drift_content(response)),
             'final': dict(time_s=data['duration'], **drift_content(
-                model.response(state, rate=False, time=data['duration'])))}
+                model.response(state, time=data['duration'])))}
         group_comparisons = []
         for index, group in enumerate(meta['source_groups']):
             coils = np.asarray(group['coils_radius_z_turns'])
@@ -124,15 +138,15 @@ def compare(destination, control_path, pulse_path):
         record['runs'][path.name]['peak_drive_linkage_comparison'] = group_comparisons
     labels = [('Prescribed field at centre', 'Vacuum centre Bz [mT]'),
               ('Compression at the middle versus outer expansion', 'Plasma radius [mm]'),
-              ('Resistive and numerical compression heating', 'Accumulated heat [mJ]'), ('Azimuthal plasma current', 'Peak |Jθ| [kA/m²]')]
+              ('Collision and numerical compression heating', 'Accumulated heat [mJ]'), ('Azimuthal plasma current', 'Peak |Jθ| [kA/m²]')]
     for axis, (title, unit) in zip([*axes[0], axes[1, 0]], labels):
         axis.set(title=title, xlabel='Time [µs]', ylabel=unit); axis.grid(alpha=.2); axis.legend(frameon=False, fontsize=8)
     a, b = [d['records'][-1] for p, d in runs]
     record['final_radius_second_minus_first_m'] = b['maximum_plasma_radius_m']-a['maximum_plasma_radius_m']
     tube=second['config']['tube'];plasma=second['config']['plasma']
     fig.suptitle(f"Coil-pulse response: magnetic field, current, heat and plasma motion\n{tube['length_m']:g} m × {tube['radius_m']*200:g} cm tube · assumed prepared {plasma['gas']} at {plasma['neutral_fill_mtorr']:g} mTorr inventory · no neutral/ionization model", fontsize=14)
-    fig.savefig(out/'pulse_vs_bias.png', dpi=170); fig.savefig(out/'pulse_vs_bias.pdf'); plt.close(fig)
     (out/'comparison.json').write_text(json.dumps(record, indent=2)+'\n')
+    fig.savefig(out/'pulse_vs_bias.png', dpi=170); fig.savefig(out/'pulse_vs_bias.pdf'); plt.close(fig)
     print('Physical coil comparison complete:', out, flush=True)
 
 

@@ -38,3 +38,14 @@ they are not a declaration that other samples have valid transport.
 At each run's recorded peak drive, each group's independent
 exterior flux linkage is compared with its volume-current linkage. The finite-
 space discrepancy is reported unchanged; it never repairs work or currents.
+
+The same tool also compares different physical collision closures on otherwise
+matching plasma, mesh, timestep, integrator and numerical compression treatment.
+Coil groups and/or collision models may change; every change is named in JSON
+and the legends. Prescribed eta versus paired Maxwellian heat is labeled as
+collisional heat, with numerical ion heat separate. Stored signed species heat
+is retained when available, otherwise null. Peak/final response now includes the
+actual collision force, so drift-content weights also use J.E_collision; J²
+alone is not a heat weight for nonlinear finite-drift collisions. Calculations
+are saved before plotting. Comparison of two closures is not a validation of
+either closure, and two simultaneous physical changes cannot be attributed to one.

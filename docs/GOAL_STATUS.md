@@ -1,5 +1,47 @@
 # Active research: a credible experimental FRC simulation
 
+## Original time refinement completed; switch treatment under study (2026-10-16)
+
+Previous goal turn was NO PROGRESS on the full simulation: it reconfirmed the
+already-complete 10 ns viewer. This turn collected the terminal original pulse,
+measured actual field differences, integrated the exercised paired collision
+closure into main, and launched a different existing time method for the strong
+pulse. Full original scope and acceptance gates remain OPEN.
+
+Original58668 EXIT0:16000/16000,3.5us,10186.854s, source05555dc9...b3c75.
+All16000 accepted arrays and matching final digest are preserved. Comparison54528
+EXIT0 in outputs/material_tube_array_timestep_8000_16000_comparison: 81 common
+times,6400 actual-basis quadrature samples, only dt0.4375->0.21875ns changes.
+Final B7.5666%,J18.6568%,velocity3.4036%,position8.06427mm differences; maximum
+J88.4446% at1.70625us. Max work/E0 is9.81797e-6. Small bulk/energy differences
+do NOT establish temporal convergence. PNG inspected; JSON/PDF preserved.
+Read new top of MATERIAL_COMPRESSION.md for all values and numerical assumptions.
+
+The paired collision solver/configs and existing comparisons are now in MAIN;
+newer atomic/radiation work is preserved. Main moving source is identical to
+paired31721f1fef01b747862f5263f3ddb92e5dfbca0d3fc1995e5e03ebf229d17afc.
+No test suite, new framework, hidden floor or energy repair was introduced.
+
+TWO exact live handles were polled; never restart from stale saved counts:
+- 16339:paired4x16t16000 in /private/tmp/frc-finite-drift. Latest saved12800/16000,
+  8079.684s; outputs/material_tube_independent_20mt_maxwellian_r4_z16_t16000.
+  Keep its source unchanged. On successful terminal completion compare8000/16000
+  using existing examples.material_coil_plot --configured-fields.
+- 95749:NEW original-resistance strong pulse with existing implicit entropy/current
+  switch integrator AND unchanged numerical bulk pressure,4x16,8000steps,0.4375ns.
+  Config configs/material_tube_independent_20mt_viscous_split_t8000.json;
+  output outputs/material_tube_independent_20mt_viscous_split_r4_z16_t8000.
+  Source31721f1f...d17afc in MAIN. Keep moving source unchanged while live.
+  The earlier strong split failure lacked numerical bulk pressure. Collect full
+  trajectory/failure before claiming improvement; use existing configured-field
+  comparison against RK4. Upwind switching is a candidate numerical cause, not
+  proven to explain all current/edge sensitivity. Do not repair failed states.
+
+Other next work remains the physical plasma edge/heat/species coupling, paired
+fine-grid wall contact and radiation discrepancy. See following checkpoint for
+ORNL detector/count data and pending LXCat permission; do not accept its terms.
+Preserve exact vacuum,10ns viewers,user poster and raw failures. No remote.
+
 ## Detector radiation physics and a terminal wall-contact limit (2026-10-16)
 
 Previous goal turn was PROGRESS:4c7ce5d99 saved photon transport and original

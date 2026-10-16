@@ -34,6 +34,83 @@ def state_at(path,step):
         return MaterialCurrentState(MaterialSpeciesState(**{k:raw[k].copy() for k in MaterialSpeciesState.__dataclass_fields__}),raw['magnetic'].copy())
 
 
+def configured_fields(destination, sources):
+    """Compare complete configured pulses using their actual material bases."""
+    from math import gcd
+    from plasma_bench.material_experiment import build as experiment, source_configs
+    out = Path(destination)
+    if out.exists() or len(sources) != 2:
+        raise ValueError('Fresh output and exactly two completed configured experiments required')
+    runs = [(Path(p), json.loads((Path(p)/'summary.json').read_text())) for p in sources]
+    for path, data in runs:
+        if not data['terminal'] or not data['success']:
+            raise ValueError('Full successful trajectories required, not live/failed prefixes')
+    a, b = [d for p, d in runs]; configs = [d['config'] for p, d in runs]
+    if (a['duration'] != b['duration'] or
+            any(configs[0].get(k) != configs[1].get(k) for k in ('tube', 'plasma', 'collision_model')) or
+            source_configs(configs[0]) != source_configs(configs[1])):
+        raise ValueError('The same physical initial plasma, tube, collisions, sources and duration are required')
+    models = [experiment(config) for config in configs]
+    radial = np.unique(np.concatenate([m.space.mesh.rf for f, m, meta in models]))
+    axial = np.unique(np.concatenate([m.space.mesh.zf for f, m, meta in models]))
+    x, w = np.polynomial.legendre.leggauss(10)
+    r = (.5*(radial[1:]+radial[:-1])[:, None]+.5*np.diff(radial)[:, None]*x).ravel()
+    z = (.5*(axial[1:]+axial[:-1])[:, None]+.5*np.diff(axial)[:, None]*x).ravel()
+    rr, zz = np.meshgrid(r, z, indexing='ij')
+    dv = 2*np.pi*rr*(.5*np.diff(radial)[:, None]*w).ravel()[:, None]*(.5*np.diff(axial)[:, None]*w).ravel()[None, :]
+    n0 = [meta['central_density_m3']*((1-(rr/m.space.mesh.radius)**2)*(1-(zz/m.space.mesh.half_length)**2))**1.5
+          for f, m, meta in models]
+    common = gcd(a['steps'], b['steps'])
+    indices = np.unique(np.rint(np.linspace(0, common, min(81, common+1))).astype(int))
+    numerical = [dict(mesh=c['mesh'], dt=d['dt'], integrator=d.get('integrator', 'rk4'),
+                      numerical_bulk_viscosity=c.get('numerical_bulk_viscosity')) for c, (p, d) in zip(configs, runs)]
+    changes = [k for k in numerical[0] if numerical[0][k] != numerical[1][k]]
+    summary = dict(scope='Complete saved trajectories at common material labels, not common physical positions. Differences measure numerical sensitivity, not experimental accuracy or convergence from two runs.',
+        changed_numerical_inputs=changes, reference_quadrature_points=rr.size,
+        weighting='Ten-point Gauss per union reference cell; actual volume of second run. Each run uses its own inventory-normalized initial density.',
+        runs=[dict(path=str(p.resolve()), source_sha256=d['source_sha256'], summary_sha256=sha(p/'summary.json'),
+                   numerical_inputs=num, central_density_m3=meta['central_density_m3'],
+                   maximum_absolute_external_work_residual=max(abs(row['relative_external_work_residual']) for row in [d['initial']]+d['records']),
+                   final_heat_j={k:d['records'][-1].get(k) for k in ('joule_heat_j','numerical_viscous_heat_j','collision_heat_species_j')})
+              for (p, d), num, (f, m, meta) in zip(runs, numerical, models)], states=[])
+    out.mkdir()
+    for index in indices:
+        samples = []; steps = []
+        t = index/common*a['duration']
+        for (path, data), (fluid, model, meta), density in zip(runs, models, n0):
+            k = int(index*(data['steps']//common)); steps.append(k)
+            samples.append(material_samples(model, state_at(path, k), rr, zz, density, time=t))
+        volume = dv*samples[1]['volume_ratio']; row = dict(time_s=t, steps=steps)
+        for key in ('magnetic', 'induced_magnetic', 'current', 'velocity'):
+            first, second = [sample[key] for sample in samples]
+            delta2 = np.sum(volume[..., None]*(first-second)**2, axis=(0, 1))
+            norm2 = np.sum(volume[..., None]*second**2, axis=(0, 1))
+            row[key] = dict(rms_difference=np.sqrt(delta2/volume.sum()).tolist(),
+                relative_l2_difference=float(np.sqrt(delta2.sum()/norm2.sum())) if norm2.sum() else None,
+                component_relative_l2_differences=[float(np.sqrt(v/n)) if n else None for v, n in zip(delta2, norm2)])
+        row['maximum_position_difference_m'] = float(np.linalg.norm(samples[0]['points']-samples[1]['points'], axis=-1).max())
+        summary['states'].append(row)
+    (out/'comparison.json').write_text(json.dumps(summary, indent=2)+'\n')
+    print('Configured field calculation complete; rendering figures', flush=True)
+    fig, axes = plt.subplots(2, 3, figsize=(14, 8), constrained_layout=True)
+    times = np.array([row['time_s'] for row in summary['states']])*1e6
+    for ax, key, label in zip(axes.flat, ('magnetic','induced_magnetic','current','velocity'),
+                              ('Total B','Induced B','Current density','Bulk velocity')):
+        for component, name in enumerate(('r', 'theta', 'z')):
+            ax.plot(times, [row[key]['component_relative_l2_differences'][component] for row in summary['states']], label=name)
+        ax.plot(times, [row[key]['relative_l2_difference'] for row in summary['states']], color='black', lw=1.6, label='vector')
+        ax.set(title=label, xlabel='Time [µs]', ylabel='Relative L2 difference'); ax.legend(frameon=False); ax.grid(alpha=.2)
+    axes[1, 1].plot(times, [row['maximum_position_difference_m']*1e3 for row in summary['states']])
+    axes[1, 1].set(title='Material position mismatch', xlabel='Time [µs]', ylabel='Maximum displacement difference [mm]'); axes[1, 1].grid(alpha=.2)
+    for i, (path, data) in enumerate(runs):
+        rows = [data['initial']]+data['records']
+        axes[1, 2].plot(np.array([r['time'] for r in rows])*1e6, [r['relative_external_work_residual'] for r in rows], label=f'Run {i+1}')
+    axes[1, 2].set(title='Independent source-work balance', xlabel='Time [µs]', ylabel='Energy residual / initial energy'); axes[1, 2].legend(frameon=False); axes[1, 2].grid(alpha=.2)
+    fig.suptitle('Actual moving-plasma field sensitivity\nChanged numerical inputs: '+', '.join(changes or ['none'])+'; zero reference components have undefined relative error', fontsize=13)
+    fig.savefig(out/'material_field_differences.png', dpi=170); fig.savefig(out/'material_field_differences.pdf'); plt.close(fig)
+    print('Configured material-field comparison complete', out, flush=True)
+
+
 def build(destination,sources):
     out=Path(destination)
     if out.exists():raise ValueError('Fresh physical plot directory required')
@@ -122,4 +199,6 @@ def build(destination,sources):
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('destination');p.add_argument('sources',nargs='+');a=p.parse_args();build(a.destination,a.sources)
+    p=argparse.ArgumentParser();p.add_argument('destination');p.add_argument('sources',nargs='+')
+    p.add_argument('--configured-fields',action='store_true');a=p.parse_args()
+    (configured_fields if a.configured_fields else build)(a.destination,a.sources)
