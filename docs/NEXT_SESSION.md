@@ -1,5 +1,52 @@
 # Resume the physical FRC simulation
 
+## Spatial field/species equations exercised; one moving pulse remains live (2026-10-16)
+
+The preceding turn was NO PROGRESS on physics (completed viewer reconfirmation).
+This turn implemented spatial transverse Maxwell/Lorentz coupling on the new
+charge-continuous longitudinal species transport. Read the newest GOAL_STATUS,
+`ATOMIC_SPATIAL_FIELDS.md`, `ATOMIC_ELECTROMAGNETIC.md` and the atomic_electrostatic/
+atomic_maxwell module and example companions. Full original scope remains OPEN.
+
+Completed evidence, all accepted states and inspected PNG/PDFs:
+- `outputs/atomic_electrostatic`: six full nonlinear longitudinal waves;
+  terminal success,37.161s, source82074475...a16d2. Original launch handle was lost;
+  no inferred process exit code. Finest independent E/J error about1%.
+- `outputs/atomic_maxwell`:86650 EXIT0,15 full vacuum/linear/circular waves,
+  92.079s, sourcec2ab16c5...450a3. Exactly empty reflecting ghosts exposed a
+  redundant 0/0 calculation in the Euler contact branch; actual flux stayedzero.
+- `outputs/atomic_maxwell_exact_empty`:99703 EXIT0,15 full histories,91.837s,
+  sourcea8141a13a35d42704ec9a1e3d7766a09e0630bb819ab520771deb752a4826213.
+  Both-empty faces now bypass contact division without state changes. All saved
+  arrays agree with86650. Finest magnetized E/B/J errors0.20765/0.22033/0.20152%.
+  Roughly second-order space/time convergence; no need to rerun by default.
+- `outputs/atomic_electromagnetic_exponential`:77504 EXIT0,566.191s, source
+  8bae70d9b3335e0c0426c8978142fdc5bbfc77e931d46418ec4cf832a0052822.
+  Both full700/1400 reacting3.5us histories complete. Time halving still changes
+  J1122.511A/m² and E660.012V/m; finer finalJ0.003172620A/m², tail difference170%.
+  Do not infer coupled-phase accuracy from exact frozen-source exponentials.
+
+Only LIVE job92324 remains: full higher-order8000-step moving20mT pulse,
+0.4375ns, sourcef5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2.
+Last saved1800/8000 at3087.384s. Poll exacthandle; no restart on timeout. Preserve
+its imported moving closure and uncommitted live output. The new Euler flux is
+outside that closure. On successful terminal outcome, run the existing
+`examples.material_coil_plot --configured-fields` against completed higher-order
+4000, changing only dt; preserve any failure instead of weakening requirements.
+
+NEXT physical implementation: carry the actual variable species number/momentum/
+energy state into compatible moving geometry/current/field work. The material
+solver still assumes fixed carrier weights and two entropies, so population/T/J
+resets are invalid. New spatial components use fixed reflecting/conducting ends,
+not physical coil/open-end boundaries, and their Eulerian tails disqualify them
+as a tracked-vacuum replacement. Full spatial reaction/transport and field stress
+coupling remain. Physical light/plasma-resolved picosecond steps in these dilute
+wave fixtures are not a demonstrated practical dense-plasma integration strategy.
+Prioritize this solver assembly over more standalone wave/reporting frameworks.
+Keep all original gates open; no unit tests. Preserve private atomic data/LXCat
+permission state, exact formation vacuum, user poster and finished10ns viewers.
+Local Git only; no remote/publication.
+
 ## Field/species source implemented; two exact jobs remain live (2026-10-16)
 
 PROGRESS after415513dbf: full finite-mass Lorentz/Ampere coupling now evolves

@@ -34,7 +34,10 @@ def hllc(left, right, mass_ratio, frame_normal, *, axis=2, gamma=5/3):
     sl=np.where((nl==0)&(nr>0),np.minimum(sl,ur-2*cr/(gamma-1)),sl)
     sr=np.where((nr==0)&(nl>0),np.maximum(sr,ul+2*cl/(gamma-1)),sr)
     result=np.where((sl>=0)[...,None],fl,fr).copy()
-    fan=(sl<0)&(sr>0)
+    # Reflected ghosts can assign different coordinate velocities to two empty
+    # sides. They still carry exactly zero flux and have no contact state to
+    # divide by a density scale. Leave their physical zero flux untouched.
+    fan=(sl<0)&(sr>0)&((nl>0)|(nr>0))
     if not np.any(fan):return result
     a,b=sl[fan],sr[fan];l,r=left[fan],right[fan];L,R=ql[fan],qr[fan]
     FL,FR=fl[fan],fr[fan];u,v=ul[fan],ur[fan]

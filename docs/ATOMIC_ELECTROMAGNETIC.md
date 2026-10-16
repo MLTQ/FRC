@@ -64,7 +64,7 @@ is about19.70A/m², versus1.465A/m² coarse. Neither is a validated current tail
 This is concrete evidence that a small conserved-energy residual cannot certify
 field/current dynamics.
 
-## Exponential source improvement underway
+## Completed exponential source histories
 
 The same physical skew source can be integrated by a sparse matrix exponential,
 with no midpoint phase dispersion inside a frozen-population substep. Optional
@@ -72,7 +72,7 @@ with no midpoint phase dispersion inside a frozen-population substep. Optional
 nonzero charged population, including trace states. Details and remaining
 splitting limits are in `plasma_bench/species_field_exponential.md`.
 
-Run77504 is LIVE in `outputs/atomic_electromagnetic_exponential`, source
+Run77504 exited 0 after 566.191 s in `outputs/atomic_electromagnetic_exponential`, source
 `8bae70d9b3335e0c0426c8978142fdc5bbfc77e931d46418ec4cf832a0052822`.
 Its six complete analytic histories have maximum E error<=5.68e-13V/m,
 J error<=3.50e-14A/m² and occupied velocity error<=2.18e-11m/s. Independent
@@ -80,9 +80,20 @@ energy drift<=7.11e-15eV/nucleus and total scaled-momentum drift<=2.07e-16.
 The full700-step reacting history now completes3.5us: final current magnitude
 0.008561895A/m², E=[-0.000447424,-2.40530e-7,-0.002872067]V/m, electron
 number0.6832656324, Te2.502600599eV and energy drift2.52e-12eV/nucleus.
-This differs strongly from the unresolved midpoint tail. The1400-step run
-remains pending, so global splitting accuracy is not established. Preserve the
-source while live.
-Removing frozen-source phase dispersion does not establish resolved reaction/
-collision splitting or a physically valid spatial field model; collect actual
-complete outcomes and field/current differences before claiming those results.
+The full 1400-step trajectory also completes through 3.5 us. Its final current
+magnitude is 0.003172620 A/m², electric field
+[-0.000447383,-1.02326e-7,0.001229286] V/m, electron number 0.6832651966 and
+Te=2.502599254 eV. Maximum energy-budget drift is 2.43e-12 eV/nucleus. The
+scientific PNG was inspected, and every accepted state and PDF are saved.
+
+Time halving still changes J by up to 1122.5109 A/m² (at 0.395 us), and E by
+660.0122 V/m (at 0.270 us). Population L1 and Te differences are 4.32606e-6 and
+0.000259630 eV. The small final current differs by 0.00538928 A/m², about 170%
+of the finer tail. Accurate frozen-source oscillations therefore do not establish
+resolved reaction/collision splitting or a validated current tail. Further
+source/time treatment must retain this limitation rather than infer accuracy
+from near-roundoff conservation or small population differences.
+
+The new spatial components and complete longitudinal wave evidence are described
+in `ATOMIC_SPATIAL_FIELDS.md`; they retain separate exact-vacuum/interface and
+boundary acceptance requirements.

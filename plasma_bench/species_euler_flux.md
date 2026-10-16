@@ -25,7 +25,9 @@ and prescribed-heat ledgers are not material species and are not advected here.
 Wave bounds include both endpoint acoustic speeds and positive Roe-averaged
 thermal/velocity-variance contributions, without subtracting large bulk kinetic
 energies. A vacuum side also includes its expansion-fan front speed. Both empty
-sides have exactly zero flux and no atmosphere. HLLC star states follow mass,
+sides have exactly zero flux and no atmosphere. They bypass contact-state
+division even when reflecting ghosts give their empty coordinate velocities
+opposite signs; no zero-density normalization is attempted. HLLC star states follow mass,
 momentum and energy jump conditions in the fixed frame. A vacuum face or negative
 star thermal energy uses HLL instead. This adds explicit numerical diffusion;
 it is not viscosity, conduction, a density floor or physical plasma edge physics.

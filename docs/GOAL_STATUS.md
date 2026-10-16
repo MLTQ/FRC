@@ -1,5 +1,58 @@
 # Active research: a credible experimental FRC simulation
 
+## Spatial species–Maxwell coupling completed as an interior component (2026-10-16)
+
+The preceding turn made NO PROGRESS on physics: it only reconfirmed the finished
+10 ns animation. This continuation made actual solver progress. The full original
+FRC objective and all missing formation/transport/boundary gates remain OPEN.
+
+The new `AtomicElectrostatic` and `AtomicMaxwell` retain each species' number,
+three momenta and total energy, physical electron mass and light speed. Actual
+particle fluxes give longitudinal charge/current/work; staggered transverse
+Maxwell curls and matching force/work averages evolve both transverse E/B
+components. The complete nonlinear Lorentz force is present. Read
+`docs/ATOMIC_SPATIAL_FIELDS.md` and the new module/example companions for equations,
+boundary assumptions, numerical diffusion and measured quadrature differences.
+
+Six longitudinal histories completed (37.161 s; terminal success summary, lost
+launch handle), source8207447522e0740a74ecb14835b6042989489afcde0236cc920e6168998a16d2.
+Finest E/J errors against the independent two-fluid mode are about 1%. Then 15
+complete vacuum/unmagnetized/magnetized Maxwell histories finished in run86650,
+exit0. The exact-empty calculation exposed a redundant zero-density division;
+after bypassing that unused contact calculation, full run99703 exited0 in91.837s.
+All 15 actual saved histories remain identical. Final output
+`outputs/atomic_maxwell_exact_empty`, source
+a8141a13a35d42704ec9a1e3d7766a09e0630bb819ab520771deb752a4826213.
+Finest magnetized E/B/J errors are0.20765%/0.22033%/0.20152%, with roughly
+fourfold reduction on each mesh/time refinement. Vacuum retains exactly zero
+matter. PNGs inspected and PDFs saved. No unit suite or new reporting framework.
+
+These are fixed reflecting/conducting verification intervals. The Eulerian
+matter flux still cannot replace the tracked exact formation edge. Spatial
+reaction/collision integration, physical boundaries, radial geometry, momentum/
+stress budgets and efficient dense-plasma time integration remain necessary.
+Do not treat either these waves or small matched-discrete energy drift as a
+validated formation model. Both field-energy quadratures are explicitly reported.
+
+Pending homogeneous exponential run77504 is now collected: EXIT0,566.191s, all
+700/1400-step reacting histories through3.5us. Source8bae70d9...52822 preserved in
+`outputs/atomic_electromagnetic_exponential`; PNG inspected. Time halving still
+changes E/J by660.012V/m /1122.511A/m², and the final current tail by170% of the
+finer value. Accurate frozen-source integration does not resolve the coupled
+reaction/field phase. Read the updated `ATOMIC_ELECTROMAGNETIC.md`.
+
+Only moving run92324 remains LIVE, verified by its exact handle. It has saved
+1800/8000 steps (3087.384s) in
+`outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t8000`.
+Moving sourcef5ddb118...28f2 is unchanged; the Euler-flux edit is outside its
+import closure. Preserve the live output/source and collect its actual terminal
+outcome before the existing 4000/8000 field comparison. NEXT continue integration
+of the full species/current state with tracked material geometry and physical
+field/boundary work; do not graft local population resets into fixed carrier
+weights and two entropies. No more viewer work or generic replay by default.
+Private provider inputs, user poster and existing viewers remain untouched.
+Local Git only, no remote/publication. Beadfrc-transport.5.5 and fullfrc-goal stayopen.
+
 ## Reactive field/current coupling and completed higher-order pulse (2026-10-16)
 
 Previous goal turn made PROGRESS in415513dbf. This continuation adds actual
