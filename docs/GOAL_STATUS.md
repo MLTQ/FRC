@@ -1,5 +1,54 @@
 # Active research: a credible experimental FRC simulation
 
+## Paired collisions in the full moving solver (2026-10-16)
+
+Previous UI-only turn made no new scientific progress: it verified the already
+completed 10 ns animation. This turn resumed the next available physical change.
+Local commit 279bf0a8f on codex/finite-drift-collisions adds one paired collision
+force/heat calculation to both driven and undriven moving electromagnetic rows
+and species entropy. Read FINITE_DRIFT_COLLISIONS.md and the new companion docs.
+No old physical terms or exact vacuum were removed; no heat/field/state repair.
+
+The implementation lives in sparse worktree /private/tmp/frc-finite-drift while
+three original studies keep their main-checkout source unchanged. The local Git
+branch preserves the code; all new output is in /Users/max/Code/FRC/outputs.
+No remote exists or is required. Do not edit scientific source in either checkout
+while its respective live runs remain active. Main can receive the branch once
+its THREE original jobs have terminal evidence; worktree jobs stay independent.
+
+FIVE actual scientific handles were polled LIVE (counts are saved observations):
+- 52937: outputs/material_tube_independent_20mt_maxwellian_r4_z16_t4000,
+  full 3.5 us requested, 0.875 ns, recorded 150/4000 steps, 102.49 s elapsed.
+- 33952: outputs/material_tube_independent_20mt_maxwellian_r4_z16_t8000,
+  matching half-timestep pulse, 0.4375 ns, first accepted step recorded.
+These two use worktree source
+31721f1fef01b747862f5263f3ddb92e5dfbca0d3fc1995e5e03ebf229d17afc,
+paired displaced-Maxwellian collisions with declared lnLambda=10, eta=0 and no
+separate exchange, original 4x16 mesh and C1=.5/C2=2 numerical bulk viscosity.
+Species collision heat and numerical ion heat are independently observed.
+At early 0.13125 us, coarse electron/ion exchange is -21.732/+21.732 uJ and
+external-work residual/E0=6.67e-15. This precedes pulse onset, not full accuracy.
+
+- 88009: outputs/material_tube_independent_20mt_viscous_r4_z16_t8000,
+  original time control, recorded 3400/8000 steps, 2240.10 s elapsed.
+- 85554: outputs/material_tube_independent_20mt_viscous_r6_z24_t8000,
+  original spatial control, recorded 1400/8000 steps, 2222.76 s elapsed.
+- 46579: outputs/material_tube_bias_only_viscous_r4_z16_t4000,
+  original matching bias-only control, recorded 3100/4000 steps, 1944.52 s elapsed.
+Their main source remains
+05555dc9be49c3a1af9c31467fc713f4d5e395442328e9107eea19f68d0b3c75,
+verified unchanged after the isolated implementation.
+
+NEXT collect complete results from those exact handles. Use the existing
+material_experiment_compare on completed bias/array controls. Measure complete
+field/current/geometry/heat time and mesh differences, not just final maxima.
+For paired collisions, compare full pulse and half-dt trajectories and then mesh
+sensitivity, retaining declared-log/Maxwellian limitations. Do not restart a live
+job because an observation times out. Source baselines remain independent and
+complete; these moving pulses remain unfinished. Keep frc-transport.3,
+frc-vacuum.3.2/.3.3 and the full original goal open. No unit suite or new test
+framework. Preserve the user poster and existing /20mt/ and /array20mt/ views.
+
 ## Finite-drift collision model and measured sensitivity (2026-10-16)
 
 Previous goal turn was progress, committed as b4bb4a1da: complete matched coil

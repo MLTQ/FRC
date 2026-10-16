@@ -73,17 +73,46 @@ Run 61137 exited 0, source
 ae11182af08eb9de9989fd250a5113268ee9ca50d4c75396e7d707fdc53c6810.
 The scientific PNG was inspected; PDF generated.
 
-## Next physical integration
+## Moving-plasma integration now running
 
-`frc-transport.3` remains in progress. After current physical runs finish, add one
-paired collision hook to MaterialVectorCurrent and reuse its actual electrical
-forcing in MaterialCoilCurrent's driven solve. Replace both old prescribed drag
-and old thermal exchange for this option; do not add them twice. Species heat
-must use the same dual entropy work pairing. Preserve exact vacuum and the full
-current, inertia, fluid, pressure and source-work terms. Then run complete moving
-trajectories with conservation and numerical sensitivity measured independently.
+`frc-transport.3` remains in progress. Commit `279bf0a8f` on local branch
+`codex/finite-drift-collisions` implements one paired collision hook in the sparse
+worktree `/private/tmp/frc-finite-drift`. It is not yet merged into the main
+checkout: three original runs still require unchanged main scientific source.
+All new physical output is saved under `/Users/max/Code/FRC/outputs`, not in the
+temporary checkout. The local Git branch preserves the implementation.
+
+`material_collision_sources` returns R_e/(e*n) to MaterialVectorCurrent, whose
+driven child reuses exactly that forcing. The same call supplies Qe/Qi through
+the existing dual entropy work pairing, applied once. Paired mode requires zero
+prescribed eta and disables separate thermal exchange. Full physical current,
+mass, Hall, stresses, fluid, pressure, exact vacuum and source work remain.
+Signed species heat integrals, collision entropy and local relaxation rate are
+observed separately from numerical ion heat and the full energy/work residual.
+
+Two complete 3.5 us array trajectories are requested, both with declared fixed
+lnLambda=10, the existing 4x16 mesh and numerical bulk viscosity C1=0.5, C2=2:
+
+- LIVE handle 52937: `outputs/material_tube_independent_20mt_maxwellian_r4_z16_t4000`,
+  0.875 ns integration, recorded 150/4000 steps at 102.49 s elapsed.
+- LIVE handle 33952: `outputs/material_tube_independent_20mt_maxwellian_r4_z16_t8000`,
+  0.4375 ns integration, first accepted step recorded.
+
+Both actual handles were polled live and use frozen source
+`31721f1fef01b747862f5263f3ddb92e5dfbca0d3fc1995e5e03ebf229d17afc`.
+The early 0.13125 us coarse state has electron/ion collision heat
+-21.7320458/+21.7320466 uJ, predominantly exchange before the pulse begins.
+External-work residual/E0 is 6.67e-15 there. This is early integration evidence,
+not a completed pulse, accuracy claim or prediction of formation. All accepted
+states and failures remain saved. No unit tests were added or run.
+
+Next collect the exact live handles; do not restart on observation timeouts or
+edit their worktree source while running. Compare complete pulse trajectories
+and conservation with the half-timestep control and original prescribed-eta
+run. Spatial sensitivity remains required. Integrate the code into main only
+after all three original-source physical jobs have terminal evidence.
 
 Even exact instantaneous Maxwellian moments do not guarantee distributions stay
 Maxwellian. Stress anisotropy, heat flux, kinetic instabilities, magnetized
 collision corrections, screening, neutrals, ionization and preparation remain
-unresolved. The new model is not yet installed in the moving-coil simulation.
+unresolved. Full moving trajectories and their numerical sensitivity are pending.
