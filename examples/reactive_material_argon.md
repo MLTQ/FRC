@@ -42,3 +42,10 @@ and failure/resource criteria remain unchanged. New progress output reports
 actual time and cell count; a frozen or failed run is not declared complete.
 Subcell raw thermal coordinates include the exact per-block normalization;
 summary minima restore physical J/m². Tiny populated carriers are retained.
+
+`--density-width-fraction f` removes close internal density cuts using the fixed
+physical width f times the initial smallest cosine mechanical cell at each mesh.
+Default0 preserves the previous algorithm. All species use the common partition
+and every support end is protected. This is numerical averaging, not physical
+diffusion. Budgets separately retain its observed field-energy change without
+subtracting it from the physical energy error; fractions must be refined.

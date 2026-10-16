@@ -28,3 +28,8 @@ pieces cannot interpenetrate as if they were independent fluids of one species.
 Real-rate/charged moving trajectories, collisions, radial geometry, actual walls
 and all original FRC validity gates remain required after independent limiting
 cases. Full goal acceptance is unchanged.
+
+The ledger separately accumulates observed field-energy changes caused by source
+projection/coarsening. This diagnostic is NOT subtracted from full_energy_j_m2
+and never repairs physical heat. `last_projection` exposes the actual last cut
+counts and field changes; the two source halves both contribute to the ledger.

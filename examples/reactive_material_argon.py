@@ -17,15 +17,16 @@ from .reactive_material import write_states
 from .implicit_plasma_records import provenance,freeze
 
 
-def run(destination,*,separate_velocity=False):
+def run(destination,*,separate_velocity=False,density_width_fraction=0.):
     out=Path(destination)
     if out.exists():raise ValueError('Fresh charged reacting output required')
+    if not np.isfinite(density_width_fraction) or density_width_fraction<0:raise ValueError('Nonnegative density width fraction required')
     data=Path(__file__).resolve().parents[1]/'data/atomic'
     ionization=ImpactIonization.from_file(data/'argon/argon.json');rr=RadiativeRecombination.from_file(data/'recombination/argon_rr.json')
     network=AtomicNetwork(ionization,rr);source=FixedFrameAtomicMoments(network,39.948*atomic_mass,[0.,0.,0.])
     identity=provenance(['examples.reactive_material_argon']);out.mkdir(parents=True);freeze(out,identity);start=time.monotonic()
     report=dict(terminal=False,source_sha256=identity['source_sha256'],cases=[],maximum_occupied_cells=10000,maximum_steps=5000,minimum_timestep_s=2e-17,
-        separate_velocity=separate_velocity,geometry_precision_bits=np.finfo(np.longdouble).nmant+1 if separate_velocity else 53,
+        separate_velocity=separate_velocity,density_width_fraction=density_width_fraction,geometry_precision_bits=np.finfo(np.longdouble).nmant+1 if separate_velocity else 53,
         inputs=dict(ionization_sha256=ionization.input_sha256,recombination_sha256=rr.input_sha256),
         scope='Physical argon masses, existing ground charge ladder/DI/RR, neutral+ion+electron finite supports and common electrostatic field. Full20ns requested at32/64/128. Real rate/model-range limits remain; no collisions/excitation/kinetic validation or formation adoption.')
     def save():
@@ -40,7 +41,8 @@ def run(destination,*,separate_velocity=False):
             else:m=MaterialSpecies(1e14*np.diff(faces),[source.mass[index]],[np.r_[network.charge,-1.][index]],(-.2,.2),**controls)
             models.append(m);blocks.append(m.state(faces,temp))
         model=MaterialSpeciesSet(models,ids);state=MaterialSetState(tuple(blocks));ledger=MaterialReservoirs()
-        solver=ReactiveMaterial(source,1e14,maximum_plasma_phase=.04*32/cells,coalesce_ulps=8,**(dict(velocity_cells=cells) if separate_velocity else {}))
+        minimum_width=density_width_fraction*.01*(1-np.cos(np.pi/cells))
+        solver=ReactiveMaterial(source,1e14,maximum_plasma_phase=.04*32/cells,coalesce_ulps=8,minimum_density_width=minimum_width,**(dict(velocity_cells=cells) if separate_velocity else {}))
         times=[0.];models_history=[model];states=[state];budgets=[solver.totals(model,state,ledger)];failure=None;duration=20e-9
         while times[-1]<duration:
             occupied=sum(m.cells for m in model.models)
@@ -61,6 +63,7 @@ def run(destination,*,separate_velocity=False):
             if len(times)==2 or (len(times)-1)%20==0:print('argon',cells,'step',len(times)-1,'time_s',times[-1],'cells',sum(m.cells for m in model.models),flush=True)
         energy=np.array([r['full_energy_j_m2'] for r in budgets]);number=np.stack([r['atomic_numbers_m2'] for r in budgets])
         record=dict(name=f'argon_n{cells}',success=failure is None,failure=failure,steps=len(times)-1,completed_time_s=times[-1],requested_time_s=duration,
+            minimum_density_width_m=minimum_width,observed_projection_field_change_j_m2=ledger.projection_field_change_j_m2,
             final_occupied_cells=sum(m.cells for m in model.models),maximum_relative_energy_error=float(abs(energy-energy[0]).max()/energy[0]),
             final_electrons_m2=float(number[-1,-1]),initial_electrons_m2=float(number[0,-1]))
         widths=[np.diff(s.faces[0]) for s in state.blocks];b=int(np.argmin([w.min() for w in widths]));j=int(widths[b].argmin())
@@ -70,6 +73,7 @@ def run(destination,*,separate_velocity=False):
         record['occupied_species']=model.species_indices.tolist()
         write_states(out/(record['name']+'.npz'),models_history,states)
         np.savez_compressed(out/(record['name']+'_budgets.npz'),time_s=times,atomic_numbers_m2=number,full_energy_j_m2=energy,
+                            observed_projection_field_change_j_m2=[r['observed_projection_field_change_j_m2'] for r in budgets],
                             photon_energy_j_m2=[r['photon_energy_j_m2'] for r in budgets])
         report['cases'].append(record);save();print(record,flush=True)
     if identity!=provenance(['examples.reactive_material_argon']):raise RuntimeError('Source changed during charged reactive attempt')
@@ -77,5 +81,5 @@ def run(destination,*,separate_velocity=False):
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser();parser.add_argument('destination');parser.add_argument('--separate-velocity',action='store_true');args=parser.parse_args()
-    result=run(args.destination,separate_velocity=args.separate_velocity);raise SystemExit(0 if result['success'] else 1)
+    parser=argparse.ArgumentParser();parser.add_argument('destination');parser.add_argument('--separate-velocity',action='store_true');parser.add_argument('--density-width-fraction',type=float,default=0.);args=parser.parse_args()
+    result=run(args.destination,separate_velocity=args.separate_velocity,density_width_fraction=args.density_width_fraction);raise SystemExit(0 if result['success'] else 1)

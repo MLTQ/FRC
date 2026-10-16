@@ -1,5 +1,65 @@
 # Resume the physical FRC simulation
 
+## Collect the fine calculation; preserve geometry (2026-10-16)
+
+Concrete progress: new VectorizedAtomicMoments keeps identical physics and
+spatial/time resolution while assembling transitions in arrays. Full source
+comparison in outputs/atomic_vector_moments is terminal and successful, ten
+complete histories,17.192s, source75b5979b...847. Independent DI/RR errors converge
+about4x per time halving; full3.5µs ground-argon speedup2.52x/2.33x with identical
+populations and maximum current difference3.41e-12 A/m². Figure inspected.
+This is a concrete source optimization, not a new verification framework.
+
+Confirmed LIVE processes; poll exact exec handles, do not restart on timeout:
+-5491, PID26700: examples.reactive_material_fine, output
+ outputs/reactive_material_argon_fine_vector. Full20ns requested,32 mechanical
+ cells, density-width0, existing8-ULP cleanup, physical masses unchanged.
+ Last saved step4:8.351796428926174ps,56789 density cells,312.67MiB peak RSS,
+ source halves6.0579/55.4937s, material0.0632s. No fixed cell-count cap.
+ Each step_NNNNN.npz contains one complete state under step0_* keys; summary
+ supplies its actual time/budgets. Source freeze includes the new vector source.
+ The600s/2GiB observation bounds are checked between coupled steps, not hard
+ preemption;256MiB disk reserve protects snapshot writes. Prefixes remain failed
+ full-duration attempts, not justification that physical coarsening is needed.
+-36957, PID24256: prior coarsened scalar-source argon experiment, output
+ reactive_material_argon_coarsened_f01. Last printed step160,1.132481ns,819cells.
+ This runner writes its ragged history only at each case end; keep its source
+ unchanged and collect actual results. It remains optional/unaccepted.
+
+Warm affine process is absent; its exec handle/exit output were lost during
+compaction. termination.json explicitly leaves the exit code unknown and the
+stale summary unchanged. Only first case was saved:151 steps,4.158318µs of
+6.083704µs, rejected geometry. No missing later results are invented.
+geometry_diagnosis.json independently replays its last saved state to RK4 k4:
+the old support-edge widths3.469447e-18m become two identical absolute endpoints
+when passing0.03125m (ULP doubles to6.938894e-18m). Decimal evaluation of the
+same fixed affine map gives positive3.479932e-18m, coarse widths remain positive.
+This is a demonstrated coordinate-precision defect. Longdouble here has53 bits.
+
+NEXT: collect both live simulations and then work onfrc-transport.5.5.3:
+compensated/local-offset geometry preserving small positive occupied intervals
+through motion, sorting, reaction quadrature, field integration and snapshots.
+Do not merge species support ends or repair heat. Avoid modifying any Python
+source in a live run's frozen closure. All parent/full formation gates stay OPEN.
+Viewer and user poster are untouched; no unit suite or remote publication.
+
+## Resolution priority clarified (2026-10-16)
+
+The user questioned density coarsening because finer physical resolution is
+preferred and available compute has not been shown to be exhausted. The prior
+10,000-cell guard is a chosen experiment limit, not measured machine capacity
+or an accuracy criterion. Do not treat the earlier proposed partition reduction
+as an accepted solver direction merely because it keeps runs under that cap.
+
+`minimum_density_width` / `--density-width-fraction` remain optional and zero
+by default. The nonzero-width argon and warm-affine runs are isolated numerical
+experiments, not replacements for saved formation fields. Support preservation
+and global moment conservation alone do not validate local current, charge,
+thermal or field accuracy. Assess actual cost and compare against finer spatial
+references before adopting any nonzero width; preserve resolved physical detail.
+Nearly coincident cuts introduced by species-mesh intersections must be
+distinguished from deliberate refinement that improves the physical solution.
+
 ## Continue from implemented two-space material motion (2026-10-16)
 
 Read the newest GOAL_STATUS/ATOMIC_MOVING_FIELDS sections and companions for

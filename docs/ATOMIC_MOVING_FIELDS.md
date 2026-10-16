@@ -1,5 +1,58 @@
 # Moving variable-species electrostatic research component
 
+## Faster reactions with retained density resolution (2026-10-16)
+
+The user correctly challenged inferring a need to coarsen from the old10000-cell
+guard. That is a chosen run limit, not machine capacity or an accuracy criterion.
+The physical-width coarsening option remains0 by default and unaccepted. Its
+separate trial is not the data source of the formation viewer.
+
+Profiling the actual first accepted32-cell argon state (450 density cells,
+204 Gauss rows) measured0.0220s gathering and1.2328s reaction under the profiler.
+Generator assembly took0.957s; exponential advancement0.272s. The new
+VectorizedAtomicMoments assembles exactly the same transition equations in
+arrays, avoiding many tiny index/identity allocations. It retains the original
+exponential midpoint, every populated species, physical masses, spatial mesh,
+time steps and existing closure assumptions. No physics is averaged for speed.
+
+All ten full source histories in outputs/atomic_vector_moments completed,
+source75b5979bc9368bf593be1729a1998320bdb8fa62d24510b02f4307a3bed7f847,
+total17.1922s. Independent full2µs ionization and20ms recombination cases at
+50/100/200 steps have finest population errors2.38586e-6/1.58973e-6 and momentum
+errors4.87710e-7/1.62395e-7 in their declared scaled coordinates; both converge
+about4x per timestep halving. Four full3.5µs ground-ladder argon trajectories
+compare scalar/array assembly at700/1400 steps: speedup2.5186x/2.3336x,
+identical populations, maximum current difference3.41061e-12 A/m². Physical
+energy residuals are at most1.34559e-13 eV/initial nucleus. Raw histories,
+source and visually inspected PNG/PDF remain; no unit suite was used.
+
+Fresh moving run5491 in outputs/reactive_material_argon_fine_vector requests
+the original full20ns with minimum_density_width=0 and no fixed cell-count cap.
+It saves each accepted state immediately and reports source/transport timings,
+memory and storage. It has passed56789 cells at8.351796ps with312.67MiB peak
+RSS: source halves6.058s/55.494s versus transport0.0632s. The full-duration result
+is still pending at this checkpoint. Initial through step3 agree with the old
+scalar-source prefix within1.11e-16 in the saved raw coordinates; this is an
+equivalence observation, not independent physical accuracy or full completion.
+Run budgets600s/2GiB and256MiB reserved disk are explicit observation/storage
+bounds, not evidence that the machine cannot support finer physics.
+
+The warm neutral coupled case separately exposes a precision defect. Replayed
+RK4 k4 collapses two occupied support-edge cells near±0.03129643088m because
+53-bit coordinates cannot distinguish their endpoints. The fixed affine map
+still gives positive widths3.479932e-18m while the new coordinate ULP is
+6.938894e-18m; mechanical widths remain0.000601352m. The last full saved state,
+hashed Decimal diagnosis and unknown-exit process record are preserved in
+outputs/reactive_material_affine_coarsened. This process is absent, with only
+its first failed case recorded; the remaining cases are not assumed complete.
+
+NEXT onfrc-transport.5.5.3: retain small support differences using compensated
+or local-offset geometry across motion, union quadrature, fields and storage.
+Do not merge endpoints or adjust heat to hide this defect. Collect the actual
+fine and coarsened run outcomes first; their imported Python sources are frozen.
+All original charged-motion, collision, geometry, physical-boundary, formation,
+experimental comparison and interactive-sandbox requirements remain OPEN.
+
 ## Actual separated density/velocity motion (2026-10-16)
 
 The previous snapshot proposal is now an implemented opt-in MaterialSubcells

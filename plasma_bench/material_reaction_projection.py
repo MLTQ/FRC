@@ -5,9 +5,10 @@ from scipy.linalg import solve_banded
 from .species_material import MaterialSpecies,SpeciesMaterialState
 from .material_species_set import MaterialSpeciesSet,MaterialSetState
 from .material_subcells import MaterialSubcells
+from .material_reaction_partition import select_partition,field_projection_error
 
 
-def project_reactions(overlap,state,*,cfl=.15,maximum_plasma_phase=.04,numerical_viscosity=(.5,2.),viscosity_limiter='minmod',coalesce_ulps=0,velocity_cells=None):
+def project_reactions(overlap,state,*,cfl=.15,maximum_plasma_phase=.04,numerical_viscosity=(.5,2.),viscosity_limiter='minmod',coalesce_ulps=0,velocity_cells=None,minimum_density_width=0.):
     """Recover material velocity and thermal energy from full evolved moments.
 
     Masses and charges are cell-averaged on a shared interval partition. Nodal
@@ -20,20 +21,12 @@ def project_reactions(overlap,state,*,cfl=.15,maximum_plasma_phase=.04,numerical
     momentum=values[...,source.momentum]*source.momentum_scale*density
     energy=values[...,source.energy]*EV*density
     amounts=np.sum(state.weights[...,None]*numbers,axis=1)
+    original_amounts=amounts.copy()
     total_energy=np.sum(state.weights[...,None]*energy,axis=1)
-    if not isinstance(coalesce_ulps,int) or coalesce_ulps<0:raise ValueError('Nonnegative integer geometry-roundoff tolerance required')
     # Never remove an endpoint of any occupied species support, even when that
     # support is extremely thin. Only redundant internal partition cuts qualify.
     present=np.any(values[...,overlap.number]>0,axis=1) if velocity_cells is not None else amounts>0
-    protected=np.r_[True,np.any(present[:-1]!=present[1:],axis=1),True]
-    tolerance=coalesce_ulps*np.spacing(np.max(abs(state.edges)))
-    kept=list(range(len(state.edges)));i=0
-    while coalesce_ulps and i<len(kept)-1:
-        a,b=kept[i:i+2]
-        if state.edges[b]-state.edges[a]<=tolerance:
-            if not protected[b]:kept.pop(i+1);continue
-            if not protected[a]:kept.pop(i);i=max(0,i-1);continue
-        i+=1
+    kept,partition_record=select_partition(state.edges,present,roundoff_ulps=coalesce_ulps,minimum_width=minimum_density_width)
     edges=state.edges[kept];groups=np.searchsorted(kept,np.arange(len(state.edges)-1),side='right')-1
     count=len(edges)-1
     right=(state.points-edges[groups,None])/np.diff(edges)[groups,None]
@@ -94,4 +87,5 @@ def project_reactions(overlap,state,*,cfl=.15,maximum_plasma_phase=.04,numerical
     reservoirs=dict(photon_energy_j_m2=float(EV*density*np.sum(state.weights*values[...,network.photons])),
                     input_heat_j_m2=float(EV*density*np.sum(state.weights*values[...,network.heating])),
                     binding_energy_j_m2=float(EV*np.sum(amounts[:,:network.count]*network.energy_ev)))
-    return model,result,dict(blocks=records,removed_roundoff_edges=len(state.edges)-len(edges),geometric_tolerance_m=float(tolerance),**reservoirs)
+    field_record=field_projection_error(state.edges,original_amounts,overlap.charge,state.left_electric,model,result)
+    return model,result,dict(blocks=records,**partition_record,**field_record,**reservoirs)

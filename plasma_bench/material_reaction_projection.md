@@ -76,3 +76,9 @@ Density/support occupancy is determined before forming that product. This avoids
 mass underflow for tiny but
 retained carriers, not a cutoff, floor or energy correction. An occupied source
 whose normalized amount itself cannot be represented explicitly rejects.
+
+Optional `minimum_density_width` adds a declared spatial coarsening pass after
+ULP cleanup. It preserves every species support endpoint and integrates all
+original factored moments on one common partition. See material_reaction_partition.md.
+The return record separately reports removed density cuts and exact represented
+Gauss-field/field-energy changes. These errors are observed, never repaired.

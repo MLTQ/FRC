@@ -1,5 +1,43 @@
 # Active research: a credible experimental FRC simulation
 
+## Reaction assembly accelerated without density coarsening (2026-10-16)
+
+The previous turn corrected the continuation direction after user feedback;
+this turn makes simulation progress with an unchanged-physics source optimization
+and actual retained-resolution evolution. VectorizedAtomicMoments removes
+Python transition-assembly overhead while retaining the original full source,
+exponential midpoint, masses, species and spatial resolution. Ten full source
+histories complete in17.192s (75b5979b...847): independent analytic conversion
+errors converge about4x on time halving; full ground-argon histories run2.3–2.5x
+faster with identical populations and current differences<=3.41e-12 A/m².
+Measured results, raw histories and inspected figure: outputs/atomic_vector_moments.
+
+LIVE5491: outputs/reactive_material_argon_fine_vector requests full20ns at32
+mechanical cells with physical-width coarsening0 and no density-cell cap. It
+has passed56789 density cells at8.351796ps, peak312.7MiB, source halves6.06/55.49s
+vs transport0.063s. Snapshots are saved immediately. No full-run claim yet.
+LIVE36957: earlier optional coarsened argon experiment, last printed160 steps,
+1.132481ns,819 cells. Both source closures must remain unchanged while running.
+
+The warm affine process is absent; only its first failed case is recorded.
+Its actual last state reproduces loss of distinct support endpoints in53-bit
+coordinates. Independent affine width remains positive3.479932e-18m but rounds
+to zero near±0.031296m. Newfrc-transport.5.5.3 tracks accurate geometry, not
+endpoint merging. Read ATOMIC_MOVING_FIELDS and NEXT_SESSION for exact evidence.
+No unit suite, state repair, viewer change or formation adoption. Full goal OPEN.
+
+## Density coarsening remains experimental (2026-10-16)
+
+User feedback prioritizes finer physical resolution and challenges coarsening
+without demonstrated resource need. The 10,000-density-cell guard in the
+reacting argon attempt is self-imposed; it does not prove compute exhaustion.
+The newly implemented geometric minimum-width option defaults to zero and is
+not accepted for the main simulation. Separate trial runs cannot establish
+local accuracy from global conserved totals alone. Read the newest
+NEXT_SESSION.md section before continuing the earlier coarsening proposal.
+The existing detailed volume/field-line visualization uses saved formation
+states and is independent of these planar reaction-partition experiments.
+
 ## Separate density and velocity motion implemented (2026-10-16)
 
 Previous turn made concrete progress at5aa2ddae1: moving-source coupling and
