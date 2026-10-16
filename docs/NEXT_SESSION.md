@@ -1,5 +1,39 @@
 # Resume the physical FRC simulation
 
+## Requested visualization refresh completed (2026-10-16)
+
+Research bookmark is local commit `cd154892c`; continuation bead
+**frc-transport.5.5.1** records the unresolved moving-front/thermal failures.
+The full FRC goal remains open and paused at the user's request. Existing beads
+frc-vacuum.3.3 and frc-vacuum.3.4 now carry the pending pulse-comparison handoff.
+
+Display builder51187 EXIT0. Latest completed integrated pulse is now visible at
+http://127.0.0.1:8790/20mt/ and /rk8-20mt/. Files are in
+`outputs/material_experiment_rk8_20mt_10ns_display`. Source is the completed
+higher-order4000-step run described below:0.875ns integration, full3.5us,
+351 actual frames nearest10ns targets, actual gaps9.625/10.5ns. No time
+interpolation or scientific rerun. The builder now copies the physical model's
+assumptions, accurately naming paired finite-drift collisions and conservative
+numerical thermal-energy diffusion. This is still a coarse pre-ionized model,
+not validated FRC formation or the new1-D moving-species prototype.
+
+Browser end-to-end check passed initial/next frame, peak-current frame118,
+play/pause, final3500ns state and signed azimuthal-current selection. Actual
+source/method/assumptions checked in the expanded details. Both3-D panes and
+scientific3-D/section PNGs visually inspected; PDFs and browser_view.jpg saved.
+The browser is left at1180.375ns, its largest-current selected state. Previous
+/20mt-10ns/, /20mt-coarse/ and /array20mt/ sources remain available.
+The1.4GB generated frames remain on local disk and are ignored by Git; the
+builder, manifest/source hashes, HTML and figures are checkpointed. Regenerate
+with `python -m examples.material_experiment_display <completed-source> <fresh-output>
+--frame-interval-ns 10` using the documented headless plotting environment.
+
+Only simulation92324 remains LIVE; latest saved3200/8000,5453.499s,
+terminal:false. It was not interrupted or restarted. On resumption collect its
+terminal result before the existing4000/8000 configured-field comparison.
+No new scientific job was launched for this wrap-up. Preserve the live source,
+private atomic inputs and untouched user poster. No remote/publication.
+
 ## Research bookmark before credit pause (2026-10-16)
 
 User requested wrap-up, continuation beads, then a refresh of the 3-D visualization.

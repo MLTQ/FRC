@@ -24,6 +24,9 @@ The visible scope preserves assumed preparation/ionization, prescribed transport
 coarse mesh/current limits, and the distinction between field lines, topology and
 particle confinement. When numerical bulk viscosity is enabled, the scope names
 its declared coefficients and identifies the associated ion heating as numerical.
+The scope copies the physical builder's model assumptions and central integrator,
+so paired finite-drift collisions and conservative numerical thermal-energy
+diffusion are not mislabeled as older prescribed resistance/entropy diffusion.
 This is a visualization of the simulation, not a new
 validation or reporting framework. The older compact-flux display is preserved.
 
