@@ -59,3 +59,12 @@ Records also retain collision entropy production, force/heat power mismatch and
 the maximum local relative-relaxation rate times dt. These observations neither
 repair energy nor certify a full-system timestep limit. The whole coupled source
 work balance remains the trajectory conservation measurement.
+
+With explicit `energy_split`/`central_energy_diffusion`, the saved state also
+records conservative numerical thermal redistribution and entropy-production
+diagnostics from each pair of diffusion halves, including cumulative values.
+The central pressure law is continuous, so both independently integrated source
+work budgets remain defined. This is a different spatial/time numerical method,
+not physical heat conductivity; all original physical forces and collision
+sources still evolve. Source archives include the new method. The older split
+method continues to omit its undefined instantaneous source-response integral.

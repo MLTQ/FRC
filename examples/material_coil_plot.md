@@ -54,5 +54,8 @@ collisional and species heat observations and original source-work residuals
 remain in the JSON. No new states, repair, pass/fail thresholds or test framework.
 The scientific PNG/PDF show differences throughout the complete trajectories;
 two grids alone still do not prove convergence or physical model validity.
+`entropy_transport` is also a named numerical input (legacy default `upwind`).
+A central-energy-diffusion run changes that flux as well as its integrator;
+such comparisons must not be reported as timestep convergence.
 Calculated comparisons are written before plotting, so a rendering failure does
 not discard the physical measurements. Use `MPLBACKEND=Agg` for headless runs.

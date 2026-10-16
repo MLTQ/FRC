@@ -70,6 +70,16 @@ selects paired finite-drift Landau moments. Set plasma's prescribed resistivity
 to zero; separate temperature exchange is disabled because the pair already
 contains it. The actual force and both species heats come from the same collision
 calculation. The declared positive log is fixed, not a validated cutoff model.
-RK4 is required for these experiments while split-path behavior remains unmeasured.
+RK4 and the declared energy_split path retain the full paired collision source;
+the older discontinuous-pressure split path remains unsupported for paired runs.
 Omitting the option preserves the original prescribed-resistance model. Resolved
 metadata records the choice and unresolved Maxwellian/kinetic/screening limits.
+
+`integrator="energy_split"` additionally requires the explicit input
+`entropy_transport="central_energy_diffusion"`. This changes both the numerical
+spatial flux and time integration: central physical entropy/pressure RK4 lies
+between conservative thermal-energy diffusion half-steps. Read
+material_energy_diffusion.md for its energy/entropy identities and limitations.
+Every physical stage retains collisions, forces and the same tube contact guard.
+Default/legacy inputs retain their original method. Comparing different choices
+is a numerical-method comparison, never just a timestep comparison.

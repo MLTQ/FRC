@@ -22,7 +22,8 @@ def run(config_path, destination):
     out.mkdir(parents=True); freeze(out, identity)
     (out/'config.json').write_text(json.dumps(config, indent=2)+'\n')
     record = dict(terminal=False, success=False, completed_steps=0, config=config,
-        source_sha256=identity['source_sha256'], integrator=integrator, records=[],
+        source_sha256=identity['source_sha256'], integrator=integrator,
+        entropy_transport=config.get('entropy_transport', 'upwind'), records=[],
         scope='Complete moving-plasma equations with an assumed pre-ionized inventory and prescribed biased coils. Preparation, ionization, neutrals, physical edge/transport validity and convergence are not established. No formation or laboratory recommendation follows from this exploratory run.')
 
     def save():
@@ -59,10 +60,10 @@ def run(config_path, destination):
                 source_group_currents_a=a['source_group_currents_a'].tolist(),
                 source_group_center_fields_t=(a['source_group_currents_a']*field_per_amp).tolist(),
                 source_group_linkages_wb=a['source_group_linkages_wb'].tolist(),
-                source_group_external_work_j=group_work.tolist(), source_group_response_work_j=group_response_work.tolist() if integrator=='rk4' else None,
+                source_group_external_work_j=group_work.tolist(), source_group_response_work_j=group_response_work.tolist() if integrator!='split' else None,
                 source_linkage_wb=a['source_linkage_wb'], total_energy_j=a['total_energy'],
                 response_energy_j=a['response_energy'], external_work_j=work,
-                source_response_work_j=response_work if integrator=='rk4' else None, joule_heat_j=heat,
+                source_response_work_j=response_work if integrator!='split' else None, joule_heat_j=heat,
                 collision_heat_species_j=collision_species_heat.tolist(),
                 collision_heat_species_power_w=a['collision_heat_species_power'].tolist(),
                 collision_power_residual_w=a['collision_power_residual'],
@@ -73,7 +74,7 @@ def run(config_path, destination):
                 numerical_viscous_pressure_max_pa=a['numerical_viscous_pressure_max'],
                 numerical_viscous_power_residual_w=a['numerical_viscous_power_residual'],
                 relative_external_work_residual=(a['total_energy']-energy0-work)/energy0,
-                relative_response_work_residual=(a['response_energy']-energy0-response_work)/energy0 if integrator=='rk4' else None,
+                relative_response_work_residual=(a['response_energy']-energy0-response_work)/energy0 if integrator!='split' else None,
                 induced_magnetic_energy_j=a['magnetic_energy'], current_energy_j=a['current_energy'],
                 peak_current_components_a_m2=abs(j).max(axis=0).tolist(),
                 peak_field_components_t=abs(b).max(axis=0).tolist(),
@@ -106,10 +107,10 @@ def run(config_path, destination):
             if resource.getrusage(resource.RUSAGE_SELF).ru_maxrss > 4*1024**3 or shutil.disk_usage('.').free < 256*1024**2:
                 raise RuntimeError('Own4GiB/256MiB resource guard')
             work += .5*dt*(previous['external_power']+a['external_power'])
-            if integrator == 'rk4':
+            if integrator != 'split':
                 response_work += .5*dt*(previous['source_response_power']+a['source_response_power'])
             group_work += .5*dt*(previous['source_group_external_powers_w']+a['source_group_external_powers_w'])
-            if integrator == 'rk4':
+            if integrator != 'split':
                 group_response_work += .5*dt*(previous['source_group_response_powers_w']+a['source_group_response_powers_w'])
             heat += .5*dt*(previous['joule_power']+a['joule_power'])
             collision_species_heat += .5*dt*(previous['collision_heat_species_power']+a['collision_heat_species_power'])

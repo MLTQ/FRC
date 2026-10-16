@@ -8,6 +8,7 @@ from .material_vacuum_space import MaterialVacuumSpace
 from .material_magnetic_vacuum import MaterialMagneticVacuum
 from .material_coil_current import MaterialCoilCurrent
 from .material_split_current import SplitMaterialCoilCurrent
+from .material_energy_diffusion import EnergyDiffusionMaterialCoilCurrent
 from .material_bulk_viscosity import bulk_viscosity
 from .electromagnetics import loop_field
 from .waveforms import from_dict
@@ -86,6 +87,10 @@ class TubeMaterialSplitCurrent(TubeMaterialCoilCurrent, SplitMaterialCoilCurrent
     """Same tube-contact guard with the opt-in entropy/current split step."""
 
 
+class TubeMaterialEnergyCurrent(TubeMaterialCoilCurrent, EnergyDiffusionMaterialCoilCurrent):
+    """Same physical model and tube guard, with declared numerical heat mixing."""
+
+
 def build(config):
     """Build the actual solver; fill pressure fixes inventory, not local density."""
     tube = config['tube']; plasma = config['plasma']; grid = config['mesh']
@@ -140,12 +145,17 @@ def build(config):
         group_metadata.append(dict(name=source.get('name', f'Coil group {index+1}'),
             coils_radius_z_turns=coils, vacuum_center_field_per_amp_t=float(field_per_amp)))
     integrator = config.get('integrator', 'rk4')
-    if integrator not in ('rk4', 'split'):
-        raise ValueError('Supported time integrators: rk4 or split')
+    if integrator not in ('rk4', 'split', 'energy_split'):
+        raise ValueError('Supported time integrators: rk4, split or energy_split')
+    transport = config.get('entropy_transport', 'upwind')
+    required = 'central_energy_diffusion' if integrator == 'energy_split' else 'upwind'
+    if transport != required:
+        raise ValueError('Explicit compatible entropy_transport and integrator required')
     collisions = config.get('collision_model')
-    if collisions is not None and integrator != 'rk4':
-        raise ValueError('Paired collision experiments currently require the complete coupled RK4 path')
-    solver = TubeMaterialSplitCurrent if integrator == 'split' else TubeMaterialCoilCurrent
+    if collisions is not None and integrator == 'split':
+        raise ValueError('Paired collision experiments do not yet support the discontinuous-pressure split path')
+    solver = {'rk4': TubeMaterialCoilCurrent, 'split': TubeMaterialSplitCurrent,
+              'energy_split': TubeMaterialEnergyCurrent}[integrator]
     model = solver(fluid, space, vacuum, source_groups=groups,
         resistivity=plasma['prescribed_resistivity_ohm_m'], coulomb_exchange=collisions is None,
         collision_model=collisions,
@@ -157,10 +167,13 @@ def build(config):
         vacuum_center_field_per_amp_t=group_metadata[0]['vacuum_center_field_per_amp_t'] if len(groups)==1 else None,
         source_groups=group_metadata, actual_initial_entropy=fluid.initial.entropy[0, 0].tolist(),
         numerical_bulk_viscosity=model.numerical_bulk_viscosity, collision_model=model.collision_model,
+        entropy_transport=transport,
         assumptions=['All initial gas inventory is assumed prepared as the declared compact singly ionized plasma.',
             'No ionization, recombination, neutrals, radiation or preparation energy is evolved.',
             'Quartz is represented only as a nonconducting, nonmagnetic contact limit; no wall or sheath model.',
             ('Scalar resistivity is prescribed. Coulomb temperature exchange remains conditional.' if collisions is None else
              'Paired displaced-isotropic-Maxwellian drag and heat replace prescribed resistance and separate exchange; the supplied fixed Coulomb logarithm is a declared approximation. Screening, anisotropy and kinetic validity are unresolved.'),
-            'Cold dilute edge, first-order entropy diffusion and current time sensitivity remain unresolved.'])
+            ('Central physical entropy/pressure transport with conservative numerical thermal-energy diffusion; not physical heat conduction.'
+             if transport == 'central_energy_diffusion' else 'First-order upwind entropy with matched numerical pressure work.'),
+            'Cold dilute edge, physical nonlocal heat transport and numerical convergence remain unresolved.'])
     return fluid, model, metadata
