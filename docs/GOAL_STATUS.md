@@ -1,52 +1,58 @@
 # Active research: a credible experimental FRC simulation
 
-## Weak pulse completed; reactive species moments now evolving (2026-10-16)
+## Reactive moment frame failure resolved on complete trajectories (2026-10-16)
 
-Previous turn made PROGRESS in cb3bbfe9f/private fbbaf8e9f. This continuation
-completes the weak higher-order pulse and adds actual atomic momentum/energy
-transfer. Full original scope remains OPEN. No unit suite or recursive framework.
+Previous goal turn was NO PROGRESS on physics: it rechecked the completed 10 ns
+viewer. This continuation makes PROGRESS on the reaction source, preserving the
+actual failure and completing a coordinate change on full histories. The original
+FRC goal and every remaining physical/experimental acceptance gate stay OPEN.
 
-Weak pulse91606 EXIT0: all800 steps/3.5us,863.152s. Existing physical-field
-comparison51619 EXIT0,81 times/3200 points, only central_integrator changed.
-Final relative B/J differences5.79150e-6/1.14628e-5, position1.82922e-10m;
-max external-work/E0 new3.19813e-8 versus old3.07170e-8. Agreement in this weak
-regime does not establish strong accuracy or another time-convergence result.
-Read newest MATERIAL_ENERGY_DIFFUSION.md; complete arrays and inspected PNG/PDF
-are preserved. Private strong86765 and MAIN finer82391 remain LIVE.
+Collected 7072 EXIT1 in 832.137 s. All six independent DI/RR conversion limits,
+six unboosted argon histories and moving neutral decay succeed. Only the boosted
+heated case rejects at step 80 after 79 accepted states. Its captured population
+69 and momentum are zero while lab energy remains 5e-324 eV/nucleus. This is a
+finite-representation failure; outputs/atomic_moments_reordered preserves the
+accepted histories, rejected state, source and scientific figure. No state repair.
+Time halving in complete argon histories changes population L1 by <=1.72802e-5
+and Te by <=0.001049801 eV. Exact-zero-electron decay matches the analytic law.
 
-New plasma_bench/atomic_moments and its example evolve independent level/electron
-momenta and lab translational energies alongside the complete supplied atomic
-network. Charge-dependent physical masses, donor ionization moments, and derived
-capture centre-of-mass/photon energy partition retain number, charge, mass,
-vector momentum and energy without repairs. Small relative drift, neglected
-photon recoil/momentum, missing atomic channels, neutral scattering and absent
-spatial/field coupling remain explicit. This is not installed in the moving
-pulse. Read docs/ATOMIC_MOMENTS.md and new beadfrc-transport.5.5.
+New FixedFrameAtomicMoments stores moments in a fixed translating frame and
+restores laboratory momentum, energy and current, retaining actual charge/mass
+residuals. Reaction rates, finite masses and positivity rules are unchanged.
+Run 95433 EXIT0 in 365.813 s: both complete 1400-step heated argon histories
+through 3.5 us succeed. A second, distinct frame has maximum differences from
+the Galilean-transformed unboosted reference: population L1 1.25376e-14,
+Te 5.32907e-14 eV, current 2.25265e-9 A/m² and species lab energy 8.59757e-13
+eV/nucleus. Lab energy budget drift <=1.93979e-11 eV/nucleus. These are coordinate
+consistency measurements, not new physical-rate accuracy or convergence proof.
+Complete states, fixed frame vectors and inspected PNG/PDF are preserved in
+outputs/atomic_moments_fixed_frame, source
+8ecabaefe7b52d082521657f438dfa851a6552732d71aed5ec8316abaa3d7734.
+Read docs/ATOMIC_MOMENTS.md and plasma_bench/atomic_frame.md; bead5.5 stays open.
 
-Initial run94014 EXIT1 is preserved in outputs/atomic_moments. Six independent
-conversion histories, two seeded argon histories and moving-neutral decay
-completed, but other prefixes failed when tiny populations multiplied by kilogram
-masses underflowed. The actual first rejected endpoint has population4.8e-322.
-A later failed-prefix comparison also raised; process_exit.json records actual
-termination. No provider matrix/rates are archived or state values clipped.
+Two moving runs remain live by their exact handles; saved progress is a snapshot:
+- 82391 MAIN: 5100/8000 at 4583.587 s,
+  outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t8000;
+  source 577ad923bec574d77ff1d2fb329047eba8cd7be539acdb26090603748343bd0f.
+- 86765 PRIVATE /private/tmp/frc-finite-drift: 1650/4000
+  at 2875.418 s, output in MAIN
+  outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t4000;
+  source f5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2.
+Keep both imported moving closures frozen, do not merge private into MAIN, do not
+stage live output or restart because of an observation timeout. Collect actual
+terminal outcomes and use the existing actual-field comparison. Their central
+methods differ; that comparison alone is not timestep convergence.
 
-Reordered arithmetic keeps dimensionless ratios representable. Revised7072 is
-LIVE in outputs/atomic_moments_reordered, frozen source
-5453c1ea52380e61dd5330e4cc5947df9eb65f036f5fa85eaa9eb1fb03170174.
-Its six independent conversion histories show approximately second-order error
-decrease, and the previously failing all-ion700-step argon trajectory now
-completes (Te2.31778445eV, charge1.04927407, energy drift4.65405e-12eV/nucleus).
-Finer/remaining argon and boosted trajectories are pending. No full pass claim.
-
-Three exact handles confirmed live:82391 MAIN old-central full pulse, latest
-saved3500/8000 at3161.369s, source577ad923...bd0f;86765 PRIVATE new-central full
-pulse, latest800/4000 at1411.392s, sourcef5ddb118...28f2;7072 MAIN atomic source.
-Keep all three imported closures frozen, preserve all live outputs, and collect
-actual terminal results before source changes or adoption claims. Do not restart
-from an observation timeout. Next resolve remaining atomic representability/
-frame comparisons and full strong fields, then actual spatial/current coupling.
-Exact exterior vacuum, all original acceptance gates, personal data restrictions,
-the user poster and completed10ns viewers are preserved; no remote/publication.
+NEXT: collect the strong pulses and quantify actual full fields/energy, then
+continue reactive spatial/current coupling. The existing moving state fixes
+carrier weights and has only two entropies; changing its density/temperature
+from this source alone would omit neutral/charge-level momentum, particle flux,
+current inertia and energy. Retain explicit species transport and moments in the
+coupled state. Small-drift reactions cannot be installed unqualified in the
+large-drift pulse. Missing atomic channels/branching, neutral scattering, photon
+transport, heat flux and physical walls remain. Exact exterior vacuum, restricted
+personal data, user poster and finished 10 ns viewers are preserved; no unit
+suite, extra verification framework, remote or publication.
 
 ## Higher-order solver improves strong-pulse hold; full runs underway (2026-10-16)
 

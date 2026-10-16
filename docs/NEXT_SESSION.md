@@ -1,51 +1,52 @@
 # Resume the physical FRC simulation
 
-## Reactive moment source underway; weak higher-order control complete (2026-10-16)
+## Reaction moments now survive common bulk motion (2026-10-16)
 
-PROGRESS this turn: complete weak higher-order pulse91606 and comparison51619;
-new species momentum/energy reaction source; six analytic conversions and one
-corrected complete all-ion argon trajectory. Read newest GOAL_STATUS.md,
-ATOMIC_MOMENTS.md and MATERIAL_ENERGY_DIFFUSION.md. No unit tests or viewer work.
+PROGRESS: 7072 collected actual EXIT1; all unboosted histories complete, boosted
+subnormal-energy failure preserved. Fixed-frame source implemented; 95433 EXIT0
+in 365.813 s with both complete 1400-step / 3.5 us heated argon histories. Read
+newest GOAL_STATUS.md and ATOMIC_MOMENTS.md. No unit suite or further viewer work.
 
-THREE live handles were re-polled; preserve their source closures:
--82391 MAIN, outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t8000,
-  old central RK4, latest saved3500/8000 at3161.369s, source577ad923...bd0f.
--86765 PRIVATE /private/tmp/frc-finite-drift,
-  output in MAIN outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t4000,
-  latest800/4000 at1411.392s, sourcef5ddb118...28f2. Private HEADacf1e0f43;
-  implementationfbbaf8e9f. Do not merge into MAIN while82391 runs.
--7072 MAIN, outputs/atomic_moments_reordered, source
-  5453c1ea52380e61dd5330e4cc5947df9eb65f036f5fa85eaa9eb1fb03170174.
-  Six analytic cases and all_ion_700 complete; remaining fine/seed/heated/boost/
-  neutral-decay cases pending. Do not change atomic_moments or its imported code.
-Never stage these live outputs or restart because of a polling timeout.
+New modules: plasma_bench/atomic_frame.py and examples/atomic_frame.py, each with
+companion. States are moments relative to the recorded fixed U. fields/generator
+use that frame; laboratory_state/observe explicitly restore physical lab values.
+Original reaction source/equations and all prior failures remain intact. No
+population floors, energy fixes, adaptive frame or mass changes. All original
+closure/data and floating-point limits still apply.
 
-Weak91606 EXIT0 in863.152s,800steps; comparison51619 EXIT0. Complete outputs:
-outputs/material_tube_weak_rk8_energy_diffusion_r4_z8_t800 and
-outputs/material_tube_weak_rk8_vs_rk4_energy_diffusion_r4_z8_t800.
-Only central_integrator changes; final B/J differences5.79150e-6/1.14628e-5.
-PNG inspected, arrays/PDF preserved. This is weak method agreement, not a strong
-or spatial accuracy claim. Collect both strong runs and existing field comparison.
+Complete outputs to preserve:
+- outputs/atomic_moments_reordered: source5453c1ea...70174, 13 successful histories
+  plus failed boosted prefix. Actual boost_rejected_state.npz and diagnosis show
+  population69=0, energy5e-324. process_exit.json records observed EXIT1.
+- outputs/atomic_moments_fixed_frame: source
+  8ecabaefe7b52d082521657f438dfa851a6552732d71aed5ec8316abaa3d7734,
+  two successful full histories, both integration/lab states, frame vectors,
+  source and inspected scientific PNG/PDF. Different-frame maximum Te/current
+  differences5.32907e-14eV/2.25265e-9A/m²; lab energy drift<=1.93979e-11eV/nucleus.
+  Both atomic handles are terminal; do not poll/restart them as live jobs.
 
-AtomicMoments adds actual level/electron momenta and lab energies, with physical
-charge-dependent masses and explicit reaction transfer. It is a homogeneous
-small-drift closure, not yet spatial/field integration; strong-pulse drift may
-violate its ordering. Newfrc-transport.5.5 retains that full coupling requirement.
-Initial94014 is TERMINAL EXIT1 despite original summary terminal=false:
-outputs/atomic_moments/process_exit.json records the actual postprocessing crash.
-Tiny-population mass-product underflow caused physical-state rejection first;
-actual rejected endpoint and accepted midpoint are preserved. No generator or
-provider-rate arrays saved. Revised arithmetic avoids the underflow denominator;
-no populations, energies or momenta are clipped. Complete-source representability
-and frame-invariance evidence still require7072's terminal result.
+Two moving runs remain live by their exact handles; saved progress is a snapshot:
+- 82391 MAIN: 5100/8000 at 4583.587 s,
+  outputs/material_tube_independent_20mt_energy_diffusion_r4_z16_t8000;
+  source 577ad923bec574d77ff1d2fb329047eba8cd7be539acdb26090603748343bd0f.
+- 86765 PRIVATE /private/tmp/frc-finite-drift: 1650/4000
+  at 2875.418 s, output in MAIN
+  outputs/material_tube_independent_20mt_rk8_energy_diffusion_r4_z16_t4000;
+  source f5ddb11815a60a11f10dd650fb61180e305f22df7bcc44ee3a84ea1c87a428f2.
+Keep both imported moving closures frozen, do not merge private into MAIN, do not
+stage live output or restart because of an observation timeout. Collect actual
+terminal outcomes and use the existing actual-field comparison. Their central
+methods differ; that comparison alone is not timestep convergence.
 
-NEXT collect7072. Preserve any new failure and inspect its actual rejected state;
-do not weaken thermal positivity or invent population floors. Then quantify all
-completed moment/current/energy histories and boost comparison, update the model
-limits, and continue actual spatial/current coupling. The six analytic limits
-and one successful argon history do not establish a complete physical closure.
-Exact vacuum, private atomic-input policy/pending LXCat permission, user poster
-and original FRC acceptance gates remain; no remote or publication.
+NEXT after strong outcomes: existing configured-field comparison, then actual
+reactive species transport and current/energy feedback. Current moving fluid has
+fixed particles and two entropies; it cannot accept changing charge/neutral
+populations by merely resetting n or temperature. New coupling must retain heavy
+and electron momenta/energies, changing current inertia and species fluxes with
+exact vacuum; do not force it into the single-ion state or ignore large-drift
+closure failure. Bead frc-transport.5.5 and full goal remain open. Preserve
+private atomic-input restrictions/pending LXCat approval, the user poster and
+all original gates. Local Git only; no publication.
 
 ## Higher-order central method: collect three exact live handles (2026-10-16)
 

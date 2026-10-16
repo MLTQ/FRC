@@ -54,6 +54,11 @@ before multiplying by its physical scale. This avoids an intermediate kilogram
 mass times population underflow; no population or momentum is clipped. Kinetic
 energy similarly evaluates energy per particle before multiplying by population.
 
+`FixedFrameAtomicMoments` in atomic_frame.py composes this unchanged source with
+a fixed Galilean coordinate choice. Its input and observed budgets are lab-frame;
+its inherited `fields` and generator operate on relative moment coordinates.
+The separate companion documents the transform and retained finite-range limits.
+
 All original missing excited channels, branching, RR-range, opacity and kinetic
 limits remain. Coulomb/neutral scattering, charge exchange, spatial transport,
 photon momentum/absorption and self-consistent fields are absent from this source.
