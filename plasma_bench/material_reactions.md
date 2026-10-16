@@ -45,3 +45,5 @@ The full moving reactive goal remains open; this is not formation adoption.
 `reactive_material` now supplies a first explicit moving/source composition.
 Its cold translating neutral decay limit completes, while the full hot charged
 argon attempt exposes mesh/timestep collapse; see ATOMIC_MOVING_FIELDS.md.
+Gathering now rejects if a positive material density would underflow when divided
+by the atomic source reference density. It never silently deletes that carrier.

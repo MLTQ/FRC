@@ -30,6 +30,13 @@ Raw ragged states retain every block's faces, relative velocities, thermal energ
 particle amounts, species IDs and fixed frame for every accepted step. Separate
 files retain actual times and budgets. A failed source projection saves its last
 actual overlap state; no floor, clipping, retry or shortened requested run.
+The shared `write_states` also records velocity-node indices and reference
+density geometry for optional MaterialSubcells blocks, sufficient to reconstruct
+their fixed material fractions and consistent mass matrices.
+Their raw thermal key is `thermal_divided_by_number_scale`, with the explicit
+`number_scale_m2`; the writer does not mislabel normalized values as physical U.
+Subcell numbers use `numbers_divided_by_number_scale` with the same scale,
+retaining fine amounts whose direct physical product would underflow.
 
 Usage: `python -m examples.reactive_material FRESH_OUTPUT` in the usual headless
 environment. Source is frozen; PNG/PDF and JSON summarize actual complete or

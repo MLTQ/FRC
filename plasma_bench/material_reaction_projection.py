@@ -4,9 +4,10 @@ from scipy.constants import elementary_charge as EV
 from scipy.linalg import solve_banded
 from .species_material import MaterialSpecies,SpeciesMaterialState
 from .material_species_set import MaterialSpeciesSet,MaterialSetState
+from .material_subcells import MaterialSubcells
 
 
-def project_reactions(overlap,state,*,cfl=.15,maximum_plasma_phase=.04,numerical_viscosity=(.5,2.),viscosity_limiter='minmod',coalesce_ulps=0):
+def project_reactions(overlap,state,*,cfl=.15,maximum_plasma_phase=.04,numerical_viscosity=(.5,2.),viscosity_limiter='minmod',coalesce_ulps=0,velocity_cells=None):
     """Recover material velocity and thermal energy from full evolved moments.
 
     Masses and charges are cell-averaged on a shared interval partition. Nodal
@@ -23,7 +24,8 @@ def project_reactions(overlap,state,*,cfl=.15,maximum_plasma_phase=.04,numerical
     if not isinstance(coalesce_ulps,int) or coalesce_ulps<0:raise ValueError('Nonnegative integer geometry-roundoff tolerance required')
     # Never remove an endpoint of any occupied species support, even when that
     # support is extremely thin. Only redundant internal partition cuts qualify.
-    protected=np.r_[True,np.any((amounts[:-1]>0)!=(amounts[1:]>0),axis=1),True]
+    present=np.any(values[...,overlap.number]>0,axis=1) if velocity_cells is not None else amounts>0
+    protected=np.r_[True,np.any(present[:-1]!=present[1:],axis=1),True]
     tolerance=coalesce_ulps*np.spacing(np.max(abs(state.edges)))
     kept=list(range(len(state.edges)));i=0
     while coalesce_ulps and i<len(kept)-1:
@@ -44,22 +46,47 @@ def project_reactions(overlap,state,*,cfl=.15,maximum_plasma_phase=.04,numerical
     amounts,total_energy=merged_n,merged_e
     models=[];states=[];ids=[];records=[]
     for species in range(len(mass)):
-        occupied=amounts[:,species]>0
+        if velocity_cells is not None:
+            yscale=float(values[...,overlap.number[species]].max())
+            if yscale==0:continue
+            population_scale=density*yscale
+            nn=np.zeros(count);ll=np.zeros((count,3));lr=np.zeros_like(ll);ee=np.zeros(count)
+            np.add.at(nn,groups,np.sum(state.weights*(values[...,overlap.number[species]]/yscale),axis=1))
+            pm=(values[...,source.momentum[species]]/yscale)*source.momentum_scale
+            em=(values[...,source.energy[species]]/yscale)*EV
+            np.add.at(ll,groups,np.sum(state.weights[...,None]*pm*(1-right[...,None]),axis=1))
+            np.add.at(lr,groups,np.sum(state.weights[...,None]*pm*right[...,None],axis=1))
+            np.add.at(ee,groups,np.sum(state.weights*em,axis=1))
+            occupied=nn>0
+            expected=np.zeros(count,bool);np.logical_or.at(expected,groups,present[:,species])
+            if np.any(expected&~occupied):raise ValueError('Positive normalized population is unrepresentable; no discarded species')
+        else:occupied=amounts[:,species]>0
         changes=np.flatnonzero(np.diff(np.r_[False,occupied,False]));pairs=changes.reshape(-1,2)
         for first,last in pairs:
             faces=edges[first:last+1];width=np.diff(faces);n=amounts[first:last,species]
-            model=MaterialSpecies(n[None,:],[mass[species]],[overlap.charge[species]],(state.edges[0],state.edges[-1]),
-                left_electric=state.left_electric,cfl=cfl,maximum_plasma_phase=maximum_plasma_phase,
-                numerical_viscosity=numerical_viscosity,viscosity_limiter=viscosity_limiter)
-            load=np.zeros((len(faces),3));load[:-1]+=load_left[first:last,species];load[1:]+=load_right[first:last,species]
+            if velocity_cells is not None:
+                model=MaterialSubcells(nn[first:last],mass[species],overlap.charge[species],(state.edges[0],state.edges[-1]),faces,velocity_cells,number_scale=population_scale,
+                    left_electric=state.left_electric,cfl=cfl,maximum_plasma_phase=maximum_plasma_phase,
+                    numerical_viscosity=numerical_viscosity,viscosity_limiter=viscosity_limiter)
+                load=np.zeros((len(faces),3));load[:-1]+=ll[first:last];load[1:]+=lr[first:last]
+                load=model.restrict_load(load);faces=np.asarray(faces,np.longdouble)
+            else:
+                model=MaterialSpecies(n[None,:],[mass[species]],[overlap.charge[species]],(state.edges[0],state.edges[-1]),
+                    left_electric=state.left_electric,cfl=cfl,maximum_plasma_phase=maximum_plasma_phase,
+                    numerical_viscosity=numerical_viscosity,viscosity_limiter=viscosity_limiter)
+                load=np.zeros((len(faces),3));load[:-1]+=load_left[first:last,species];load[1:]+=load_right[first:last,species]
             velocity=solve_banded((1,1),model.matrix[0],load,check_finite=False)
-            vl,vr=velocity[:-1],velocity[1:]
-            kinetic=mass[species]*n/6*np.sum(vl*vl+vl*vr+vr*vr,axis=1)
-            thermal=total_energy[first:last,species]-kinetic
+            vl,vr=model.fine_velocity(velocity[None,...]) if velocity_cells is not None else (velocity[:-1],velocity[1:])
+            scale=model.number_scale if velocity_cells is not None else 1.
+            relative_n=model.relative_numbers if velocity_cells is not None else n
+            kinetic=mass[species]*relative_n/6*np.sum(vl*vl+vl*vr+vr*vr,axis=1)
+            thermal=(ee[first:last] if velocity_cells is not None else total_energy[first:last,species])-kinetic
             result=SpeciesMaterialState(faces[None,:].copy(),velocity[None,...],thermal[None,:]);model.validate(result)
-            input_p=np.sum(load_left[first:last,species]+load_right[first:last,species],axis=0);output_p=np.sum(mass[species]*n[:,None]*(vl+vr)/2,axis=0)
+            input_p=(np.sum(ll[first:last]+lr[first:last],axis=0)*scale if velocity_cells is not None else np.sum(load_left[first:last,species]+load_right[first:last,species],axis=0))
+            output_p=np.sum(mass[species]*relative_n[:,None]*(vl+vr)/2,axis=0)*scale
             records.append(dict(species=int(species),cells=len(n),support_m=[float(faces[0]),float(faces[-1])],
-                minimum_thermal_j_m2=float(thermal.min()),momentum_difference_kg_per_m_s=(output_p-input_p).tolist(),
+                velocity_cells=getattr(model,'velocity_cells',len(n)),
+                minimum_thermal_j_m2=float(thermal.min()*scale),thermal_coordinate_scale=scale,momentum_difference_kg_per_m_s=(output_p-input_p).tolist(),
                 minimum_cell_width_m=float(width.min())))
             models.append(model);states.append(result);ids.append(species)
     if not models:raise ValueError('No occupied material support; retain exact vacuum without a matter solver')

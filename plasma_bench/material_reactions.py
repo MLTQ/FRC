@@ -41,6 +41,7 @@ class MaterialReactionOverlap:
             active=sample['number'][:,k]>0;ids=species[active]
             if len(set(ids))!=len(ids):raise ValueError('Overlapping blocks of the same fluid require an explicit mixing closure')
             atomic[self.number[ids]]=sample['number'][active,k]/self.density
+            if np.any(atomic[self.number[ids]]==0):raise ValueError('Positive material density is below the atomic source normalization range')
             temperatures[ids]=sample['temperature_ev'][active,k];velocity[ids]=sample['velocity'][active,k]
             atomic[network.thermal]=1.5*atomic[network.electrons]*temperatures[-1]
             rows.append(self.source.initial(atomic,temperatures[:-1],velocity))

@@ -10,13 +10,14 @@ from plasma_bench.radiative_recombination import RadiativeRecombination
 from plasma_bench.atomic_network import AtomicNetwork
 from plasma_bench.atomic_frame import FixedFrameAtomicMoments
 from plasma_bench.species_material import MaterialSpecies
+from plasma_bench.material_subcells import MaterialSubcells
 from plasma_bench.material_species_set import MaterialSpeciesSet,MaterialSetState
 from plasma_bench.reactive_material import ReactiveMaterial,MaterialReservoirs
 from .reactive_material import write_states
 from .implicit_plasma_records import provenance,freeze
 
 
-def run(destination):
+def run(destination,*,separate_velocity=False):
     out=Path(destination)
     if out.exists():raise ValueError('Fresh charged reacting output required')
     data=Path(__file__).resolve().parents[1]/'data/atomic'
@@ -24,6 +25,7 @@ def run(destination):
     network=AtomicNetwork(ionization,rr);source=FixedFrameAtomicMoments(network,39.948*atomic_mass,[0.,0.,0.])
     identity=provenance(['examples.reactive_material_argon']);out.mkdir(parents=True);freeze(out,identity);start=time.monotonic()
     report=dict(terminal=False,source_sha256=identity['source_sha256'],cases=[],maximum_occupied_cells=10000,maximum_steps=5000,minimum_timestep_s=2e-17,
+        separate_velocity=separate_velocity,geometry_precision_bits=np.finfo(np.longdouble).nmant+1 if separate_velocity else 53,
         inputs=dict(ionization_sha256=ionization.input_sha256,recombination_sha256=rr.input_sha256),
         scope='Physical argon masses, existing ground charge ladder/DI/RR, neutral+ion+electron finite supports and common electrostatic field. Full20ns requested at32/64/128. Real rate/model-range limits remain; no collisions/excitation/kinetic validation or formation adoption.')
     def save():
@@ -32,11 +34,13 @@ def run(destination):
     for cells in (32,64,128):
         faces=-.01*np.cos(np.linspace(0,np.pi,cells+1))[None,:];ids=[network.ground[0],network.ground[1],network.count];models=[];blocks=[]
         for index,temp in zip(ids,[.1,.2,2.]):
-            m=MaterialSpecies(1e14*np.diff(faces),[source.mass[index]],[np.r_[network.charge,-1.][index]],(-.2,.2),
-                              maximum_plasma_phase=.04*32/cells,numerical_viscosity=(.5,2.),viscosity_limiter='minmod')
+            controls=dict(maximum_plasma_phase=.04*32/cells,numerical_viscosity=(.5,2.),viscosity_limiter='minmod')
+            if separate_velocity:
+                m=MaterialSubcells(1e14*np.diff(faces)[0],source.mass[index],np.r_[network.charge,-1.][index],(-.2,.2),faces[0],cells,**controls)
+            else:m=MaterialSpecies(1e14*np.diff(faces),[source.mass[index]],[np.r_[network.charge,-1.][index]],(-.2,.2),**controls)
             models.append(m);blocks.append(m.state(faces,temp))
         model=MaterialSpeciesSet(models,ids);state=MaterialSetState(tuple(blocks));ledger=MaterialReservoirs()
-        solver=ReactiveMaterial(source,1e14,maximum_plasma_phase=.04*32/cells,coalesce_ulps=8)
+        solver=ReactiveMaterial(source,1e14,maximum_plasma_phase=.04*32/cells,coalesce_ulps=8,**(dict(velocity_cells=cells) if separate_velocity else {}))
         times=[0.];models_history=[model];states=[state];budgets=[solver.totals(model,state,ledger)];failure=None;duration=20e-9
         while times[-1]<duration:
             occupied=sum(m.cells for m in model.models)
@@ -54,14 +58,15 @@ def run(destination):
                     r=solver.last_overlap;np.savez_compressed(out/f'argon_n{cells}_rejected_overlap.npz',edges_m=r.edges,points_m=r.points,weights_m=r.weights,moments=r.moments)
                 break
             model,state,ledger=new_model,new_state,new_ledger;times.append(min(times[-1]+dt,duration));models_history.append(model);states.append(state);budgets.append(solver.totals(model,state,ledger))
+            if len(times)==2 or (len(times)-1)%20==0:print('argon',cells,'step',len(times)-1,'time_s',times[-1],'cells',sum(m.cells for m in model.models),flush=True)
         energy=np.array([r['full_energy_j_m2'] for r in budgets]);number=np.stack([r['atomic_numbers_m2'] for r in budgets])
         record=dict(name=f'argon_n{cells}',success=failure is None,failure=failure,steps=len(times)-1,completed_time_s=times[-1],requested_time_s=duration,
             final_occupied_cells=sum(m.cells for m in model.models),maximum_relative_energy_error=float(abs(energy-energy[0]).max()/energy[0]),
             final_electrons_m2=float(number[-1,-1]),initial_electrons_m2=float(number[0,-1]))
         widths=[np.diff(s.faces[0]) for s in state.blocks];b=int(np.argmin([w.min() for w in widths]));j=int(widths[b].argmin())
         record['smallest_cell']=dict(species=int(model.species_indices[b]),block=b,cell=j,width_m=float(widths[b][j]),
-            endpoints_m=state.blocks[b].faces[0,j:j+2].tolist(),number_m2=float(model.models[b].numbers[0,j]),
-            support_m=state.blocks[b].faces[0,[0,-1]].tolist(),minimum_thermal_j_m2=float(state.blocks[b].thermal.min()))
+            endpoints_m=state.blocks[b].faces[0,j:j+2].astype(float).tolist(),number_m2=float(model.models[b].numbers[0,j]),
+            support_m=state.blocks[b].faces[0,[0,-1]].astype(float).tolist(),minimum_thermal_j_m2=float(state.blocks[b].thermal.min()*getattr(model.models[b],'number_scale',1.)))
         record['occupied_species']=model.species_indices.tolist()
         write_states(out/(record['name']+'.npz'),models_history,states)
         np.savez_compressed(out/(record['name']+'_budgets.npz'),time_s=times,atomic_numbers_m2=number,full_energy_j_m2=energy,
@@ -72,5 +77,5 @@ def run(destination):
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser();parser.add_argument('destination');args=parser.parse_args()
-    result=run(args.destination);raise SystemExit(0 if result['success'] else 1)
+    parser=argparse.ArgumentParser();parser.add_argument('destination');parser.add_argument('--separate-velocity',action='store_true');args=parser.parse_args()
+    result=run(args.destination,separate_velocity=args.separate_velocity);raise SystemExit(0 if result['success'] else 1)

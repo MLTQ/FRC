@@ -41,6 +41,13 @@ def write_states(path,models,states):
         for b,(m,s) in enumerate(zip(model.models,state.blocks)):
             for name,value in [('faces_m',s.faces),('relative_velocity_m_s',s.velocity),('thermal_j_m2',s.thermal),('numbers_m2',m.numbers)]:
                 arrays[f'step{k}_block{b}_{name}']=value
+            if hasattr(m,'velocity_indices'):
+                arrays.pop(f'step{k}_block{b}_numbers_m2')
+                arrays[f'step{k}_block{b}_numbers_divided_by_number_scale']=m.relative_numbers
+                arrays[f'step{k}_block{b}_thermal_divided_by_number_scale']=arrays.pop(f'step{k}_block{b}_thermal_j_m2')
+                arrays[f'step{k}_block{b}_number_scale_m2']=np.asarray(m.number_scale)
+                arrays[f'step{k}_block{b}_velocity_indices']=m.velocity_indices
+                arrays[f'step{k}_block{b}_reference_faces_m']=m.reference_faces
         arrays[f'step{k}_species_indices']=model.species_indices
         arrays[f'step{k}_frame_velocity_m_s']=model.reference_velocity
     np.savez_compressed(path,**arrays)

@@ -1,5 +1,53 @@
 # Resume the physical FRC simulation
 
+## Continue from implemented two-space material motion (2026-10-16)
+
+Read the newest GOAL_STATUS/ATOMIC_MOVING_FIELDS sections and companions for
+material_subcells, material_species_set, material_reaction_projection,
+material_reactions and examples/material_subcells. MaterialSubcells now advances
+actual fine density cells through a separate compatible P1 velocity map.
+Numbers and thermal coordinates are stored as normalized values plus fixed
+per-block scales, preserving quantities whose SI products underflow. Source
+projection divides by species fractions before applying SI units. Raw files
+use explicit normalized keys; never interpret them as ordinary physical U/N.
+This platform longdouble is only53-bit precision, not a geometry solution.
+
+Completed independent study84947 EXIT0,41.2165s,c0d6ab56...739d1:
+outputs/material_subcells_limits. All40ns neutral decay,4.44683µs affine charged
+expansion and20ns electron-ion cases complete. PNG inspected, PDF/raw states
+retained. Exact saved-field parent comparison is in parent_field_comparison.json.
+Finest relative energy error1.92e-10 does not establish current accuracy;
+32→64/64→128 J changes remain32.21%/38.94%.
+
+All real-rate argon runs are terminal failures with full20ns still requested:
+- 90160 EXIT1,25.3558s,03c3713f...81d53: initial subcell method reached a singular
+ matrix when tiny physical masses underflowed. Output reactive_material_argon_subcells.
+- 34610 EXIT1,25.7332s,13a6d161...075dc: thermal/mass normalization exposed tiny
+ extensive N below SI range. Output reactive_material_argon_subcells_scaled.
+- 62149 EXIT1,184.0504s,3d1fa939...2b9aa: complete factored coordinates retain all
+ q0..9,e but hit the10000-density-cell guard. Output reactive_material_argon_factored_subcells.
+ Actual accepted endpoints at32/64/128 are6.24818/2.09039/0.522749ps, with
+11672/25033/13373 occupied cells. Raw scales retain N as small as10^-324.448/m².
+ No hidden retry, shortened success, dropped species or repaired U.
+
+NEXT onfrc-transport.5.5.2: prevent repeated reaction/motion union partitions
+from growing uncontrollably. Use a declared conservative density representation
+change with a resolution/error scale, retaining all physical support endpoints
+and all factored particle/momentum/energy inventories. Prefer a common projection
+for charge-producing reactions, so births remain charge-compatible; observe
+any change in pre-existing Gauss field/field energy as numerical error, never
+repair it with heat. Measure local J/thermal errors and convergence. Independent
+coarsening of positive/negative birth products or arbitrary cutoff/removal is
+not an acceptable shortcut. Keeping mechanical resolution separate is now
+implemented; do not repeat the previous snapshot-only milestone. Re-run actual
+full charged reacting20ns cases after the concrete reduction change, alongside
+the independent physical limits needed to assess it.
+
+No simulation remains live. Preserve earlier failures, all archived evidence,
+private LXCat inputs and user poster. Pulse17262 is terminal from the disk guard,
+not pending; only~512MiB free at this checkpoint. Do not bypass the guard or
+delete research data to restart it. Full FRC scope and parent goals remain OPEN.
+
 ## Continue from actual moving reactions and mesh-collapse evidence (2026-10-16)
 
 New material_species_set/material_reaction_projection/reactive_material modules

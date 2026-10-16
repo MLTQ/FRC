@@ -46,7 +46,8 @@ class MaterialSpeciesSet:
         charge=np.zeros_like(x);active=[]
         for m,s,width in zip(self.models,state.blocks,widths):
             j=np.searchsorted(s.faces[0],x,side='right')-1;inside=(j>=0)&(j<m.cells);active.append((j,inside))
-            charge[inside]+=EV*m.charge[0]*m.numbers[0,j[inside]]/width[0,j[inside]]
+            density=m.number_density(s) if hasattr(m,'number_density') else m.numbers/width
+            charge[inside]+=EV*m.charge[0]*density[0,j[inside]]
         electric=np.r_[self.left_electric,self.left_electric+np.cumsum(charge*h)/EPS0]
         energy=EPS0/6*np.sum(h*(electric[:-1]**2+electric[:-1]*electric[1:]+electric[1:]**2))
         return edges,electric,active,float(energy)
@@ -54,6 +55,8 @@ class MaterialSpeciesSet:
     def derivative(self,state):
         edges,electric,active,energy=self.field(state);rates=[]
         for m,s,occupied in zip(self.models,state.blocks,active):
+            if hasattr(m,'material_rate'):
+                rates.append(m.material_rate(s,(edges,electric,[occupied],energy),self.reference_velocity[2]));continue
             p,q,_=m.pressure(s);stress=p+q;force=np.zeros_like(s.velocity)
             force[:,:-1,2]-=stress;force[:,1:,2]+=stress
             force[...,2]+=m.electric_force(s,(edges,electric,[occupied],energy))
@@ -64,10 +67,13 @@ class MaterialSpeciesSet:
     def timestep(self,state):
         widths=self.validate(state);acoustic=np.inf;omega2=0.;phase=np.inf
         for m,s,width in zip(self.models,state.blocks,widths):
-            _,_,sound=m.pressure(s);speed=sound+abs(np.diff(s.velocity[...,2],axis=1))
-            acoustic=min(acoustic,float(np.min(np.divide(m.cfl*width,speed,out=np.full_like(width,np.inf),where=speed>0))))
-            omega2+=EV**2/EPS0*m.charge[0]**2/m.mass[0]*np.max(m.numbers/width);phase=min(phase,m.maximum_plasma_phase)
-        return min(acoustic,phase/np.sqrt(omega2)) if omega2 else acoustic
+            if hasattr(m,'acoustic_timestep'):acoustic=min(acoustic,m.acoustic_timestep(s))
+            else:
+                _,_,sound=m.pressure(s);speed=sound+abs(np.diff(s.velocity[...,2],axis=1))
+                acoustic=min(acoustic,float(np.min(np.divide(m.cfl*width,speed,out=np.full_like(width,np.inf),where=speed>0))))
+            density=m.number_density(s) if hasattr(m,'number_density') else m.numbers/width
+            omega2+=EV**2/EPS0*m.charge[0]**2/m.mass[0]*np.max(density);phase=min(phase,m.maximum_plasma_phase)
+        return float(min(acoustic,phase/np.sqrt(omega2))) if omega2 else float(acoustic)
 
     def step(self,state,dt):
         if not np.isfinite(dt) or dt<=0:raise ValueError('Positive finite material step required')
@@ -82,14 +88,18 @@ class MaterialSpeciesSet:
         result={key:np.concatenate([v[key] for v in values],axis=0) for key in ('number','velocity','temperature_ev')}
         result['velocity']=np.where(result['number'][...,None]>0,result['velocity']+self.reference_velocity,0.)
         result['current']=EV*np.sum(self.charge[:,None,None]*result['number'][...,None]*result['velocity'],axis=0)
-        edges,electric,_,_=self.field(state);result['electric']=np.interp(points,edges,electric);return result
+        edges,electric,_,_=self.field(state);result['electric']=np.interp(np.asarray(points,float),np.asarray(edges,float),np.asarray(electric,float));return result
 
     def totals(self,state):
         self.validate(state);number=[];momentum=np.zeros(3);kinetic=0.;thermal=0.
         for m,s in zip(self.models,state.blocks):
-            left,right=s.velocity[0,:-1]+self.reference_velocity,s.velocity[0,1:]+self.reference_velocity;mass=m.mass[0]*m.numbers[0]
-            number.append(m.numbers.sum());momentum+=np.sum(mass[:,None]*(left+right)/2,axis=0)
-            kinetic+=np.sum(mass/6*np.sum(left*left+left*right+right*right,axis=1));thermal+=s.thermal.sum()
+            if hasattr(m,'fine_velocity'):left,right=(v+self.reference_velocity for v in m.fine_velocity(s.velocity))
+            else:left,right=s.velocity[0,:-1]+self.reference_velocity,s.velocity[0,1:]+self.reference_velocity
+            scale=getattr(m,'number_scale',1.);amount=m.relative_numbers if hasattr(m,'relative_numbers') else m.numbers[0]
+            mass=m.mass[0]*amount
+            number.append(amount.sum()*scale);momentum+=np.sum(mass[:,None]*(left+right)/2,axis=0)*scale
+            kinetic+=np.sum(mass/6*np.sum(left*left+left*right+right*right,axis=1))*scale
+            thermal+=s.thermal.sum()*scale
         edges,electric,active,field=self.field(state);empty=~np.any(np.stack([inside for _,inside in active]),axis=0)
         exterior=EPS0/6*np.sum(np.diff(edges)[empty]*(electric[:-1][empty]**2+electric[:-1][empty]*electric[1:][empty]+electric[1:][empty]**2))
         return dict(numbers_m2=np.asarray(number),momentum_kg_per_m_s=momentum,kinetic_j_m2=float(kinetic),thermal_j_m2=float(thermal),

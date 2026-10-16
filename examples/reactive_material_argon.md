@@ -33,3 +33,12 @@ beyond its soluble neutral limit; completion/convergence must be measured.
 
 Usage: `python -m examples.reactive_material_argon FRESH_OUTPUT` in the usual
 headless environment. No unit tests or generic pass/fail framework is invoked.
+
+`--separate-velocity` uses MaterialSubcells initially and in every reaction
+projection, with32/64/128 requested mechanical cells while retaining the actual
+fine density cuts. It records platform geometry precision and the nested-space
+metadata with every state. Physical input, full20ns requests, source channels
+and failure/resource criteria remain unchanged. New progress output reports
+actual time and cell count; a frozen or failed run is not declared complete.
+Subcell raw thermal coordinates include the exact per-block normalization;
+summary minima restore physical J/m². Tiny populated carriers are retained.

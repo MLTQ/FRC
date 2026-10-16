@@ -1,5 +1,44 @@
 # Active research: a credible experimental FRC simulation
 
+## Separate density and velocity motion implemented (2026-10-16)
+
+Previous turn made concrete progress at5aa2ddae1: moving-source coupling and
+the charged timestep-collapse evidence. This turn implements MaterialSubcells,
+with fine density/source cuts and a nested continuous P1 mechanical mesh.
+Consistent mass, pressure/thermal work and common-field force use the actual
+fine material. Source projection retains all support ends and changed species.
+No atmosphere, population cutoff, thermal repair or reduced physical mass.
+
+Factored N and U coordinates preserve very small carriers without forming an
+underflowing kilogram mass matrix. The final128-cell argon prefix retains a
+cell amount with log10(N/m^-2)=-324.448, below direct float64 SI range. All raw
+normalized values/scales are saved. Platform longdouble has53 mantissa bits,
+so it provides no extra geometry precision here. Read material_subcells.md.
+
+Full independent study84947 EXIT0,41.2165s, sourcec0d6ab56...739d1:
+three40ns moving neutral decays, three4.44683µs analytic charged expansions,
+and three20ns ion/electron expansions all complete. Finest charged position
+error1.53e-16m; plasma relative energy error1.92e-10. At equal mechanical
+resolution,128-cell J differs0.02184% from the previous method. Spatial J
+differences32→64/64→128 remain32.21%/38.94%; no current-convergence claim.
+All accepted states and inspected PNG/PDF: outputs/material_subcells_limits.
+
+Real-rate argon full20ns requests still FAIL. Factored-subcell run62149 EXIT1,
+184.050s, source3d1fa939...2b9aa advances3/4/4 actual steps at32/64/128,
+retaining q0..9,e, before exceeding10000 occupied density cells. Actual endpoints
+are6.24818/2.09039/0.522749ps; no partial completion claim. Earlier singular-mass
+and unrepresentable-extensive-number failures are separately preserved.
+The next limitation is density-cut proliferation, not the original~1e-25s
+mechanical step. All four runs are terminal; no simulation remains live.
+
+Next onfrc-transport.5.5.2: controlled conservative density-partition reduction,
+with actual species supports, local birth-charge cancellation, fine thermal
+admissibility and field-energy/remap errors explicitly retained and converged.
+Do not merely raise the cell cap, discard trace species or merge support ends.
+Original FRC gates remain OPEN. Long pulse17262 remains stopped for low storage;
+about512MiB was free. Viewer, poster and private LXCat inputs are unchanged.
+No unit tests or general verification framework were added or run.
+
 ## Moving reactions implemented; charged mesh collapse exposed (2026-10-16)
 
 The previous turn only reconfirmed the viewer: no new scientific progress.

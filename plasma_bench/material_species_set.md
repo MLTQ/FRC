@@ -31,3 +31,15 @@ new physical blocks/amounts from its complete moments; this class alone does not
 implement reaction deposition, mesh coarsening, collisions, radial geometry or
 physical walls. Source-to-transport projection is a separate numerical operator
 whose local charge, moment/energy error and admissibility must be assessed.
+
+Opt-in MaterialSubcells blocks have fine density geometry and fewer velocity
+nodes. The set delegates their compatible force/work and acoustic restriction
+and uses their represented fine endpoint velocities in kinetic/momentum totals.
+Every density cut still participates in the shared Gauss field/plasma bound.
+Scalar E sampling converts extended geometry to float64 for np.interp output;
+force integration retains the original extended coordinates and field arrays.
+Subcell thermal coordinates are divided by a fixed per-block particle scale;
+the set restores their physical value for the energy budget.
+Subcell number density and particle totals are likewise recovered from factored
+number coordinates; fine physical amounts can be below float64 SI range without
+being deleted from the internal state. Totals multiply the scale after summing.

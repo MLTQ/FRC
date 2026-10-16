@@ -1,5 +1,86 @@
 # Moving variable-species electrostatic research component
 
+## Actual separated density/velocity motion (2026-10-16)
+
+The previous snapshot proposal is now an implemented opt-in MaterialSubcells
+block within MaterialSpeciesSet. A nested P1 mechanical mesh moves every fine
+density/source cut. M=integral(rho phi_i phi_j), pressure force=integral(p+Q)
+grad(phi), and Udot_f=-(p_f+Q_f)delta(v_f) use identical material fractions.
+Two-point common-field force integration retains the actual charge-density
+union and empty exterior. The minmod numerical stress uses mechanical velocity
+gradients, fine density/sound speed, and its matching thermal work. Read the
+companion for the acoustic generalized-eigenvalue and physical plasma bounds.
+This changes the spatial representation; it is not an implicit solver or a
+physical transport closure, and its nonlinear stability must still be assessed.
+
+The first real-rate moving attempt removed the tiny mechanical dt but encountered
+singular physical mass matrices. A second retained normalized heat/mass yet
+exposed source populations whose extensive SI amount underflowed. The final
+representation stores N=S*N_relative and U=S*U_relative, with one positive fixed
+S per block during transport; source projection first divides by the peak
+species fraction. Pressure/forces/matrix all use the same scaled coordinates.
+Density is (N_relative/h)*S and totals apply S after summing. No particle, charge
+state or energy is omitted by a cutoff. Raw normalized keys and S are recorded.
+The128-cell final prefix retains log10(N/m^-2)=-324.4479. Direct physical-number
+diagnostic products can underflow, but the actual internal pair is retained.
+Gathering explicitly rejects if a positive density cannot fit the atomic
+source normalization, instead of silently deleting it. Atomic-source moment
+dynamic range and geometry precision remain limits: numpy.longdouble supplies
+only53 mantissa bits on this platform and does not add accuracy here.
+
+Complete independent study84947 EXIT0,41.216513s, source
+c0d6ab56e5586cb1887532a06395d1641e0cf4f926b05702d1daa72e444739d1,
+is saved in outputs/material_subcells_limits with all accepted states and
+inspected PNG/PDF. It uses four fine density cells per initial velocity element.
+The original40ns moving cold neutral decay at20/40/80 steps has population
+error<=2.88e-15, front error2.00e-17m, energy change<=6.38e-16J/m² and photon
+error<=1.80e-16J/m². This is still a declared two-level mathematical neutral limit.
+
+The warm charged Ar slab retains its exact quadratic pressure average, physical
+mass, real electric field and vacuum. Independent scalar energy quadrature
+sets the full4.44682988µs endpoint at affine expansion factor1.5:
+
+| Velocity / density cells | Position error | Velocity error | Max relative total-energy error |
+|---|---:|---:|---:|
+|32 /128|1.988e-13m|1.164e-7m/s|7.598e-13|
+|64 /256|1.221e-14m|7.751e-9m/s|4.886e-14|
+|128 /512|1.527e-16m|9.632e-10m/s|3.268e-15|
+
+Physical-mass electron-ion expansion reaches the full20ns at all three meshes
+in486/1021/2113 steps, with max relative energy errors3.054e-9/7.662e-10/1.917e-10.
+These runs explicitly disable reactions only for the unchanged transport limit.
+J differences32→64 and64→128 are32.21% and38.94% (not monotone convergence);
+E differences are6.652% and2.705%. At the same mechanical counts, exact saved
+field comparison with the prior one-density-cell method gives J differences
+0.1811%/0.04599%/0.02184%, E4.35e-6/2.16e-6/9.29e-7 relative. Actual timestep
+controls differ; this comparison supports compatible representation behavior,
+not an exact-reference or experimental-validation claim. Input hashes and the
+two-point common-boundary integration method are recorded in the comparison JSON.
+
+All full20ns real-rate argon requests still fail; their inputs and physical
+channels are unchanged from the previous charged attempt. Failures are retained:
+
+| Output | Handle / result | Seconds | Source prefix | Cause |
+|---|---|---:|---|---|
+|reactive_material_argon_subcells|90160 EXIT1|25.356|03c3713f|Singular SI mass matrix|
+|reactive_material_argon_subcells_scaled|34610 EXIT1|25.733|13a6d161|Unrepresentable extensive SI N|
+|reactive_material_argon_factored_subcells|62149 EXIT1|184.050|3d1fa939|Density partition exceeds10000-cell resource bound|
+
+The factored method advances32/64/128 cases for3/4/4 accepted steps to
+6.24818/2.09039/0.522749ps, retaining q0..9 and electrons. Density counts become
+11672/25033/13373. Next mechanical steps after the first motion remain about
+2.08/0.521/0.130ps instead of~1e-25s. Prefix relative energy errors are
+3.17e-12/1.28e-12/3.20e-13; these do not certify a full20ns run. Cell growth is
+the next demonstrated obstruction. No duration or acceptance gate was reduced.
+
+NEXT: a controlled conservative reduction of the common density partition,
+with preserved actual supports and factored species inventories. Quantify its
+local current, thermal and Gauss-field-energy errors and refine its resolution;
+do not repair field energy with heat or independently deposit charge-producing
+products onto incompatible meshes. Projection positivity, atomic moment range,
+low-mass fronts, physical closures and every full FRC gate remain unresolved.
+All jobs above are terminal, no unit tests were run, and the full goal stays open.
+
 ## Actual moving/source composition and charged collapse (2026-10-16)
 
 New MaterialSpeciesSet permits different cell counts and disconnected support

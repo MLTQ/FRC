@@ -60,4 +60,19 @@ argon attempt still collapses to~1e-25..1e-23s after its first step because
 protected support boundaries and distinct internal cuts remain. Do not increase
 this tolerance or remove support ends to conceal that failure. A separate
 density/quadrature versus velocity space is assessed in
-examples/material_velocity_resolution.md; it has not been implemented in motion.
+examples/material_velocity_resolution.md.
+
+Optional `velocity_cells=N` now returns MaterialSubcells. It retains every
+post-coalescing density/support cut but restricts the fine nodal momentum load
+into the nested coarse velocity space. Each fine cell still recovers its own
+U=E-K, with negative values rejected. The default keeps the original method.
+Extended geometry and the new mechanical restriction are documented in
+material_subcells.md; full charged trajectory evidence is still required.
+For subcells, source momentum/energy are normalized by their species population
+before applying SI constants. The resulting thermal coordinate is U/S with the
+explicit fixed scale S=(peak source species density)*(1m). N is also stored as
+S times its normalized integral, retaining amounts whose SI product underflows.
+Density/support occupancy is determined before forming that product. This avoids
+mass underflow for tiny but
+retained carriers, not a cutoff, floor or energy correction. An occupied source
+whose normalized amount itself cannot be represented explicitly rejects.
