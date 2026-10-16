@@ -1,5 +1,56 @@
 # Active research: a credible experimental FRC simulation
 
+## Completed bias comparison and measured field sensitivity (2026-10-16)
+
+Previous goal turn was progress: paired collision coupling was committed in the
+isolated branch (279bf0a8f), with two full pulses launched and main checkpoint
+317818b0e. This turn collected bias-only handle46579 terminal success: all4000
+steps /3.5us,2539.966s,source05555dc9...b3c75. All4000 raw states and matching
+final digest are present. Comparison51962 exited0; PNG inspected and PDF saved:
+outputs/material_tube_array_vs_bias_viscous_comparison. The array final particle
+RMS radius is25.3185 versus27.4959mm bias-only (7.919% smaller), but both expand
+from18.7082mm. The array final surface is larger and electrons much hotter.
+Read MATERIAL_COMPRESSION.md. This completes the matching bias comparison;
+frc-vacuum.3.2 is closed, while physical accuracy and the full goal remain open.
+
+Existing material_coil_plot now supports configured pulses at81 common actual
+times with higher common quadrature, component B/J/velocity differences and
+material-position mismatch. Code350f14014 stays on codex/finite-drift-collisions
+in /private/tmp/frc-finite-drift. Complete old/new two-loop comparison92245 exits0
+in outputs/material_tube_two_loop_numerical_sensitivity_agg (PNG inspected, PDF
+saved). Changed BOTH dt1.75->.875ns and numerical viscosityoff->C1=.5/C2=2:
+final differences B14.958%,J25.224%,velocity10.682%,position4.458mm. These are
+numerical-treatment sensitivity, not isolated time convergence. Full budget
+errors remain small; fields still require accuracy evidence. First plotting
+attempt96694 exited134 without results and is preserved with failure.json.
+No simulation was restarted or altered because of that postprocessing failure.
+
+FOUR actual scientific handles were re-polled LIVE (saved observations only):
+-52937 outputs/material_tube_independent_20mt_maxwellian_r4_z16_t4000,
+ 1150/4000steps,794.93s; .875ns, full3.5us requested.
+-33952 outputs/material_tube_independent_20mt_maxwellian_r4_z16_t8000,
+ 1000/8000steps,693.59s; .4375ns, matching full pulse.
+Both use isolated worktree source31721f1fef01b747862f5263f3ddb92e5dfbca0d3fc1995e5e03ebf229d17afc,
+fixed declared log10, paired drag/heat, original4x16 mesh andC1=.5/C2=2.
+-88009 outputs/material_tube_independent_20mt_viscous_r4_z16_t8000,
+ 4400/8000steps,2927.61s; original time refinement.
+-85554 outputs/material_tube_independent_20mt_viscous_r6_z24_t8000,
+ 1800/8000steps,2891.36s; original spatial refinement.
+Both retain main source05555dc9be49c3a1af9c31467fc713f4d5e395442328e9107eea19f68d0b3c75,
+verified unchanged. Do not change either checkout's live source or restart from
+a timeout. The postprocessing change does not belong to either runner closure.
+
+NEXT collect those exact four handles. Use the existing comparison extension
+from the worktree: python -m examples.material_coil_plot --configured-fields
+OUTPUT FIRST SECOND, with MPLBACKEND=Agg and writable cache directories. Require
+terminal successful inputs; use original4000/8000 for time, then original8000
+4x16/6x24 for spatial sensitivity. Compare paired4000/8000 after both complete.
+Failures need their actual saved-state diagnosis, not altered physics or clipping.
+Merge the local branch into main only after BOTH remaining original-source jobs
+finish. All outputs stay in /Users/max/Code/FRC/outputs. No unit suite. Keep
+frc-vacuum.3.3,frc-transport.3 and full original goal open. Preserve user poster
+and existing10ns /20mt/ and /array20mt/ views; no remote/publication.
+
 ## Paired collisions in the full moving solver (2026-10-16)
 
 Previous UI-only turn made no new scientific progress: it verified the already

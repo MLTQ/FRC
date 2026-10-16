@@ -1,5 +1,62 @@
 # Numerical compression treatment and the long-array pulse
 
+## Complete matching bias control (2026-10-16)
+
+Bias-only run 46579 exited 0 after all 4000 steps / 3.5 us in 2539.966 s.
+It has the same initial plasma, 0.875 ns timestep, C1=0.5/C2=2 numerical
+compression pressure and source identity 05555dc9...b3c75 as the completed array.
+All 4000 accepted raw states remain; the final saved-state digest matches.
+The existing comparison 51962 exited 0; PNG inspected and PDF generated in
+outputs/material_tube_array_vs_bias_viscous_comparison.
+
+| Quantity at 3.5 us | Bias only | Nine-loop 20 mT pulse |
+|---|---:|---:|
+| Particle RMS radius | 27.4959 mm | 25.3185 mm |
+| Midplane surface radius | 54.2617 mm | 61.6000 mm |
+| Maximum surface radius | 54.2617 mm | 64.7229 mm |
+| Mean Te / Ti | 3.4846 / 0.3756 eV | 13.7391 / 1.0639 eV |
+| Joule heat | 0.0005202 mJ | 238.0457 mJ |
+| Numerical ion heat | 1.95e-13 mJ | 15.6337 mJ |
+| Max absolute external-work residual / E0 | 2.1283e-11 | 4.5985e-5 |
+
+The array's final particle RMS radius is 7.919% smaller than bias-only, but both
+exceed the initial 18.7082 mm. The array's midplane surface briefly reaches
+33.9148 mm versus its initial 35 mm, then expands beyond the bias-only surface.
+The minimum sampled particle RMS remains its initial value for both runs. A
+local surface pinch is not bulk confinement. Reversed axial fields and plotted
+flux contours do not establish resolved FRC topology, stability or confinement.
+The bias field is constant, so the comparison's peak-source linkage at t=0 is
+identically zero and supplies no nontrivial reciprocity evidence for that run.
+The array's independent peak linkage differences remain +1.257% / -0.618%.
+
+## Complete two-loop numerical sensitivity (2026-10-16)
+
+The older successful 1.75 ns two-loop pulse without numerical compression
+pressure is compared with its completed 0.875 ns C1=0.5/C2=2 counterpart.
+Both numerical choices changed; this is not isolated time convergence. The
+extended existing examples.material_coil_plot tool evaluates actual bases at
+81 common saved times with ten-point Gauss quadrature on the union material
+mesh. All components and physical-position differences are retained. Its code
+is committed as 350f14014 on codex/finite-drift-collisions, isolated from live
+main-checkout sources; the actual experiment solver source is unchanged.
+
+At final 3.5 us, relative vector L2 differences (weighted by the second run's
+actual volume) are total B 14.958%, induced B 14.696%, J 25.224% and bulk velocity
+10.682%. Maximum material-position mismatch is 4.458 mm. Across the sampled
+history, vector differences reach B 19.901%, J 40.160% and velocity 55.301%.
+Relative component differences near zero fields can be large; absolute component
+RMS differences are also saved. Small energy errors, 2.7201e-5 and 1.1540e-5,
+do not establish local field accuracy. The running fixed-treatment time and
+space controls remain necessary before formation interpretation.
+
+Completed headless comparison 92245 exited 0; scientific PNG inspected, PDF
+saved in outputs/material_tube_two_loop_numerical_sensitivity_agg. The first
+postprocessing attempt 96694 exited 134 without results; its failure record is
+preserved in outputs/material_tube_two_loop_numerical_sensitivity. A native
+rendering problem was suspected, not proven. Simulation trajectories were
+unaffected. The tool now saves measurements before plotting. No unit tests,
+exhaustive replay or new verification framework were added.
+
 This is an optional solver change for strong compressive flow, not a physical
 transport coefficient or an established FRC formation model. The original
 nonviscous trajectories remain unchanged and preserved. The option defaults off.
