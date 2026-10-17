@@ -12,6 +12,9 @@ molecules nor preparation energy. This is an initialization assumption, not an
 implemented hydrogen discharge model. D2, N2 and O2 are not aliases in that table.
 The current planar reacting calculation uses the argon ground-state ladder;
 it is a different component from that older prescribed-coil experiment.
+The coil builder now records that inventory-only scope and the gas preparation
+assumption explicitly in resolved inputs. Unsupported gas choices produce a
+clear model-scope rejection; they do not acquire argon physics through an alias.
 
 ## Primary data sources reviewed
 

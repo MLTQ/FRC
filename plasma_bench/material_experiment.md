@@ -12,6 +12,13 @@ per initial atom; H2 gives two protons per assumed dissociated molecule. Masses
 are declared natural-abundance approximations, not isotope-specific chemistry.
 No neutral material remains outside plasma in this model.
 
+Resolved metadata explicitly records `gas_model_scope`, whether molecular
+chemistry evolves (false here), and the selected gas's preparation assumption.
+H2 is labeled as two protons/two electrons per dissociated molecule, with no
+preparation energy evolution. Unsupported D2/N2/O2 choices reject with a model-
+scope explanation and a link to the gas requirements, rather than a bare
+dictionary-key error. No new gas, rate, mass or physical closure is enabled.
+
 The compact initial profile is f=(1-r²/R²)(1-z²/L²), n=nc*f^(3/2),
 Te/Ti=Tcenter*f. The actual numerical volume integral sets nc so that the full
 ion inventory equals the declared preparation inventory. Both initial species

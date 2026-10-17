@@ -103,6 +103,10 @@ def build(config):
         raise ValueError('Positive finite dimensions, fill, temperatures and duration required')
     if plasma['assumed_charge_state'] != 1 or plasma['assumed_ionization_fraction'] != 1.:
         raise ValueError('Only an explicitly assumed fully singly ionized inventory is implemented')
+    if plasma['gas'] not in GASES:
+        raise ValueError(f"Gas {plasma['gas']!r} is not implemented by this pre-ionized coil model. "
+            'Inventory choices are Ar, He, Ne and fully dissociated H2; '
+            'D2/N2/O2 require their own species and chemistry. See docs/MOLECULAR_GASES.md.')
     if plasma['radius_m'] >= tube['radius_m'] or plasma['half_length_m'] >= tube['length_m']/2:
         raise ValueError('Initial free plasma must fit strictly inside the nonconducting tube')
     if not isinstance(evolution['steps'], int) or evolution['steps'] < 4:
@@ -165,7 +169,11 @@ def build(config):
         collision_model=collisions,
         tube_radius=tube['radius_m'], tube_half_length=tube['length_m']/2,
         numerical_bulk_viscosity=config.get('numerical_bulk_viscosity'), **central_options)
-    metadata = dict(central_density_m3=float(center_density), ion_inventory=float(fluid.particles.sum()),
+    metadata = dict(gas=plasma['gas'], gas_model_scope='assumed_fully_singly_ionized_inventory',
+        molecular_chemistry_evolved=False,
+        gas_preparation_assumption=('H2 is assumed fully dissociated into two protons and two electrons per molecule; dissociation/ionization energy is not evolved.'
+            if plasma['gas'] == 'H2' else 'Each original atom is assumed singly ionized; preparation energy is not evolved.'),
+        central_density_m3=float(center_density), ion_inventory=float(fluid.particles.sum()),
         assumed_neutral_inventory=float(neutral_density*chamber_volume), ions_per_neutral=ions_per_neutral,
         neutral_density_before_preparation_m3=float(neutral_density), ion_mass_kg=float(fluid.ion_mass),
         vacuum_center_field_per_amp_t=group_metadata[0]['vacuum_center_field_per_amp_t'] if len(groups)==1 else None,

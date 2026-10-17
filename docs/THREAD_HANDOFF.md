@@ -54,7 +54,7 @@ Read [REACTION_TRANSFER.md](REACTION_TRANSFER.md) and
 - 76215, `/private/tmp/frc-mpfr-20261016`, output
   `reactive_material_argon_newborn_mpfr_5ns`: 15 ns coupled time accepted of the
   original 20 ns target, 227839 density cells. Fourth-interval transport has
-  passed 100 actual steps / 2.2315 ns internally. This is split-stage progress,
+  passed 200 actual steps / 4.5261 ns internally. This is split-stage progress,
   not yet a completed 20 ns result. Keep this source root frozen.
   Original isolated dependency: `/private/tmp/frc-gmp-runtime`.
 
