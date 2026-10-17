@@ -20,27 +20,39 @@ from .implicit_plasma_records import provenance, freeze
 
 
 def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0,
-        projection_method='galerkin', extend_velocity=False, newborn_spacing_fraction=0.):
+        projection_method='galerkin', extend_velocity=False, newborn_spacing_fraction=0.,
+        velocity_refinement_rounds=0, maximum_refined_velocity_cells=256,
+        refine_heavy_species=False, electron_cells=None):
     out = Path(destination)
     if out.exists() or not np.isfinite(source_interval_ns) or source_interval_ns <= 0 or cells < 2:
         raise ValueError('Fresh output and positive source interval/velocity resolution required')
     if not isinstance(coalesce_ulps, int) or coalesce_ulps < 0:
         raise ValueError('Nonnegative explicit ULP cleanup required')
+    electron_cells = cells if electron_cells is None else electron_cells
+    if not isinstance(electron_cells, int) or electron_cells < 2:
+        raise ValueError('At least two integer electron velocity cells required')
+    maximum_plasma_phase = .04*32/max(cells, electron_cells)
     ion = ImpactIonization.from_file('data/atomic/argon/argon.json')
     rr = RadiativeRecombination.from_file('data/atomic/recombination/argon_rr.json')
     network = AtomicNetwork(ion, rr)
     source = VectorizedAtomicMoments(network, 39.948*atomic_mass, [0., 0., 0.])
+    refinement_species = list(range(network.count)) if refine_heavy_species else None
     identity = provenance(['examples.reactive_material_subcycling'])
     out.mkdir(parents=True)
     freeze(out, identity)
     began = time.perf_counter()
     report = dict(terminal=False, source_sha256=identity['source_sha256'], requested_time_s=20e-9,
         completed_time_s=0., source_interval_s=source_interval_ns*1e-9, transport_fraction=.5,
-        velocity_cells=cells, preserve_velocity_knots=True, geometry_decimal_digits=DIGITS,
+        velocity_cells=cells, initial_electron_velocity_cells=electron_cells,
+        maximum_plasma_phase=maximum_plasma_phase,
+        preserve_velocity_knots=True, geometry_decimal_digits=DIGITS,
         geometry_arithmetic=ARITHMETIC, geometry_precision_bits=BITS,
         projection_method=projection_method,
         extend_velocity=bool(extend_velocity),
         newborn_spacing_fraction=newborn_spacing_fraction,
+        velocity_refinement_rounds=velocity_refinement_rounds,
+        maximum_refined_velocity_cells=maximum_refined_velocity_cells,
+        velocity_refinement_species=refinement_species,
         minimum_density_width_m=0., coalesce_ulps=coalesce_ulps,
         intervals=[], failure=None, minimum_free_disk_bytes=256*2**20,
         inputs=dict(ionization_sha256=ion.input_sha256, recombination_sha256=rr.input_sha256),
@@ -53,21 +65,25 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0,
         (out/'summary.json').write_text(json.dumps(report, indent=2,
             default=lambda value: value.item())+'\n')
     ids = [network.ground[0], network.ground[1], network.count]
-    faces = -.01*np.cos(np.linspace(0, np.pi, cells+1))[None, :]
     models, blocks = [], []
     for index, temperature in zip(ids, [.1, .2, 2.]):
+        initial_cells = electron_cells if index == network.count else cells
+        faces = -.01*np.cos(np.linspace(0, np.pi, initial_cells+1))[None, :]
         m = PreciseMaterialSubcells(1e14*np.diff(faces)[0], source.mass[index],
-            np.r_[network.charge, -1.][index], (-.2, .2), faces[0], cells,
-            maximum_plasma_phase=.04*32/cells, numerical_viscosity=(.5, 2.), viscosity_limiter='minmod')
+            np.r_[network.charge, -1.][index], (-.2, .2), faces[0], initial_cells,
+            maximum_plasma_phase=maximum_plasma_phase, numerical_viscosity=(.5, 2.), viscosity_limiter='minmod')
         models.append(m)
         blocks.append(m.state(faces, temperature))
     model = PreciseMaterialSet(models, ids)
     state = MaterialSetState(tuple(blocks))
     ledger = MaterialReservoirs()
     solver = SubcycledReactiveMaterial(source, 1e14, velocity_cells=cells,
-        maximum_plasma_phase=.04*32/cells, coalesce_ulps=coalesce_ulps, transport_fraction=.5,
+        maximum_plasma_phase=maximum_plasma_phase, coalesce_ulps=coalesce_ulps, transport_fraction=.5,
         projection_method=projection_method, progress_every=100, extend_velocity=extend_velocity,
-        newborn_spacing_fraction=newborn_spacing_fraction)
+        newborn_spacing_fraction=newborn_spacing_fraction,
+        velocity_refinement_rounds=velocity_refinement_rounds,
+        maximum_refined_velocity_cells=maximum_refined_velocity_cells,
+        velocity_refinement_species=refinement_species)
     energy0 = solver.totals(model, state, ledger)['full_energy_j_m2']
     save_states(out/'initial.npz', [model], [state])
     save()
@@ -140,7 +156,13 @@ if __name__ == '__main__':
     parser.add_argument('--projection-method', choices=('galerkin', 'bounded_moments', 'constrained_velocity', 'variance'), default='galerkin')
     parser.add_argument('--extend-velocity', action='store_true')
     parser.add_argument('--newborn-spacing-fraction', type=float, default=0.)
+    parser.add_argument('--velocity-refinement-rounds', type=int, default=0)
+    parser.add_argument('--maximum-refined-velocity-cells', type=int, default=256)
+    parser.add_argument('--refine-heavy-species', action='store_true')
+    parser.add_argument('--electron-cells', type=int)
     args = parser.parse_args()
     result = run(args.destination, args.source_step_ns, args.cells, args.coalesce_ulps,
-                 args.projection_method, args.extend_velocity, args.newborn_spacing_fraction)
+                 args.projection_method, args.extend_velocity, args.newborn_spacing_fraction,
+                 args.velocity_refinement_rounds, args.maximum_refined_velocity_cells,
+                 args.refine_heavy_species, args.electron_cells)
     raise SystemExit(0 if result['success'] else 1)

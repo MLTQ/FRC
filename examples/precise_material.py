@@ -9,6 +9,7 @@ from scipy.constants import atomic_mass, electron_mass as ME, elementary_charge 
 from plasma_bench.precise_geometry import ARITHMETIC, BITS, DIGITS, coordinates, widths
 from plasma_bench.precise_material import PreciseMaterialSubcells, PreciseMaterialSet
 from plasma_bench.precise_reactions import PreciseReactiveMaterial
+from plasma_bench.subcycled_material import SubcycledReactiveMaterial
 from plasma_bench.material_species_set import MaterialSetState
 from plasma_bench.reactive_material import MaterialReservoirs
 from plasma_bench.atomic_vector_moments import VectorizedAtomicMoments
@@ -43,7 +44,8 @@ def save_states(path, models, states):
 
 
 def run(destination, resolutions, projection_method='galerkin', extend_velocity=False,
-        newborn_spacing_fraction=0.):
+        newborn_spacing_fraction=0., velocity_refinement_rounds=0,
+        maximum_refined_velocity_cells=256, subcycle_transport=False):
     out = Path(destination)
     if out.exists():
         raise ValueError('Fresh precise-material output required')
@@ -59,6 +61,9 @@ def run(destination, resolutions, projection_method='galerkin', extend_velocity=
         projection_method=projection_method,
         extend_velocity=extend_velocity,
         newborn_spacing_fraction=newborn_spacing_fraction,
+        velocity_refinement_rounds=velocity_refinement_rounds,
+        maximum_refined_velocity_cells=maximum_refined_velocity_cells,
+        subcycle_transport=bool(subcycle_transport),
         minimum_density_width_m=0., coalesce_ulps=8, cases=[],
         scope='Full warm neutral affine expansion with actual radiative transfer plus independent charged '
               'affine expansion. Mathematical component limits, not physical argon/FRC formation.')
@@ -80,13 +85,17 @@ def run(destination, resolutions, projection_method='galerkin', extend_velocity=
             model = PreciseMaterialSet([m], [1])
             state = MaterialSetState((m.state(faces[None, :], thermal_profile),))
             ledger = MaterialReservoirs()
-            solver = PreciseReactiveMaterial(source, density, velocity_cells=cells, coalesce_ulps=8,
+            solver_type = SubcycledReactiveMaterial if subcycle_transport else PreciseReactiveMaterial
+            solver = solver_type(source, density, velocity_cells=cells, coalesce_ulps=8,
                 projection_method=projection_method, extend_velocity=extend_velocity,
-                newborn_spacing_fraction=newborn_spacing_fraction)
+                newborn_spacing_fraction=newborn_spacing_fraction,
+                velocity_refinement_rounds=velocity_refinement_rounds,
+                maximum_refined_velocity_cells=maximum_refined_velocity_cells)
             duration, rate = charged_expansion_time(1.5, 2*EV*temperature/(mass*a*a),
                 0. if kind == 'decay' else EV**2*density/(EPS0*mass))
             totals = (lambda: solver.totals(model, state, ledger)) if kind == 'decay' else (lambda: model.totals(state))
             times, models, states, budgets = [0.], [model], [state], [totals()]
+            transport_times, transport_dts, failed_transport = [], [], []
             failure = None
             while times[-1] < duration:
                 dt = min(.5*model.timestep(state), duration-times[-1])
@@ -99,11 +108,19 @@ def run(destination, resolutions, projection_method='galerkin', extend_velocity=
                 try:
                     if kind == 'decay':
                         new_model, new_state, new_ledger = solver.step(model, state, ledger, dt)
+                        if subcycle_transport:
+                            transport_times.extend(times[-1]+r['time_within_transport_s'] for r in solver.last_transport)
+                            transport_dts.extend(r['dt_s'] for r in solver.last_transport)
+                        else:
+                            transport_times.append(times[-1]+dt); transport_dts.append(dt)
                         model, state, ledger = new_model, new_state, new_ledger
                     else:
                         state = model.step(state, dt)
+                        transport_times.append(times[-1]+dt); transport_dts.append(dt)
                 except (ValueError, RuntimeError, ArithmeticError, np.linalg.LinAlgError) as error:
                     failure = str(error)
+                    if kind == 'decay' and subcycle_transport:
+                        failed_transport = solver.last_transport.copy()
                     break
                 times.append(min(times[-1]+dt, duration))
                 models.append(model)
@@ -115,6 +132,7 @@ def run(destination, resolutions, projection_method='galerkin', extend_velocity=
             energy = np.array([r['full_energy_j_m2' if kind == 'decay' else 'energy_j_m2'] for r in budgets])
             row = dict(name=f'{kind}_n{cells}', success=failure is None, failure=failure,
                 steps=len(times)-1, requested_time_s=duration, completed_time_s=times[-1],
+                actual_transport_steps=len(transport_dts), failed_transport_records=failed_transport,
                 maximum_occupied_cells=max(sum(m.cells for m in q.models) for q in models),
                 minimum_occupied_width_m=min(float(widths(s.faces).min()) for q in states for s in q.blocks),
                 numerical_projection_thermal_change_j_m2=ledger.projection_thermal_gain_j_m2,
@@ -133,7 +151,8 @@ def run(destination, resolutions, projection_method='galerkin', extend_velocity=
                 row.update(maximum_front_error_m=max(float(abs(np.asarray(s.faces[0, [0, -1]], float)-1.5*np.array([-a, a])).max()) for s in state.blocks),
                     maximum_velocity_error_m_s=max(float(abs(s.velocity[0, :, 2]-rate*np.asarray(s.faces[0, q.velocity_indices], float)/1.5).max()) for q, s in zip(model.models, state.blocks)))
             save_states(out/(row['name']+'.npz'), models, states)
-            np.savez_compressed(out/(row['name']+'_budgets.npz'), time_s=times, energy_j_m2=energy, **extra)
+            np.savez_compressed(out/(row['name']+'_budgets.npz'), time_s=times, energy_j_m2=energy,
+                transport_stage_time_s=transport_times, transport_dt_s=transport_dts, **extra)
             report['cases'].append(row)
             save()
             print(row, flush=True)
@@ -167,7 +186,11 @@ if __name__ == '__main__':
     parser.add_argument('--projection-method', choices=('galerkin', 'bounded_moments', 'constrained_velocity', 'variance'), default='galerkin')
     parser.add_argument('--extend-velocity', action='store_true')
     parser.add_argument('--newborn-spacing-fraction', type=float, default=0.)
+    parser.add_argument('--velocity-refinement-rounds', type=int, default=0)
+    parser.add_argument('--maximum-refined-velocity-cells', type=int, default=256)
+    parser.add_argument('--subcycle-transport', action='store_true')
     args = parser.parse_args()
     result = run(args.destination, args.cells, args.projection_method, args.extend_velocity,
-                 args.newborn_spacing_fraction)
+                 args.newborn_spacing_fraction, args.velocity_refinement_rounds,
+                 args.maximum_refined_velocity_cells, args.subcycle_transport)
     raise SystemExit(0 if result['success'] else 1)

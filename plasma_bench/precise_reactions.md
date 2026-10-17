@@ -98,3 +98,14 @@ factor enforces block energy while the shape mean enforces momentum. See
 redistribution is recorded, never reset from a global residual. All methods
 now report maximum temperature change and minimum temperature per block.
 Defaults remain unchanged; this alternative requires trajectory evaluation.
+
+`velocity_refinement_rounds` optionally enriches each inherited/newborn mechanical
+mesh before solving its moment transfer, using `velocity_refinement.md`.
+All old knots and density cells remain; actual additions and capacity-limited
+rounds are recorded. `maximum_refined_velocity_cells` bounds additions by whole
+rounds and never shrinks an inherited space. Default zero rounds leaves existing
+behavior unchanged. The acoustic bound uses the actual enriched mesh.
+Optional `velocity_refinement_species` restricts additions to declared atomic
+species indices; all other species still evolve and retain all old knots/cuts.
+None selects all species. This separates heavy-species thermal resolution from
+electron transport resolution; it never removes a species or changes its mass.

@@ -7,6 +7,7 @@ from .bounded_reaction_projection import bounded_moments
 from .constrained_velocity_projection import constrained_velocity
 from .variance_projection import variance_projection
 from .velocity_extension import inherited_velocity_faces
+from .velocity_refinement import refine_velocity_faces
 from .precise_geometry import decimal, widths, fraction, quadrature, interpolate, geometry_precision
 from .precise_material import PreciseMaterialSubcells, PreciseMaterialState, PreciseMaterialSet
 from .material_species_set import MaterialSetState
@@ -72,9 +73,14 @@ class PreciseReactionOverlap(MaterialReactionOverlap):
 @geometry_precision
 def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0,
         velocity_knots=None, energy_projection='local_total', projection_method='galerkin', extend_velocity=False, cfl=.15, maximum_plasma_phase=.04,
-        numerical_viscosity=(.5, 2.), viscosity_limiter='minmod', newborn_spacing_fraction=0.):
+        numerical_viscosity=(.5, 2.), viscosity_limiter='minmod', newborn_spacing_fraction=0.,
+        velocity_refinement_rounds=0, maximum_refined_velocity_cells=256,
+        velocity_refinement_species=None):
     if not isinstance(coalesce_ulps, int) or coalesce_ulps < 0:
         raise ValueError('Nonnegative integer explicitly declared ULP cleanup required')
+    if (not isinstance(velocity_refinement_rounds, int) or velocity_refinement_rounds < 0 or
+            not isinstance(maximum_refined_velocity_cells, int) or maximum_refined_velocity_cells < 1):
+        raise ValueError('Nonnegative velocity refinement rounds and positive capacity required')
     if energy_projection not in ('local_total', 'projected_frame'):
         raise ValueError('Explicit local_total or projected_frame energy projection required')
     if projection_method not in ('galerkin', 'bounded_moments', 'constrained_velocity', 'variance'):
@@ -84,6 +90,13 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
     if extend_velocity and projection_method == 'bounded_moments':
         raise ValueError('Convex bounded transfer cannot use extrapolating velocity shapes')
     source, network, values = overlap.source, overlap.source.network, state.moments
+    selected_refinement_species = None
+    if velocity_refinement_species is not None:
+        selected = np.asarray(velocity_refinement_species)
+        if (selected.ndim != 1 or not np.issubdtype(selected.dtype, np.integer) or
+                np.any(selected < 0) or np.any(selected >= len(source.mass))):
+            raise ValueError('Valid integer species indices required for mechanical refinement')
+        selected_refinement_species = set(map(int, selected))
     present = np.any(values[..., overlap.number] > 0, axis=1)
     protected = np.r_[True, np.any(present[:-1] != present[1:], axis=1), True]
     if velocity_knots:
@@ -148,6 +161,16 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
                 velocity_faces=inherited, extend_velocity=extended, newborn_spacing_fraction=newborn_spacing_fraction,
                 left_electric=state.left_electric, cfl=cfl, maximum_plasma_phase=maximum_plasma_phase,
                 numerical_viscosity=numerical_viscosity, viscosity_limiter=viscosity_limiter)
+            refinement_record = {}
+            if velocity_refinement_rounds and (selected_refinement_species is None or species in selected_refinement_species):
+                refined, refinement_record = refine_velocity_faces(faces,
+                    faces[model.velocity_indices], velocity_refinement_rounds, maximum_refined_velocity_cells)
+                if refinement_record['velocity_refinement_added_nodes']:
+                    model = PreciseMaterialSubcells(nn[first:last], mass, overlap.charge[species],
+                        (state.edges[0], state.edges[-1]), faces, velocity_cells,
+                        number_scale=population_scale, velocity_faces=refined, extend_velocity=extended,
+                        left_electric=state.left_electric, cfl=cfl, maximum_plasma_phase=maximum_plasma_phase,
+                        numerical_viscosity=numerical_viscosity, viscosity_limiter=viscosity_limiter)
             load = np.zeros((len(faces), 3))
             load[:-1] += ll[first:last]
             load[1:] += lr[first:last]
@@ -190,7 +213,7 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
             records.append(dict(species=species, cells=last-first, minimum_width_m=float(widths(faces).min()),
                 velocity_cells=model.velocity_cells, inherited_velocity_faces=inherited is not None,
                 extended_velocity_support=extended,
-                support_decimal_m=[str(faces[0]), str(faces[-1])], **transfer_record))
+                support_decimal_m=[str(faces[0]), str(faces[-1])], **transfer_record, **refinement_record))
             models.append(model)
             states.append(result)
             ids.append(species)

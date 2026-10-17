@@ -1,5 +1,15 @@
 # Full charged argon with explicit reaction intervals
 
+`--electron-cells` optionally selects a distinct initial electron density and
+velocity mesh. Its default is `--cells`; all atomic species retain the latter
+initial/newborn target. Each species still has its physical mass and complete
+support, and return retains every inherited knot and density cut. The common
+plasma-phase cap is `.04*32/max(cells,electron_cells)`, recorded explicitly and
+unchanged by source enrichment. Compare with the existing equal-resolution
+case at that same cap before claiming that cheaper heavy-species meshes suffice.
+This targets the measured dominant interior electron-current error; it is not
+a fluid closure change, a population cutoff or an accuracy guarantee.
+
 Retains the full20ns neutral/ion/electron ground-ladder argon problem and its
 physical masses,1e14/m³ initial component densities,10mm half-width and
 0.1/0.2/2eV temperatures. The precise geometry and vector-assembled source are
@@ -77,3 +87,21 @@ velocity knot or density cell is removed. The option does not change the full
 and mixing-heat transfer described in `plasma_bench/variance_projection.md`.
 The original full duration and physical controls remain. This option is
 experimental; it must pass local accuracy and complete trajectory comparisons.
+
+`--velocity-refinement-rounds` requests the explicit existing-face mechanical
+enrichment in `velocity_refinement.md` at each source return, default zero.
+`--maximum-refined-velocity-cells` limits additions by whole rounds (default
+256), retaining every inherited node even above that capacity. Reports record
+both controls and every actual per-block addition/capacity limit. Density cuts,
+source quadrature, populations and full duration stay unchanged. Actual transport
+steps obey the enriched acoustic bound. This changes spatial resolution and
+must be compared as such, not presented as a pure source-time refinement.
+
+`--refine-heavy-species` restricts additions to the network's heavy atomic
+species and records their actual indices. Electrons still evolve on their
+inherited space with physical mass/current; no carrier is omitted. This isolates
+the measured heavy-ion heating problem. The all-species enriched run increased
+cost and changed current by 14.67% but barely improved its discrepancy from the
+existing fine numerical reference, so late electron enrichment is not treated
+as a current-accuracy fix. Default selection remains all species when refinement
+is explicitly enabled; default refinement itself remains off.

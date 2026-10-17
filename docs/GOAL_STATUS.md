@@ -1,26 +1,25 @@
 # Active research: a credible experimental FRC simulation
 
-## Active goal: local thermal-transfer correction (2026-10-17)
+## Active goal: thermal and electron-current resolution (2026-10-17)
 
-The user explicitly set completion of the lab-facing virtual plasma bench as
-an active goal. Latest continuation: [VARIANCE_TRANSFER.md](VARIANCE_TRANSFER.md).
-New explicit conservative variance transfer completes the full 20 ns/10 ns-source
-argon trajectory and matched full zero-source controls. Exact third-interval
-replay identifies substantial Ar8+ heat already present before return; the new
-return lowers its added maximum temperature change from 7.18 to 1.34 eV on that
-same source. Independent polynomial transfer has second-order velocity and
-fourth-order numerical-heat convergence. Real-source velocity and thermal
-accuracy are still unresolved; default solver is unchanged.
+The user-set lab-facing goal remains active and unfinished. Current evidence,
+failed attempts and live handles are in [VARIANCE_TRANSFER.md](VARIANCE_TRANSFER.md)
+and [THREAD_HANDOFF.md](THREAD_HANDOFF.md). All older dated entries are history.
+Actual trace-ion stage refinement sharply reduces heating; complete20ns enriched
+10ns-source runs preserve total energy, but current errors remain large against
+the existing fine numerical trajectory. Heavy-only refinement avoids the extra
+electron acoustic cost, while the separate128-electron/32-heavy experiment now
+resolves electrons from the initial state.
 
-Full 5 ns-source replacement 73344 (15 ns accepted), six full analytic cases
-57807 and actual transport-heating diagnosis 69881
-are live from frozen `/private/tmp/frc-variance-20261017`. Await actual completion and
-compare full local source-time sensitivity. All physical formation, gas-specific
-chemistry/collisions, heat, wall and experimental requirements remain open.
-This progress is not validation for choosing construction parameters.
-The new 64-cell candidate 71873 completes the full 20 ns in 2041 steps with
-relative energy error 5.55e-12, but 32/64 E/J differences remain 6.65%/32.21%.
-Thermal transfer progress does not resolve the separate current-transport issue.
+The enriched5ns-source attempt fails at10ns because the sound formula underflows
+for retained positive, exactly cold source cells. Independent100digit diagnosis
+supports an equivalent arithmetic reordering, now in a separate full20ns run.
+It does not add heat or establish local thermal convergence. Full analytic
+expansions and the original variance5ns run continue from frozen source roots.
+No component success validates construction parameters. Physical chemistry,
+collisions/heat, chamber boundaries, converged formation and experimental
+comparisons remain open for all requested gases; exact vacuum and physical
+masses remain mandatory. No unit tests or publication occurred.
 
 ## Complete component runs; reaction accuracy still open (2026-10-16)
 

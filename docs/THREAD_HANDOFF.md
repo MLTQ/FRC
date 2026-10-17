@@ -1,26 +1,33 @@
 # Current goal continuation, 2026-10-17
 
-The user explicitly set the lab-facing virtual plasma bench as an active goal.
-Continue numerical/physical construction with the retained chamber and gas
-scope. Latest evidence and live handles: [VARIANCE_TRANSFER.md](VARIANCE_TRANSFER.md).
+The user explicitly set completion of the lab-facing virtual plasma bench as an
+active goal. Retain 1 m length / 15 cm diameter / 0.1–100 mTorr and Ar/H2/D2/N2/O2.
+Read [VARIANCE_TRANSFER.md](VARIANCE_TRANSFER.md) for current equations/evidence
+and [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) for physical scope and missing work.
 
-New explicit `variance` thermal transfer conserves block momentum/energy and
-integrates source heat plus numerical velocity mixing. Full 20 ns at 10 ns
-source intervals and all full zero-source controls complete. Actual 10–15 ns
-replay exactly reproduces every original endpoint array and isolates the Ar8+
-source/return heating. Independent smooth transfers show second-order velocity
-and fourth-order mixing-heat convergence, but real-source local errors remain.
+Actual transport-stage refinement reduces trace Ar8 maximum temperature from
+7.041 to 0.391 to 0.347 eV (32/44/46 velocity cells). Full20ns heavy-only enriched
+10ns-source calculation completes in971 steps with relative energy error2.84e-11.
+Current remains unresolved: coarse32/64/128 differ from the existing1024-cell
+numerical endpoint by66.3%/57.3%/34.2%; the reference itself is unconverged.
 
-**Live:** full 5 ns-source replacement 73344 (15 ns accepted), six full analytic
-cases 57807 and actual transport-heating diagnosis 69881.
-All use frozen `/private/tmp/frc-variance-20261017`.
-The 64-cell full candidate 71873 and comparison 96533 are terminal EXIT0;
-32/64 E/J differences remain 6.65% / 32.21%, so current accuracy remains open.
-See VARIANCE_TRANSFER for output paths and scope; poll to actual termination.
-Next compare completed 10/5 ns local temperatures, velocities, fronts and E/J.
-Bead 5.5.5 and all parent goals remain open; no adoption or lab-design claim.
-Defaults unchanged, no unit tests, no remote, preserve the user poster.
-Completed code/evidence checkpoint: `d01837617`. Poster SHA remains
+The first enriched5ns-source attempt22186 is EXIT1 at10ns coupled acceptance:
+six retained cold Ar2 cells produce0/0 in the old sound formula after m*N
+underflows. Independent100digit actual-source diagnosis is saved. A separate
+full-duration run evaluates equivalent factored ratios; it does not repair heat.
+
+Live handles: **73344** variance5ns (15ns accepted), **57807** variance analytic
+expansions, **47880** enriched explicitly subcycled analytic expansions,
+**77325** initial128-electron/32-heavy20ns case (10ns accepted, main source),
+**16195** factored-ratio heavy-enriched5ns case (frozen prototype). Do not edit
+77325's imported main modules until it terminates. Frozen roots and exact output
+paths are in VARIANCE_TRANSFER. Poll actual handles; do not restart quiet jobs.
+
+Next finish these trajectories, compare thermal/source-time and electron-current
+resolution, then adopt only supported numerical changes. The analytic enriched
+non-subcycled attempt remains a saved failure. Defaults remain unchanged.
+No unit tests, remote or publication. All parent goals/beads stay open.
+Preserve the user's modified poster SHA
 `a783f7cda0f4a249cc4c23ead61debbdf89d356436a2a3dab2189029c6d5deca`.
 
 ## Previous completed continuation, 2026-10-16/17

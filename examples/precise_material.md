@@ -59,3 +59,22 @@ The full independent neutral/charged durations and original metrics remain.
 and mixing-heat transfer described in `plasma_bench/variance_projection.md`.
 The original full duration and physical controls remain. This option is
 experimental; it must pass local accuracy and complete trajectory comparisons.
+
+`--velocity-refinement-rounds` and `--maximum-refined-velocity-cells` pass the
+explicit existing-face mechanical enrichment to source returns in the neutral
+decay family. Reported mesh indices/cell counts retain actual dimensions; the
+initial `--cells` value is not the evolved dimension. The charged family has no
+source return and therefore no such enrichment. Both full original continuum
+durations and independent references remain unchanged. Source-driven enrichment
+must preserve the representable affine solution without introducing numerical
+heat. Capacity limits are explicit, with no old knot or fine cell deleted.
+
+`--subcycle-transport` explicitly selects the existing
+`SubcycledReactiveMaterial` for the decay family. Outer source intervals remain
+half the current pre-source bound, while each actual transport step is half the
+updated post-source acoustic/plasma bound or the remaining interval. This handles
+the measured first-step rejection when enrichment reduces the bound. No step is
+retried and no failed history is overwritten. The original unsplit-transport
+attempt remains a terminal failure. Save every internal dt/stage clock separately
+from completed coupled clocks; failed-stage records do not advance coupled time.
+The charged family remains direct transport because it has no reactions/remap.

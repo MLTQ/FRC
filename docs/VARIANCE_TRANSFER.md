@@ -70,36 +70,111 @@ Nearest-face targets in this MPFR script are evaluated outside the high-precisio
 wrapper, affecting which nearly tied faces are added; actual counts are recorded
 and no original density face is deleted. No asymptotic real-source claim.
 
+## Mechanical resolution and actual transport heating
+
+`outputs/reaction_thermal_transport` completes all three full actual 5 ns
+transport stages (69881 EXIT0), starting from the captured original third-interval
+first source. Only Ar8 velocity resolution changes; all old knots, density cuts,
+populations and physical masses remain. These are stage calculations, deliberately
+without the second reaction half, not new complete coupled 20 ns trajectories.
+
+| Ar8 velocity cells | Final maximum T (eV) | Maximum excess over adiabatic T (eV) | Volume RMS excess (eV) |
+|---|---:|---:|---:|
+| 32 | 7.041390 | 6.726178 | 0.701676 |
+| 44 | 0.390910 | 0.110259 | 0.012617 |
+| 46 | 0.347248 | 0.061844 | 0.007697 |
+
+Each trajectory completes 223 steps; relative transport-energy error is about
+5.381e-11. The diagnostic compares with U*h^(gamma-1)=constant for reversible
+ideal-gas compression. Numerical viscosity can represent shock entropy, so
+excess heat is not by itself proof of an unphysical solution. The strong mesh
+sensitivity is unresolved error evidence; these grids do not establish an
+asymptotic order. Saved states, actual dt, per-cell fields and figures remain.
+
+Explicit `velocity_refinement_rounds` enriches the mechanical mesh at existing
+central-half density faces while retaining old knots. Capacity applies to whole
+proposed rounds. Default zero is unchanged. Optional species selection allows
+heavy-only enrichment; all other species still evolve. No density coarsening,
+heat floor, population cutoff or changed mass is introduced.
+
+Full 20 ns / 10 ns-source enriched run `reactive_material_argon_enriched_10ns`
+is EXIT0: 1977 steps, 198.80 s, 21347 density cells, relative energy error
+7.250e-11. Heavy meshes end at 46 cells (Ar9 24), electron at 50. Enriching the
+electron mesh late reduces its acoustic bound and increases cost substantially.
+The heavy-only variant `reactive_material_argon_heavy_enriched_10ns` is also
+EXIT0 (confirmed by completed command record): 971 steps, 75.50 s, 21349 density
+cells, energy error 2.842e-11. Its electron mesh remains 32. Relative to the
+unenriched candidate its E/J differences are 5.271e-7 / 2.095e-5. Ar8 temperature
+RMS/max differences are 0.008756 / 0.069926 eV; no local-convergence claim.
+The heavy-only source SHA is
+`9ea988bbfd2851b3ed8b828d5df837fffb4d1a5d0dade15c6f4b3befadc4d534`.
+
+## Current discrepancy against the existing fine trajectory
+
+`outputs/reaction_variance_fine_reference` reuses the already completed direct
+512/1024-cell trajectories, retaining all fine cuts in union norms. Both use
+physical argon/electron masses and the same 20 ns initial plasma profiles.
+The reference omits reactions and the field-uncoupled neutral component; it is
+not an exact or experimental solution, and its own uncertainty remains visible.
+
+| Full endpoint | Relative E difference from 1024 | Relative J difference from 1024 |
+|---|---:|---:|
+| 32, variance | 10.390% | 66.305% |
+| 64, variance | 4.993% | 57.312% |
+| 128, constrained | 2.447% | 34.203% |
+| 32 initial, all enriched | 10.615% | 65.774% |
+| 32 initial, heavy enriched | 10.390% | 66.305% |
+| 512, direct | 0.3303% | 8.0781% |
+
+Late electron enrichment barely reduces its current discrepancy. The next
+actual coupled experiment uses 128 electron cells from the start and 32 heavy
+cells, with the same plasma-phase cap as the previous uniform128 case. The
+new driver option records both resolutions; it does not change physical masses.
+No claim that current is resolved or that the reference is converged.
+
+## Preserved failures and arithmetic diagnosis
+
+`precise_material_enriched` terminates EXIT1: enriched neutral decay rejects the
+original non-subcycled step before any coupled time because source return
+reduces the acoustic bound. Its charged affine control completes. The explicit
+subcycled replacement retains the complete original durations and every actual
+transport step; it is not a hidden retry or shortened successful run.
+
+`reactive_material_argon_heavy_enriched_5ns` (22186 EXIT1) completes only 10 ns
+of its requested 20 ns. The next first-source return creates six positive Ar2
+amounts near 1.82e-318 in normalized coordinates. Their stored source heat is
+exactly zero. Computing gamma*p*h/(m*N) gives 0/0 after m*N underflows, and the
+acoustic eigenproblem rejects. `outputs/reaction_acoustic_underflow` reconstructs
+the actual source and verifies the zero source heat independently with 100-digit
+decimal integration. Reordering sound to gamma*(gamma-1)*(U/N)/m returns the
+correct zero without adding heat. Temperature and numerical-viscosity ratios
+need the same careful ordering. Finite-precision source chemistry at such tiny
+populations is still a limitation; zero stored heat is not a physical accuracy
+claim. The original failed source, knots and accepted prefix remain unchanged.
+
 ## Live calculations and next action
 
-At 02:55 UTC, full 5 ns-source 20 ns run **73344** is live in
-`outputs/reactive_material_argon_variance_5ns`, accepted through 15 ns and
-starting the fourth interval. The third interval completes in 309.21 s with
-223 steps, 227825 density cells and relative energy error 2.677e-11. Its Ar8+
-temperature range is 0.18625–8.66800 eV, versus the original
-2.22e-12–14.22133 eV. Largest last-return temperature change is 1.40180 eV.
-This is improvement, not local thermal convergence. Source SHA
-`eb54713073c61523dd878b035ea91f406ba57ced373f0409b95e1c3ae060c28f`.
-The six full neutral/charged analytic expansions **57807** are live in
-`outputs/precise_material_variance`; neutral16 is complete, neutral32 running.
-The new 64-cell full candidate **71873** and comparison **96533** are terminal
-EXIT0, with results above. This checks spatial sensitivity of the changed method.
-All execute frozen `/private/tmp/frc-variance-20261017`; do not edit that root.
-The 5 ns source differs from the earlier complete 10 ns candidate only by the
-explicit exactly-zero-energy residual case, which does not affect those warm
-trajectories. Each run archives its actual source independently.
+At the current continuation, poll the actual handles below; older live entries
+elsewhere are historical. No result is complete until the full target is reached.
 
-Focused transport diagnosis **69881** is also live, driver
-`outputs/reaction_thermal_transport/stage.py`, using the same frozen source.
-It evolves the actual full 5 ns transport stage after the captured original
-first source, then repeats with only Ar8 mechanical elements refined once/twice.
-Every old knot and density cut stays. Compare final heat with the independent
-ideal-gas invariant U*h^(gamma-1) to distinguish reversible compression from
-numerical entropy production. These are explicitly transport-stage calculations,
-not new coupled 20 ns trajectories. Preserve all outputs and actual exits.
+- **73344**: `reactive_material_argon_variance_5ns`, frozen
+  `/private/tmp/frc-variance-20261017`, 15 ns accepted; fourth interval active.
+- **57807**: `precise_material_variance`, same frozen root; neutral16/32 complete,
+  neutral64 active, followed by three charged affine cases.
+- **47880**: `precise_material_enriched_subcycled`, frozen
+  `/private/tmp/frc-enriched-subcycled-20261017`; full neutral decay active,
+  then full charged affine control. Initial16, one enrichment round, capacity64.
+- **77325**: `reactive_material_argon_e128_h32_10ns`, main checkout source;
+  10 ns accepted, second interval active. Do not edit its imported source until
+  terminal. Compare its full endpoint with the existing uniform128 and fine
+  reference to evaluate independent species resolution.
+- **16195**: `reactive_material_argon_factored_heavy_5ns`, frozen
+  `/private/tmp/frc-acoustic-factored-20261017`; complete20ns request with
+  heavy-only enrichment and algebraically reordered sound/temperature/viscosity.
+  This prototype is not yet copied into main `precise_material.py`.
 
-Poll those handles to terminal completion, then compare full 10/5 ns local
-temperature/velocity/front/E/J results. Preserve failures and actual clock.
-No 2.5 ns run yet: fix remaining local accuracy before further mesh growth.
-All original transport, gas chemistry, driven coupling, wall and experimental
-validation requirements remain. This 20 ns planar component is not the 1 m lab.
+Keep the old frozen roots intact. Compare complete 10/5 ns local temperature,
+velocity, fronts and E/J when available. No 2.5 ns run yet: resolve the present
+thermal/arithmetic errors before further mesh growth. The 20 ns planar component
+is not the 1 m lab. Gas chemistry/collisions, heat, driven coupling, boundaries
+and independent physical formation evidence all remain required.
