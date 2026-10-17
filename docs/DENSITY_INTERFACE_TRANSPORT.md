@@ -1,5 +1,34 @@
 # Density interfaces and mechanical resolution
 
+## Completed actual-stage spatial comparison
+
+`outputs/reaction_density_jump_transport/comparison.json` and the inspected
+`interface_stage.png`/`interface_detail.png` compare the full original 5 ns
+endpoints, retaining all 21275 Ar8 and 15033 Ar9 material cells. Independent
+80-digit Decimal differences of saved positions reconstruct the reversible
+reference T0*(h0/h1)^(2/3); the maximum difference from the saved references is
+2.22e-16 eV. This reference is isentropic compression, not an exact shock
+temperature: physical shock entropy can legitimately exceed it.
+
+| Ar9 endpoint quantity | Original 38 velocity elements | 42 elements with density interfaces |
+|---|---:|---:|
+| Maximum T (eV) | 370.160809454 | 0.468429806 |
+| Maximum excess over adiabatic (eV) | 369.748653523 | 0.244441032 |
+| Volume RMS excess (eV) | 29.730557863 | 0.015733633 |
+| Particle RMS excess (eV) | 4.47845e-9 | 1.89336e-9 |
+| log10 density at the hottest cell (m^-3) | -293.780775 | -293.996959 |
+| Right support edge (mm) | 8.674128406 | 8.673367130 |
+
+The original hottest cell is at 8.2034 mm; the resolved hottest cell is at
+7.9930 mm. Particle-weighted and global energy measures conceal substantial
+local errors in these extremely dilute retained populations. No population is
+discarded on that basis. Ar8 remains essentially unchanged: maximum 14.176049
+eV at -9.9578 mm, versus 0.910445 eV reversible reference there, with volume
+RMS excess 0.722809 eV. This supports the existing all-heavy interface trial.
+These are final-stage extrema, not maximum-over-time measurements or a claim
+that a laboratory discharge produces these high charge states. No threshold,
+spatial or source-time convergence is established by these two endpoints.
+
 Latest execution/result note (2026-10-17, 13:49 UTC): the full Ar9-only stage
 16298 is EXIT0 at 5 ns after 221 steps, Erel 5.1023017e-12. Its summary reports
 final Ar9 maximum 0.468429806 eV and maximum/RMS excess over adiabatic

@@ -22,14 +22,17 @@ velocity elements, completes the original1.151us and has peakT0.9253eV. The
 independent exact shock maximum is1.2042eV; accuracy still requires refinement.
 See outputs/material_density_step_interface_comparison for complete histories.
 
-This does not yet establish the cause or correction of the actual Ar9 heating.
+The completed actual-stage trial now supports correction of the Ar9 spike.
 The explicit contrast1e4 trial adds4 knots (38→42 elements) to its captured
 post-source initial state; every original N/U and physical velocity field is
-retained. The smallest mechanical spacing is1.34581um. Full5ns transport and
-independent adiabatic comparison are required before adopting this choice in
-reaction return. A separate frozen full20ns coupled experiment evaluates that
-choice explicitly while the stage trial runs. No production source default is
-changed by this module.
+retained. The smallest mechanical spacing is1.34581um. Full5ns transport
+completes in221 steps with Erel5.10e-12; final Ar9 maximum falls370.16→0.46843eV
+and volume RMS excess over reversible compression falls29.73→0.01573eV.
+Ar8 remains14.176eV. Independent80-digit saved-coordinate readout and inspected
+plots are in reaction_density_jump_transport. Reversible compression is not an
+exact shock reference; convergence and other heavy-species errors remain open.
+A separate frozen full20ns coupled candidate is still running, and a preserved
+all-heavy stage remains queued. No production source default is changed.
 
 Inputs are ordered precise density faces, strictly positive finite relative
 amounts, existing ordered nested velocity knots and a finite contrast>1. Output

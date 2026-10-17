@@ -1,5 +1,21 @@
 # Active research: a credible experimental FRC simulation
 
+## Goal resumed: inspect complete stage while coupled run continues (2026-10-17)
+
+The app goal is active again. The previous continuation made concrete progress:
+the full Ar9-only stage completed and the coupled calculation resumed after
+cache recovery. PID 2415 is verified running; PID 6975 remains suspended for
+serial scheduling. Free space was about 2.6 GiB at the latest check, so continue
+to preserve an export/swap reserve rather than launching concurrent copies.
+
+The completed stage now has full-support and interface-detail plots plus an
+independent reversible-compression readout from 80-digit saved coordinates.
+Ar9 volume RMS excess falls 29.7306 → 0.0157336 eV, while particle RMS hides
+the original hot low-density tail. Ar8 remains near 14.176 eV. This supports
+finishing the all-heavy correction experiment after the coupled run, not
+adopting an unverified source default or declaring local accuracy complete.
+See DENSITY_INTERFACE_TRANSPORT and the precise next action in THREAD_HANDOFF.
+
 ## Tool shutdown, uv cleanup and completed Ar9 stage (2026-10-17, 13:49 UTC)
 
 The user authorized stopping identified uv-using tool servers while preserving

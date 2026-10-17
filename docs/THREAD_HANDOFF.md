@@ -2,6 +2,25 @@
 
 ## Latest checkpoint: density-interface correction candidate
 
+**Goal continuation after user resume:** app goal is active. Coupled PID 2415
+has been freshly verified running; its saved coupled state is still 15 ns and
+the final interval is live. PID 6975/session 81727 remains SIGSTOP-suspended.
+Do not infer termination from unchanged interval files or start a duplicate.
+Collect terminal successful full 20 ns evidence before evaluating this candidate
+or bringing its optional source controls into main. Then identity-check and
+resume the existing all-heavy stage, subject to available export/swap space.
+Last free-space check was approximately 2.6 GiB; retain the 256 MiB reserve.
+
+The completed Ar9-only stage now has `plot.py`/`plot.md`, `comparison.json` and
+two inspected PNGs in `reaction_density_jump_transport`. They include every
+Ar8/Ar9 material cell and distinguish full support from the detail view. An
+independent 80-digit Decimal reconstruction of T0*(h0/h1)^(2/3) agrees within
+2.22e-16 eV. Ar9 volume RMS excess is 29.7305579 → 0.0157336 eV; particle RMS
+is only 4.48e-9 → 1.89e-9 eV because the original spike lies in a dilute tail.
+Ar8 is unchanged near 14.176 eV, supporting the all-heavy trial. These are
+final-stage comparisons, not temporal maxima or completed coupled evidence.
+No main-source adoption, unit suite, cutoff, floor or new long run was added.
+
 **Latest update, 13:49 UTC:** at the user's request, the identified Unity MCP,
 Blender MCP, Pharaoh and Veritas tool servers were stopped individually while
 Codex remained running. Veritas's KeepAlive launch agent was unloaded for this
