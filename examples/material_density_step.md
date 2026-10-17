@@ -48,3 +48,14 @@ remains below exact1.204242eV; the analytic shock/contact and low-temperature
 rarefaction remain underresolved. The inspected figure and full histories are
 in outputs/material_density_step_serialized. This does not reproduce the
 actual370eV trace-ion spike or validate high-contrast thermal accuracy.
+
+`--interface-spacing cosine` distributes half the initial cells by cosine
+coordinates on each side of the density jump. It clusters near the internal
+interface and both actual vacuum boundaries while retaining the same total
+cell count, piecewise-constant physical initial density/T, physical masses and
+complete duration. Every cell amount is n times its actual width. There is no
+remap or density deletion. This explicit initial-resolution choice evaluates
+whether resolving the initially low-mass rarefaction material improves the
+measured shock/contact and temperature error. The acoustic bound is still
+recomputed from the actual evolving mesh; added cost is measured, not hidden.
+Uniform remains the baseline/default; the spacing is recorded in each report.

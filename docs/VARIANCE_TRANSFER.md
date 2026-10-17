@@ -1,5 +1,11 @@
 # Conservative thermal-transfer candidate, 2026-10-17
 
+Latest concrete transport result: [DENSITY_INTERFACE_TRANSPORT.md](DENSITY_INTERFACE_TRANSPORT.md)
+isolates a3040eV runaway caused by a density jump inside one velocity element.
+Adding that existing fine face removes the runaway in the complete independent
+neutral problem; shock accuracy remains unresolved. Actual final-stage and
+full coupled argon density-jump trials are live and have not been adopted.
+
 The lab-facing simulator goal is active and the physical FRC goal remains open.
 This continuation targets the local thermal error in bead 5.5.5. The new
 `variance` option is experimental; Galerkin/local_total remains the default.

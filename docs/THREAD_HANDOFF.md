@@ -1,5 +1,43 @@
 # Current goal continuation, 2026-10-17
 
+## Latest checkpoint: density-interface correction candidate
+
+Read [DENSITY_INTERFACE_TRANSPORT.md](DENSITY_INTERFACE_TRANSPORT.md) first.
+The independent buried-jump neutral run26418 EXIT1 reaches3040.63eV and
+334km/s before hitting the remote boundary at0.638us. Its matched one-node
+resolution32480 EXIT0 completes1.151us, peak0.9253eV. Both preserve all65
+fine cells and old nodes; exactshockT1.2042eV means accuracy remains open.
+Whole-history comparisonPNG inspected; original failed-run plots must not be
+mistaken for full matched endpoints. Sources/raw failures remain saved.
+
+Current live work supersedes old live-status statements below:
+
+-56061: original actual final5ns transport and1/2 midpoint-refinement trials,
+ `reaction_final_trace_transport`, frozen `/private/tmp/frc-final-trace-thermal-20261017`.
+ Original stage now200steps/4.425498152ns of5ns; still live.
+-16298: same captured actual initial state with Ar9 density-jump contrast1e4,
+ 38→42velocity elements, full5ns target, `reaction_density_jump_transport`,
+ frozen `/private/tmp/frc-density-jump-20261017`.
+-66102: independent cosine density-step64/128/256 family.64/128 complete;
+ 256 still running. **Imports main**, so preserve its source closure.
+-Full20ns coupled density-jump prototype: launch tool response truncated and
+ handle unavailable; **PID2415 confirmed live** by direct process inspection.
+ Output `reactive_material_argon_density_jumps_5ns`, frozen root
+ `/private/tmp/frc-source-density-jumps-20261017`, source57fc4393...b8b.
+ Do not restart based on missing handle. Last accepted state15ns,367.368s elapsed.
+
+New main module `density_velocity_refinement` only returns an enriched mesh;
+main reaction return has not adopted it. Frozen coupled candidate wires explicit
+contrast/species options through the existing conservative return, preserving
+old nodes, fine cuts, all species,128-bit scaling and physical masses. Collect
+complete local thermal/front/E/J results before deciding integration. No2.5ns
+source run, unit suite, floor/cutoff or publication. Goal and thermal bead stay
+open. Preserve user poster. Last disk availability~1.7GiB; retain256MiB reserve.
+Cosine256 has left its evolution loop and is writing its full state archive;
+full-duration success is not yet known, and summary still contains only64/128. Monitor disk
+before staging its large raw archive or starting any further simulation.
+
+
 The user explicitly set completion of the lab-facing virtual plasma bench as an
 active goal. Retain 1 m length / 15 cm diameter / 0.1–100 mTorr and Ar/H2/D2/N2/O2.
 Read [VARIANCE_TRANSFER.md](VARIANCE_TRANSFER.md) for current equations/evidence

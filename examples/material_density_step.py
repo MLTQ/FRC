@@ -51,10 +51,12 @@ def exact_jump(position, time, ratio=1e-8, gamma=5/3):
     return (rho, v, p, p/rho), details
 
 
-def run(destination):
+def run(destination, interface_spacing='uniform'):
     out = Path(destination)
     if out.exists():
         raise ValueError('Fresh density-step output required')
+    if interface_spacing not in ('uniform', 'cosine'):
+        raise ValueError('Explicit uniform or cosine interface spacing required')
     out.mkdir(parents=True)
     identity = provenance(['examples.material_density_step'])
     freeze(out, identity)
@@ -67,7 +69,8 @@ def run(destination):
         raise ValueError('Wave interactions invalidate the stated central comparison')
     report = dict(terminal=False, source_sha256=identity['source_sha256'], requested_time_s=duration,
         initial_temperature_ev=temperature, initial_left_density_m3=density, right_to_left_density_ratio=1e-8,
-        half_width_m=a, reference=details, transport_fraction=.5, cases=[],
+        half_width_m=a, reference=details, transport_fraction=.5,
+        initial_interface_spacing=interface_spacing, cases=[],
         scope='Complete neutral Euler pressure/density-step fixture with physical argon mass and exact external vacuum. '
               'Independent central rarefaction/contact/shock before exterior fans arrive; no reacting/FRC validation.')
     def save():
@@ -80,7 +83,11 @@ def run(destination):
     for ax, y in zip(axes, (reference[1]*speed0, reference[3]*temperature, np.log10(reference[0]*density))):
         ax.plot(xplot*a*1e3, y, 'k--', label='Exact central Euler solution')
     for cells in (64, 128, 256):
-        faces = coordinates(np.linspace(-a, a, cells+1))
+        if interface_spacing == 'uniform':
+            faces = coordinates(np.linspace(-a, a, cells+1))
+        else:
+            angle = np.linspace(0., np.pi, cells//2+1)
+            faces = coordinates(np.r_[-.5*a*(1+np.cos(angle)), .5*a*(1-np.cos(angle[1:]))])
         widths = np.array([float(c-b) for b, c in zip(faces[:-1], faces[1:])])
         number = density*np.where(np.asarray(faces[:-1], float) < 0, 1., 1e-8)*widths
         component = PreciseMaterialSubcells(number, mass, 0., (-.2, .2), faces, cells,
@@ -143,7 +150,7 @@ def run(destination):
         ax.set(xlabel='Axial position [mm]', ylabel=label)
         ax.grid(alpha=.2)
     fig.legend(*axes[0].get_legend_handles_labels(), loc='outside lower center', ncol=4, fontsize=8)
-    fig.suptitle('Equal-temperature gas expanding across a 10⁸ density contrast')
+    fig.suptitle(f'10⁸ density contrast · {interface_spacing} initial spacing on each side')
     fig.savefig(out/'density_step.png', dpi=160)
     plt.close(fig)
     if identity != provenance(['examples.material_density_step']):
@@ -157,6 +164,7 @@ def run(destination):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('destination')
+    parser.add_argument('--interface-spacing', choices=('uniform', 'cosine'), default='uniform')
     args = parser.parse_args()
-    result = run(args.destination)
+    result = run(args.destination, args.interface_spacing)
     raise SystemExit(0 if result['success'] else 1)

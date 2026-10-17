@@ -1,5 +1,25 @@
 # Active research: a credible experimental FRC simulation
 
+## Density-interface transport defect isolated (2026-10-17)
+
+The lab-facing goal remains active. A complete independent neutral Euler
+experiment now isolates a spatial failure: placing a1e8 density jump inside
+one velocity element creates a3040.63eV transient and334km/s runaway, while
+total energy remains conserved near1e-11. Adding the existing jump face as
+one velocity node completes the original1.151us with peakT0.9253eV. Exact
+shock maximum is1.2042eV; shock/front convergence remains unresolved.
+See [DENSITY_INTERFACE_TRANSPORT.md](DENSITY_INTERFACE_TRANSPORT.md) for
+equations, all-history measurements, preserved failure and scope.
+
+The actual Ar9 state contains the same unfavorable density/velocity geometry.
+An explicit density-jump refinement adds4 nodes to its captured38-element
+state without changing initial material or velocity. Full5ns actual transport
+and a separate full20ns coupled candidate are running; neither is yet validated
+or adopted as a default. The original stage comparison and independent cosine
+mesh family also remain live. Current physical masses/exact vacuum persist.
+Construction-relevant gas physics, boundaries, converged formation and external
+validation remain open; conservation alone does not establish local accuracy.
+
 ## Active goal: thermal and electron-current resolution (2026-10-17)
 
 The user-set lab-facing goal remains active and unfinished. Current evidence,
