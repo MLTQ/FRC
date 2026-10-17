@@ -138,10 +138,21 @@ hardware benchmark. Its source SHA is
 `10621ccac12ba7035ed9b69d3b3f0ccf5f55d5b1a427af961137dc1abf030ede`.
 
 The small128-per-species versus e128/h32 discrepancy supports retaining the cheaper
-heavy mesh for the next256-electron run. Current still differs34.2% from the
+heavy mesh for the256-electron run. Current still differs34.2% from the
 existing1024-cell reference; that reference is itself unconverged. The updated
 scientific comparison figure is inspected. Initial per-species resolution changes
 neither physical masses nor support/vacuum rules.
+
+Run31198 is now EXIT0 at full20ns in8647steps (4869/3778),3028.127s,
+166537density cells, minimum width8.11966e-24m and Erel3.65072e-13. Initial
+and final electron velocity counts are256. Fine comparison8942 EXIT0 gives
+E/J differences1.02547%/19.07075% from1024, down from2.44748%/34.20280% at
+128electrons. Electron-front difference falls3.39308→1.85810mm; the32-cell
+heavy-ion front difference remains34.3293um. The existing512/1024 direct
+comparison retains E/J0.33030%/8.07805%, electron-front0.771314mm, so the
+reference uncertainty is not zero. No isolated spatial order: phase cap also
+halves, and the new case includes separately measured arithmetic/scaling changes.
+Scientific PNG and rendered PDF inspected. Thermal/current accuracy stays open.
 
 An additional explicit experiment changes128 initial electron cells from cosine
 to uniform spacing, retaining32 cosine heavy cells, variance return,128-bit
@@ -153,6 +164,24 @@ can degrade the vacuum rarefaction. No evolved knot or fine density cut is
 removed. Earlier "uniform128" meant equal cell counts with cosine spacing,
 not this uniform-spaced grid. Full20ns completion and endpoint comparison are
 required before any accuracy/cost conclusion.
+
+The first attempt9098 now completes20ns in4027steps (2037/1990),1021.890s,
+110129density cells and Erel−4.62663e-12. Its initial snapshot exposes a setup
+error:128uniform density cells were given to the constructor without explicit
+velocity knots; cosine-target selection chose only102velocity elements, with
+widths156.25–312.5um. Thus this run never supplied the intended uniform128
+mechanical mesh. Existing fine comparison13317 EXIT0 measures E/J differences
+5.25086%/48.44737% and electron-front difference11.25444mm from1024, versus
+2.44748%/34.20280%/3.39308mm for the cosine128-electron/32-heavy case.
+This rejects the mixed102/128 mesh, not the intended uniform128 discretization.
+
+The driver now supplies every initial electron face through `velocity_faces`
+for the explicit uniform option and records actual initial velocity counts.
+Fresh run91194 starts with[32,32,128] actual velocity cells, independently read
+from saved indices; all128electron widths are156.25um within float spacing.
+It repeats the full20ns request and preserves the original mixed-mesh output.
+The comparison now reads actual initial density/velocity counts rather than
+assuming the requested counts were realized. Cosine defaults remain unchanged.
 
 ## Preserved failures and arithmetic diagnosis
 
@@ -254,23 +283,25 @@ elsewhere are historical. No result is complete until the full target is reached
   `/private/tmp/frc-scaled-thermal-20261017`, same full20ns target with128-bit
   number/energy coordinate shift to retain the measured mixing heat.
 
-- **31198**: `reactive_material_argon_e256_h32_scaled_10ns`, frozen
-  `/private/tmp/frc-e256-scaled-20261017`; full20ns request with256 initial
+- **31198 EXIT0**: `reactive_material_argon_e256_h32_scaled_10ns`, frozen
+  `/private/tmp/frc-e256-scaled-20261017`; completed20ns with256 initial
   electron cells,32 initial heavy cells, variance return,128-bit scaling and
   no source-driven enrichment. Source SHA
   `64eb503a955d9ce992fd43a183cb62e44277ba9ec35ea86925eb8149921bde17`.
-  First10ns is accepted in4869steps; second interval remains active.
-  The phase cap follows the declared maximum initial resolution; compare with
-  e128/h32 and the existing fine reference. This also includes the measured
+  Both intervals accept4869/3778steps; no source remains live in this root.
+  The phase cap follows the declared maximum initial resolution. The completed
+  comparison above with e128/h32 and the existing fine reference includes the measured
   arithmetic correction, not a pure single-parameter spatial-order study.
 
-- **9098**: `reactive_material_argon_e128_uniform_h32_10ns`, frozen
-  `/private/tmp/frc-uniform-electron-20261017`; full20ns request with the uniform
-  initial electron grid above. First10ns accepts2037steps,8469density cells,
-  Erel−5.04234e-12; second interval is active. Source SHA
+- **91194**: `reactive_material_argon_e128_full_uniform_h32_10ns`, frozen
+  `/private/tmp/frc-full-uniform-electron-20261017`; corrected full20ns request
+  with128 actual uniform initial electron velocity cells. Source SHA
+  `1e2873c2ff590fbadb4d15c9ded1190e77579e63ee376587d78e68d0ab8e575a`.
+  First10ns accepts2267steps,8469density cells,Erel−4.83442e-12; second interval
+  is active. The original mixed-mesh9098 is terminal EXIT0, source
   `6bc02e83cb4ad514602f216aedf8c2027c5bc6304e7921f825155d91946d6370`.
-  Existing fine-reference comparison now selects both new electron trajectories
-  only when their full endpoint is successful. Do not substitute a prefix.
+  Fine-reference comparison selects new cases only when the full endpoint is
+  successful. Do not substitute a prefix or the flawed setup for its correction.
 
 Keep the old frozen roots intact. Compare complete 10/5 ns local temperature,
 velocity, fronts and E/J when available. No 2.5 ns run yet: resolve the present

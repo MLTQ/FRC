@@ -23,6 +23,14 @@ changes no masses, equations or transport bound. Reports record actual spacing.
 Earlier references described as uniform128 mean128cells for every species;
 those runs use cosine spacing and are not this new uniform-spacing experiment.
 
+Uniform spacing explicitly supplies every initial electron face as a velocity
+knot. The first experiment omitted this argument, so the constructor selected
+102cosine-target velocity cells on128uniform density cells. Its complete20ns
+output is preserved as a mixed-mesh attempt, not a128-uniform-velocity result.
+The corrected run starts with128actual uniform velocity cells and preserves
+them through return. The summary now also records actual initial velocity-cell
+counts. Saved initial indices, not only CLI counts, define the mesh.
+
 Retains the full20ns neutral/ion/electron ground-ladder argon problem and its
 physical masses,1e14/m³ initial component densities,10mm half-width and
 0.1/0.2/2eV temperatures. The precise geometry and vector-assembled source are

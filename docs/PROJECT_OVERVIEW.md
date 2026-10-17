@@ -43,7 +43,9 @@ errors; full shorter-interval evaluation remains active. Current
 still differs substantially from an existing fine numerical trajectory, so a
 completed128-electron/32-heavy run reproduces the earlier128-cells-per-species current
 within0.056% at lower observed cost. It remains34.2% away from the existing
-1024-cell numerical reference, so the256-electron run is now active. Independent analytic
+1024-cell numerical reference. The completed256-electron/32-heavy run reduces
+that current difference to19.1% and electron-front difference3.39→1.86mm.
+The1024reference is itself unconverged; current accuracy is still open. Independent analytic
 expansion families now complete their original full durations. [VARIANCE_TRANSFER.md](VARIANCE_TRANSFER.md) records all
 current evidence and limitations. Defaults remain unchanged.
 
@@ -63,9 +65,11 @@ current. Ground-ion/neutral scattering is the next missing physical channel;
 the published table's low-energy gap covers up to11.6% of the modeled pair
 distribution. Excited-neutral channels are also incomplete. The coupled
 source's small time-halving error does not remove these physical limitations.
-An initial uniform electron-grid experiment separately tests whether moving
-resolution toward the interior improves the current discrepancy; its full
-comparison remains pending.
+The first uniform-density electron experiment completes but accidentally selects
+only102velocity cells through the old cosine targets. Its worsened current/front
+comparison rejects that mixed mesh. The constructor call is corrected, and the
+new full-duration run starts with128 actual uniform velocity cells; its accuracy
+comparison remains pending. Defaults retain the cosine mesh.
 
 The extreme trace-ion velocity was an approximation error across density
 contrast, reproduced independently at 100-digit precision. A constrained

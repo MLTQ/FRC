@@ -104,11 +104,13 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0,
                  -.01*np.cos(np.linspace(0, np.pi, initial_cells+1))[None, :])
         m = PreciseMaterialSubcells(1e14*np.diff(faces)[0], source.mass[index],
             np.r_[network.charge, -1.][index], (-.2, .2), faces[0], initial_cells,
+            velocity_faces=faces[0] if index == network.count and electron_spacing == 'uniform' else None,
             maximum_plasma_phase=maximum_plasma_phase, numerical_viscosity=(.5, 2.), viscosity_limiter='minmod')
         models.append(m)
         blocks.append(m.state(faces, temperature))
     model = PreciseMaterialSet(models, ids)
     state = MaterialSetState(tuple(blocks))
+    report['actual_initial_velocity_cells_by_block'] = [m.velocity_cells for m in models]
     ledger = MaterialReservoirs()
     solver = SubcycledReactiveMaterial(source, 1e14, velocity_cells=cells,
         maximum_plasma_phase=maximum_plasma_phase, coalesce_ulps=coalesce_ulps, transport_fraction=.5,

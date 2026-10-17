@@ -24,10 +24,9 @@ accuracy limitation despite good conservation; compare the enriched cases next.
 
 Live handles: **16195** factored-ratio heavy-enriched5ns (15ns accepted, final
 interval last200steps/4.425498ns), **61204**128-bit-scaled heavy-enriched5ns
-(same accepted time/latest interval clock), **31198** initial256-electron/
-32-heavy20ns case (10ns accepted in4869steps; second interval last2900steps/
-7.627698ns), and **9098** initial uniform-spaced128-electron/32-heavy20ns case
-(first10ns accepts2037steps; second interval last1400steps/7.019197ns).
+(same accepted time/latest interval clock), and **91194** corrected uniform-
+spaced128-electron/32-heavy20ns case (first10ns accepts2267steps,8469cells,
+Erel−4.83442e-12; second interval active). **31198 is now EXIT0** at full20ns.
 All use frozen roots; exact paths are in VARIANCE_TRANSFER. Poll actual handles;
 do not restart quiet jobs. Main has no remaining live source after the completed
 heated neutral-collision case below. A quiet final source return can be expensive.
@@ -86,7 +85,34 @@ not supply a ready validated low-energy fit. A further primary candidate is
 Chicheportiche et al.2014, DOI10.1103/PhysRevE.89.063102, on ground/metastable
 Ar+ transport and quantum scattering; no numerical dataset has been acquired.
 
-Next collect the four refinement trajectories and compare local thermal/source-
+The first uniform-density attempt**9098 EXIT0** completes20ns,4027steps,
+110129density cells,1021.890s,Erel−4.62663e-12. Its saved initial mesh has only
+102velocity cells on128uniform density cells because the constructor used
+cosine targets. Comparison13317 EXIT0 gives E/J differences5.25086%/48.44737%
+and electron-front difference11.25444mm from1024, versus2.44748%/34.20280%/
+3.39308mm for128cosine electrons. This rejects that mixed mesh, not the intended
+uniform128 velocity space. Original history and source remain intact with an
+explanatory README. Initial requested counts must not substitute for saved indices.
+
+The corrected driver explicitly supplies all initial uniform electron faces to
+the mechanical constructor and records actual counts. New**91194** repeats the
+full20ns from frozen `/private/tmp/frc-full-uniform-electron-20261017`, source
+`1e2873c2ff590fbadb4d15c9ded1190e77579e63ee376587d78e68d0ab8e575a`, output
+`reactive_material_argon_e128_full_uniform_h32_10ns`. Its initial NPZ confirms
+[32,32,128] actual velocity counts and128electron spacings156.25um. Defaults
+remain cosine. Fine comparison now reads actual initial counts and front shifts
+for every case; the revised figure labels the original attempt102mixed.
+
+The256-electron/32-heavy run**31198 EXIT0** completes20ns,8647steps
+(4869/3778),166537density cells,3028.127s,Erel3.65072e-13. Existing fine
+comparison**8942 EXIT0** reduces E/J difference from1024 to1.02547%/19.07075%
+and electron-front difference to1.85810mm. Prior e128/h32 values are
+2.44748%/34.20280%/3.39308mm. The32-heavy ion-front difference remains34.3293um.
+The1024reference is still unconverged (512/1024 J difference8.078%); no isolated
+spatial-order or laboratory accuracy claim. Updated PNG and rendered PDF are
+inspected, including the corrected102mixed label and observed initial counts.
+
+Next collect the three live refinement trajectories and compare local thermal/source-
 time and initial electron-current resolution using existing comparisons. No2.5ns
 launch yet. The new uniform-spacing option moves initial electron resolution
 toward the measured interior error while retaining the same physical state,

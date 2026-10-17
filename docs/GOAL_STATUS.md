@@ -11,8 +11,11 @@ the existing fine numerical trajectory. Heavy-only refinement avoids the extra
 electron acoustic cost, while the separate128-electron/32-heavy experiment now
 resolves electrons from the initial state. Its full20ns result agrees with the
 earlier128-cells-per-species E/J within0.036%/0.056%, at about25% lower observed runtime,
-but remains34.2% away from the existing1024-cell current. More initial electron
-resolution is required; the reference is also unconverged.
+but remains34.2% away from the existing1024-cell current. The256-electron/32-heavy
+case now also completes20ns:8647steps,166537density cells,Erel3.65072e-13.
+Its E/J differences from1024 fall to1.02547%/19.07075%, and electron-front
+difference falls3.39308→1.85810mm. The reference remains unconverged; this
+combined space/time refinement improves accuracy but does not establish convergence.
 
 The enriched5ns-source attempt fails at10ns because the sound formula underflows
 for retained positive, exactly cold source cells. Independent100digit diagnosis
@@ -25,7 +28,7 @@ Both independent analytic expansion families now complete their full durations.
 The original variance5ns run73344 is now EXIT0 at20ns,972steps and2.415million
 density cells. Its complete10/5ns E/J differences are4.5375e-6/4.3365e-4, but
 Ar8 temperature still differs0.16123eV RMS/2.23183eV maximum. The enriched5ns
-and initial256-electron cases remain live; local thermal/current accuracy is open.
+cases remain live; local thermal/current accuracy is open.
 
 The moving planar source now combines reactions with paired charged collisions;
 the first full20ns case completes with Erel2.842e-11 and0.0896% J change from
@@ -45,10 +48,14 @@ lies below its0.1eV domain. New childfrc-transport.7.1 tracks sourced low-energy
 Ar+–Ar force/heat without double-counting charge exchange. Full physical readout
 and inspected figures are saved in outputs/atomic_collisions_neutral_elastic.
 
-A separate full20ns experiment now gives128 electrons uniform initial spacing,
-moving resolution from the edges toward the measured interior current error.
-It retains the same physical initial state/count/phase cap and32 cosine-spaced
-heavy cells. No accuracy conclusion until its complete endpoint comparison.
+A full20ns uniform-density experiment completes, but saved initial indices reveal
+only102velocity cells: the constructor still selected cosine targets. Its current
+and electron-front differences from1024 worsen to48.45% and11.25mm, versus
+34.20% and3.39mm for128cosine velocity cells. This rejects the mixed mesh, not
+the intended uniform128 velocity discretization. The driver now explicitly
+supplies every initial uniform electron face; a fresh full20ns run91194 is live
+with actual initial counts[32,32,128] verified from its saved state. No shortened
+success, changed physics, discarded density cut or altered default.
 Earlier "uniform128" wording meant128 cells for every species, all cosine-spaced.
 
 No component success validates construction parameters. Physical chemistry,
