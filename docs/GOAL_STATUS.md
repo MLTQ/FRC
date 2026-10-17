@@ -1,6 +1,22 @@
 # Active research: a credible experimental FRC simulation
 
-## Execution blocked by host storage (2026-10-17)
+## Cache recovery and serial continuation (2026-10-17, 13:28 UTC)
+
+The user's cache-cleanup request recovered about 6.3 GB from regenerable
+package/build caches and old Raspberry Pi Imager downloads. Available space
+rose from 223 MB to 6.54 GB. Research outputs, frozen sources, installed
+environments and Git history were retained. The 17 GiB uv cache remains in use
+by other applications; its normal prune command was cancelled without forcing
+removal. See `outputs/storage_cache_cleanup/cleanup.json` for measured recovery.
+
+Ar9-only PID 1882/session 16298 was identity-checked and resumed; its running
+state was verified. Coupled PID 2415 and all-heavy PID 6975 remain suspended
+for serial scheduling. Finish and collect 1882 before resuming 2415, then 6975,
+checking free space and process identity each time. The app goal still reports
+blocked; this checkpoint records the recovered operational capacity, not
+scientific completion. The full objective and acceptance criteria remain open.
+
+## Earlier storage blocker (2026-10-17, 05:41 UTC)
 
 The full lab-facing objective remains unfinished and unchanged. Storage has
 blocked calculations across three consecutive goal turns, including a preserved

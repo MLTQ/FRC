@@ -1,10 +1,12 @@
 # Density interfaces and mechanical resolution
 
-Current execution note: storage again fell below the reserve after the recovery
-described below. Ar9-only16298/PID1882, coupledPID2415 and all-heavy81727/PID6975
-are now SIGSTOP-suspended with their states preserved. Source/data are unchanged.
-See THREAD_HANDOFF and outputs/storage_clone_checkpoint/blocker.json. Resume the
-same verified processes, preferably serially, after sufficient space is available.
+Current execution note (2026-10-17, 13:28 UTC): cache cleanup recovered about
+6.3 GB. Ar9-only16298/PID1882 was identity-checked, resumed and confirmed running;
+coupledPID2415 and all-heavy81727/PID6975 remain suspended for serial scheduling.
+Source/data are unchanged. See THREAD_HANDOFF and
+outputs/storage_cache_cleanup/cleanup.json. Collect the first full endpoint,
+then verify identity and available export/swap space before resuming each
+remaining process. Earlier storage failures remain preserved.
 
 The active lab-facing goal remains unfinished. This experiment addresses the
 local thermal-transport defect in `frc-transport.5.5.5`. It is a concrete

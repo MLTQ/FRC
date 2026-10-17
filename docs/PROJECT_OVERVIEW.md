@@ -12,10 +12,11 @@ The user's provisional envelope is about 1 m long, 15 cm diameter and
 to investigate, not established operating settings. Coil hardware remains an
 abstract prescribed waveform; this repository does not design pulsed power.
 
-Execution is currently blocked by host storage. The three remaining argon
-calculations are suspended in memory and can resume after space is available;
-the goal and scientific requirements are unchanged. See THREAD_HANDOFF for
-exact process/source state. No partial calculation is a completed result.
+Cache cleanup recovered about 6.3 GB after the host-storage blocker. The first
+preserved argon calculation has resumed; two remain suspended for serial
+scheduling. The app goal remains marked blocked, and the scientific objective
+is unfinished. See THREAD_HANDOFF for exact process/source state and the next
+resume actions. No partial calculation is a completed result.
 
 ## What exists
 

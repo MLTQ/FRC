@@ -2,6 +2,26 @@
 
 ## Latest checkpoint: density-interface correction candidate
 
+**Cache cleanup recovered storage; one calculation is running again.** At
+13:26 UTC, explicit package/build and old Raspberry Pi Imager download caches
+were removed at the user's request: 6,260,486,144 allocated bytes, with observed
+host free space increasing 223,350,784 → 6,535,446,528 bytes. Details are in
+`outputs/storage_cache_cleanup/cleanup.json`. No research outputs, frozen roots,
+installed environments or Git history were removed. The 17 GiB uv cache is
+locked by active applications; the waiting prune command was cancelled without
+`--force`. Python bytecode, browser/runtime and model caches were retained.
+
+PID 1882/session 16298 was verified, SIGCONT-resumed and confirmed running.
+The recovered tool stream reports step 200 at 4.5260577825 ns of the original
+5 ns target; this is still a prefix, with no final endpoint claimed.
+PID 2415 and PID 6975 remain suspended for serial scheduling. Collect the full
+Ar9-only result first, then identity-check and resume 2415, then 6975, subject
+to space for exports and swap. Do not restart any preserved process. No new
+scientific endpoint is claimed. The app goal remains marked blocked, while this
+checkpoint documents that storage now permits the first calculation to proceed.
+
+### Earlier storage blocker, 05:41 UTC
+
 **Execution is blocked by host storage; the full goal remains unfinished.**
 The same resource constraint has recurred across three consecutive goal turns.
 After temporary recovery and storage sharing, free space again fell to153MiB.
