@@ -22,11 +22,27 @@ Original variance5ns73344 is now EXIT0 at full20ns:972steps,3818.456s,
 2.231827eV maximum. Final Ar8 range0.190592–5.152868eV. This remains an
 accuracy limitation despite good conservation; compare the enriched cases next.
 
-Live handles: **16195** factored-ratio heavy-enriched5ns (15ns accepted, final
-interval last200steps/4.425498ns), **61204**128-bit-scaled heavy-enriched5ns
-(same accepted time/latest interval clock), and **91194** corrected uniform-
+**16195 and61204 are now EXIT0**, both full20ns/992steps/2414399density cells,
+Erel2.75834e-11/2.75832e-11. Scaling restores heat in14 otherwise cold Ar2 cells,
+but both retain Ar9 maximum370.173eV and Ar8 maximum4.43230eV. This is not
+thermal convergence. New live**56061**, outputs/reaction_final_trace_transport,
+reconstructs the scaled15ns checkpoint's first source half and compares the
+full final5ns transport stage at three Ar9 mechanical resolutions against the
+independent adiabatic law. Frozen root /private/tmp/frc-final-trace-thermal-20261017.
+No last source half or new full20ns claim. Complete endpoint comparison**36355
+EXIT0** retains the earlier rows. Scaled5ns/10ns E/J differences2.19518e-5/
+4.74607e-4, Ar8 T RMS0.392670eV, Ar9 RMS29.675796eV. Scaling-only5ns E/J
+differences1.63485e-14/8.71491e-9; Ar9 T RMS1.62062e-6eV. Pointwise maxima
+also include tiny shifted discontinuities; see VARIANCE_TRANSFER. The full
+trace-temperature/density endpoint plot is saved with its own renderer hashes.
+The final PNG was inspected. Stage56061 has captured its post-source initial
+state: Ar9 maxT0.211057eV, maxspeed208.165m/s,38velocity cells; level0 full5ns
+transport is running. No completed stage/refinement result yet.
+
+Other live handle: **91194** corrected uniform-
 spaced128-electron/32-heavy20ns case (first10ns accepts2267steps,8469cells,
 Erel−4.83442e-12; second interval active). **31198 is now EXIT0** at full20ns.
+Latest91194 output is second-interval step2100/internal8.480960ns; do not restart.
 All use frozen roots; exact paths are in VARIANCE_TRANSFER. Poll actual handles;
 do not restart quiet jobs. Main has no remaining live source after the completed
 heated neutral-collision case below. A quiet final source return can be expensive.
@@ -72,7 +88,7 @@ source and later figure provenance are separate. Readout37371 EXIT0 saves exact
 flows and domain coverage without changing any history. Excited neutrals lacking
 an elastic channel reach2.315% of neutrals; no ground-rate substitution.
 
-New child**frc-transport.7.1** tracks low-energy Ar+–Ar exchange. Phelps1991
+Child**frc-transport.7.1** is IN_PROGRESS and tracks low-energy Ar+–Ar exchange. Phelps1991
 Table7 Qm covers0.1–10000eV laboratory ion energy and already includes symmetric
 charge exchange. Visually inspected primary pages567–568 are at
 https://srd.nist.gov/jpcrdreprint/1.555889.pdf. In the saved heated trajectory,
@@ -84,6 +100,14 @@ momentum-transfer convention. Phelps2007 author notes are unfinished and do
 not supply a ready validated low-energy fit. A further primary candidate is
 Chicheportiche et al.2014, DOI10.1103/PhysRevE.89.063102, on ground/metastable
 Ar+ transport and quantum scattering; no numerical dataset has been acquired.
+The actual LXCat contributor UI now exposes Phelps Ar+/Ar isotropic and
+backscatter entries, with explicit2*collision-energy arguments in the displayed
+fit. Access to the tables presents a terms-acceptance step. An asynchronous
+request is pending for personal-research acceptance (attribution, no third-party
+redistribution/commercial use), required by browser policy at that action.
+Do not accept until the user replies. Background IAB tab2/lxcatTab is marked
+for handoff; terms screenshot /private/tmp/frc-lxcat-phelps-terms.png. Independent
+simulation work continues; the whole goal is not blocked by this permission.
 
 The first uniform-density attempt**9098 EXIT0** completes20ns,4027steps,
 110129density cells,1021.890s,Erel−4.62663e-12. Its saved initial mesh has only
@@ -112,8 +136,8 @@ The1024reference is still unconverged (512/1024 J difference8.078%); no isolated
 spatial-order or laboratory accuracy claim. Updated PNG and rendered PDF are
 inspected, including the corrected102mixed label and observed initial counts.
 
-Next collect the three live refinement trajectories and compare local thermal/source-
-time and initial electron-current resolution using existing comparisons. No2.5ns
+Next collect the active trace-stage and uniform-electron
+calculations and compare local thermal and current resolution. No2.5ns
 launch yet. The new uniform-spacing option moves initial electron resolution
 toward the measured interior error while retaining the same physical state,
 count and phase cap; do not assume it improves full accuracy. Existing fine

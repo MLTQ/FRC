@@ -229,13 +229,48 @@ heavy-enriched10ns case, E/J differences are9.43e-15 /1.658e-8. This includes
 both coordinate scaling and equivalent sound/temperature/Q arithmetic changes,
 so it is not an isolated scaling study. Source SHA
 `9bf93c336c75d48834f8ed91a9171f467919d951408f1fef11c6441b603ae467`.
-The full5ns-source counterpart61204 is live from the same frozen source.
+The full5ns-source counterpart61204 now completes20ns from the same frozen source.
 After77325 terminated, the exercised arithmetic and optional coordinate shift
 were integrated into main with their companion contracts. Shift0 and default
 projection choices remain unchanged; no broad formation adoption is claimed.
-The unscaled factored-ratio case16195 now accepts15ns, with Ar8 maximumT0.65149eV
-versus8.66800eV in the unrefined variance case. Neither prefix is a complete20ns
-result or a local thermal-convergence claim.
+Both factored16195 and scaled61204 finish20ns in992steps (325/203/223/241),
+with2414399 final density cells and relative energy errors2.75834e-11 and
+2.75832e-11. Observed runtimes4054.878/4055.495s include overlapping jobs.
+The final unscaled Ar2 has14 zero-temperature cells; the scaled result has none,
+with Ar2 range0.177417–0.250219eV. This is consistent with the independently
+diagnosed lost mixing heat, not an introduced floor.
+
+The complete results expose a different local problem: both give Ar8 maximum
+4.43230eV and Ar9 maximum370.17319eV. The scaled10ns-source case has Ar9 maximum
+0.246478eV. Scaling does not resolve this heating. The final Ar9 source return
+reports at most8.14815eV temperature change; the already transported source is
+therefore hot before the last return. At15ns Ar8 refinement looked favorable,
+but that prefix did not establish full-trajectory thermal accuracy.
+
+Complete precise-union comparison36355 EXIT0 gives scaled5ns versus scaled10ns
+E/J differences2.19518e-5/4.74607e-4. Local Ar8 T RMS/max differences are
+0.392670/4.231752eV; Ar9 are29.675796/369.972252eV. Both source timing and the
+number of mechanical enrichment opportunities change, so this is not isolated
+time refinement. Factored5ns versus unenriched5ns gives Ar9 T RMS29.67423eV.
+Scaling alone changes E/J by1.63485e-14/8.71491e-9 and Ar9 T RMS1.62062e-6eV.
+Its pointwise maximum difference369.14eV occurs in shifted discontinuities on
+tiny intervals; it must not replace the volume norm or equal peak temperatures.
+All intervals remain included. The endpoint temperature/density figure and its
+hashed renderer are saved in outputs/reaction_variance_comparison; the final PNG
+was visually inspected. The plotted curves end at actual occupied supports.
+
+`outputs/reaction_final_trace_transport/stage.py/.md` now evaluates the actual
+final5ns transport interval after its original first2.5ns source half. It keeps
+all species, fields and fine cuts, and compares the same initial P1 state at
+the original Ar9 mechanical resolution and one/two extra refinement rounds.
+Temperature is compared against the independent adiabatic compression law.
+No final source half is applied; this is a complete transport-stage diagnosis,
+not another full20ns coupled result. Live handle56061 uses frozen source root
+`/private/tmp/frc-final-trace-thermal-20261017`.
+Its captured post-source initial Ar9 range is0.198738–0.211057eV with maximum
+absolute velocity208.165m/s and38velocity cells. The15ns accepted parent had
+30velocity cells, maximumT0.211041eV and maximum speed244.479m/s. The severe
+hot tail is not already present at the start of this isolated transport stage.
 
 ## Completed independent expansions
 
@@ -269,17 +304,17 @@ electron front shift7.91207e-11m, velocity RMS0.33377m/s and temperature RMS
 2.231827eV, final range0.190592–5.152868eV. Ar9 RMS0.00760525eV. All narrow
 regions remain in the metrics; the electron maximum0.94810eV includes displaced
 piecewise-constant boundaries and is reported alongside the volume norm.
-No source-time or thermal convergence follows. The enriched5ns cases below
-will determine whether the measured mechanical correction survives a full run.
+No source-time or thermal convergence follows. The completed enriched5ns cases
+above expose further Ar9 heating despite improved earlier Ar8 behavior.
 
 At the current continuation, poll the actual handles below; older live entries
 elsewhere are historical. No result is complete until the full target is reached.
 
-- **16195**: `reactive_material_argon_factored_heavy_5ns`, frozen
+- **16195 EXIT0**: `reactive_material_argon_factored_heavy_5ns`, frozen
   `/private/tmp/frc-acoustic-factored-20261017`; complete20ns request with
   heavy-only enrichment and algebraically reordered sound/temperature/viscosity.
   The equivalent sound/temperature/Q expressions are now integrated into main.
-- **61204**: `reactive_material_argon_scaled_heavy_5ns`, frozen
+- **61204 EXIT0**: `reactive_material_argon_scaled_heavy_5ns`, frozen
   `/private/tmp/frc-scaled-thermal-20261017`, same full20ns target with128-bit
   number/energy coordinate shift to retain the measured mixing heat.
 

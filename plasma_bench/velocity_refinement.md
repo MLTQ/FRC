@@ -20,8 +20,12 @@ Keeping density discontinuities while allowing a richer velocity basis targets
 the measured trace-ion heating: in the actual 10–15 ns transport stage, refining
 only Ar8 from 32 to 44 velocity elements reduced maximum temperature from
 7.0414 to 0.3909 eV. Both full20ns all-species and heavy-only enriched10ns-source
-runs now complete. The shorter5ns-source attempt fails on cold-cell arithmetic,
-preserved separately; no source-time thermal convergence is established.
+runs now complete. The original5ns-source attempt fails on cold-cell arithmetic
+and is preserved separately. Both corrected full5ns-source cases now complete,
+but final Ar9 reaches370.17eV despite small total-energy residuals. Earlier Ar8
+improvement does not establish source-time thermal convergence. The actual final
+transport-stage refinement in outputs/reaction_final_trace_transport measures
+this new local heating against independent adiabatic compression.
 
 Source return constructs its ordinary inherited/newborn mesh first and then
 enriches it, retaining the existing support-extension setting. It solves the

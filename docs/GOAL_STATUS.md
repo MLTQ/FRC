@@ -23,12 +23,16 @@ supports an equivalent arithmetic reordering, now in a separate full20ns run.
 Independent full transfer integrals additionally expose~0.023eV numerical mixing
 heat lost before sound evaluation. Explicit128-bit coordinate scaling restores
 that heat without changing physical N/U; its complete20ns10ns-source comparison
-has E/J differences9.43e-15/1.66e-8. Full5ns-source evaluation remains live.
+has E/J differences9.43e-15/1.66e-8. Full5ns-source evaluation now completes.
 Both independent analytic expansion families now complete their full durations.
 The original variance5ns run73344 is now EXIT0 at20ns,972steps and2.415million
 density cells. Its complete10/5ns E/J differences are4.5375e-6/4.3365e-4, but
-Ar8 temperature still differs0.16123eV RMS/2.23183eV maximum. The enriched5ns
-cases remain live; local thermal/current accuracy is open.
+Ar8 temperature still differs0.16123eV RMS/2.23183eV maximum. Both enriched5ns
+cases now finish20ns with992steps and2.414million density cells. Scaling restores
+heat in14 otherwise cold Ar2 cells, but both cases yield Ar9 maximum370.17eV.
+Local thermal/current accuracy remains open. An actual final5ns transport-stage
+comparison now measures Ar9 mechanical refinement against adiabatic compression;
+it preserves every species and fine cut and is not a new coupled20ns claim.
 
 The moving planar source now combines reactions with paired charged collisions;
 the first full20ns case completes with Erel2.842e-11 and0.0896% J change from
