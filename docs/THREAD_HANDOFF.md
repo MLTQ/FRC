@@ -27,12 +27,17 @@ See [ACOUSTIC_MASS_SCALING.md](ACOUSTIC_MASS_SCALING.md) for full evidence.
 LIVE corrected runs from /private/tmp/frc-balanced-acoustic-20261017:
 - Full original 20 ns all-heavy/5 ns-source: PID30147/session54457, output
   reactive_material_argon_all_density_balanced_5ns, source e8aeb92c...de81.
-  Completed coupled time 10 ns; interval three remains live.
+  Completed coupled time 10 ns; interval three remains live, latest observed
+  1,000 internal steps/1.318032 ns of its original 5 ns (dt .235286 ps).
 - Independent full neutral-decay and charged-affine 16/32/64 family:
   PID30133/session16983, output precise_material_balanced_acoustic,
-  source 34a50517...b5e0. Decay16 completes; remaining cases live.
-Both process identities were verified running at about15:32 UTC. About2.1GiB
-free; preserve256MiB export reserve and the frozen sources. Unchanged stdout
+  source 34a50517...b5e0. Decay16/32 complete at the original 6.083704 us;
+  decay64 live (latest observed 400 steps/2.606092 us), charged cases pending.
+Both process identities were verified running at about15:47 UTC, after the
+restarted Unity MCP cache-lock holder was individually stopped. Codex desktop
+47022/app-server47121 remain alive. Normal uv cleanup removed126.8MiB
+(tool-reported); available space2,330,624,000bytes. See storage_cache_cleanup.
+Preserve256MiB export reserve and frozen sources. Unchanged stdout
 is not termination. Next collect both full requested results, inspect analytic
 conservation/convergence and compare full coupled 5/10 ns endpoints. Do not
 restart live jobs, treat a prefix as success, or launch another source interval
