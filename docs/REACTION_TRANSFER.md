@@ -255,6 +255,15 @@ front and temperature results and the inspected figure are retained in
 `outputs/reaction_direct_comparison`. Existing finer-grid and half-step results
 under bead 5.5.1 remain relevant; do not infer convergence from this diagnosis.
 
+An exact symmetric decomposition delta(n*v)=delta(n)*mean(v)+mean(n)*delta(v)
+locates the 64/128 electron-current difference: density and velocity squared
+norms are 0.053875 and 0.946568 times the total, with signed cross term -0.000443.
+These correlated terms sum with the cross term; they are not separate additive
+error percentages. Exactly partitioned integration places 87.7390% of squared
+electron-current difference inside |x|<9 mm. This supports targeting interior
+electron velocity/pressure dynamics rather than attributing the discrepancy to
+trace reaction products or exclusively to the outer free front.
+
 An isolated exact-key ordering experiment reproduces the entire 20 ns state
 and a full RK4 step of the actual 227,839-cell state bit for bit. Its measured
 large-state step takes 18.66 s versus 12.21 s for original ordering, so it is

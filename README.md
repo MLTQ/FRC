@@ -1,5 +1,9 @@
 # Virtual plasma bench
 
+Start with the [project overview and current limits](docs/PROJECT_OVERVIEW.md)
+for a concise map of what is implemented, what the latest runs establish and
+what remains before the simulator can inform laboratory construction.
+
 Current continuation: [reaction-transfer results](docs/REACTION_TRANSFER.md)
 and [handoff](docs/THREAD_HANDOFF.md) record the latest solver work. Complete
 argon component runs now pass previously failing transfers, but field/current

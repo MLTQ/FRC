@@ -23,4 +23,3 @@ def searchsorted(edges, points, side='left'):
         hi[upper] = mid[~below]
         active = active[lo[active] < hi[active]]
     return lo.reshape(query.shape)
-

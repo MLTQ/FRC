@@ -21,3 +21,7 @@ These are algorithm-equivalence comparisons under concurrent load, not physical
 validation or a controlled performance benchmark. The earlier two-part-key
 sorting experiment was slower and remains rejected. Evidence is retained in
 `outputs/precise_ordering_cost` and the bracketed argon output directories.
+
+The integrated main 20 ns trajectory also retains the complete original endpoint
+(971 steps, observed 71.96 seconds); its archived source precedes only EOF
+whitespace cleanup. No numerical change follows that cleanup.
