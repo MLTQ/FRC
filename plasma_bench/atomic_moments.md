@@ -43,12 +43,31 @@ zero. Capture selection uses the existing Maxwellian rate derivative moment;
 finite drift and heavy thermal speed must be small relative to electron thermal
 speed. Diagnostics report both ratios. Photon production is not escape.
 
-The frozen sparse generator transfers moment coordinates as well as populations,
+The frozen generator transfers moment coordinates as well as populations,
 including into initially empty states. Exponential midpoint predicts ne, Te and
 electron velocity; it is a second-order nonlinear step. Full linear conservation
 does not guarantee positive thermal energies at unresolved timesteps: invalid
 stages/endpoints reject without clipping, population floors or energy repair.
 An empty species must have exactly zero momentum and energy.
+
+The small moment generator is already assembled as a dense array (103 by103 for
+ground-ladder argon including the affine coordinate). Pass that array directly
+to SciPy's existing `expm_multiply` instead of constructing a fresh CSR matrix
+for each half/full exponential action. The physical entries, supplied trace,
+exponential-midpoint stages and SciPy accuracy policy are unchanged; no series
+term, population or coupling is deliberately omitted. Dense and sparse matrix
+products can differ in roundoff. All ten complete independent DI/RR and heated
+argon histories in `outputs/atomic_dense_exponential` succeed, retaining zero
+patterns with state differences at most 3.56e-15. DI/RR time-halving errors
+decrease approximately fourfold. The full20ns moving control retains 971 steps,
+all cell counts and velocity indices, and Erel 2.84209e-11. Corresponding-cell
+temperature differences are at most 2.21e-15eV, E/J relative L2 differences
+1.06e-14/9.89e-9. Precise-union pointwise maxima include displaced discontinuities;
+the comparison preserves those maxima rather than claiming pointwise equality.
+Sources and complete evidence are in `reactive_material_argon_profile_10ns`
+and `reactive_material_argon_dense_exp_10ns`. Timings are not a controlled
+whole-simulation speed benchmark; unresolved physical accuracy is unchanged.
+
 Velocity reconstruction divides the stored dimensionless momentum by population
 before multiplying by its physical scale. This avoids an intermediate kilogram
 mass times population underflow; no population or momentum is clipped. Kinetic

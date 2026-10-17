@@ -1,5 +1,25 @@
 # Active research: a credible experimental FRC simulation
 
+## Complete dense-source comparison (2026-10-17)
+
+The existing moment generator now goes directly to the same exponential action
+without repeated CSR construction. All ten full independent DI/RR and heated
+argon histories succeed; time-halving errors retain approximately fourfold
+reduction. Full20ns moving controls both take971 transport steps with the same
+cell counts/velocity indices and Erel2.84209e-11. Corresponding-cell temperature
+differences are at most2.21e-15eV, E/J relative L2 differences1.06e-14/9.89e-9.
+The precise-union comparison retains pointwise discontinuity differences.
+See outputs/atomic_dense_exponential and reactive_material_argon_dense_exp_10ns.
+Profiling motivated the representation change; a controlled overall speedup
+has not been measured. No physical closure or convergence claim changes.
+
+The longer coupled density-interface candidate remains live from its frozen
+old source; its saved prefix is15ns. The all-heavy stage remains suspended for
+serial scheduling. Free space fell to about1.7GiB at the latest observation;
+preserve the256MiB export/swap reserve. Collect the original full20ns result,
+then identity-check and resume the preserved all-heavy stage. Keep the goal and
+thermal/current accuracy issues open. Codex and the desktop app remain running.
+
 ## Goal resumed: inspect complete stage while coupled run continues (2026-10-17)
 
 The app goal is active again. The previous continuation made concrete progress:

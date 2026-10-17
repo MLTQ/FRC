@@ -1,5 +1,31 @@
 # Current goal continuation, 2026-10-17
 
+## Latest checkpoint: completed source representation change
+
+Main atomic_moments.py now passes the already-dense generator directly to
+expm_multiply, removing only the repeated CSR construction. Full independent
+DI/RR plus heated-argon histories79297 EXIT0; full20ns CSR profile58615 EXIT0;
+full20ns dense control91833 EXIT0. All completed evidence is saved under
+atomic_dense_exponential, reactive_material_argon_profile_10ns and
+reactive_material_argon_dense_exp_10ns. Their READMEs give reproduction and
+source hashes. compare.py reproduces both precise-union and corresponding-cell
+temperature metrics. Do not repeat these runs without a new solver change.
+
+Both moving trajectories take971 steps, same21,349 density cells/velocity
+indices, Erel2.842085e-11; corresponding-cell T differences<=2.21e-15eV and
+E/J relative L2 differences1.06e-14/9.89e-9. All10 homogeneous source histories
+retain zero patterns and saved states within3.56e-15; independent time halving
+retains second-order behavior. Pointwise discontinuity differences are kept.
+No overall speedup or new physical convergence is claimed.
+
+PID2415 is freshly verified running (59:53CPU), final coupled interval live;
+PID6975/session81727 remains SIGSTOP-suspended. These use preserved frozen old
+sources and are unaffected by the main-source change. Free disk is about1.7GiB.
+Next: collect full20ns terminal2415 without restarting, then verify identity
+and free space before SIGCONT of6975. Do not infer termination from unchanged
+15ns summary. Density-jump source integration remains outside main pending
+full evidence. Thermal/current/gas/boundary/formation criteria remain open.
+
 ## Latest checkpoint: density-interface correction candidate
 
 **Goal continuation after user resume:** app goal is active. Coupled PID 2415

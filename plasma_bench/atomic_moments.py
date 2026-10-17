@@ -1,7 +1,6 @@
 """Reactive atomic populations with separately evolved species momentum and energy."""
 import numpy as np
 from scipy.constants import elementary_charge as EV, electron_mass as ME
-from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import expm_multiply
 
 
@@ -116,7 +115,7 @@ class AtomicMoments:
     def step(self, state, dt, density, *, initial_heat=0., midpoint_heat=0.):
         if not np.isfinite(dt) or dt <= 0:raise ValueError('Positive finite step required')
         def advance(matrix, initial, duration):
-            operator = csr_matrix(duration*matrix)
+            operator = duration*matrix
             return expm_multiply(operator, np.r_[initial, 1.], traceA=float(operator.diagonal().sum()))[:-1]
         first, _ = self.generator(state, density, initial_heat)
         midpoint = advance(first, state, .5*dt)
