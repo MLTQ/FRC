@@ -6,7 +6,7 @@ from .precise_reactions import PreciseReactiveMaterial
 class SubcycledReactiveMaterial(PreciseReactiveMaterial):
     """Reaction half / many actual transport steps / reaction half."""
     def __init__(self, source, reference_density, *, transport_fraction=.5,
-                 maximum_transport_steps=100000, **controls):
+                 maximum_transport_steps=100000, progress_every=0, **controls):
         super().__init__(source, reference_density, **controls)
         if not np.isfinite(transport_fraction) or not 0 < transport_fraction <= 1:
             raise ValueError('Transport fraction must be positive and no larger than one')
@@ -14,6 +14,9 @@ class SubcycledReactiveMaterial(PreciseReactiveMaterial):
             raise ValueError('Positive explicit transport-step budget required')
         self.transport_fraction = float(transport_fraction)
         self.maximum_transport_steps = maximum_transport_steps
+        if not isinstance(progress_every, int) or progress_every < 0:
+            raise ValueError('Nonnegative transport progress interval required')
+        self.progress_every = progress_every
         self.last_transport = []
 
     def step(self, model, state, reservoirs, dt):
@@ -37,4 +40,7 @@ class SubcycledReactiveMaterial(PreciseReactiveMaterial):
                 electric_energy_j_m2=budget['electric_energy_j_m2'],
                 minimum_thermal_j_m2=min(float(s.thermal.min()*m.number_scale)
                                         for m, s in zip(model.models, state.blocks))))
+            if self.progress_every and len(self.last_transport) % self.progress_every == 0:
+                print('transport', len(self.last_transport), 'within interval', elapsed,
+                      'of', dt, 'dt', h, flush=True)
         return self.source_step(model, state, reservoirs, dt/2)

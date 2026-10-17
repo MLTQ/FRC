@@ -17,3 +17,18 @@ remain float64 with the existing factored species scales. Positive widths that
 underflow on conversion explicitly reject. Differences smaller than50-digit
 geometry can still fail; no endpoint is moved apart, merged or assigned a floor.
 Saved geometry must use decimal strings, not rounded float arrays or pickle.
+
+An explicit `FRC_GEOMETRY_BACKEND=mpfr` process environment selects the optional
+`precision` dependency (gmpy2 2.3.2), with 192 binary bits, approximately 57
+decimal digits. The default remains 50-digit standard-library Decimal. The
+backend is fixed at import and cannot change inside a trajectory. Both local
+contexts and scalar constructors request precision explicitly; MPFR's ordinary
+53-bit default is unsuitable here. Invalid operations/division by zero raise.
+Physical coefficients remain float64, and no spatial cut or population is removed.
+`decimal` is the shared scalar constructor despite the historical name.
+
+The complete matched 20 ns MPFR experiment retains identical saved physical
+arrays and all 21,351 density cells, with coordinate differences around 1e-50 m.
+Its full independent analytic family remains a separate validation requirement.
+Source archives record backend, precision and gmpy2/MPFR/GMP versions. This is
+an opt-in performance alternative, not a repair of physical convergence errors.

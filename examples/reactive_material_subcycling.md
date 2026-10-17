@@ -37,3 +37,38 @@ Use `python -m examples.reactive_material_subcycling FRESH_OUTPUT
 --source-step-ns 10 --cells 32`. This is an opt-in coupled research calculation,
 not a replacement for the required spatial, source-time and transport-time
 convergence, physical collision/field/wall integration or FRC formation evidence.
+
+`--projection-method bounded_moments` selects the explicit conservative bounded
+momentum/energy transfer. The default remains `galerkin`. Reports preserve the
+method, both cumulative numerical thermal/redistribution diagnostics and the
+last source return's local limiter activity. This is a comparison of numerical
+transfer methods; it does not change the atomic source, masses or resolution.
+NumPy scalar diagnostics in the nested projection record are serialized as
+ordinary JSON numbers, preserving their values.
+
+`--projection-method constrained_velocity` selects the volume-norm velocity
+projection with physical block momentum and each fine cell total energy
+constrained. Source and transport physics are unchanged; barrier/constraint
+activity is a numerical approximation, not an adoption criterion.
+
+Print accepted internal transport progress every100 steps. Terminal interval
+stdout is compact; the complete per-block projection record stays in JSON.
+No accepted states or actual timestep records are omitted from saved results.
+
+`--extend-velocity` explicitly continues inherited edge basis functions across
+new support material as documented in velocity_extension.md. Every old velocity
+knot, density cell and physical support endpoint remains. This option and the
+projection method are distinct; neither changes the source interval or declares
+the local thermal/current errors converged. Saved states include extension flags.
+# Newborn mesh comparison
+
+The report records imported geometry arithmetic and bit precision. Select the
+optional 192-bit backend with `FRC_GEOMETRY_BACKEND=mpfr` before process start;
+install `plasma-bench[precision]`. Decimal remains default. Saved physical
+arrays and full-duration acceptance are independent of the selected backend.
+
+`--newborn-spacing-fraction` explicitly selects the target-relative initial
+mesh rule in `velocity_selection.md`; default zero retains the earlier rule.
+Reports record the fraction and every block's actual dimension. No existing
+velocity knot or density cell is removed. The option does not change the full
+20 ns target or turn prefix progress into a successful trajectory.

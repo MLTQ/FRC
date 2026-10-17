@@ -24,3 +24,14 @@ The initial rebuilt-cosine run is retained in outputs/reaction_remap_control.
 Subsequent runs use the current production transfer, which inherits existing
 velocity knots. A failed direct control leaves no reference; another remapped
 case is never silently substituted as the direct baseline.
+
+`--projection-method bounded_moments` evaluates the explicit bounded paired
+moment/energy transfer against the same full direct trajectory. Both numerical
+thermal change and energy redistribution are saved alongside J/E differences.
+Default Galerkin behavior is unchanged. This comparison measures any diffusion
+introduced by the candidate even when the atomic source is exactly zero.
+
+`--projection-method constrained_velocity` selects the volume-norm velocity
+projection with physical block momentum and each fine cell total energy
+constrained. Source and transport physics are unchanged; barrier/constraint
+activity is a numerical approximation, not an adoption criterion.

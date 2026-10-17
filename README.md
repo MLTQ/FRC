@@ -1,5 +1,12 @@
 # Virtual plasma bench
 
+Current continuation: [reaction-transfer results](docs/REACTION_TRANSFER.md)
+and [handoff](docs/THREAD_HANDOFF.md) record the latest solver work. Complete
+argon component runs now pass previously failing transfers, but field/current
+refinement and local thermal accuracy remain unresolved. Available lab gases
+include H2, D2, N2 and O2; their [required molecular models](docs/MOLECULAR_GASES.md)
+are tracked separately and are not yet enabled as validated predictions.
+
 The newest solver couples a freely moving two-temperature plasma, finite-mass
 currents, an actual magnetic vacuum and prescribed coils.
 

@@ -1,5 +1,43 @@
 # Active research: a credible experimental FRC simulation
 
+## Complete component runs; reaction accuracy still open (2026-10-16)
+
+Current evidence: [REACTION_TRANSFER.md](REACTION_TRANSFER.md). Live handles,
+frozen source roots and exact next actions: [THREAD_HANDOFF.md](THREAD_HANDOFF.md).
+The original FRC objective remains open; these planar components are not a
+validated lab design or a demonstration of formation, stability or confinement.
+
+Independent analysis explains the extreme trace-ion velocity as a projection
+error across large density contrast, closing the specific velocity bug 5.5.4.
+Explicit constrained-volume transfer now
+completes the 32/64-cell, full 20 ns argon cases at 10 ns source intervals.
+Their energy conservation is strong, but E/J still differ by 6.65% / 32.21%.
+Local thermal accuracy is unresolved. Galerkin/local_total stays the default.
+The bounded-transfer alternative is rejected on complete current controls.
+
+All six full independent neutral/charged analytic expansion cases pass with
+support-edge extension, closing only bead 5.5.7. Exact polynomial force
+integration also matches the full original trajectory while reducing observed
+runtime. A 192-bit MPFR geometry experiment reproduces every saved physical
+array in the matched 20 ns run and takes 75 versus 136 seconds. Its complete
+analytic family remains in progress. Main now exposes it as an explicit option;
+Decimal remains default. The integrated full 20 ns run matches its prototype.
+
+A distinct initial-mesh defect creates nearly coincident velocity nodes for
+new trace species. Explicit target-relative selection preserves all old knots,
+fine density cells and physical endpoints while reporting actual newborn
+resolution. The replacement 5 ns-source trajectory has passed the old slowdown
+and accepts 15 ns while retaining the original 20 ns target. Full endpoints and local sensitivity are
+still pending; bead 5.5.8 remains open. The diagnosed old 5 ns jobs are explicitly
+retired at 10 ns coupled acceptance, not counted as successful full runs.
+
+Available gases now explicitly include H2, D2, N2 and O2; argon remains the
+baseline. [MOLECULAR_GASES.md](MOLECULAR_GASES.md) records primary sources and
+missing channel/transport requirements under bead frc-transport.6. The retained
+1 m / 15 cm / 0.1–100 mTorr envelope is an exploration target. No new molecular
+gas is enabled by this source review. No unit tests or publication occurred;
+the viewer and user poster are unchanged. The older entries below are history.
+
 ## Session handoff: local reaction projection still unresolved (2026-10-16)
 
 **Authoritative current entry: [THREAD_HANDOFF.md](THREAD_HANDOFF.md).** The

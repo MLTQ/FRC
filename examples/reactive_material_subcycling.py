@@ -10,7 +10,7 @@ from plasma_bench.atomic_network import AtomicNetwork
 from plasma_bench.atomic_vector_moments import VectorizedAtomicMoments
 from plasma_bench.impact_ionization import ImpactIonization
 from plasma_bench.radiative_recombination import RadiativeRecombination
-from plasma_bench.precise_geometry import DIGITS, widths
+from plasma_bench.precise_geometry import ARITHMETIC, BITS, DIGITS, widths
 from plasma_bench.precise_material import PreciseMaterialSubcells, PreciseMaterialSet
 from plasma_bench.material_species_set import MaterialSetState
 from plasma_bench.reactive_material import MaterialReservoirs
@@ -19,7 +19,8 @@ from .precise_material import save_states
 from .implicit_plasma_records import provenance, freeze
 
 
-def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0):
+def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0,
+        projection_method='galerkin', extend_velocity=False, newborn_spacing_fraction=0.):
     out = Path(destination)
     if out.exists() or not np.isfinite(source_interval_ns) or source_interval_ns <= 0 or cells < 2:
         raise ValueError('Fresh output and positive source interval/velocity resolution required')
@@ -36,6 +37,10 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0):
     report = dict(terminal=False, source_sha256=identity['source_sha256'], requested_time_s=20e-9,
         completed_time_s=0., source_interval_s=source_interval_ns*1e-9, transport_fraction=.5,
         velocity_cells=cells, preserve_velocity_knots=True, geometry_decimal_digits=DIGITS,
+        geometry_arithmetic=ARITHMETIC, geometry_precision_bits=BITS,
+        projection_method=projection_method,
+        extend_velocity=bool(extend_velocity),
+        newborn_spacing_fraction=newborn_spacing_fraction,
         minimum_density_width_m=0., coalesce_ulps=coalesce_ulps,
         intervals=[], failure=None, minimum_free_disk_bytes=256*2**20,
         inputs=dict(ionization_sha256=ion.input_sha256, recombination_sha256=rr.input_sha256),
@@ -45,7 +50,8 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0):
               'No physical-width coarsening, shortened success, collision or formation claim.')
     def save():
         report['elapsed_seconds'] = time.perf_counter()-began
-        (out/'summary.json').write_text(json.dumps(report, indent=2)+'\n')
+        (out/'summary.json').write_text(json.dumps(report, indent=2,
+            default=lambda value: value.item())+'\n')
     ids = [network.ground[0], network.ground[1], network.count]
     faces = -.01*np.cos(np.linspace(0, np.pi, cells+1))[None, :]
     models, blocks = [], []
@@ -59,7 +65,9 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0):
     state = MaterialSetState(tuple(blocks))
     ledger = MaterialReservoirs()
     solver = SubcycledReactiveMaterial(source, 1e14, velocity_cells=cells,
-        maximum_plasma_phase=.04*32/cells, coalesce_ulps=coalesce_ulps, transport_fraction=.5)
+        maximum_plasma_phase=.04*32/cells, coalesce_ulps=coalesce_ulps, transport_fraction=.5,
+        projection_method=projection_method, progress_every=100, extend_velocity=extend_velocity,
+        newborn_spacing_fraction=newborn_spacing_fraction)
     energy0 = solver.totals(model, state, ledger)['full_energy_j_m2']
     save_states(out/'initial.npz', [model], [state])
     save()
@@ -106,11 +114,15 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0):
             full_energy_j_m2=budget['full_energy_j_m2'], relative_energy_error=(budget['full_energy_j_m2']-energy0)/energy0,
             maximum_internal_relative_energy_error=max(abs(r['energy_j_m2']-energy0)/energy0 for r in solver.last_transport),
             observed_projection_field_change_j_m2=ledger.projection_field_change_j_m2,
+            numerical_projection_thermal_change_j_m2=ledger.projection_thermal_gain_j_m2,
+            projection_energy_redistribution_l1_j_m2=ledger.projection_energy_redistribution_l1_j_m2,
+            last_projection=solver.last_projection,
             photon_energy_j_m2=ledger.photons_j_m2)
         report['intervals'].append(row)
         report['completed_time_s'] = elapsed
         save()
-        print(row, flush=True)
+        print({k: row[k] for k in ('interval', 'time_s', 'transport_steps',
+            'occupied_density_cells', 'relative_energy_error')}, flush=True)
     if identity != provenance(['examples.reactive_material_subcycling']):
         raise RuntimeError('Source changed during explicit subcycled calculation')
     report['terminal'] = True
@@ -125,6 +137,10 @@ if __name__ == '__main__':
     parser.add_argument('--source-step-ns', type=float, default=10.)
     parser.add_argument('--cells', type=int, default=32)
     parser.add_argument('--coalesce-ulps', type=int, default=0)
+    parser.add_argument('--projection-method', choices=('galerkin', 'bounded_moments', 'constrained_velocity'), default='galerkin')
+    parser.add_argument('--extend-velocity', action='store_true')
+    parser.add_argument('--newborn-spacing-fraction', type=float, default=0.)
     args = parser.parse_args()
-    result = run(args.destination, args.source_step_ns, args.cells, args.coalesce_ulps)
+    result = run(args.destination, args.source_step_ns, args.cells, args.coalesce_ulps,
+                 args.projection_method, args.extend_velocity, args.newborn_spacing_fraction)
     raise SystemExit(0 if result['success'] else 1)

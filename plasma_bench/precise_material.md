@@ -1,5 +1,18 @@
 # Compatible material dynamics with explicit precise geometry
 
+Electric force now integrates its exact polynomial on every existing union
+interval. For t in [0,1], E=E0+(E1-E0)t and phi_right=a+b*t, b=h/H,
+integral(E phi_right)/h=a*(E0+E1)/2+b*(E0+2*E1)/6. The left moment uses
+(1-a) and -b. Precise differences precede float coefficients. This is equivalent
+to the earlier two-point Gaussian integral up to rounding; no density/field cut
+or approximation order changes. Exactly neutral material skips its zero electric
+force integral. Full32-cell20ns comparison:144.21s versus233.27s, relative
+E difference1.86e-14 and J1.70e-8, with identical986 actual transport steps.
+All three full independent charged-affine cases pass; finest relative energy
+error3.27e-15. See outputs/reactive_material_argon_constrained_comparison and
+precise_material_polynomial (the latter still records the separate unextended
+neutral-support failure). Timing is observed runtime, not a hardware benchmark.
+
 `PreciseMaterialSubcells` retains the existing fine P0 density/thermal and nested
 P1 velocity equations, consistent mass, physical species scaling, minmod Q,
 pressure/work pairing and electric quadrature. It inherits the existing fine
@@ -42,3 +55,17 @@ scalar-geometry runs keep their frozen source. It is not formation adoption.
 The original equations/assumptions are in material_subcells.md and
 material_species_set.md. Source projection and saved geometry must use the
 corresponding precise path; casting these faces back to float loses the fix.
+
+Explicit extend_velocity permits independent old knots inside the occupied support. Edge cells use the affine continuation of the adjacent old element. All fine cells retain their mass, heat and actual endpoints. Exact shape products, force/work and final-endpoint load restriction include extrapolated shapes; old knots remain independent. Saved state records this option.
+# Explicit initial velocity-space spacing
+
+Scalar constants use the selected `precise_geometry.decimal` constructor, so
+both supported geometry backends evaluate the same affine basis and forces.
+
+`newborn_spacing_fraction` defaults to zero, preserving the historical nearest
+face selection. Nonzero values use `velocity_selection.md` to prevent adjacent
+nominal targets selecting almost coincident density faces. This operates only
+when there is no supplied velocity mesh; every inherited knot bypasses it.
+All density cells remain. The actual initial velocity dimension can decrease
+and must be reported. It is an explicit approximation choice awaiting local
+convergence, not a density cutoff or a change to physical mass.

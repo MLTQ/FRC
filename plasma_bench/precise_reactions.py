@@ -3,6 +3,9 @@ import numpy as np
 from scipy.constants import elementary_charge as EV, epsilon_0 as EPS0
 from .mass_scaling import solve_mass_banded
 from .projection_energy import projected_frame_energy
+from .bounded_reaction_projection import bounded_moments
+from .constrained_velocity_projection import constrained_velocity
+from .velocity_extension import inherited_velocity_faces
 from .precise_geometry import decimal, widths, fraction, quadrature, interpolate, geometry_precision
 from .precise_material import PreciseMaterialSubcells, PreciseMaterialState, PreciseMaterialSet
 from .material_species_set import MaterialSetState
@@ -67,12 +70,18 @@ class PreciseReactionOverlap(MaterialReactionOverlap):
 
 @geometry_precision
 def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0,
-        velocity_knots=None, energy_projection='local_total', cfl=.15, maximum_plasma_phase=.04,
-        numerical_viscosity=(.5, 2.), viscosity_limiter='minmod'):
+        velocity_knots=None, energy_projection='local_total', projection_method='galerkin', extend_velocity=False, cfl=.15, maximum_plasma_phase=.04,
+        numerical_viscosity=(.5, 2.), viscosity_limiter='minmod', newborn_spacing_fraction=0.):
     if not isinstance(coalesce_ulps, int) or coalesce_ulps < 0:
         raise ValueError('Nonnegative integer explicitly declared ULP cleanup required')
     if energy_projection not in ('local_total', 'projected_frame'):
         raise ValueError('Explicit local_total or projected_frame energy projection required')
+    if projection_method not in ('galerkin', 'bounded_moments', 'constrained_velocity'):
+        raise ValueError('Explicit supported reaction projection method required')
+    if projection_method != 'galerkin' and energy_projection != 'local_total':
+        raise ValueError('Alternative momentum methods require their paired energy transfer')
+    if extend_velocity and projection_method == 'bounded_moments':
+        raise ValueError('Convex bounded transfer cannot use extrapolating velocity shapes')
     source, network, values = overlap.source, overlap.source.network, state.moments
     present = np.any(values[..., overlap.number] > 0, axis=1)
     protected = np.r_[True, np.any(present[:-1] != present[1:], axis=1), True]
@@ -105,12 +114,16 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
         population_scale = overlap.density*scale
         nn, ee, source_thermal = np.zeros(count), np.zeros(count), np.zeros(count)
         ll, lr = np.zeros((count, 3)), np.zeros((count, 3))
+        el, er = np.zeros(count), np.zeros(count)
         np.add.at(nn, groups, np.sum(state.weights*(values[..., overlap.number[species]]/scale), axis=1))
         pm = values[..., source.momentum[species]]/scale*source.momentum_scale
         em = values[..., source.energy[species]]/scale*EV
         np.add.at(ll, groups, np.sum(state.weights[..., None]*pm*(1-right[..., None]), axis=1))
         np.add.at(lr, groups, np.sum(state.weights[..., None]*pm*right[..., None], axis=1))
         np.add.at(ee, groups, np.sum(state.weights*em, axis=1))
+        if projection_method == 'bounded_moments':
+            np.add.at(el, groups, np.sum(state.weights*em*(1-right), axis=1))
+            np.add.at(er, groups, np.sum(state.weights*em*right, axis=1))
         number = values[..., overlap.number[species]]
         source_velocity = np.divide(values[..., source.momentum[species]], number[..., None],
             out=np.zeros_like(pm), where=number[..., None] > 0)*(source.momentum_scale/mass)
@@ -125,23 +138,33 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
         for first, last in pairs:
             faces = edges[first:last+1]
             inherited = None
+            extended = False
             if velocity_knots is not None and species in velocity_knots:
                 old = velocity_knots[species]
-                inside = old[(old >= faces[0]) & (old <= faces[-1])]
-                if len(inside):
-                    inherited = np.unique(np.r_[faces[0], inside, faces[-1]])
+                inherited, extended = inherited_velocity_faces(faces, old, extend=extend_velocity)
             model = PreciseMaterialSubcells(nn[first:last], mass, overlap.charge[species],
                 (state.edges[0], state.edges[-1]), faces, velocity_cells, number_scale=population_scale,
-                velocity_faces=inherited,
+                velocity_faces=inherited, extend_velocity=extended, newborn_spacing_fraction=newborn_spacing_fraction,
                 left_electric=state.left_electric, cfl=cfl, maximum_plasma_phase=maximum_plasma_phase,
                 numerical_viscosity=numerical_viscosity, viscosity_limiter=viscosity_limiter)
             load = np.zeros((len(faces), 3))
             load[:-1] += ll[first:last]
             load[1:] += lr[first:last]
-            velocity = solve_mass_banded(model.matrix[0], model.restrict_load(load))
+            transfer_record = {}
+            if projection_method == 'bounded_moments':
+                velocity, thermal, redistribution, transfer_record = bounded_moments(
+                    model, ll[first:last], lr[first:last], el[first:last], er[first:last])
+            elif projection_method == 'constrained_velocity':
+                velocity, transfer_record = constrained_velocity(model,
+                    state.points.ravel(), state.weights.ravel(), source_velocity.reshape(-1, 3),
+                    (number > 0).ravel(), load.sum(axis=0), ee[first:last])
+            else:
+                velocity = solve_mass_banded(model.matrix[0], model.restrict_load(load))
             vl, vr = model.fine_velocity(velocity[None, ...])
             kinetic = mass*model.relative_numbers/6*np.sum(vl*vl+vl*vr+vr*vr, axis=1)
-            if energy_projection == 'projected_frame':
+            if projection_method == 'bounded_moments':
+                pass
+            elif energy_projection == 'projected_frame':
                 thermal, redistribution = projected_frame_energy(ee[first:last], ll[first:last],
                     lr[first:last], vl, vr, kinetic)
             else:
@@ -156,7 +179,8 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
                 float(abs((model.gamma-1)*(gain/model.relative_numbers)/EV).max()))
             records.append(dict(species=species, cells=last-first, minimum_width_m=float(widths(faces).min()),
                 velocity_cells=model.velocity_cells, inherited_velocity_faces=inherited is not None,
-                support_decimal_m=[str(faces[0]), str(faces[-1])]))
+                extended_velocity_support=extended,
+                support_decimal_m=[str(faces[0]), str(faces[-1])], **transfer_record))
             models.append(model)
             states.append(result)
             ids.append(species)
@@ -172,6 +196,7 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
     h = widths(state.edges)
     old_energy = EPS0/6*np.sum(h*(old[:-1]**2+old[:-1]*old[1:]+old[1:]**2))
     record = dict(blocks=records, removed_roundoff_edges=len(state.edges)-len(edges),
+        projection_method=projection_method,
         energy_projection=energy_projection, projection_thermal_gain_j_m2=thermal_gain,
         projection_energy_redistribution_l1_j_m2=energy_l1,
         maximum_projection_temperature_change_ev=maximum_temperature_change,

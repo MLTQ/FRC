@@ -11,6 +11,7 @@ dependencies = ["numpy>=2.1,<3", "scipy>=1.14,<2", "matplotlib>=3.9,<4", "contou
 
 [project.optional-dependencies]
 dev = ["pytest>=8,<10"]
+precision = ["gmpy2==2.3.2"]
 
 [project.scripts]
 plasma-bench = "plasma_bench.cli:main"

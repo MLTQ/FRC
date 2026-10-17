@@ -6,7 +6,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.constants import atomic_mass, electron_mass as ME, elementary_charge as EV, epsilon_0 as EPS0
-from plasma_bench.precise_geometry import DIGITS, coordinates, widths
+from plasma_bench.precise_geometry import ARITHMETIC, BITS, DIGITS, coordinates, widths
 from plasma_bench.precise_material import PreciseMaterialSubcells, PreciseMaterialSet
 from plasma_bench.precise_reactions import PreciseReactiveMaterial
 from plasma_bench.material_species_set import MaterialSetState
@@ -30,7 +30,8 @@ def save_states(path, models, states):
                 p+'reference_faces_decimal_m': m.reference_faces.astype(str),
                 p+'relative_velocity_m_s': s.velocity, p+'thermal_divided_by_number_scale': s.thermal,
                 p+'numbers_divided_by_number_scale': m.relative_numbers,
-                p+'number_scale_m2': np.asarray(m.number_scale), p+'velocity_indices': m.velocity_indices})
+                p+'number_scale_m2': np.asarray(m.number_scale), p+'velocity_indices': m.velocity_indices,
+                p+'extend_velocity': np.asarray(m.extend_velocity)})
         arrays[f'step{k}_species_indices'] = model.species_indices
         arrays[f'step{k}_frame_velocity_m_s'] = model.reference_velocity
     np.savez_compressed(path, **arrays)
@@ -41,7 +42,8 @@ def save_states(path, models, states):
                 raise ValueError('Saved precise endpoint coordinates did not round-trip')
 
 
-def run(destination, resolutions):
+def run(destination, resolutions, projection_method='galerkin', extend_velocity=False,
+        newborn_spacing_fraction=0.):
     out = Path(destination)
     if out.exists():
         raise ValueError('Fresh precise-material output required')
@@ -53,6 +55,10 @@ def run(destination, resolutions):
                             ionization_enabled=False, recombination_enabled=False)
     source = VectorizedAtomicMoments(network, 1.00794*atomic_mass, [0., 0., 0.])
     report = dict(terminal=False, source_sha256=identity['source_sha256'], geometry_decimal_digits=DIGITS,
+        geometry_arithmetic=ARITHMETIC, geometry_precision_bits=BITS,
+        projection_method=projection_method,
+        extend_velocity=extend_velocity,
+        newborn_spacing_fraction=newborn_spacing_fraction,
         minimum_density_width_m=0., coalesce_ulps=8, cases=[],
         scope='Full warm neutral affine expansion with actual radiative transfer plus independent charged '
               'affine expansion. Mathematical component limits, not physical argon/FRC formation.')
@@ -74,7 +80,9 @@ def run(destination, resolutions):
             model = PreciseMaterialSet([m], [1])
             state = MaterialSetState((m.state(faces[None, :], thermal_profile),))
             ledger = MaterialReservoirs()
-            solver = PreciseReactiveMaterial(source, density, velocity_cells=cells, coalesce_ulps=8)
+            solver = PreciseReactiveMaterial(source, density, velocity_cells=cells, coalesce_ulps=8,
+                projection_method=projection_method, extend_velocity=extend_velocity,
+                newborn_spacing_fraction=newborn_spacing_fraction)
             duration, rate = charged_expansion_time(1.5, 2*EV*temperature/(mass*a*a),
                 0. if kind == 'decay' else EV**2*density/(EPS0*mass))
             totals = (lambda: solver.totals(model, state, ledger)) if kind == 'decay' else (lambda: model.totals(state))
@@ -82,6 +90,9 @@ def run(destination, resolutions):
             failure = None
             while times[-1] < duration:
                 dt = min(.5*model.timestep(state), duration-times[-1])
+                if not np.isfinite(dt) or dt <= 0 or times[-1]+dt == times[-1]:
+                    failure = 'Actual material step cannot advance represented physical time'
+                    break
                 if len(times) > 10000 or sum(q.cells for q in model.models) > 100000:
                     failure = 'Declared observation budget reached; original duration not complete'
                     break
@@ -106,6 +117,8 @@ def run(destination, resolutions):
                 steps=len(times)-1, requested_time_s=duration, completed_time_s=times[-1],
                 maximum_occupied_cells=max(sum(m.cells for m in q.models) for q in models),
                 minimum_occupied_width_m=min(float(widths(s.faces).min()) for q in states for s in q.blocks),
+                numerical_projection_thermal_change_j_m2=ledger.projection_thermal_gain_j_m2,
+                projection_energy_redistribution_l1_j_m2=ledger.projection_energy_redistribution_l1_j_m2,
                 maximum_relative_energy_error=float(abs(energy-energy[0]).max()/energy[0]))
             extra = {}
             if kind == 'decay':
@@ -151,6 +164,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('destination')
     parser.add_argument('--cells', nargs='+', type=int, default=[16, 32, 64])
+    parser.add_argument('--projection-method', choices=('galerkin', 'bounded_moments', 'constrained_velocity'), default='galerkin')
+    parser.add_argument('--extend-velocity', action='store_true')
+    parser.add_argument('--newborn-spacing-fraction', type=float, default=0.)
     args = parser.parse_args()
-    result = run(args.destination, args.cells)
+    result = run(args.destination, args.cells, args.projection_method, args.extend_velocity,
+                 args.newborn_spacing_fraction)
     raise SystemExit(0 if result['success'] else 1)

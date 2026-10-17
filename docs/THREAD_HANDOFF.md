@@ -1,4 +1,105 @@
-# FRC simulation — session handoff, 2026-10-16
+# FRC simulation — current continuation, 2026-10-16
+
+Read [REACTION_TRANSFER.md](REACTION_TRANSFER.md) for numerical evidence and
+[MOLECULAR_GASES.md](MOLECULAR_GASES.md) for the user's gas requirements. The full
+`frc-goal` remains open. This is an exploratory simulation project, not yet a
+validated basis for constructing a formation experiment.
+
+The intended lab envelope remains approximately 1 m long, 15 cm in diameter,
+and 0.1–100 mTorr. Available gases include H2, D2, N2, O2 and argon. Argon is the
+present numerical baseline; molecular gases require actual channel and transport
+data, not mass substitutions. Hardware remains prescribed waveforms.
+
+## Completed numerical work
+
+- Independent 100-digit assembly reproduces the extreme trace-ion velocity.
+  Density-weighted approximation across steep contrast is the cause, rather
+  than the linear solve. The explicit `constrained_velocity` alternative
+  preserves block momentum and each fine cell's total energy. It avoids that
+  extreme speed, closing the specific bug 5.5.4. Local thermal accuracy remains unresolved. The default is
+  still Galerkin/local_total; the bounded alternative is rejected for 51–62%
+  current error in complete zero-source controls.
+- All six full neutral/charged analytic expansion cases pass with affine edge
+  extension. Finest neutral front error is 1.42e-15 m, energy error 5.68e-14
+  relative. A separate Galerkin extension control passes. Bead 5.5.7 is closed
+  for this specific support-edge defect, not for general reaction accuracy.
+- Exact polynomial electric-force integration retains every density cut and
+  the same integral. A complete 20 ns comparison takes 144 versus 233 seconds;
+  relative E/J differences are 1.86e-14 / 1.70e-8.
+- Complete 32/64-cell argon runs at 10 ns source intervals conserve energy to
+  2.81e-11 / 5.60e-12, but differ in E/J by 6.65% / 32.21%. The electron front
+  differs by 3.47 mm. Spatial refinement also tightens the plasma-phase cap.
+  These are not converged physical predictions.
+- Combined extension/polynomial/constrained transfer completes the full 20 ns
+  at 10 ns source intervals in 971 steps. A separate 192-bit MPFR geometry
+  implementation completes the identical case in 75 versus 136 seconds, with
+  identical saved physical arrays and only approximately 1e-50 m coordinate
+  differences. Its full analytic family is still running. The backend is now
+  available explicitly in main; Decimal remains the default. The integrated
+  full 20 ns replay matches the isolated prototype exactly.
+
+## Current solver and live calculations
+
+The distinct newborn-mesh defect is bead 5.5.8: nominal neighboring targets can
+select almost coincident density faces. The old Ar9+ mechanical interval was
+1.27e-9 m despite nominal spacing 4.18e-5 m, then compressed to approximately
+1e-12 m. An explicit target-relative spacing rule now exists in main and in
+frozen source copies. It affects only newly created velocity spaces, never
+existing knots or density cells. Its default is zero; the experiment uses 0.5.
+Actual newborn dimension can decrease and is recorded. Local accuracy remains
+an acceptance requirement.
+
+Live handles (inspect before changing their imported source):
+
+- 76748, `/private/tmp/frc-newborn-mesh-20261016`, output
+  `reactive_material_argon_newborn_5ns`: 15 ns coupled time accepted of the full
+  20 ns target, 227,839 density cells; fourth interval is active.
+- 95949, `/private/tmp/frc-mpfr-20261016`, output `precise_material_mpfr`:
+  six full analytic cases; neutral 16/32 cells complete, 64 cells in progress.
+- 76215, the same MPFR source, output `reactive_material_argon_newborn_mpfr_5ns`:
+  15 ns of 20 ns accepted; saved physical arrays match the Decimal run exactly
+  through that endpoint. Both users of this source root must remain frozen.
+  The original isolated dependency is `/private/tmp/frc-gmp-runtime`.
+- 6777, main repository, output `reactive_material_argon_integrated_mpfr_n64_10ns`:
+  corrected 64-cell full 20 ns target with 10 ns source intervals; first 10 ns
+  accepted, second interval in progress. Keep main imported Python sources frozen.
+
+Main's optional dependency gmpy2 2.3.2 is now installed in `.venv` and pinned by
+`plasma-bench[precision]`. Select `FRC_GEOMETRY_BACKEND=mpfr` before process start;
+192-bit geometry is explicit. Current source SHA:
+`6148d66b931a92019ea5e14fa7c74a6ea16e945ef16e1dd67f2f72c97f369d3a`.
+The newborn-mesh analytic control 93612 is terminal EXIT0: both complete
+16-cell neutral and charged cases, with inspected plots. It is not live.
+
+The newborn MPFR 10 ns-source calculation is terminal EXIT0: full 20 ns,
+971 steps, 72.34 seconds, relative energy error 2.84e-11. Compare its local
+fields/fronts/temperatures with the original selection using the existing
+`reactive_material_argon_constrained_comparison/compare.py` study.
+
+Old 5 ns jobs 77785, 19305 and 42285 were deliberately interrupted at 10 ns
+accepted coupled time after diagnosis and replacement. Their `termination.json`
+files record actual KeyboardInterrupt exit 1. None is a full-duration success
+or a terminal physical failure. Diagnostic prefixes are explicitly distinct
+from accepted coupled intervals.
+
+## Next concrete work
+
+Collect the full newborn 5 ns and MPFR analytic endpoints. Measure complete
+10/5 ns E/J, front, velocity and temperature sensitivity with the existing
+comparison. Collect the corrected 64-cell spatial comparison and the full analytic
+results; preserve exact geometry and every population. Keep beads 5.5.5/.6/.8
+open until their actual criteria are met. Molecular physics is `frc-transport.6`.
+Return to physical collision, heat, molecular and formation coupling after the
+specific solver corrections, without expanding a generic verification framework.
+
+Read the companions for precise_material, precise_reactions,
+constrained_velocity_projection, velocity_extension, velocity_selection and
+subcycled_material before editing. Every output has its frozen source archive.
+No unit tests, publication or viewer/poster changes. Latest free disk: 5.8 GiB;
+keep the 256 MiB reserve. There is no Git remote. Runtime and preserved poster
+hash are in the historical material below; current status above takes priority.
+
+## Historical handoff before this continuation
 
 This is the current starting point for the new session. The user requested a
 bookmark and next-round beads; no new simulation was launched during wrap-up.

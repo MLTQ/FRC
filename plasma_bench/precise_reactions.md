@@ -64,3 +64,29 @@ See outputs/reactive_material_argon_retained_knots_10ns/projected_frame_local_er
 and docs/THREAD_HANDOFF.md. No full candidate trajectory has been run;
 local_total remains the default. Beads5.5.4/.5 track the local velocity and
 energy defects before full E2E refinement under5.5.6.
+
+`projection_method='bounded_moments'` is a separate explicit research transfer
+with paired momentum/energy corrections and positive cell/node redistribution;
+see bounded_reaction_projection.md. It uses the same source, density cuts and
+velocity knots. It requires the default energy selector because its paired
+energy rule replaces both Galerkin energy choices. Per-block limiter activity,
+numerical thermal change and local energy redistribution are recorded. The
+default `projection_method='galerkin'` and its rejection behavior are unchanged.
+
+`projection_method='constrained_velocity'` minimizes the volume-norm velocity
+error with exact block momentum and convex fine-cell kinetic-energy constraints.
+It recovers U=E-K without changing any fine cell's total energy. See
+constrained_velocity_projection.md for its strict feasible-start limitation,
+barrier tolerances and diagnostic records. This is explicit research code;
+local cooling toward an active energy constraint is an approximation error to
+measure, not evidence of physically correct heat transfer.
+
+Explicit extend_velocity selects inherited_velocity_faces from velocity_extension.py. Existing old nodes are retained; short newly occupied edge extensions continue the old affine basis. Bounded_moments rejects negative extrapolation shapes. Defaults remain unchanged.
+# Explicit newborn mesh option
+
+`newborn_spacing_fraction` is passed to new material models. Retained meshes
+bypass selection; density cuts and physical endpoints are unchanged. See
+`velocity_selection.md` for the declared target-relative rule and reduced
+newborn dimension. The default remains zero. Projection records retain actual
+per-block velocity-cell counts, so this option cannot silently claim the
+requested dimension was achieved.

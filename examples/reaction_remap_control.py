@@ -18,7 +18,7 @@ from .precise_material import save_states
 from .implicit_plasma_records import provenance, freeze
 
 
-def run(destination):
+def run(destination, projection_method='galerkin'):
     out = Path(destination)
     if out.exists():
         raise ValueError('Fresh output required')
@@ -30,6 +30,7 @@ def run(destination):
     out.mkdir(parents=True)
     freeze(out, identity)
     report = dict(terminal=False, source_sha256=identity['source_sha256'], cases=[],
+        projection_method=projection_method,
         scope='Original20ns argon initial states with DI/RR disabled in every case. '
               'Compare direct transport with exact-zero source gather/return. '
               'Isolates numerical transfer; not a reacting experiment or source-time convergence.',
@@ -49,7 +50,8 @@ def run(destination):
         model, state = PreciseMaterialSet(models, ids), MaterialSetState(tuple(blocks))
         ledger = MaterialReservoirs()
         solver = SubcycledReactiveMaterial(source, 1e14, velocity_cells=32,
-            maximum_plasma_phase=.04, coalesce_ulps=0, transport_fraction=.5)
+            maximum_plasma_phase=.04, coalesce_ulps=0, transport_fraction=.5,
+            projection_method=projection_method)
         initial_energy = solver.totals(model, state, ledger)['full_energy_j_m2']
         elapsed, steps, history, failure = 0., 0, [], None
         name = 'direct' if not interval_ns else f'remap_{interval_ns:g}ns'
@@ -78,6 +80,8 @@ def run(destination):
         row = dict(name=name, source_interval_ns=interval_ns, completed_time_s=elapsed,
             requested_time_s=20e-9, success=failure is None and elapsed == 20e-9,
             failure=failure, transport_steps=steps, occupied_density_cells=sum(m.cells for m in model.models),
+            numerical_projection_thermal_change_j_m2=ledger.projection_thermal_gain_j_m2,
+            projection_energy_redistribution_l1_j_m2=ledger.projection_energy_redistribution_l1_j_m2,
             relative_energy_error=(solver.totals(model, state, ledger)['full_energy_j_m2']-initial_energy)/initial_energy)
         if row['success'] and not interval_ns:
             reference = model, state
@@ -104,6 +108,7 @@ def run(destination):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('destination')
+    parser.add_argument('--projection-method', choices=('galerkin', 'bounded_moments', 'constrained_velocity'), default='galerkin')
     args = parser.parse_args()
-    result = run(args.destination)
+    result = run(args.destination, args.projection_method)
     raise SystemExit(0 if result['success'] else 1)

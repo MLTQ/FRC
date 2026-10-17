@@ -1,15 +1,28 @@
-"""Explicit decimal geometry; physical coefficients remain float64."""
+"""Explicit high-precision geometry; physical coefficients remain float64."""
 from decimal import Decimal, localcontext
 from functools import wraps
+import os
 import numpy as np
 
 
-DIGITS = 50
+ARITHMETIC = os.environ.get('FRC_GEOMETRY_BACKEND', 'decimal')
+if ARITHMETIC not in ('decimal', 'mpfr'):
+    raise ValueError('FRC_GEOMETRY_BACKEND must be decimal or mpfr')
+BITS = 192 if ARITHMETIC == 'mpfr' else None
+DIGITS = 57 if ARITHMETIC == 'mpfr' else 50
+if ARITHMETIC == 'mpfr':
+    try:
+        import gmpy2
+    except ImportError as error:
+        raise ImportError('MPFR geometry requires the plasma-bench[precision] extra') from error
 
 
 def geometry_precision(function):
     @wraps(function)
     def wrapped(*args, **kwargs):
+        if ARITHMETIC == 'mpfr':
+            with gmpy2.context(precision=BITS, trap_divzero=True, trap_invalid=True):
+                return function(*args, **kwargs)
         with localcontext() as context:
             context.prec = DIGITS
             return function(*args, **kwargs)
@@ -17,6 +30,10 @@ def geometry_precision(function):
 
 
 def decimal(value):
+    if ARITHMETIC == 'mpfr':
+        if isinstance(value, gmpy2.mpfr):
+            return value
+        return gmpy2.mpfr(value if isinstance(value, str) else float(value), BITS)
     if isinstance(value, Decimal):
         return value
     return Decimal(value) if isinstance(value, str) else Decimal.from_float(float(value))
@@ -52,6 +69,6 @@ def interpolate(points, edges, values):
 @geometry_precision
 def quadrature(edges, count):
     nodes, weights = np.polynomial.legendre.leggauss(count)
-    local = (coordinates(nodes)+Decimal(1))/Decimal(2)
+    local = (coordinates(nodes)+decimal(1))/decimal(2)
     points = edges[:-1, None]+np.diff(edges)[:, None]*local
     return points, widths(edges)[:, None]*weights/2

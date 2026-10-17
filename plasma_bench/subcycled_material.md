@@ -29,3 +29,8 @@ they must not be presented as completed coupled states. Completed calls return
 the full source interval and both physical source reservoirs. An invalid stage
 or exceeded declared step budget rejects the full interval without shortening
 the requested physical duration. This is an opt-in research composition.
+
+`progress_every` optionally prints actual accepted transport time and step size
+at that integer interval. It defaults to zero and changes no state, stopping
+condition, timestep or physical source interval. The long argon driver uses100
+to expose ongoing fine-resolution computation before a complete source return.
