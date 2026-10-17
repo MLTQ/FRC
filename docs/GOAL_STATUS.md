@@ -1,5 +1,23 @@
 # Active research: a credible experimental FRC simulation
 
+## Active goal: local thermal-transfer correction (2026-10-17)
+
+The user explicitly set completion of the lab-facing virtual plasma bench as
+an active goal. Latest continuation: [VARIANCE_TRANSFER.md](VARIANCE_TRANSFER.md).
+New explicit conservative variance transfer completes the full 20 ns/10 ns-source
+argon trajectory and matched full zero-source controls. Exact third-interval
+replay identifies substantial Ar8+ heat already present before return; the new
+return lowers its added maximum temperature change from 7.18 to 1.34 eV on that
+same source. Independent polynomial transfer has second-order velocity and
+fourth-order numerical-heat convergence. Real-source velocity and thermal
+accuracy are still unresolved; default solver is unchanged.
+
+Full 5 ns-source replacement 73344 and six full analytic cases 57807 are live
+from frozen `/private/tmp/frc-variance-20261017`. Await actual completion and
+compare full local source-time sensitivity. All physical formation, gas-specific
+chemistry/collisions, heat, wall and experimental requirements remain open.
+This progress is not validation for choosing construction parameters.
+
 ## Complete component runs; reaction accuracy still open (2026-10-16)
 
 Current evidence: [REACTION_TRANSFER.md](REACTION_TRANSFER.md). Terminal results,

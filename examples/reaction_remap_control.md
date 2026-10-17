@@ -43,3 +43,8 @@ without source calls or remaps. This isolates whether the reacting 32/64/128
 current discrepancy already occurs in pure material/Poisson transport. It does
 not rerun the already measured remap controls or certify spatial order. Saved
 states, physical energy and every actual dt follow the existing record format.
+
+`--projection-method variance` evaluates the explicit conservative velocity-shape
+and mixing-heat transfer described in `plasma_bench/variance_projection.md`.
+The original full duration and physical controls remain. This option is
+experimental; it must pass local accuracy and complete trajectory comparisons.

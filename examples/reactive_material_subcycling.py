@@ -137,7 +137,7 @@ if __name__ == '__main__':
     parser.add_argument('--source-step-ns', type=float, default=10.)
     parser.add_argument('--cells', type=int, default=32)
     parser.add_argument('--coalesce-ulps', type=int, default=0)
-    parser.add_argument('--projection-method', choices=('galerkin', 'bounded_moments', 'constrained_velocity'), default='galerkin')
+    parser.add_argument('--projection-method', choices=('galerkin', 'bounded_moments', 'constrained_velocity', 'variance'), default='galerkin')
     parser.add_argument('--extend-velocity', action='store_true')
     parser.add_argument('--newborn-spacing-fraction', type=float, default=0.)
     args = parser.parse_args()

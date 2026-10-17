@@ -164,7 +164,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('destination')
     parser.add_argument('--cells', nargs='+', type=int, default=[16, 32, 64])
-    parser.add_argument('--projection-method', choices=('galerkin', 'bounded_moments', 'constrained_velocity'), default='galerkin')
+    parser.add_argument('--projection-method', choices=('galerkin', 'bounded_moments', 'constrained_velocity', 'variance'), default='galerkin')
     parser.add_argument('--extend-velocity', action='store_true')
     parser.add_argument('--newborn-spacing-fraction', type=float, default=0.)
     args = parser.parse_args()

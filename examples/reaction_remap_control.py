@@ -111,7 +111,7 @@ def run(destination, projection_method='galerkin', cells=32, direct_only=False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('destination')
-    parser.add_argument('--projection-method', choices=('galerkin', 'bounded_moments', 'constrained_velocity'), default='galerkin')
+    parser.add_argument('--projection-method', choices=('galerkin', 'bounded_moments', 'constrained_velocity', 'variance'), default='galerkin')
     parser.add_argument('--cells', type=int, default=32)
     parser.add_argument('--direct-only', action='store_true')
     args = parser.parse_args()

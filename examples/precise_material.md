@@ -54,3 +54,8 @@ mesh rule when the decay creates a previously absent species. Default zero
 preserves the historical selection. All inherited knots bypass it, all density
 cells remain, and saved velocity indices specify the actual dimension.
 The full independent neutral/charged durations and original metrics remain.
+
+`--projection-method variance` evaluates the explicit conservative velocity-shape
+and mixing-heat transfer described in `plasma_bench/variance_projection.md`.
+The original full duration and physical controls remain. This option is
+experimental; it must pass local accuracy and complete trajectory comparisons.

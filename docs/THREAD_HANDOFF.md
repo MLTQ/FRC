@@ -1,4 +1,23 @@
-# FRC simulation — current continuation, 2026-10-16/17
+# Current goal continuation, 2026-10-17
+
+The user explicitly set the lab-facing virtual plasma bench as an active goal.
+Continue numerical/physical construction with the retained chamber and gas
+scope. Latest evidence and live handles: [VARIANCE_TRANSFER.md](VARIANCE_TRANSFER.md).
+
+New explicit `variance` thermal transfer conserves block momentum/energy and
+integrates source heat plus numerical velocity mixing. Full 20 ns at 10 ns
+source intervals and all full zero-source controls complete. Actual 10–15 ns
+replay exactly reproduces every original endpoint array and isolates the Ar8+
+source/return heating. Independent smooth transfers show second-order velocity
+and fourth-order mixing-heat convergence, but real-source local errors remain.
+
+**Live:** full 5 ns-source replacement 73344 and six full analytic cases 57807,
+both frozen at `/private/tmp/frc-variance-20261017`. Poll to actual termination.
+Next compare completed 10/5 ns local temperatures, velocities, fronts and E/J.
+Bead 5.5.5 and all parent goals remain open; no adoption or lab-design claim.
+Defaults unchanged, no unit tests, no remote, preserve the user poster.
+
+## Previous completed continuation, 2026-10-16/17
 
 The user wants a credible virtual plasma bench to inform construction of a real
 lab. Keep the provisional 1 m length, 15 cm diameter and 0.1–100 mTorr envelope.

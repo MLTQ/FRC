@@ -5,6 +5,7 @@ from .mass_scaling import solve_mass_banded
 from .projection_energy import projected_frame_energy
 from .bounded_reaction_projection import bounded_moments
 from .constrained_velocity_projection import constrained_velocity
+from .variance_projection import variance_projection
 from .velocity_extension import inherited_velocity_faces
 from .precise_geometry import decimal, widths, fraction, quadrature, interpolate, geometry_precision
 from .precise_material import PreciseMaterialSubcells, PreciseMaterialState, PreciseMaterialSet
@@ -76,7 +77,7 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
         raise ValueError('Nonnegative integer explicitly declared ULP cleanup required')
     if energy_projection not in ('local_total', 'projected_frame'):
         raise ValueError('Explicit local_total or projected_frame energy projection required')
-    if projection_method not in ('galerkin', 'bounded_moments', 'constrained_velocity'):
+    if projection_method not in ('galerkin', 'bounded_moments', 'constrained_velocity', 'variance'):
         raise ValueError('Explicit supported reaction projection method required')
     if projection_method != 'galerkin' and energy_projection != 'local_total':
         raise ValueError('Alternative momentum methods require their paired energy transfer')
@@ -154,6 +155,12 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
             if projection_method == 'bounded_moments':
                 velocity, thermal, redistribution, transfer_record = bounded_moments(
                     model, ll[first:last], lr[first:last], el[first:last], er[first:last])
+            elif projection_method == 'variance':
+                velocity, thermal, redistribution, transfer_record = variance_projection(model,
+                    state.points.ravel(), state.weights.ravel(), source_velocity.reshape(-1, 3),
+                    (number/scale).ravel(), (em-source_kinetic).ravel(),
+                    np.broadcast_to(groups[:, None]-first, state.points.shape).ravel(),
+                    load.sum(axis=0), ee[first:last])
             elif projection_method == 'constrained_velocity':
                 velocity, transfer_record = constrained_velocity(model,
                     state.points.ravel(), state.weights.ravel(), source_velocity.reshape(-1, 3),
@@ -162,7 +169,7 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
                 velocity = solve_mass_banded(model.matrix[0], model.restrict_load(load))
             vl, vr = model.fine_velocity(velocity[None, ...])
             kinetic = mass*model.relative_numbers/6*np.sum(vl*vl+vl*vr+vr*vr, axis=1)
-            if projection_method == 'bounded_moments':
+            if projection_method in ('bounded_moments', 'variance'):
                 pass
             elif energy_projection == 'projected_frame':
                 thermal, redistribution = projected_frame_energy(ee[first:last], ll[first:last],
@@ -173,6 +180,9 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
                                           thermal[None, :])
             model.validate(result)
             gain = thermal-source_thermal[first:last]
+            transfer_record.update(
+                maximum_temperature_change_ev=float(abs((model.gamma-1)*(gain/model.relative_numbers)/EV).max()),
+                minimum_temperature_ev=float(((model.gamma-1)*thermal/model.relative_numbers/EV).min()))
             thermal_gain += float(gain.sum()*population_scale)
             energy_l1 += float(abs(redistribution).sum()*population_scale)
             maximum_temperature_change = max(maximum_temperature_change,

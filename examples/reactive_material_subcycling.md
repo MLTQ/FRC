@@ -72,3 +72,8 @@ mesh rule in `velocity_selection.md`; default zero retains the earlier rule.
 Reports record the fraction and every block's actual dimension. No existing
 velocity knot or density cell is removed. The option does not change the full
 20 ns target or turn prefix progress into a successful trajectory.
+
+`--projection-method variance` evaluates the explicit conservative velocity-shape
+and mixing-heat transfer described in `plasma_bench/variance_projection.md`.
+The original full duration and physical controls remain. This option is
+experimental; it must pass local accuracy and complete trajectory comparisons.

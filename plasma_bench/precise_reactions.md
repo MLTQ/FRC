@@ -90,3 +90,11 @@ bypass selection; density cuts and physical endpoints are unchanged. See
 newborn dimension. The default remains zero. Projection records retain actual
 per-block velocity-cell counts, so this option cannot silently claim the
 requested dimension was achieved.
+
+`projection_method='variance'` pairs an occupied-volume fitted velocity shape
+with direct source heat plus squared velocity-mixing error. Its scalar shape
+factor enforces block energy while the shape mean enforces momentum. See
+`variance_projection.md` for the derivation and limitations. Local energy
+redistribution is recorded, never reset from a global residual. All methods
+now report maximum temperature change and minimum temperature per block.
+Defaults remain unchanged; this alternative requires trajectory evaluation.
