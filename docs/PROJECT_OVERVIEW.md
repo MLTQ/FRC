@@ -41,7 +41,7 @@ calculation and loss of a small local mixing-heat contribution. Equivalent
 ratios and explicit binary number/energy scaling address these arithmetic
 errors; full shorter-interval evaluation remains active. Current
 still differs substantially from an existing fine numerical trajectory, so a
-completed128-electron/32-heavy run reproduces the earlier uniform128 current
+completed128-electron/32-heavy run reproduces the earlier128-cells-per-species current
 within0.056% at lower observed cost. It remains34.2% away from the existing
 1024-cell numerical reference, so the256-electron run is now active. Independent analytic
 expansion families now complete their original full durations. [VARIANCE_TRANSFER.md](VARIANCE_TRANSFER.md) records all
@@ -55,6 +55,17 @@ full relaxation comparisons, including recoil and heat, and their moving source
 completes20ns with total-energy drift2.842e-11. See [neutral-collision evidence](ELASTIC_NEUTRALS.md)
 and [moving charged-collision evidence](ATOMIC_COLLISIONS.md). These are distinct
 component advances, not a completed laboratory simulator.
+
+The full3.5us heated source now includes electron/ground-neutral collisions at
+two time resolutions. It shows why vector current and neutral motion matter:
+azimuthal current damps faster while different neutral/ion flows sustain axial
+current. Ground-ion/neutral scattering is the next missing physical channel;
+the published table's low-energy gap covers up to11.6% of the modeled pair
+distribution. Excited-neutral channels are also incomplete. The coupled
+source's small time-halving error does not remove these physical limitations.
+An initial uniform electron-grid experiment separately tests whether moving
+resolution toward the interior improves the current discrepancy; its full
+comparison remains pending.
 
 The extreme trace-ion velocity was an approximation error across density
 contrast, reproduced independently at 100-digit precision. A constrained

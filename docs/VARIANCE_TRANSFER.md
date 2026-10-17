@@ -130,18 +130,29 @@ not an exact or experimental solution, and its own uncertainty remains visible.
 Late electron enrichment barely reduces its current discrepancy. The complete
 128-electron/32-heavy case77325 EXIT0 reaches20ns in4224steps,798.04s and84091
 final density cells, relative energy error1.3853e-12. It uses the same common
-plasma-phase cap as the earlier uniform128 case. E/J differences between them
+plasma-phase cap as the earlier128-cells-per-species case. E/J differences between them
 are0.036045%/0.056490%; the older case uses constrained return and the new one
 variance, so heavy-species resolution is not the only changed choice. Observed
-runtime is about25% lower than the prior1069.60s uniform128 case, not a controlled
+runtime is about25% lower than the prior1069.60s equal-count case, not a controlled
 hardware benchmark. Its source SHA is
 `10621ccac12ba7035ed9b69d3b3f0ccf5f55d5b1a427af961137dc1abf030ede`.
 
-The small uniform128 versus e128/h32 discrepancy supports retaining the cheaper
+The small128-per-species versus e128/h32 discrepancy supports retaining the cheaper
 heavy mesh for the next256-electron run. Current still differs34.2% from the
 existing1024-cell reference; that reference is itself unconverged. The updated
 scientific comparison figure is inspected. Initial per-species resolution changes
 neither physical masses nor support/vacuum rules.
+
+An additional explicit experiment changes128 initial electron cells from cosine
+to uniform spacing, retaining32 cosine heavy cells, variance return,128-bit
+coordinate scaling and the same common phase cap. The continuous initial
+density/temperature/support are unchanged; each cell contains n times its actual
+width. Centre spacing changes245.412→156.25um, edge spacing3.012→156.25um.
+This moves resolution toward the measured interior current discrepancy, but
+can degrade the vacuum rarefaction. No evolved knot or fine density cut is
+removed. Earlier "uniform128" meant equal cell counts with cosine spacing,
+not this uniform-spaced grid. Full20ns completion and endpoint comparison are
+required before any accuracy/cost conclusion.
 
 ## Preserved failures and arithmetic diagnosis
 
@@ -252,6 +263,14 @@ elsewhere are historical. No result is complete until the full target is reached
   The phase cap follows the declared maximum initial resolution; compare with
   e128/h32 and the existing fine reference. This also includes the measured
   arithmetic correction, not a pure single-parameter spatial-order study.
+
+- **9098**: `reactive_material_argon_e128_uniform_h32_10ns`, frozen
+  `/private/tmp/frc-uniform-electron-20261017`; full20ns request with the uniform
+  initial electron grid above. First10ns accepts2037steps,8469density cells,
+  Erel−5.04234e-12; second interval is active. Source SHA
+  `6bc02e83cb4ad514602f216aedf8c2027c5bc6304e7921f825155d91946d6370`.
+  Existing fine-reference comparison now selects both new electron trajectories
+  only when their full endpoint is successful. Do not substitute a prefix.
 
 Keep the old frozen roots intact. Compare complete 10/5 ns local temperature,
 velocity, fronts and E/J when available. No 2.5 ns run yet: resolve the present

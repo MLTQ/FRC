@@ -10,7 +10,7 @@ Actual trace-ion stage refinement sharply reduces heating; complete20ns enriched
 the existing fine numerical trajectory. Heavy-only refinement avoids the extra
 electron acoustic cost, while the separate128-electron/32-heavy experiment now
 resolves electrons from the initial state. Its full20ns result agrees with the
-earlier uniform128 E/J within0.036%/0.056%, at about25% lower observed runtime,
+earlier128-cells-per-species E/J within0.036%/0.056%, at about25% lower observed runtime,
 but remains34.2% away from the existing1024-cell current. More initial electron
 resolution is required; the reference is also unconverged.
 
@@ -35,6 +35,22 @@ electron/Ar drift error1.20e-7 of initial, Te error1.71e-6eV and energy drift
 6.42e-8. [ELASTIC_NEUTRALS.md](ELASTIC_NEUTRALS.md) records assumptions and the
 completed20ns moving coupling. Neutral recoil and signed heat are paired; private BSR
 data remain local. These are component calculations, not chamber predictions.
+The original3.5us heated argon source now also completes at5/2.5ns steps with
+electron/ground-neutral collisions. Faster azimuthal damping coexists with a
+−29.423A/m² final axial current from differing neutral/ion flows. Time-halving
+changes that final component by0.002612A/m². Up to2.315% of neutrals lack an
+excited-state elastic channel. The next ion/neutral source cannot simply use
+Phelps1991 Table7 down to zero: up to11.553% of actual relative-pair probability
+lies below its0.1eV domain. New childfrc-transport.7.1 tracks sourced low-energy
+Ar+–Ar force/heat without double-counting charge exchange. Full physical readout
+and inspected figures are saved in outputs/atomic_collisions_neutral_elastic.
+
+A separate full20ns experiment now gives128 electrons uniform initial spacing,
+moving resolution from the edges toward the measured interior current error.
+It retains the same physical initial state/count/phase cap and32 cosine-spaced
+heavy cells. No accuracy conclusion until its complete endpoint comparison.
+Earlier "uniform128" wording meant128 cells for every species, all cosine-spaced.
+
 No component success validates construction parameters. Physical chemistry,
 collisions/heat, chamber boundaries, converged formation and experimental
 comparisons remain open for all requested gases; exact vacuum and physical

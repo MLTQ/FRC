@@ -23,12 +23,14 @@ Original variance5ns73344 is now EXIT0 at full20ns:972steps,3818.456s,
 accuracy limitation despite good conservation; compare the enriched cases next.
 
 Live handles: **16195** factored-ratio heavy-enriched5ns (15ns accepted, final
-interval last100steps/2.2315ns), **61204**128-bit-scaled heavy-enriched5ns
-(same accepted time/latest interval clock), and **31198** initial256-electron/
-32-heavy20ns case (10ns accepted in4869steps; second interval last1300steps/
-3.47739ns). All use frozen roots; exact paths are in VARIANCE_TRANSFER.
-Poll actual handles; do not restart quiet jobs. Main has no remaining live source
-after the newly completed neutral-collision case below.
+interval last200steps/4.425498ns), **61204**128-bit-scaled heavy-enriched5ns
+(same accepted time/latest interval clock), **31198** initial256-electron/
+32-heavy20ns case (10ns accepted in4869steps; second interval last2900steps/
+7.627698ns), and **9098** initial uniform-spaced128-electron/32-heavy20ns case
+(first10ns accepts2037steps; second interval last1400steps/7.019197ns).
+All use frozen roots; exact paths are in VARIANCE_TRANSFER. Poll actual handles;
+do not restart quiet jobs. Main has no remaining live source after the completed
+heated neutral-collision case below. A quiet final source return can be expensive.
 
 All six variance analytic cases57807 and enriched-subcycled analytic pair47880
 are now EXIT0 at their full original durations. Independent100digit transfer
@@ -37,7 +39,7 @@ source cells. Binary coordinate scaling restores it without changing physical
 amounts; its full20ns10ns-source case5892 EXIT0 matches original E/J to
 9.43e-15/1.66e-8. The exercised arithmetic and optional coordinate shift are
 now in main, after77325 completed. That full20ns e128/h32 case agrees with
-the previous uniform128 E/J within0.036%/0.056%, at about25% lower elapsed
+the previous128-cells-per-species E/J within0.036%/0.056%, at about25% lower elapsed
 time. It still differs34.2% in J from the unconverged1024 numerical reference.
 
 Moving charged collisions now complete20ns (32422 EXIT0),971steps,89.884s,
@@ -58,12 +60,41 @@ remains default. Private tables/rate curves are not bundled; no physical channel
 is inferred for other gases or excited neutral targets. Bead frc-transport.7
 tracks coupled accuracy and missing neutral channels; keep it open.
 
-Next collect the three refinement trajectories and compare local thermal/source-
+The original heated3.5us source now completes700/1400steps with ground-neutral
+electron scattering (59917 EXIT0,84.627s), saved in
+`outputs/atomic_collisions_neutral_elastic`, source
+`799e2be212d00b2e4fcec7b2a767634a14b3aa21e7786d204f46fc9e444efbc8`.
+Fine final Te2.502149135eV, mean Ti0.263929084eV and Tneutral0.104227706eV;
+current[0,0.000605107,−29.423141409]A/m². Azimuthal current damps faster, while
+the neutral/ion flow difference sustains axial current. Time-halving maxvector
+difference0.188295A/m², final axial difference0.002612A/m²; maxenergy residual
+3.13305e-12eV/nucleus. Replotted six-panel PNG inspected; original simulation
+source and later figure provenance are separate. Readout37371 EXIT0 saves exact
+flows and domain coverage without changing any history. Excited neutrals lacking
+an elastic channel reach2.315% of neutrals; no ground-rate substitution.
+
+New child**frc-transport.7.1** tracks low-energy Ar+–Ar exchange. Phelps1991
+Table7 Qm covers0.1–10000eV laboratory ion energy and already includes symmetric
+charge exchange. Visually inspected primary pages567–568 are at
+https://srd.nist.gov/jpcrdreprint/1.555889.pdf. In the saved heated trajectory,
+up to11.553% of ground ion/neutral relative-pair probability lies below0.1eV,
+so a complete thermal model needs sourced low-energy behavior. No partial table,
+Langevin extrapolation or double-counted charge-exchange drag is installed.
+The2002 author-hosted transport paper in ELASTIC_NEUTRALS establishes the
+momentum-transfer convention. Phelps2007 author notes are unfinished and do
+not supply a ready validated low-energy fit. A further primary candidate is
+Chicheportiche et al.2014, DOI10.1103/PhysRevE.89.063102, on ground/metastable
+Ar+ transport and quantum scattering; no numerical dataset has been acquired.
+
+Next collect the four refinement trajectories and compare local thermal/source-
 time and initial electron-current resolution using existing comparisons. No2.5ns
-launch yet. Independently, the existing full heated atomic source can now evaluate
-neutral collisions over the original3.5us protocol, followed by source-time
-sensitivity; the20ns low-density slab alone cannot establish collisional accuracy
-at chamber density. Do not invent neutral-ion/charge-exchange data. The analytic
+launch yet. The new uniform-spacing option moves initial electron resolution
+toward the measured interior error while retaining the same physical state,
+count and phase cap; do not assume it improves full accuracy. Existing fine
+comparison now selects the two new electron cases only after successful20ns.
+Independently, source the missing low-energy ion/neutral channel and evaluate
+its full physical relaxation before coupling it to the heated/moving cases.
+Do not invent neutral-ion/charge-exchange data. The analytic
 enriched non-subcycled attempt remains a saved failure. Defaults remain unchanged.
 No unit tests, remote or publication. All parent goals/beads stay open.
 Preserve the user's modified poster SHA

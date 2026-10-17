@@ -10,6 +10,19 @@ case at that same cap before claiming that cheaper heavy-species meshes suffice.
 This targets the measured dominant interior electron-current error; it is not
 a fluid closure change, a population cutoff or an accuracy guarantee.
 
+`--electron-spacing uniform` changes only the initial electron grid from the
+default cosine spacing. Every cell still represents the same constant initial
+density/temperature on[-10,10]mm; amounts are density times actual cell width.
+Heavy grids remain cosine-spaced. The initial electron count and phase cap are
+unchanged. At128cells, centre spacing changes245.412 to156.25um, while edge
+spacing changes3.012 to156.25um. This shifts resolution toward the measured
+interior current discrepancy and relaxes the initial tiny-edge acoustic bound;
+it may worsen the vacuum-fan approximation and must be compared over full20ns.
+It removes no evolved knot, density cut, population or physical endpoint, and
+changes no masses, equations or transport bound. Reports record actual spacing.
+Earlier references described as uniform128 mean128cells for every species;
+those runs use cosine spacing and are not this new uniform-spacing experiment.
+
 Retains the full20ns neutral/ion/electron ground-ladder argon problem and its
 physical masses,1e14/m³ initial component densities,10mm half-width and
 0.1/0.2/2eV temperatures. The precise geometry and vector-assembled source are

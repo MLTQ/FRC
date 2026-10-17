@@ -24,8 +24,12 @@ conditional pair-centre mean is Vcm+(Ta-Tb)*(g-u)/(M*S). Thus
     Qb = (ma/M)*na*nb*K0*|u|² - na*nb*H0*(Tb-Ta).
 
 No separate prescribed drag or thermal exchange should be added to these terms.
-Signed heat is retained. Elastic scattering leaves populations/internal levels
-unchanged; ionization, excitation and charge exchange are separate channels.
+Signed heat is retained. This moment operator leaves populations/internal levels
+unchanged. Ionization and excitation require separate reaction channels. For a
+future symmetric ion/parent-atom table, its momentum-transfer cross section may
+already include resonant charge exchange: separate charge-exchange drag must not
+be added to that same contribution. The current electron/Ar table does not
+supply ion/neutral exchange.
 
 Angular integration is analytic. For r=g/sqrt(S), d=|u|/sqrt(S), a=r*d,
 the radial probability is r²*exp(-(r-d)²/2)*(1-exp(-2a))/a/sqrt(2*pi).

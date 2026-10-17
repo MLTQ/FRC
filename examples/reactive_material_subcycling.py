@@ -25,7 +25,7 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0,
         projection_method='galerkin', extend_velocity=False, newborn_spacing_fraction=0.,
         velocity_refinement_rounds=0, maximum_refined_velocity_cells=256,
         refine_heavy_species=False, electron_cells=None, normalization_shift_bits=0,
-        coulomb_log=None, neutral_elastic_file=None):
+        coulomb_log=None, neutral_elastic_file=None, electron_spacing='cosine'):
     out = Path(destination)
     if out.exists() or not np.isfinite(source_interval_ns) or source_interval_ns <= 0 or cells < 2:
         raise ValueError('Fresh output and positive source interval/velocity resolution required')
@@ -34,6 +34,8 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0,
     electron_cells = cells if electron_cells is None else electron_cells
     if not isinstance(electron_cells, int) or electron_cells < 2:
         raise ValueError('At least two integer electron velocity cells required')
+    if electron_spacing not in ('cosine', 'uniform'):
+        raise ValueError('Explicit cosine or uniform initial electron spacing required')
     maximum_plasma_phase = .04*32/max(cells, electron_cells)
     ion = ImpactIonization.from_file('data/atomic/argon/argon.json')
     rr = RadiativeRecombination.from_file('data/atomic/recombination/argon_rr.json')
@@ -60,6 +62,7 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0,
     report = dict(terminal=False, source_sha256=identity['source_sha256'], requested_time_s=20e-9,
         completed_time_s=0., source_interval_s=source_interval_ns*1e-9, transport_fraction=.5,
         velocity_cells=cells, initial_electron_velocity_cells=electron_cells,
+        initial_electron_spacing=electron_spacing,
         maximum_plasma_phase=maximum_plasma_phase,
         preserve_velocity_knots=True, geometry_decimal_digits=DIGITS,
         geometry_arithmetic=ARITHMETIC, geometry_precision_bits=BITS,
@@ -96,7 +99,9 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0,
     models, blocks = [], []
     for index, temperature in zip(ids, [.1, .2, 2.]):
         initial_cells = electron_cells if index == network.count else cells
-        faces = -.01*np.cos(np.linspace(0, np.pi, initial_cells+1))[None, :]
+        faces = (np.linspace(-.01, .01, initial_cells+1)[None, :]
+                 if index == network.count and electron_spacing == 'uniform' else
+                 -.01*np.cos(np.linspace(0, np.pi, initial_cells+1))[None, :])
         m = PreciseMaterialSubcells(1e14*np.diff(faces)[0], source.mass[index],
             np.r_[network.charge, -1.][index], (-.2, .2), faces[0], initial_cells,
             maximum_plasma_phase=maximum_plasma_phase, numerical_viscosity=(.5, 2.), viscosity_limiter='minmod')
@@ -191,10 +196,11 @@ if __name__ == '__main__':
     parser.add_argument('--normalization-shift-bits', type=int, default=0)
     parser.add_argument('--coulomb-log', type=float)
     parser.add_argument('--neutral-elastic-file')
+    parser.add_argument('--electron-spacing', choices=('cosine', 'uniform'), default='cosine')
     args = parser.parse_args()
     result = run(args.destination, args.source_step_ns, args.cells, args.coalesce_ulps,
                  args.projection_method, args.extend_velocity, args.newborn_spacing_fraction,
                  args.velocity_refinement_rounds, args.maximum_refined_velocity_cells,
                  args.refine_heavy_species, args.electron_cells, args.normalization_shift_bits,
-                 args.coulomb_log, args.neutral_elastic_file)
+                 args.coulomb_log, args.neutral_elastic_file, args.electron_spacing)
     raise SystemExit(0 if result['success'] else 1)

@@ -1,5 +1,12 @@
 # Reacting charge populations with Coulomb current relaxation
 
+The complete3.5us heated extension with electron/ground-neutral elastic force
+and heat now finishes at5/2.5ns steps. [ELASTIC_NEUTRALS.md](ELASTIC_NEUTRALS.md)
+records the actual vector-current behavior, budgets and remaining ion-neutral
+gap. The charged-only histories below remain the matched baseline. Faster
+azimuthal damping coexists with a−29.423A/m² final axial current, driven by
+different neutral/ion flows; it is not a prediction for the driven chamber.
+
 ## Moving planar coupling, 2026-10-17
 
 `VectorizedCollisionalAtomicMoments` now combines the existing charged-pair

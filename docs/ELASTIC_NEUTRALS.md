@@ -50,6 +50,63 @@ momentum error is1.05e-12. Maximum probability beyond the supplied table is
 3.61e-16; this is not a bound on missing force/heat because the unknown cross
 section and extra velocity weights matter. Scientific PNG inspected; PDF saved.
 
+## Complete heated argon source, 2026-10-17
+
+Run59917 EXIT0, `outputs/atomic_collisions_neutral_elastic`, completes the
+original3.5us heated protocol at700/1400 steps (5/2.5ns). Source SHA
+`799e2be212d00b2e4fcec7b2a767634a14b3aa21e7786d204f46fc9e444efbc8`.
+It retains all charged pairs and resolved atomic channels, physical masses,
+N=8.961429541213399e19m^-3,10% seed, initial Te/Th=10/0.1eV and20eV/nucleus
+prescribed heating over the first1us. Initial neutral/ion axial velocities are
++1000/−1000m/s; electrons initially move azimuthally at10000m/s. lnLambda=10
+is prescribed. This is a homogeneous source with no sustaining field or walls.
+
+The fine full trajectory ends with0.683215765 electrons/nucleus,
+Te=2.502149135eV, mean Ti=0.263929084eV and mean Tneutral=0.104227706eV.
+Its current is [0,0.000605107,−29.423141409]A/m², versus
+[0,−1.14761e-6,0.016713821]A/m² in the charged-only history. Neutral collisions
+damp azimuthal current faster but sustain an axial current through the differing
+neutral/ion flows. At the final time electrons move axially at677.427m/s and
+charge-weighted ions at674.428m/s; neutrals remain near999.841m/s. The largest
+negative axial current is−1836.675A/m² at340ns. It would be incorrect to describe
+this vector result as uniformly faster current decay. The updated six-panel
+PNG was inspected; it shows magnitude and both nonzero current components.
+Simulation and later figure-rendering source identities are kept separately.
+
+Time halving changes population L1 by at most1.72791e-5, Te by0.001049627eV
+and current vector by0.188295A/m²; final axial-current difference is0.002612A/m².
+Only two spacings are available, so no asymptotic-order claim is made. Maximum
+energy residual is3.13305e-12eV/nucleus and scaled momentum error1.78524e-13.
+The fine run has no occupied cold charged state; the coarse run records one,
+without a floor. Maximum outside-BSR relative-pair probability is1.262e-7,
+which is not a missing-force/heat bound. Excited neutrals without a matching
+elastic channel reach0.012545/nucleus and2.315% of neutrals. Ground scattering
+must not be silently assigned to them. The charged-only comparison also includes
+the separately verified array-based reaction assembly, not just the new channel
+at machine precision. Full histories and a reproducible physical readout are saved.
+
+## Next physical gap: Ar+–Ar exchange
+
+The observed residual motivates actual ion/neutral momentum and heat coupling.
+[Phelps1991, section8.1 and Table7](https://srd.nist.gov/jpcrdreprint/1.555889.pdf)
+provides Qm for ground Ar+ in Ar over0.1–10000eV laboratory projectile energy,
+E=mi*g²/2. The original printed pages567–568 were visually inspected. Qm
+includes symmetric charge exchange; it approaches twice Q_CT at high energy.
+The [independent transport analysis by Jovanovic et al., section2.1](https://mail.ipb.ac.rs/~vrhovac/sloba/bib/d02189.pdf)
+likewise gives Q1=sigma_isotropic+2*sigma_backscatter. A second charge-exchange
+drag added to Qm would double count. The Maxwellian scalar moments also cannot
+establish the anisotropic distribution or transverse diffusion in a driven swarm.
+
+The saved heated trajectory has as much as11.553% of its ground ion/neutral
+relative-velocity probability below the table's0.1eV lower limit, at1.0625us;
+the final fraction is8.6024%. This follows directly from the noncentral Maxwell
+distribution of g with S=eV(Ti/mi+Tn/mn), not from guessed cross sections. See
+`physical_readout.py/.md/.json` in the heated output. It is a domain-coverage
+measurement, not a bound on missing drag/heat. No partial Phelps channel has
+been installed or extrapolated. A sourced low-energy scattering model and
+independent full relaxation/swarm comparison are the next concrete physical
+action; excited ion/neutral and higher-charge channels also remain absent.
+
 ## Moving coupling and remaining work
 
 The explicit `--neutral-elastic-file` option now adds this single ground-neutral
