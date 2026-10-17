@@ -9,13 +9,20 @@ Actual trace-ion stage refinement sharply reduces heating; complete20ns enriched
 10ns-source runs preserve total energy, but current errors remain large against
 the existing fine numerical trajectory. Heavy-only refinement avoids the extra
 electron acoustic cost, while the separate128-electron/32-heavy experiment now
-resolves electrons from the initial state.
+resolves electrons from the initial state. Its full20ns result agrees with the
+earlier uniform128 E/J within0.036%/0.056%, at about25% lower observed runtime,
+but remains34.2% away from the existing1024-cell current. More initial electron
+resolution is required; the reference is also unconverged.
 
 The enriched5ns-source attempt fails at10ns because the sound formula underflows
 for retained positive, exactly cold source cells. Independent100digit diagnosis
 supports an equivalent arithmetic reordering, now in a separate full20ns run.
-It does not add heat or establish local thermal convergence. Full analytic
-expansions and the original variance5ns run continue from frozen source roots.
+Independent full transfer integrals additionally expose~0.023eV numerical mixing
+heat lost before sound evaluation. Explicit128-bit coordinate scaling restores
+that heat without changing physical N/U; its complete20ns10ns-source comparison
+has E/J differences9.43e-15/1.66e-8. Full5ns-source evaluation remains live.
+Both independent analytic expansion families now complete their full durations.
+No local thermal-convergence claim follows; the original variance5ns run continues.
 No component success validates construction parameters. Physical chemistry,
 collisions/heat, chamber boundaries, converged formation and experimental
 comparisons remain open for all requested gases; exact vacuum and physical

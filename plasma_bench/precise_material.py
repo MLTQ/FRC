@@ -112,7 +112,7 @@ class PreciseMaterialSubcells(MaterialSubcells):
     def pressure(self, state):
         h = self.validate(state)
         pressure = (self.gamma-1)*state.thermal/h
-        sound = np.sqrt(self.gamma*pressure*h/(self.mass[0]*self.relative_numbers[None, :]))
+        sound = np.sqrt(self.gamma*(self.gamma-1)*(state.thermal/self.relative_numbers[None, :])/self.mass[0])
         coarse_h = widths(state.faces[0, self.velocity_indices])
         jump = np.diff(state.velocity[0, :, 2])
         compression = np.maximum(-jump, 0.)
@@ -122,7 +122,7 @@ class PreciseMaterialSubcells(MaterialSubcells):
             resolved = np.minimum(np.minimum(np.maximum(-left, 0.), np.maximum(-gradient, 0.)), np.maximum(-right, 0.))
             compression = np.maximum(compression-coarse_h*resolved, 0.)
         c = compression[self.owner][None, :]
-        q = self.mass[0]*self.relative_numbers[None, :]/h*(self.viscosity[0]*sound*c+self.viscosity[1]*c*c)
+        q = (self.relative_numbers[None, :]/h)*(self.mass[0]*(self.viscosity[0]*sound*c+self.viscosity[1]*c*c))
         return pressure, q, sound
 
     @geometry_precision
@@ -189,7 +189,7 @@ class PreciseMaterialSubcells(MaterialSubcells):
         velocity = np.zeros((1, len(x), 3))
         number[0, inside] = self.relative_numbers[j]/h[j]*self.number_scale
         velocity[0, inside] = (1-a[:, None])*state.velocity[0, owner]+a[:, None]*state.velocity[0, owner+1]
-        temperature[0, inside] = (self.gamma-1)*state.thermal[0, j]/(self.relative_numbers[j]*EV)
+        temperature[0, inside] = (self.gamma-1)*(state.thermal[0, j]/self.relative_numbers[j])/EV
         return dict(number=number, velocity=velocity, temperature_ev=temperature)
 
 

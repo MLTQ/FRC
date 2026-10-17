@@ -105,3 +105,12 @@ cost and changed current by 14.67% but barely improved its discrepancy from the
 existing fine numerical reference, so late electron enrichment is not treated
 as a current-accuracy fix. Default selection remains all species when refinement
 is explicitly enabled; default refinement itself remains off.
+
+`--normalization-shift-bits` selects the explicit binary coordinate scaling
+of reaction return. Default0 is unchanged;128 raises stored relative N/U by
+2**128 and lowers their common physical scale by the same amount. All physical
+inputs, masses, cuts, source intervals and full20ns target remain unchanged.
+The report records the requested shift; impossible scales reject. This addresses
+measured arithmetic heat loss, not missing physical thermal transport. The
+actual-source100digit comparison and complete20ns control are in
+`docs/VARIANCE_TRANSFER.md`.

@@ -124,13 +124,24 @@ not an exact or experimental solution, and its own uncertainty remains visible.
 | 128, constrained | 2.447% | 34.203% |
 | 32 initial, all enriched | 10.615% | 65.774% |
 | 32 initial, heavy enriched | 10.390% | 66.305% |
+| 128 electron / 32 heavy, variance | 2.4475% | 34.2028% |
 | 512, direct | 0.3303% | 8.0781% |
 
-Late electron enrichment barely reduces its current discrepancy. The next
-actual coupled experiment uses 128 electron cells from the start and 32 heavy
-cells, with the same plasma-phase cap as the previous uniform128 case. The
-new driver option records both resolutions; it does not change physical masses.
-No claim that current is resolved or that the reference is converged.
+Late electron enrichment barely reduces its current discrepancy. The complete
+128-electron/32-heavy case77325 EXIT0 reaches20ns in4224steps,798.04s and84091
+final density cells, relative energy error1.3853e-12. It uses the same common
+plasma-phase cap as the earlier uniform128 case. E/J differences between them
+are0.036045%/0.056490%; the older case uses constrained return and the new one
+variance, so heavy-species resolution is not the only changed choice. Observed
+runtime is about25% lower than the prior1069.60s uniform128 case, not a controlled
+hardware benchmark. Its source SHA is
+`10621ccac12ba7035ed9b69d3b3f0ccf5f55d5b1a427af961137dc1abf030ede`.
+
+The small uniform128 versus e128/h32 discrepancy supports retaining the cheaper
+heavy mesh for the next256-electron run. Current still differs34.2% from the
+existing1024-cell reference; that reference is itself unconverged. The updated
+scientific comparison figure is inspected. Initial per-species resolution changes
+neither physical masses nor support/vacuum rules.
 
 ## Preserved failures and arithmetic diagnosis
 
@@ -146,11 +157,63 @@ amounts near 1.82e-318 in normalized coordinates. Their stored source heat is
 exactly zero. Computing gamma*p*h/(m*N) gives 0/0 after m*N underflows, and the
 acoustic eigenproblem rejects. `outputs/reaction_acoustic_underflow` reconstructs
 the actual source and verifies the zero source heat independently with 100-digit
-decimal integration. Reordering sound to gamma*(gamma-1)*(U/N)/m returns the
-correct zero without adding heat. Temperature and numerical-viscosity ratios
-need the same careful ordering. Finite-precision source chemistry at such tiny
+decimal integration. Reordering sound to gamma*(gamma-1)*(U/N)/m evaluates the
+stored cold state without 0/0. This alone is insufficient: the independent
+full transfer integral below reveals mixing heat lost before sound evaluation.
+Temperature and numerical-viscosity ratios need the same careful ordering. Finite-precision source chemistry at such tiny
 populations is still a limitation; zero stored heat is not a physical accuracy
 claim. The original failed source, knots and accepted prefix remain unchanged.
+
+## Retained heat and binary coordinate scaling
+
+The six cold source cells have nonzero projected velocity near405m/s. An
+independent100digit integration of the declared variance-transfer formula gives
+returned temperatures0.0226328089–0.0226687236eV, while the old stored U is zero.
+Thus merely returning zero sound avoids the crash but retains a local thermal
+error. `outputs/reaction_thermal_scaled` applies an explicit128-bit coordinate
+shift: multiply stored relative N/momentum/U by2**128 and divide their common
+physical population scale by2**128 before SI constants and tiny cell weights.
+The physical amounts and equations do not change. No floor or population cutoff.
+
+All six returned temperatures then agree with the independent decimal moments
+to at most7e-18eV; normalized cell amounts become~6.18e-280 instead of~1.82e-318.
+The actual admissible step is4.574096671e-11s, with no nonfinite sound values.
+The option rejects an unrepresentable scale, retains default shift0, and cannot
+make finite-precision source chemistry accurate at arbitrarily tiny populations.
+Exact source identities are saved in provenance JSON. All archived inputs and
+old failed results remain.
+
+`reactive_material_argon_scaled_heavy_10ns` completes the full20ns (5892 EXIT0):
+971steps,21349density cells, Erel2.842085e-11. Compared with the original
+heavy-enriched10ns case, E/J differences are9.43e-15 /1.658e-8. This includes
+both coordinate scaling and equivalent sound/temperature/Q arithmetic changes,
+so it is not an isolated scaling study. Source SHA
+`9bf93c336c75d48834f8ed91a9171f467919d951408f1fef11c6441b603ae467`.
+The full5ns-source counterpart61204 is live from the same frozen source.
+After77325 terminated, the exercised arithmetic and optional coordinate shift
+were integrated into main with their companion contracts. Shift0 and default
+projection choices remain unchanged; no broad formation adoption is claimed.
+The unscaled factored-ratio case16195 now accepts15ns, with Ar8 maximumT0.65149eV
+versus8.66800eV in the unrefined variance case. Neither prefix is a complete20ns
+result or a local thermal-convergence claim.
+
+## Completed independent expansions
+
+`precise_material_variance` (57807 EXIT0,2619.44s) completes all six original
+neutral-decay/charged-affine durations at16/32/64 initial velocity cells. Finest
+neutral front error8.60e-16m, energy error5.78e-14 and population error3.44e-14;
+finest charged front error6.94e-17m and energy error3.27e-15. The neutral exact
+population law and independent affine trajectory are preserved. These fixtures
+explicitly use8ULP cleanup; reacting argon uses zero. Figure inspected.
+
+`precise_material_enriched_subcycled` (47880 EXIT0) completes the full6.083704us
+neutral decay with987coupled intervals/1446actual transport steps, front error
+1.16e-15m, energy error7.18e-14, population error4.33e-14. Its full4.446830us
+charged control also completes75steps; no source/enrichment applies in that
+control. Numerical thermal change is a signed-3.19e-17J/m2 roundoff-sized
+observation, not negative physical reaction heating. The failed non-subcycled
+attempt remains retained. These affine fixtures do not establish accuracy on
+the nonlinear reacting trace-ion profiles.
 
 ## Live calculations and next action
 
@@ -159,19 +222,22 @@ elsewhere are historical. No result is complete until the full target is reached
 
 - **73344**: `reactive_material_argon_variance_5ns`, frozen
   `/private/tmp/frc-variance-20261017`, 15 ns accepted; fourth interval active.
-- **57807**: `precise_material_variance`, same frozen root; neutral16/32 complete,
-  neutral64 active, followed by three charged affine cases.
-- **47880**: `precise_material_enriched_subcycled`, frozen
-  `/private/tmp/frc-enriched-subcycled-20261017`; full neutral decay active,
-  then full charged affine control. Initial16, one enrichment round, capacity64.
-- **77325**: `reactive_material_argon_e128_h32_10ns`, main checkout source;
-  10 ns accepted, second interval active. Do not edit its imported source until
-  terminal. Compare its full endpoint with the existing uniform128 and fine
-  reference to evaluate independent species resolution.
 - **16195**: `reactive_material_argon_factored_heavy_5ns`, frozen
   `/private/tmp/frc-acoustic-factored-20261017`; complete20ns request with
   heavy-only enrichment and algebraically reordered sound/temperature/viscosity.
-  This prototype is not yet copied into main `precise_material.py`.
+  The equivalent sound/temperature/Q expressions are now integrated into main.
+- **61204**: `reactive_material_argon_scaled_heavy_5ns`, frozen
+  `/private/tmp/frc-scaled-thermal-20261017`, same full20ns target with128-bit
+  number/energy coordinate shift to retain the measured mixing heat.
+
+- **31198**: `reactive_material_argon_e256_h32_scaled_10ns`, frozen
+  `/private/tmp/frc-e256-scaled-20261017`; full20ns request with256 initial
+  electron cells,32 initial heavy cells, variance return,128-bit scaling and
+  no source-driven enrichment. Source SHA
+  `64eb503a955d9ce992fd43a183cb62e44277ba9ec35ea86925eb8149921bde17`.
+  The phase cap follows the declared maximum initial resolution; compare with
+  e128/h32 and the existing fine reference. This also includes the measured
+  arithmetic correction, not a pure single-parameter spatial-order study.
 
 Keep the old frozen roots intact. Compare complete 10/5 ns local temperature,
 velocity, fronts and E/J when available. No 2.5 ns run yet: resolve the present

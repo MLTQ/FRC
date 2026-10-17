@@ -75,7 +75,9 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
         velocity_knots=None, energy_projection='local_total', projection_method='galerkin', extend_velocity=False, cfl=.15, maximum_plasma_phase=.04,
         numerical_viscosity=(.5, 2.), viscosity_limiter='minmod', newborn_spacing_fraction=0.,
         velocity_refinement_rounds=0, maximum_refined_velocity_cells=256,
-        velocity_refinement_species=None):
+        velocity_refinement_species=None, normalization_shift_bits=0):
+    if not isinstance(normalization_shift_bits, int) or not 0 <= normalization_shift_bits <= 512:
+        raise ValueError('Explicit integer normalization shift from 0 to 512 bits required')
     if not isinstance(coalesce_ulps, int) or coalesce_ulps < 0:
         raise ValueError('Nonnegative integer explicitly declared ULP cleanup required')
     if (not isinstance(velocity_refinement_rounds, int) or velocity_refinement_rounds < 0 or
@@ -125,13 +127,17 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
         scale = float(values[..., overlap.number[species]].max())
         if scale == 0:
             continue
-        population_scale = overlap.density*scale
+        population_scale = np.ldexp(overlap.density*scale, -normalization_shift_bits)
+        if not np.isfinite(population_scale) or population_scale <= 0:
+            raise ValueError('Unrepresentable physical population coordinate scale')
+        def normalized(value):
+            return np.ldexp(value/scale, normalization_shift_bits)
         nn, ee, source_thermal = np.zeros(count), np.zeros(count), np.zeros(count)
         ll, lr = np.zeros((count, 3)), np.zeros((count, 3))
         el, er = np.zeros(count), np.zeros(count)
-        np.add.at(nn, groups, np.sum(state.weights*(values[..., overlap.number[species]]/scale), axis=1))
-        pm = values[..., source.momentum[species]]/scale*source.momentum_scale
-        em = values[..., source.energy[species]]/scale*EV
+        np.add.at(nn, groups, np.sum(state.weights*normalized(values[..., overlap.number[species]]), axis=1))
+        pm = normalized(values[..., source.momentum[species]])*source.momentum_scale
+        em = normalized(values[..., source.energy[species]])*EV
         np.add.at(ll, groups, np.sum(state.weights[..., None]*pm*(1-right[..., None]), axis=1))
         np.add.at(lr, groups, np.sum(state.weights[..., None]*pm*right[..., None], axis=1))
         np.add.at(ee, groups, np.sum(state.weights*em, axis=1))
@@ -141,7 +147,7 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
         number = values[..., overlap.number[species]]
         source_velocity = np.divide(values[..., source.momentum[species]], number[..., None],
             out=np.zeros_like(pm), where=number[..., None] > 0)*(source.momentum_scale/mass)
-        source_kinetic = (number/scale)*(.5*mass*np.sum(source_velocity*source_velocity, axis=-1))
+        source_kinetic = normalized(number)*(.5*mass*np.sum(source_velocity*source_velocity, axis=-1))
         np.add.at(source_thermal, groups, np.sum(state.weights*(em-source_kinetic), axis=1))
         occupied = nn > 0
         expected = np.zeros(count, bool)
@@ -181,7 +187,7 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
             elif projection_method == 'variance':
                 velocity, thermal, redistribution, transfer_record = variance_projection(model,
                     state.points.ravel(), state.weights.ravel(), source_velocity.reshape(-1, 3),
-                    (number/scale).ravel(), (em-source_kinetic).ravel(),
+                    normalized(number).ravel(), (em-source_kinetic).ravel(),
                     np.broadcast_to(groups[:, None]-first, state.points.shape).ravel(),
                     load.sum(axis=0), ee[first:last])
             elif projection_method == 'constrained_velocity':
@@ -210,7 +216,7 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
             energy_l1 += float(abs(redistribution).sum()*population_scale)
             maximum_temperature_change = max(maximum_temperature_change,
                 float(abs((model.gamma-1)*(gain/model.relative_numbers)/EV).max()))
-            records.append(dict(species=species, cells=last-first, minimum_width_m=float(widths(faces).min()),
+            records.append(dict(species=species, normalization_shift_bits=normalization_shift_bits, cells=last-first, minimum_width_m=float(widths(faces).min()),
                 velocity_cells=model.velocity_cells, inherited_velocity_faces=inherited is not None,
                 extended_velocity_support=extended,
                 support_decimal_m=[str(faces[0]), str(faces[-1])], **transfer_record, **refinement_record))

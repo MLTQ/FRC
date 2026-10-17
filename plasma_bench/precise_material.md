@@ -75,3 +75,16 @@ when there is no supplied velocity mesh; every inherited knot bypasses it.
 All density cells remain. The actual initial velocity dimension can decrease
 and must be reported. It is an explicit approximation choice awaiting local
 convergence, not a density cutoff or a change to physical mass.
+
+# Factored local thermodynamic ratios
+
+Evaluate c²=gamma*(gamma-1)*(U_relative/N_relative)/m and
+T=(gamma-1)*(U_relative/N_relative)/eV directly. The equivalent expressions
+with m*N or eV*N denominators can underflow for a retained positive amount,
+including an exactly cold source cell, producing 0/0. Numerical viscosity
+forms N_relative/h before multiplying by m times its velocity factor. These
+are arithmetic reorderings of the same physical equations, with no floor,
+clipping, added heat, discarded cell or changed species mass. The original
+source can itself contain zero-energy subnormal populations; this does not
+assert that finite-precision source chemistry is resolved at that scale.
+The failed full5ns-source run and independent100digit diagnostic are preserved.

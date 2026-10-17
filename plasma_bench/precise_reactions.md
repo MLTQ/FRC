@@ -109,3 +109,17 @@ Optional `velocity_refinement_species` restricts additions to declared atomic
 species indices; all other species still evolve and retain all old knots/cuts.
 None selects all species. This separates heavy-species thermal resolution from
 electron transport resolution; it never removes a species or changes its mass.
+
+# Explicit binary coordinate scaling
+
+`normalization_shift_bits=b` stores N_relative, momentum and thermal moments
+multiplied by2**b and number_scale divided by2**b. This is the same physical
+state and same projection equations; the default b=0 is unchanged. Apply the
+exact binary shift after dimensionless species normalization and before SI
+constants or fine quadrature weights. This preserves positive mixing heat that
+otherwise underflows for retained subnormal cell amounts. Requested shifts
+are integer0..512; an unrepresentable physical scale rejects instead of clipping
+a population or substituting a different shift. Per-block records expose b.
+A single scale still has finite dynamic range; this is not arbitrary precision
+or a proof of accuracy for the source chemistry. Actual-source100digit moment
+integrals and complete trajectories evaluate the change.

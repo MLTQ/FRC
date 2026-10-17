@@ -37,10 +37,14 @@ mechanical refinement. Refining the actual trace-ion transport stage reduces
 its peak temperature from7.04 to0.35eV while retaining every population and
 material cut. Complete20ns enriched10ns-source runs finish, but the shorter
 source-interval case exposed arithmetic underflow in a cold trace-cell sound
-calculation; its equivalent factored replacement is being evaluated. Current
+calculation and loss of a small local mixing-heat contribution. Equivalent
+ratios and explicit binary number/energy scaling address these arithmetic
+errors; full shorter-interval evaluation remains active. Current
 still differs substantially from an existing fine numerical trajectory, so a
-new run resolves electrons more finely from the beginning. Independent analytic
-expansions continue. [VARIANCE_TRANSFER.md](VARIANCE_TRANSFER.md) records all
+completed128-electron/32-heavy run reproduces the earlier uniform128 current
+within0.056% at lower observed cost. It remains34.2% away from the existing
+1024-cell numerical reference, so the256-electron run is now active. Independent analytic
+expansion families now complete their original full durations. [VARIANCE_TRANSFER.md](VARIANCE_TRANSFER.md) records all
 current evidence and limitations. Defaults remain unchanged.
 
 The extreme trace-ion velocity was an approximation error across density

@@ -16,12 +16,20 @@ six retained cold Ar2 cells produce0/0 in the old sound formula after m*N
 underflows. Independent100digit actual-source diagnosis is saved. A separate
 full-duration run evaluates equivalent factored ratios; it does not repair heat.
 
-Live handles: **73344** variance5ns (15ns accepted), **57807** variance analytic
-expansions, **47880** enriched explicitly subcycled analytic expansions,
-**77325** initial128-electron/32-heavy20ns case (10ns accepted, main source),
-**16195** factored-ratio heavy-enriched5ns case (frozen prototype). Do not edit
-77325's imported main modules until it terminates. Frozen roots and exact output
-paths are in VARIANCE_TRANSFER. Poll actual handles; do not restart quiet jobs.
+Live handles: **73344** variance5ns (15ns accepted), **16195** factored-ratio
+heavy-enriched5ns (15ns accepted), **61204**128-bit-scaled heavy-enriched5ns,
+and **31198** initial256-electron/32-heavy20ns case. All use frozen roots;
+exact paths are in VARIANCE_TRANSFER. Poll actual handles; do not restart quiet jobs.
+
+All six variance analytic cases57807 and enriched-subcycled analytic pair47880
+are now EXIT0 at their full original durations. Independent100digit transfer
+integrals exposed~0.023eV mixing heat lost by underflow in six retained cold
+source cells. Binary coordinate scaling restores it without changing physical
+amounts; its full20ns10ns-source case5892 EXIT0 matches original E/J to
+9.43e-15/1.66e-8. The exercised arithmetic and optional coordinate shift are
+now in main, after77325 completed. That full20ns e128/h32 case agrees with
+the previous uniform128 E/J within0.036%/0.056%, at about25% lower elapsed
+time. It still differs34.2% in J from the unconverged1024 numerical reference.
 
 Next finish these trajectories, compare thermal/source-time and electron-current
 resolution, then adopt only supported numerical changes. The analytic enriched

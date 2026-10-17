@@ -22,7 +22,7 @@ from .implicit_plasma_records import provenance, freeze
 def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0,
         projection_method='galerkin', extend_velocity=False, newborn_spacing_fraction=0.,
         velocity_refinement_rounds=0, maximum_refined_velocity_cells=256,
-        refine_heavy_species=False, electron_cells=None):
+        refine_heavy_species=False, electron_cells=None, normalization_shift_bits=0):
     out = Path(destination)
     if out.exists() or not np.isfinite(source_interval_ns) or source_interval_ns <= 0 or cells < 2:
         raise ValueError('Fresh output and positive source interval/velocity resolution required')
@@ -52,7 +52,7 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0,
         newborn_spacing_fraction=newborn_spacing_fraction,
         velocity_refinement_rounds=velocity_refinement_rounds,
         maximum_refined_velocity_cells=maximum_refined_velocity_cells,
-        velocity_refinement_species=refinement_species,
+        velocity_refinement_species=refinement_species, normalization_shift_bits=normalization_shift_bits,
         minimum_density_width_m=0., coalesce_ulps=coalesce_ulps,
         intervals=[], failure=None, minimum_free_disk_bytes=256*2**20,
         inputs=dict(ionization_sha256=ion.input_sha256, recombination_sha256=rr.input_sha256),
@@ -83,7 +83,7 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0,
         newborn_spacing_fraction=newborn_spacing_fraction,
         velocity_refinement_rounds=velocity_refinement_rounds,
         maximum_refined_velocity_cells=maximum_refined_velocity_cells,
-        velocity_refinement_species=refinement_species)
+        velocity_refinement_species=refinement_species, normalization_shift_bits=normalization_shift_bits)
     energy0 = solver.totals(model, state, ledger)['full_energy_j_m2']
     save_states(out/'initial.npz', [model], [state])
     save()
@@ -160,9 +160,10 @@ if __name__ == '__main__':
     parser.add_argument('--maximum-refined-velocity-cells', type=int, default=256)
     parser.add_argument('--refine-heavy-species', action='store_true')
     parser.add_argument('--electron-cells', type=int)
+    parser.add_argument('--normalization-shift-bits', type=int, default=0)
     args = parser.parse_args()
     result = run(args.destination, args.source_step_ns, args.cells, args.coalesce_ulps,
                  args.projection_method, args.extend_velocity, args.newborn_spacing_fraction,
                  args.velocity_refinement_rounds, args.maximum_refined_velocity_cells,
-                 args.refine_heavy_species, args.electron_cells)
+                 args.refine_heavy_species, args.electron_cells, args.normalization_shift_bits)
     raise SystemExit(0 if result['success'] else 1)
