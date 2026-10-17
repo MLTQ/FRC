@@ -1,5 +1,33 @@
 # Active research: a credible experimental FRC simulation
 
+## Compression refinement rejected; full 2,048-cell reference (2026-10-17)
+
+The goal remains active. Both full adaptive 20 ns plasma candidates completed
+but failed the current-accuracy objective. Constant-child splitting grows 128
+initial electron cells to 3,664, with 34.1688% J difference from the existing
+1,024-cell reference. Bounded pressure reconstruction gives 2,904 cells and
+32.7731%, with large new current oscillations in both cases. Their excellent
+energy conservation does not validate them. Neither is adopted by the reacting
+or formation solver. Four independent full neutral shock cases show decreasing
+errors; the pressure reconstruction offers only modest improvement there.
+
+A new full fixed 2,048-cell-per-species run completes 20 ns in 19,402 steps,
+Erel 7.49597e-11. Successive J differences are 8.07805% (512/1,024) and 5.38767%
+(1,024/2,048); E differences .330304%/.156849%. The finest reference remains
+unconverged. Sources, full endpoints, every accepted step/budget and inspected
+comparisons are saved. See [COMPRESSIVE_REFINEMENT.md](COMPRESSIVE_REFINEMENT.md).
+No unit tests, density cutoffs, physical mass changes or exact-vacuum changes.
+
+Additional authorized Cargo/Gradle/Xcode build-cache cleanup recovered about
+3.6 GB of available space after a low-disk pause. About 3.5 GiB remains free;
+Codex 47022/47121 are verified alive. The preserved all-heavy captured 5 ns
+stage is RUNNING as PID 6975/session 81727, CPU 46:35 at 15:09 UTC, with latest
+stdout 200 steps/1.567042 ns. Its frozen source and original duration remain.
+Next collect that full stage, then evaluate full all-heavy 5 ns-source coupling
+and source/space sensitivity. Do not restart it or repeat the rejected adaptive
+variants by default. Current transport, gas closure, boundaries and validated
+formation remain open; this is not yet a construction-ready simulator.
+
 ## Interface controls integrated; two full all-heavy trajectories (2026-10-17)
 
 The completed Ar9-only5ns-source comparison now includes every455,321 union
