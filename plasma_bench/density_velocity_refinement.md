@@ -35,7 +35,8 @@ A separate frozen full20ns Ar9-only coupled candidate now completes972steps
 with Erel2.79334e-11 and all2,414,399density cells. Ar9 Tmax falls370.173→
 0.637747eV, E/J relative L2 changes1.10e-7/1.69e-4; Ar8 stays4.43230eV.
 The optional controls are now exposed through precise_reactions and the moving
-driver, disabled by default. The preserved all-heavy5ns stage is running.
+driver, disabled by default. The preserved all-heavy5ns stage completes350steps with Erel3.29120e-12;
+Ar5–Ar9 peaks are .653/.698/.778/.972/.468eV.
 Threshold/space/time convergence and general local accuracy remain open.
 
 Inputs are ordered precise density faces, strictly positive finite relative

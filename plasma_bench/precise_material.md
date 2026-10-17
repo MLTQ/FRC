@@ -64,6 +64,12 @@ the original stiffness and physical mass. Earlier states agreed within7.32e-16;
 the new actual Ar2 failure requires balancing at mass condition1e101. Its
 100-digit comparison and full-prefix replay are in reaction_acoustic_eigenfailure.
 No frequency cutoff, retry, mass change or relaxed acoustic timestep is added.
+All six full neutral-decay/charged-affine16/32/64 cases with that arithmetic
+now complete in precise_material_balanced_acoustic. Finest charged velocity
+error is6.47560e-10m/s and energy error3.57903e-15; neutral errors approach
+roundoff. The coupled run completes third-interval transport but rejects thermal
+energy in its following source half; this independent affine evidence does not
+settle reaction coupling or general thermal/current accuracy.
 
 Optional `velocity_faces` selects an exact nested velocity mesh rather than
 rebuilding cosine targets. Its endpoints must span the occupied block and

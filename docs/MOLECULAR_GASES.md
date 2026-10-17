@@ -35,10 +35,14 @@ for the BEB implementation, rather than an experimental calibration.
 The [MCCC database](https://mccc-db.org/) exposes isotope and vibronic-state
 selection. The authors' [IAEA contribution](https://conferences.iaea.org/event/359/contributions/29407/)
 describes vibrationally resolved hydrogen/isotopologue calculations. This is a
-candidate source for distinct H2/D2 channels. MCCC restricts redistribution and
-commercial use and requests dataset-publication plus database citations. No
-MCCC data were downloaded or bundled here; review each selected dataset's
-coverage and applicable terms before local use.
+source for distinct H2/D2 channels. MCCC restricts redistribution and
+commercial use and requests dataset-publication plus database citations.
+The H2/D2 ground-state archives were subsequently acquired for private local
+research on2026-10-17, outside Git. Coverage, exact hashes and limitations are
+in [the input notes](../data/molecular/mccc_input/README.md). D2 ionization
+omits v=21, direct X-to-X vibrational data are absent for D2, and aggregate
+ionization/ERD curves do not supply a disjoint energy-resolved reaction network.
+These inputs do not yet enable molecular discharge simulations.
 
 The [LXCat authors' N2/O2 comparison](https://us.lxcat.net/notes/index.php?download=lxcat_team10)
 distinguishes swarm-consistent compilations from partial recommended cross

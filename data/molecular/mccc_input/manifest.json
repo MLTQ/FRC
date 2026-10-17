@@ -1,0 +1,370 @@
+{
+  "retrieved_utc": "2026-10-17T15:56:39.248355+00:00",
+  "database": "https://mccc-db.org/",
+  "usage": "Private noncommercial local research only. MCCC prohibits third-party redistribution; raw archives remain outside the repository. Cite dataset publications and database with retrieval date.",
+  "archives": {
+    "H2": {
+      "private_path": "/private/tmp/frc-mccc-personal/MCCC-el-H2-X1Sg.zip",
+      "archive_sha256": "c059f84d75d695b1f949c80cd447e09c3c5eb66874c9de2fcae80fc972905076",
+      "archive_bytes": 5785972,
+      "uncompressed_bytes": 11777341,
+      "members": 6625,
+      "api": "POST https://mccc-db.org/cgi-bin/archive.php",
+      "request_fields": {
+        "fileName": "MCCC-el-H2/MCCC-el-H2-X1Sg",
+        "zipName": "MCCC-el-H2-X1Sg"
+      },
+      "returned_download_url": "https://mccc-db.org/temp/MCCC-el-H2-X1Sg.zip",
+      "raw_member_counts": {
+        "ERD": 225,
+        "rovibrational_excitation": 94,
+        "ionisation": 15,
+        "excitation": 5967,
+        "dissociation": 15
+      },
+      "initial_vibrational_levels": {
+        "ERD": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "rovibrational_excitation": [
+          0
+        ],
+        "ionisation": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "excitation": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "dissociation": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ]
+      },
+      "ground_state_vibrational_levels": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "missing_ground_ionization_levels": [],
+      "excitation_final_state_labels": [
+        "B1Su",
+        "Bp1Su",
+        "C1Pu",
+        "D1Pu",
+        "EF1Sg",
+        "GK1Sg",
+        "H1Sg",
+        "I1Pg",
+        "J1Dg",
+        "X1Sg",
+        "a3Sg",
+        "b3Su",
+        "c3Pu",
+        "d3Pu",
+        "e3Su",
+        "g3Sg",
+        "h3Sg",
+        "i3Pg",
+        "j3Dg"
+      ],
+      "table_data_checks": {
+        "ERD": {
+          "parsed_rows": 11820,
+          "parsed_nonempty_tables": 225,
+          "final_energy_eV_min": 500.0,
+          "final_energy_eV_max": 500.0,
+          "empty_files": [],
+          "invalid_or_unparsed_nonempty_files": []
+        },
+        "rovibrational_excitation": {
+          "parsed_rows": 4348,
+          "parsed_nonempty_tables": 92,
+          "final_energy_eV_min": 200.0,
+          "final_energy_eV_max": 200.0,
+          "empty_files": [
+            "rovibrational_excitation/vi=0/Ni=30/MCCC-el-H2-X1Sg_vf=0_Nf=32.X1Sg_vi=0_Ni=30.txt",
+            "rovibrational_excitation/vi=0/Ni=31/MCCC-el-H2-X1Sg_vf=0_Nf=33.X1Sg_vi=0_Ni=31.txt"
+          ],
+          "invalid_or_unparsed_nonempty_files": []
+        },
+        "ionisation": {
+          "parsed_rows": 349,
+          "parsed_nonempty_tables": 15,
+          "final_energy_eV_min": 1000.0,
+          "final_energy_eV_max": 1000.0,
+          "empty_files": [],
+          "invalid_or_unparsed_nonempty_files": []
+        },
+        "excitation": {
+          "parsed_rows": 271404,
+          "parsed_nonempty_tables": 5967,
+          "final_energy_eV_min": 7.99535,
+          "final_energy_eV_max": 500.0,
+          "empty_files": [],
+          "invalid_or_unparsed_nonempty_files": []
+        },
+        "dissociation": {
+          "parsed_rows": 557,
+          "parsed_nonempty_tables": 15,
+          "final_energy_eV_min": 300.0,
+          "final_energy_eV_max": 300.0,
+          "empty_files": [],
+          "invalid_or_unparsed_nonempty_files": []
+        }
+      }
+    },
+    "D2": {
+      "private_path": "/private/tmp/frc-mccc-personal/MCCC-el-D2-X1Sg.zip",
+      "archive_sha256": "a4ca7432f4099a11714c4f610d0808d32f2ad244b7f973fd48b7e668010fa3b4",
+      "archive_bytes": 11035134,
+      "uncompressed_bytes": 22077417,
+      "members": 12823,
+      "api": "POST https://mccc-db.org/cgi-bin/archive.php",
+      "request_fields": {
+        "fileName": "MCCC-el-D2/MCCC-el-D2-X1Sg",
+        "zipName": "MCCC-el-D2-X1Sg"
+      },
+      "returned_download_url": "https://mccc-db.org/temp/MCCC-el-D2-X1Sg.zip",
+      "raw_member_counts": {
+        "ERD": 484,
+        "ionisation": 21,
+        "excitation": 11880
+      },
+      "initial_vibrational_levels": {
+        "ERD": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21
+        ],
+        "ionisation": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "excitation": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21
+        ]
+      },
+      "ground_state_vibrational_levels": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "missing_ground_ionization_levels": [
+        21
+      ],
+      "excitation_final_state_labels": [
+        "B1Su",
+        "Bp1Su",
+        "C1Pu",
+        "D1Pu",
+        "EF1Sg",
+        "GK1Sg",
+        "H1Sg",
+        "I1Pg",
+        "J1Dg",
+        "a3Sg",
+        "b3Su",
+        "c3Pu",
+        "d3Pu",
+        "e3Su",
+        "g3Sg",
+        "h3Sg",
+        "i3Pg",
+        "j3Dg"
+      ],
+      "table_data_checks": {
+        "ERD": {
+          "parsed_rows": 25520,
+          "parsed_nonempty_tables": 484,
+          "final_energy_eV_min": 500.0,
+          "final_energy_eV_max": 500.0,
+          "empty_files": [],
+          "invalid_or_unparsed_nonempty_files": []
+        },
+        "ionisation": {
+          "parsed_rows": 487,
+          "parsed_nonempty_tables": 21,
+          "final_energy_eV_min": 1000.0,
+          "final_energy_eV_max": 1000.0,
+          "empty_files": [],
+          "invalid_or_unparsed_nonempty_files": []
+        },
+        "excitation": {
+          "parsed_rows": 508812,
+          "parsed_nonempty_tables": 11879,
+          "final_energy_eV_min": 150.0,
+          "final_energy_eV_max": 500.0,
+          "empty_files": [],
+          "invalid_or_unparsed_nonempty_files": [
+            "excitation/vi=15/MCCC-el-D2-b3Su_DE.X1Sg_vi=15.txt"
+          ]
+        }
+      }
+    }
+  },
+  "publications": {
+    "H2_electronic_excitation": "https://doi.org/10.1016/j.adt.2020.101361",
+    "D2_electronic_excitation": "https://doi.org/10.1016/j.adt.2020.101403",
+    "excitation_radiative_decay": "https://doi.org/10.1016/j.adt.2022.101534",
+    "ionization": "https://doi.org/10.1016/j.adt.2023.101573",
+    "H2_rovibrational": "https://doi.org/10.1103/PhysRevA.107.062804",
+    "H2_direct_X_vibrational": "Database client currently labels this submitted to Physical Review A (2026); publication not established here."
+  },
+  "audit_scope": "Archive members read directly without extraction. Numerical rows parsed, checked for two finite columns, strictly increasing energy and nonnegative cross section; empty files separately reported. Data integrity is not physical validation or a complete discharge reaction network. The one comma/whitespace delimiter exception was subsequently parsed explicitly and passed the same numeric-format checks; original whitespace-only failure remains recorded.",
+  "format_exceptions": [
+    {
+      "gas": "D2",
+      "member": "excitation/vi=15/MCCC-el-D2-b3Su_DE.X1Sg_vi=15.txt",
+      "sha256": "48fa46ccf2496f9e89d8206a2b78c59d68c4259e85d0545a2596eec3224e5860",
+      "description": "First four energy values have trailing commas; all later rows use whitespace. Explicitly reading comma or whitespace separators preserves every number. Raw archive unchanged.",
+      "rows": 61,
+      "last_energy_eV": 150.0,
+      "finite_two_columns_increasing_energy_nonnegative_cross_section": true
+    }
+  ]
+}

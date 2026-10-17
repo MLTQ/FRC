@@ -26,9 +26,11 @@ It is now terminal failed (30896 EXIT1): completed coupled time 10 ns, followed
 by 73 accepted internal steps in the third interval before the acoustic
 generalized eigensolver reported '2 eigenvectors failed to converge'. Source
 moments, exact inherited knots, accepted steps and failure are preserved. This
-is not a full coupled success. Reconstruct that actual state and compare its
-physical eigenproblem with independent high-precision arithmetic before a
-corrected full-duration run. Extra enrichment also prevents a pure temporal-
+is not a full coupled success. That state now has an exact73-step replay and independent100-digit spectrum;
+see ACOUSTIC_MASS_SCALING. The corrected run completes third-interval transport
+(2058steps/full5ns) but rejects thermal energy in the following source half.
+Its reaction_source_gather_failure reconstruction is live as2255. Extra
+enrichment also prevents a pure temporal-
 order claim. All spatial/current/physical-closure requirements remain.
 
 ## Complete coupled20ns candidate
@@ -65,8 +67,8 @@ Contrast100 actually adds more velocity nodes and changes E/J from10000 by
 their velocity RMS changes31.6235/6.86396m/s. Strong edge cooling persists.
 These are threshold-sensitivity measurements, not proof of thermal/space/time
 convergence. READMEs and complete raw evidence are in the all_density_jumps_10ns
-and all_density_jumps_c100_10ns output directories. PID6975/session81727 remains
-live on the preserved all-heavy captured5ns stage. Physical equations, masses,
+and all_density_jumps_c100_10ns output directories. PID6975/session81727 is now terminal complete
+on the preserved all-heavy captured5ns stage (see the later evidence above). Physical equations, masses,
 exact vacuum and represented populations remain unchanged.
 
 ## Completed actual-stage spatial comparison

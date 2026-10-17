@@ -62,8 +62,15 @@ Fresh validation uses the original full 20 ns all-heavy/5 ns-source trajectory
 and all six independent neutral-decay/charged-affine cases at 16/32/64 cells.
 They run from frozen /private/tmp/frc-balanced-acoustic-20261017; the coupled
 source SHA is e8aeb92c292f20d6626ba14eecd785edabe382cd68dd2d4768bddfc16adfde81.
-At this checkpoint the runs are live, and only decay_n16 is complete. Its full
-6.083704 us errors include front 1.87926e-13 m, velocity 1.83809e-9 m/s,
-energy 1.28419e-13 and population 9.024e-15 relative. Do not label the remaining
-cases or coupled run successful until terminal evidence exists. Current,
-source-time, thermal and construction-level physical validation remain open.
+All six independent cases now complete (16983 EXIT0, source34a50517...b5e0),
+with the original neutral6.083704us and charged4.446830us durations. Charged
+velocity errors at16/32/64 cells are1.46107e-7/9.30322e-9/6.47560e-10m/s;
+maximum relative energy errors7.60623e-13/4.82392e-14/3.57903e-15. Neutral
+population errors remain below3.482e-14 and front errors decrease to8.8124e-16m;
+its fine velocity/energy errors are roundoff-dominated, not monotonic. Complete
+states, every budget and inspected scientific PNG/PDF remain in
+precise_material_balanced_acoustic. The coupled run now completes all2058
+transport steps of its third5ns interval but rejects thermal energy in the
+following source gather/evolution. Completed coupled time remains10ns. The
+new actual failure is being reconstructed in reaction_source_gather_failure;
+current, source-time, thermal and construction-level validation remain open.

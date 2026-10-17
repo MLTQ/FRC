@@ -1,48 +1,51 @@
 # Current goal continuation, 2026-10-17
 
-## All-heavy stage complete; acoustic failure diagnosed and corrected (2026-10-17)
+## Acoustic verification complete; reaction-stage rejection captured next (2026-10-17)
 
-The preserved all-heavy captured stage (81727/PID6975) is TERMINAL EXIT0 at
-its original 5 ns: 350 steps, all 227,649 density cells, Erel 3.29120e-12.
-Ar5–Ar9 peaks fall to .653/.698/.778/.972/.468 eV from 4.21/5.63/7.87/14.18/
-370.16 eV. Ar8/Ar9 volume RMS excess above reversible compression becomes
-.0234416/.0157336 eV. Lower-charge edge cooling and some larger excess remain;
-this is not general thermal convergence. Updated full-support/detail plots
-were inspected. Do not resume or restart the finished PID6975.
+Both original balanced runs are terminal; do not restart PID30133 or30147.
+The independent family16983 exits0: all neutral16/32/64 cases reach6.083704us
+and all charged cases reach4.446830us. Charged velocity errors decrease
+1.46107e-7→9.30322e-9→6.47560e-10m/s, with finest relative energy error
+3.57903e-15. Neutral population error is at most3.4816e-14; fine energy/velocity
+errors approach roundoff and are not monotonic. All raw states/budgets and the
+inspected PNG/PDF are in precise_material_balanced_acoustic, source34a50517...b5e0.
 
-The full matched 20 ns width-reuse control completes 1,024 steps with all 202
-saved arrays identical to the original, including precise geometry, dt and
-budgets. Source 7035e614...3684. The subsequent full all-heavy 5 ns-source run
-(30896) is TERMINAL EXIT1 at 10 ns completed coupled time plus 73 internal
-steps, failing an acoustic eigenproblem. All accepted data/source moments stay
-in reactive_material_argon_all_density_jumps_5ns; this is not a full success.
+The full20ns all-heavy/5ns-source run54457 exits1. It completes coupled10ns,
+then ALL2058 transport steps of the third5ns interval. Its following source
+half rejects 'Nonfinite or negative species thermal energy; no energy repair'.
+No full15ns or20ns coupled success is implied. Minimum actual transport dt was
+.233528ps; it recovered to picosecond steps. Final transport energy error was
+1.74026e-11. Thus the acoustic convergence failure is resolved, while the new
+rejection lies in source gather/evolution, before a completed source return.
+All accepted data and original sourcee8aeb92c...de81 remain in
+reactive_material_argon_all_density_balanced_5ns. No heat/energy repair is used.
 
-Exact replay reproduces every accepted bound and energy, isolating Ar2's
-53-by-53 problem. Its mass condition is 1.03e101, reduced to 3.005 by invertible
-diagonal equilibration. Balanced gvx/gvd agree with an independent 100-digit
-largest eigenvalue to 1.05e-16. No mass, stiffness, species, mesh, temperature or
-timestep-rule change is introduced. Main now applies that arithmetic scaling.
-See [ACOUSTIC_MASS_SCALING.md](ACOUSTIC_MASS_SCALING.md) for full evidence.
+LIVE diagnostic session2255 reconstructs this actual rejected stage using
+/private/tmp/frc-balanced-acoustic-20261017, then all2058 original recorded dt.
+It saves pre/post-transport states and intercepts rejected atomic calls only
+to save original inputs before reraising. Initial10ns energy agrees exactly;
+post_source_initial.npz is already saved. The first100 recorded steps reproduce
+every bound and energy exactly (zero differences); remaining steps are live.
+Output reaction_source_gather_failure; source
+34a50517...b5e0, driver e901644b...3415. This is diagnosis of the actual failure,
+not a changed physical interval or new successful trajectory. Poll2255, inspect
+rejected moment/input arrays and compare arithmetic with independent precision
+before choosing any correction or launching another full coupled run.
 
-LIVE corrected runs from /private/tmp/frc-balanced-acoustic-20261017:
-- Full original 20 ns all-heavy/5 ns-source: PID30147/session54457, output
-  reactive_material_argon_all_density_balanced_5ns, source e8aeb92c...de81.
-  Completed coupled time 10 ns; interval three remains live, latest observed
-  1,000 internal steps/1.318032 ns of its original 5 ns (dt .235286 ps).
-- Independent full neutral-decay and charged-affine 16/32/64 family:
-  PID30133/session16983, output precise_material_balanced_acoustic,
-  source 34a50517...b5e0. Decay16/32 complete at the original 6.083704 us;
-  decay64 live (latest observed 400 steps/2.606092 us), charged cases pending.
-Both process identities were verified running at about15:47 UTC, after the
-restarted Unity MCP cache-lock holder was individually stopped. Codex desktop
-47022/app-server47121 remain alive. Normal uv cleanup removed126.8MiB
-(tool-reported); available space2,330,624,000bytes. See storage_cache_cleanup.
-Preserve256MiB export reserve and frozen sources. Unchanged stdout
-is not termination. Next collect both full requested results, inspect analytic
-conservation/convergence and compare full coupled 5/10 ns endpoints. Do not
-restart live jobs, treat a prefix as success, or launch another source interval
-before these results. Physical gas/current/thermal/boundary/formation work and
-the overarching goal remain open. No unit suite or publication.
+Earlier actual all-heavy captured stage81727 is complete at its original5ns,
+350steps/227649cells/Erel3.29120e-12; Ar5–Ar9 peaks are .653/.698/.778/.972/.468eV.
+Local cooling and thermal/current convergence remain unresolved. The full20ns
+width-reuse control preserves all202 arrays; the original acoustic failure has
+an exact73-step replay and100-digit spectrum. Read ACOUSTIC_MASS_SCALING and
+DENSITY_INTERFACE_TRANSPORT for evidence and distinctions among these runs.
+
+Private H2/D2 MCCC ground-state archives were acquired outside Git while these
+simulations ran. data/molecular/mccc_input records hashes, coverage and missing
+channels, including D2 v21 ionization and direct D2 vibrational collisions.
+No coupled molecular gas is enabled and no restricted raw data is published.
+Physical gas/current/heat/boundary/formation requirements and the overarching
+goal stay open. About1.7GiB free; preserve256MiB reserve, raw research, private
+inputs and frozen sources. No unit suite, remote publication or lab-readiness claim.
 
 ## Compression refinement rejected; full 2,048-cell reference (2026-10-17)
 
