@@ -1,5 +1,23 @@
 # Current goal continuation, 2026-10-17
 
+## Storage diagnosis after pause — 17 October 2026
+
+The missing space was largely accounted for inside this repository: Git object/
+pack files modified since the10:45local cleanup totalled2.91GiB. Seven unopened
+abandoned tmp_pack files totalled3.171GiB, including older leftovers. No active
+Git packing process was observed; the initiating application is not established.
+Repository connectivity passed before and after removing only those temporary
+files. Actual available space recovered to3.27GiB. Named/indexed packs, loose
+objects, refs and all research data remain. See
+outputs/storage_cache_cleanup/git_temporary_packs.json. Earlier attribution to
+unspecified host activity was premature. The latest kinetic outputs total~42MiB.
+
+The goal remains USER-PAUSED, and PID33081/session2255 stays SIGSTOP-suspended.
+On explicit resume, recheck free space and exact process identity, then SIGCONT
+and finish the original2058-step replay;1700steps are confirmed exact. Do not
+restart it. Avoid automatic or full Git repacking during low-space checkpoints;
+use git -c gc.auto=0 commit. The raw kinetic NPZ files remain local/checksummed.
+
 ## User-requested pause and latest checkpoint — 17 October 2026
 
 The user asked to wrap up because usage is nearly exhausted. Pause the app goal;
