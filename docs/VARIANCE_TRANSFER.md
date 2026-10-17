@@ -125,6 +125,8 @@ not an exact or experimental solution, and its own uncertainty remains visible.
 | 32 initial, all enriched | 10.615% | 65.774% |
 | 32 initial, heavy enriched | 10.390% | 66.305% |
 | 128 electron / 32 heavy, variance | 2.4475% | 34.2028% |
+| 256 cosine electron / 32 heavy | 1.0255% | 19.0707% |
+| 128 uniform electron / 32 heavy | 5.2083% | 40.5507% |
 | 512, direct | 0.3303% | 8.0781% |
 
 Late electron enrichment barely reduces its current discrepancy. The complete
@@ -182,6 +184,18 @@ from saved indices; all128electron widths are156.25um within float spacing.
 It repeats the full20ns request and preserves the original mixed-mesh output.
 The comparison now reads actual initial density/velocity counts rather than
 assuming the requested counts were realized. Cosine defaults remain unchanged.
+
+The corrected91194 is now EXIT0 at full20ns:4725steps (2267/2458),
+110177density cells,1218.974s and Erel−4.49632e-12. Actual initial electron
+density/velocity counts are128/128. Complete fine comparison38411 EXIT0 gives
+E/J differences5.20829%/40.55068% and electron-front difference11.254354mm,
+versus2.44748%/34.20280%/3.393079mm for128cosine electrons. The corresponding
+ion-front difference34.3087um still reflects the32-cell heavy mesh. This full
+uniform experiment is less accurate than cosine in all three reported electron
+measures and does not warrant changing the default. The mixed102/128 attempt
+remains separately identified; it is not used as the intended uniform result.
+The updated scientific PNG and rendered PDF were inspected. Existing1024
+reference uncertainty and combined step/space choices remain as stated above.
 
 ## Preserved failures and arithmetic diagnosis
 
@@ -272,6 +286,39 @@ absolute velocity208.165m/s and38velocity cells. The15ns accepted parent had
 30velocity cells, maximumT0.211041eV and maximum speed244.479m/s. The severe
 hot tail is not already present at the start of this isolated transport stage.
 
+## Independent strong-density-contrast Euler comparison
+
+The captured actual Ar9 starting profile contains an8.39609-decade neighboring
+density jump near−7.95124mm. To isolate pressure-driven motion at such contrast,
+`examples.material_density_step` evolves a free neutral argon slab with equal
+0.2eV initial temperatures and densities1e14/1e6m^-3. It uses the same precise
+material dynamics, physical mass matrix, minmod Q(.5,2) and half acoustic bound.
+This is a neutral mathematical/physical fixture, not the charged reacting state.
+The complete1.151043832us target leaves its central waves separate from exterior
+vacuum fans. Reference pressure is obtained from independent Rankine–Hugoniot
+and rarefaction relations; no simulated fields are fitted to the reference.
+
+Run86713 EXIT0, outputs/material_density_step_serialized, finishes all64/128/256
+cases in378/1134/2926steps; whole family50.664s. Source
+`4f38e5d409a742cd7027e4fa4a930a5dfed8cf75a70e9c1c86071ebaf5bb01c6`.
+Central dimensionless L1 density errors decrease0.024422→0.014808→0.008539
+and pressure errors0.020669→0.011836→0.006302. Velocity errors decrease
+0.810918→0.721837→0.632319, but temperature errors0.912599→0.916121→0.929438
+do not. These are normalization by left density/thermal speed/pressure/T,
+integrated over the central initial half-width; they are not relative L1 norms.
+Finest maximum centralT is0.685239eV versus exact1.204242eV; shock/contact
+positions and rarefaction cooling remain underresolved. Energy error decreases
+2.13701e-10→1.06976e-10→5.35089e-11, which does not establish local accuracy.
+The inspected PNG shows the actual fields and exact reference. This uniform
+mesh density-step fixture does not reproduce the370eV spike; the actual
+trace-stage diagnosis remains required before selecting a correction.
+
+The original material_density_step directory retains a complete64-cell raw
+history, source973494a8...5737 and serialization_failure.json: reporting a NumPy
+boolean stopped the first family before128/256. The corrected ordinary boolean
+changes only serialization; no failed history was overwritten or counted as
+a complete family. No unit tests or density/temperature repairs were used.
+
 ## Completed independent expansions
 
 `precise_material_variance` (57807 EXIT0,2619.44s) completes all six original
@@ -328,12 +375,12 @@ elsewhere are historical. No result is complete until the full target is reached
   comparison above with e128/h32 and the existing fine reference includes the measured
   arithmetic correction, not a pure single-parameter spatial-order study.
 
-- **91194**: `reactive_material_argon_e128_full_uniform_h32_10ns`, frozen
+- **91194 EXIT0**: `reactive_material_argon_e128_full_uniform_h32_10ns`, frozen
   `/private/tmp/frc-full-uniform-electron-20261017`; corrected full20ns request
   with128 actual uniform initial electron velocity cells. Source SHA
   `1e2873c2ff590fbadb4d15c9ded1190e77579e63ee376587d78e68d0ab8e575a`.
-  First10ns accepts2267steps,8469density cells,Erel−4.83442e-12; second interval
-  is active. The original mixed-mesh9098 is terminal EXIT0, source
+  Both intervals complete2267/2458steps,110177 final density cells,
+  Erel−4.49632e-12. The original mixed-mesh9098 is terminal EXIT0, source
   `6bc02e83cb4ad514602f216aedf8c2027c5bc6304e7921f825155d91946d6370`.
   Fine-reference comparison selects new cases only when the full endpoint is
   successful. Do not substitute a prefix or the flawed setup for its correction.

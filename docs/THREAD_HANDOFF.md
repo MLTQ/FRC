@@ -39,11 +39,28 @@ The final PNG was inspected. Stage56061 has captured its post-source initial
 state: Ar9 maxT0.211057eV, maxspeed208.165m/s,38velocity cells; level0 full5ns
 transport is running. No completed stage/refinement result yet.
 
-Other live handle: **91194** corrected uniform-
-spaced128-electron/32-heavy20ns case (first10ns accepts2267steps,8469cells,
-Erel−4.83442e-12; second interval active). **31198 is now EXIT0** at full20ns.
-Latest91194 output is second-interval step2100/internal8.480960ns; do not restart.
-All use frozen roots; exact paths are in VARIANCE_TRANSFER. Poll actual handles;
+Independent pressure-motion comparison**86713 EXIT0** now completes three
+64/128/256-cell neutral Euler density-step trajectories, each full1.151043832us,
+in378/1134/2926steps. Initial T=.2eV, n_left/n_right=1e8, exact vacuum. This
+is motivated by8.39609 decades measured across adjacent actual Ar9 cells, but
+is explicitly not that charged reacting state. Density/pressure L1 errors
+decrease; normalized temperature L1 changes0.912599→0.916121→0.929438 and
+does not converge. Finest centralmaxT0.685239eV vs exact1.204242eV, Erel5.35e-11.
+Source4f38e5d409a742cd7027e4fa4a930a5dfed8cf75a70e9c1c86071ebaf5bb01c6;
+outputs/material_density_step_serialized, full histories and inspectedPNG.
+This simpler uniform-mesh case does not reproduce370eV; collect actual56061
+before selecting a transport correction. The first material_density_step output
+retains its64-cell raw history and explicit serialization failure, before
+128/256 started; corrected boolean reporting changes no physical equation.
+
+**91194 is now EXIT0**, corrected uniform128-electron/32-heavy full20ns,
+4725steps (2267/2458),110177densitycells,1218.974s,Erel−4.49632e-12.
+Complete fine comparison**38411 EXIT0** gives E/J5.20829%/40.55068% and
+electron-front difference11.254354mm, worse than128cosine spacing's
+2.44748%/34.20280%/3.393079mm. Actual initial mesh128/128 verified; the old
+mixed102/128 case remains distinct. Cosine stays default. Updated PNG and
+rendered PDF inspected. **31198 is also EXIT0** at full20ns.
+Frozen paths are in VARIANCE_TRANSFER. Poll actual live handles;
 do not restart quiet jobs. Main has no remaining live source after the completed
 heated neutral-collision case below. A quiet final source return can be expensive.
 
@@ -136,8 +153,8 @@ The1024reference is still unconverged (512/1024 J difference8.078%); no isolated
 spatial-order or laboratory accuracy claim. Updated PNG and rendered PDF are
 inspected, including the corrected102mixed label and observed initial counts.
 
-Next collect the active trace-stage and uniform-electron
-calculations and compare local thermal and current resolution. No2.5ns
+Next collect the active trace-stage and strong-density-jump physical comparison
+and resolve local thermal/current accuracy. No2.5ns
 launch yet. The new uniform-spacing option moves initial electron resolution
 toward the measured interior error while retaining the same physical state,
 count and phase cap; do not assume it improves full accuracy. Existing fine

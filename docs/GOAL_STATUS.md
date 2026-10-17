@@ -33,6 +33,11 @@ heat in14 otherwise cold Ar2 cells, but both cases yield Ar9 maximum370.17eV.
 Local thermal/current accuracy remains open. An actual final5ns transport-stage
 comparison now measures Ar9 mechanical refinement against adiabatic compression;
 it preserves every species and fine cut and is not a new coupled20ns claim.
+An independent full neutral density-step family at1e8 contrast now also
+completes64/128/256 meshes. Density and pressure improve, but temperature L1
+error does not; finest centralpeak0.685eV versus exact1.204eV. This reveals
+strong-contrast transport underresolution but does not reproduce the Ar9 spike.
+See VARIANCE_TRANSFER for exact reference, full histories and measured limits.
 
 The moving planar source now combines reactions with paired charged collisions;
 the first full20ns case completes with Erel2.842e-11 and0.0896% J change from
@@ -57,9 +62,11 @@ only102velocity cells: the constructor still selected cosine targets. Its curren
 and electron-front differences from1024 worsen to48.45% and11.25mm, versus
 34.20% and3.39mm for128cosine velocity cells. This rejects the mixed mesh, not
 the intended uniform128 velocity discretization. The driver now explicitly
-supplies every initial uniform electron face; a fresh full20ns run91194 is live
-with actual initial counts[32,32,128] verified from its saved state. No shortened
-success, changed physics, discarded density cut or altered default.
+supplies every initial uniform electron face; corrected91194 now completes20ns
+with actual initial counts[32,32,128],4725steps and Erel−4.49632e-12. Its E/J
+differences from1024 are5.2083%/40.5507%, with11.2544mm electron-front error:
+worse than128cosine spacing. Cosine remains default. No shortened success,
+changed physics or discarded density cut.
 Earlier "uniform128" wording meant128 cells for every species, all cosine-spaced.
 
 No component success validates construction parameters. Physical chemistry,
