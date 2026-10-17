@@ -1,5 +1,31 @@
 # Current goal continuation, 2026-10-17
 
+## Latest: coupled candidate terminal; all-heavy stage resumed
+
+PID2415 is now absent and summary.json reports terminal=true/success=true,
+completed20ns. No tool exit-code observation is available. Full972steps
+(325/203/223/221),2,414,399density cells,Erel2.79334465947e-11; elapsed33439.286s
+includes storage suspension. Final Ar9 Tmax0.637746842eV versus original
+370.173188550eV; Ar8 remains4.432301209eV. Final source Ar9 max T change
+0.009365589eV. Outputs/reactive_material_argon_density_jumps_5ns preserves
+summary, raw endpoint, transport steps, source identity and thermal profiles.
+Large raw archives remain local/checksummed in raw_manifest.json; do not delete.
+
+PID6975/session81727 was freshly identity-checked, SIGCONT-resumed and verified
+running. It retains the exact captured all-heavy5ns stage from the frozen
+/private/tmp/frc-density-jump-20261017 source. Do not restart it. Next collect
+its complete original duration, evaluate the completed coupled candidate's
+E/J/common-volume thermal differences using existing precise-union methods
+(chunk sampling if memory requires), then decide explicit source-control
+integration and actual all-heavy coupled/convergence runs. No default adoption,
+floor/cutoff, changed physical masses, unit suite or construction claim.
+
+The validated dense-source optimization is locally committed75c05a519; it does
+not affect the old frozen live stage. Unity MCP had restarted; verified child
+21944 was SIGTERM-stopped, uv21888 exited, and normal uv clean removed126.8MiB.
+Codex47022/47121 are alive. Remaining older Pharaoh servers did not hold uv
+cache files. Free disk~1.55GiB; maintain export/swap reserve and serial work.
+
 ## Latest checkpoint: completed source representation change
 
 Main atomic_moments.py now passes the already-dense generator directly to

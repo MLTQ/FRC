@@ -1,5 +1,25 @@
 # Density interfaces and mechanical resolution
 
+## Complete coupled20ns candidate
+
+The original Ar9-only density-interface trajectory now reports terminal success
+at20ns and its process has exited. It takes972 transport steps, retains all
+2,414,399 density cells and has Erel2.79334e-11. Final Ar9 maximum falls from
+370.173188550eV in the matched scaled-heavy5ns baseline to0.637746842eV.
+Ar8 remains4.432301209eV, essentially unchanged. The last Ar9 source return
+changes T by at most0.009365589eV. These are complete coupled endpoints, distinct
+from the isolated5ns stage comparison below; the two refinements start at
+different points in the trajectory and must not be conflated.
+
+Raw endpoint/source/actual-step evidence is in
+outputs/reactive_material_argon_density_jumps_5ns. Its thermal renderer uses
+all Ar8/Ar9 cells; norms of complete E/J and common occupied volume remain to
+be evaluated separately. Keep threshold/space/time convergence and thermal
+accuracy open. PID6975/session81727 is now resumed and verified running on
+the preserved all-heavy captured stage. Main source-return controls remain
+unchanged pending completed comparison and broader evidence. The physics,
+physical masses, exact vacuum and represented populations are unchanged.
+
 ## Completed actual-stage spatial comparison
 
 `outputs/reaction_density_jump_transport/comparison.json` and the inspected

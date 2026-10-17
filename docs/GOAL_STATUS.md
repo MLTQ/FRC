@@ -1,5 +1,22 @@
 # Active research: a credible experimental FRC simulation
 
+## Full coupled density-interface run completes (2026-10-17)
+
+The preserved Ar9 candidate is terminal successful at its original20ns:
+972steps,2,414,399density cells,Erel2.79334e-11. Final Ar9 Tmax falls
+370.17319→0.637747eV, while Ar8 remains4.43230eV. All fine cells/species remain;
+this is a concrete correction of the large tail heating, not general thermal
+convergence or a lab prediction. The all-heavy captured5ns stage has now been
+identity-checked, resumed and verified running (PID6975/session81727). Complete
+its original duration, and compare full coupled fields before adopting optional
+density-interface return controls. Source/time/current convergence is still open.
+
+Unity MCP restarted once and relocked a newly rebuilt138MiB cache. Its exact
+child was stopped again; uv parent exited and normal cleanup removed126.8MiB.
+Codex/desktop and the research runs remain intact. Four older installed Pharaoh
+servers held no uv cache files and were retained. Free space was about1.55GiB;
+raw large coupled archives stay local/checksummed to avoid Git duplication.
+
 ## Complete dense-source comparison (2026-10-17)
 
 The existing moment generator now goes directly to the same exponential action
