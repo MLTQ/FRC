@@ -217,11 +217,24 @@ the nonlinear reacting trace-ion profiles.
 
 ## Live calculations and next action
 
+The original variance5ns run73344 is now terminal EXIT0: full20ns,972 transport
+steps (325/203/223/221),3818.456s,2415015 final density cells, minimum width
+1.66804e-28m and Erel2.76935e-11. Source SHA
+`eb54713073c61523dd878b035ea91f406ba57ced373f0409b95e1c3ae060c28f`.
+The existing complete-endpoint comparison33358 EXIT0 now includes its entire
+union. Against variance10ns, E/J differences are4.53748e-6/4.33645e-4. Neutral
+front shift1.68884um, velocity RMS0.19978m/s, temperature RMS3.84577e-5eV;
+electron front shift7.91207e-11m, velocity RMS0.33377m/s and temperature RMS
+0.000208194eV. Trace Ar8 remains inaccurate: T RMS0.161226eV, maximum difference
+2.231827eV, final range0.190592–5.152868eV. Ar9 RMS0.00760525eV. All narrow
+regions remain in the metrics; the electron maximum0.94810eV includes displaced
+piecewise-constant boundaries and is reported alongside the volume norm.
+No source-time or thermal convergence follows. The enriched5ns cases below
+will determine whether the measured mechanical correction survives a full run.
+
 At the current continuation, poll the actual handles below; older live entries
 elsewhere are historical. No result is complete until the full target is reached.
 
-- **73344**: `reactive_material_argon_variance_5ns`, frozen
-  `/private/tmp/frc-variance-20261017`, 15 ns accepted; fourth interval active.
 - **16195**: `reactive_material_argon_factored_heavy_5ns`, frozen
   `/private/tmp/frc-acoustic-factored-20261017`; complete20ns request with
   heavy-only enrichment and algebraically reordered sound/temperature/viscosity.
@@ -235,6 +248,7 @@ elsewhere are historical. No result is complete until the full target is reached
   electron cells,32 initial heavy cells, variance return,128-bit scaling and
   no source-driven enrichment. Source SHA
   `64eb503a955d9ce992fd43a183cb62e44277ba9ec35ea86925eb8149921bde17`.
+  First10ns is accepted in4869steps; second interval remains active.
   The phase cap follows the declared maximum initial resolution; compare with
   e128/h32 and the existing fine reference. This also includes the measured
   arithmetic correction, not a pure single-parameter spatial-order study.

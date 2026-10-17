@@ -55,6 +55,13 @@ class CollisionalAtomicMoments(FixedFrameAtomicMoments):
         ma, mb = self.mass[a], self.mass[b]; va, vb = velocity[a], velocity[b]
         k, h = pair_coefficients(temperature[a], temperature[b], va, vb, ma, mb,
                                 self.species_charge[a], self.species_charge[b], self.coulomb_log)
+        self.add_pair_generator(matrix, f, density, a, b, k, h)
+        return matrix, diagnostic
+
+    def add_pair_generator(self, matrix, fields, density, a, b, k, h):
+        """Accumulate conservative pair rows for supplied density-free force/heat."""
+        number, velocity = fields['numbers'], fields['velocity']
+        ma, mb = self.mass[a], self.mass[b]; va, vb = velocity[a], velocity[b]
         # Rates depend on the partner density, never divide by a tiny own mass density.
         nua, nub = k*density*number[b]/ma, k*density*number[a]/mb
         la, lb = (2/3)*h*density*number[b], (2/3)*h*density*number[a]
@@ -71,7 +78,6 @@ class CollisionalAtomicMoments(FixedFrameAtomicMoments):
         for row, sign in ((ea, 1.), (eb, -1.)):
             np.add.at(matrix, (np.repeat(row, 3), pa.ravel()), sign*qa.ravel())
             np.add.at(matrix, (np.repeat(row, 3), pb.ravel()), sign*qb.ravel())
-        return matrix, diagnostic
 
     def generator(self, state, density, heat=0.):
         matrix, diagnostic = self.reactions.generator(state, density, heat)

@@ -1,5 +1,33 @@
 # Reacting charge populations with Coulomb current relaxation
 
+## Moving planar coupling, 2026-10-17
+
+`VectorizedCollisionalAtomicMoments` now combines the existing charged-pair
+collision split with array-assembled reactions in the precise moving-support
+solver. Updated populations, momenta and energies feed actual motion, pressure,
+Gauss field and current. No duplicate prescribed resistance or heat is added.
+The original homogeneous studies below retain their stated scope.
+
+Run32422 is EXIT0 in `outputs/reactive_material_argon_collisional_heavy_10ns`:
+full20ns,971steps (527/444),21349 final density cells,89.884s and Erel2.84193e-11.
+It uses32 initial cells, variance return, heavy-only mechanical enrichment,
+128-bit coordinate scaling,10ns source intervals and explicitly lnLambda10.
+Source SHA `98867099cce773f723371386ea1095199ac4efeb6c667b31680b2a3bbeaf3e1d`.
+Against the otherwise matched reaction-only scaled case, E/J relative differences
+are1.56447e-6/8.96056e-4. Electron front shift8.56890e-10m, common-volume
+velocity/T RMS0.71199m/s/0.000395534eV; these differences include moving sharp
+features and source splitting, not a direct measurement of integrated drag heat.
+Neutral T RMS9.039e-8eV and Ar1 T RMS8.752e-8eV are also recorded.
+
+This is the low-density n=1e14m^-3 planar component with unresolved current and
+thermal resolution. It does not establish collisional evolution of the chamber
+fill or justify the chosen Coulomb logarithm. Electron/ground-neutral elastic
+exchange is a separate explicit addition documented in
+[ELASTIC_NEUTRALS.md](ELASTIC_NEUTRALS.md). Ion-neutral scattering, charge exchange,
+excited-target scattering, screening and driven changing-species coupling remain.
+
+## Earlier homogeneous source
+
 The new local source evolves all retained charged-level and electron momenta and
 energies with elastic Coulomb exchange and the supplied atomic reactions. The
 equations, conservative pair construction and explicit limits are documented in

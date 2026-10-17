@@ -16,10 +16,19 @@ six retained cold Ar2 cells produce0/0 in the old sound formula after m*N
 underflows. Independent100digit actual-source diagnosis is saved. A separate
 full-duration run evaluates equivalent factored ratios; it does not repair heat.
 
-Live handles: **73344** variance5ns (15ns accepted), **16195** factored-ratio
-heavy-enriched5ns (15ns accepted), **61204**128-bit-scaled heavy-enriched5ns,
-and **31198** initial256-electron/32-heavy20ns case. All use frozen roots;
-exact paths are in VARIANCE_TRANSFER. Poll actual handles; do not restart quiet jobs.
+Original variance5ns73344 is now EXIT0 at full20ns:972steps,3818.456s,
+2415015density cells,Erel2.76935e-11. Its complete10/5ns E/J differences are
+4.53748e-6/4.33645e-4, but trace Ar8 temperature differs0.161226eV RMS and
+2.231827eV maximum. Final Ar8 range0.190592–5.152868eV. This remains an
+accuracy limitation despite good conservation; compare the enriched cases next.
+
+Live handles: **16195** factored-ratio heavy-enriched5ns (15ns accepted, final
+interval last100steps/2.2315ns), **61204**128-bit-scaled heavy-enriched5ns
+(same accepted time/latest interval clock), and **31198** initial256-electron/
+32-heavy20ns case (10ns accepted in4869steps; second interval last1300steps/
+3.47739ns). All use frozen roots; exact paths are in VARIANCE_TRANSFER.
+Poll actual handles; do not restart quiet jobs. Main has no remaining live source
+after the newly completed neutral-collision case below.
 
 All six variance analytic cases57807 and enriched-subcycled analytic pair47880
 are now EXIT0 at their full original durations. Independent100digit transfer
@@ -31,9 +40,31 @@ now in main, after77325 completed. That full20ns e128/h32 case agrees with
 the previous uniform128 E/J within0.036%/0.056%, at about25% lower elapsed
 time. It still differs34.2% in J from the unconverged1024 numerical reference.
 
-Next finish these trajectories, compare thermal/source-time and electron-current
-resolution, then adopt only supported numerical changes. The analytic enriched
-non-subcycled attempt remains a saved failure. Defaults remain unchanged.
+Moving charged collisions now complete20ns (32422 EXIT0),971steps,89.884s,
+Erel2.84193e-11. Matched reaction-only E/J differences1.56447e-6/8.96056e-4;
+see ATOMIC_COLLISIONS. New ground-neutral/electron elastic force and heat use
+the already authorized private BSR-500 momentum-transfer table, including recoil.
+All six independent full source relaxations7161 EXIT0 show approximately
+fourth-order time refinement; finest physical electron/Ar drift error1.198e-7
+of initial, Te error1.708e-6eV,energy drift6.422e-8. Figure inspected. See
+ELASTIC_NEUTRALS for equations, raw result paths, input/source SHA and limits.
+
+The combined moving source also completes20ns (79419 EXIT0):971steps,103.579s,
+21349cells,Erel2.84185e-11, source6539c5fcd1de3d50fc76e1ad923341d0a67808b1672f2858c5b2845d4628b8e1.
+Matched charged-only E/J differences1.02593e-8/6.76392e-5; comparison99437 EXIT0
+also retains all prior rows, including the full variance5ns endpoint. Neutral
+collisions are explicit `--neutral-elastic-file` plus `--coulomb-log`; reaction-only
+remains default. Private tables/rate curves are not bundled; no physical channel
+is inferred for other gases or excited neutral targets. Bead frc-transport.7
+tracks coupled accuracy and missing neutral channels; keep it open.
+
+Next collect the three refinement trajectories and compare local thermal/source-
+time and initial electron-current resolution using existing comparisons. No2.5ns
+launch yet. Independently, the existing full heated atomic source can now evaluate
+neutral collisions over the original3.5us protocol, followed by source-time
+sensitivity; the20ns low-density slab alone cannot establish collisional accuracy
+at chamber density. Do not invent neutral-ion/charge-exchange data. The analytic
+enriched non-subcycled attempt remains a saved failure. Defaults remain unchanged.
 No unit tests, remote or publication. All parent goals/beads stay open.
 Preserve the user's modified poster SHA
 `a783f7cda0f4a249cc4c23ead61debbdf89d356436a2a3dab2189029c6d5deca`.

@@ -22,7 +22,19 @@ heat lost before sound evaluation. Explicit128-bit coordinate scaling restores
 that heat without changing physical N/U; its complete20ns10ns-source comparison
 has E/J differences9.43e-15/1.66e-8. Full5ns-source evaluation remains live.
 Both independent analytic expansion families now complete their full durations.
-No local thermal-convergence claim follows; the original variance5ns run continues.
+The original variance5ns run73344 is now EXIT0 at20ns,972steps and2.415million
+density cells. Its complete10/5ns E/J differences are4.5375e-6/4.3365e-4, but
+Ar8 temperature still differs0.16123eV RMS/2.23183eV maximum. The enriched5ns
+and initial256-electron cases remain live; local thermal/current accuracy is open.
+
+The moving planar source now combines reactions with paired charged collisions;
+the first full20ns case completes with Erel2.842e-11 and0.0896% J change from
+its matched reaction-only control. New sourced electron/ground-neutral elastic
+moments also complete full independent relaxation comparisons: finest physical
+electron/Ar drift error1.20e-7 of initial, Te error1.71e-6eV and energy drift
+6.42e-8. [ELASTIC_NEUTRALS.md](ELASTIC_NEUTRALS.md) records assumptions and the
+completed20ns moving coupling. Neutral recoil and signed heat are paired; private BSR
+data remain local. These are component calculations, not chamber predictions.
 No component success validates construction parameters. Physical chemistry,
 collisions/heat, chamber boundaries, converged formation and experimental
 comparisons remain open for all requested gases; exact vacuum and physical

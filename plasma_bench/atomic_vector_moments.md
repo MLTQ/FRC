@@ -28,3 +28,14 @@ populations and maximum current difference3.41e-12 A/m². Independent DI/RR
 population and donor-moment errors decrease about4x on timestep halving.
 This source is used explicitly in examples/reactive_material_fine; the original
 source remains available. See the measured moving-field status for full-run limits.
+
+`VectorizedCollisionalAtomicMoments` retains `CollisionalAtomicMoments`' paired
+collision-half/reaction-full/collision-half algorithm and substitutes this
+array-assembled reaction generator for its scalar counterpart. The collision
+operator, physical masses, all charged pairs, fixed frame, exponential-midpoint
+integration and rejection conditions are unchanged. Neutral scattering is still
+absent. Its explicit positive Coulomb logarithm is not a screening calculation.
+The moving precise-support runner can now select this combined source, so
+reaction populations and collision-updated momentum/energy enter subsequent
+motion, Gauss field and current through the same conservative return. No
+prescribed resistance or second collision heat source is added.

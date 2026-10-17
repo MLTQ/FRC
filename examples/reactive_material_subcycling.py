@@ -7,7 +7,9 @@ import time
 import numpy as np
 from scipy.constants import atomic_mass
 from plasma_bench.atomic_network import AtomicNetwork
-from plasma_bench.atomic_vector_moments import VectorizedAtomicMoments
+from plasma_bench.atomic_vector_moments import VectorizedAtomicMoments, VectorizedCollisionalAtomicMoments
+from plasma_bench.elastic_atomic import ElasticAtomicMoments
+from plasma_bench.lxcat_cross_sections import read_cross_sections
 from plasma_bench.impact_ionization import ImpactIonization
 from plasma_bench.radiative_recombination import RadiativeRecombination
 from plasma_bench.precise_geometry import ARITHMETIC, BITS, DIGITS, widths
@@ -22,7 +24,8 @@ from .implicit_plasma_records import provenance, freeze
 def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0,
         projection_method='galerkin', extend_velocity=False, newborn_spacing_fraction=0.,
         velocity_refinement_rounds=0, maximum_refined_velocity_cells=256,
-        refine_heavy_species=False, electron_cells=None, normalization_shift_bits=0):
+        refine_heavy_species=False, electron_cells=None, normalization_shift_bits=0,
+        coulomb_log=None, neutral_elastic_file=None):
     out = Path(destination)
     if out.exists() or not np.isfinite(source_interval_ns) or source_interval_ns <= 0 or cells < 2:
         raise ValueError('Fresh output and positive source interval/velocity resolution required')
@@ -35,7 +38,20 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0,
     ion = ImpactIonization.from_file('data/atomic/argon/argon.json')
     rr = RadiativeRecombination.from_file('data/atomic/recombination/argon_rr.json')
     network = AtomicNetwork(ion, rr)
-    source = VectorizedAtomicMoments(network, 39.948*atomic_mass, [0., 0., 0.])
+    source = (VectorizedAtomicMoments(network, 39.948*atomic_mass, [0., 0., 0.])
+              if coulomb_log is None else
+              VectorizedCollisionalAtomicMoments(network, 39.948*atomic_mass,
+                                                [0., 0., 0.], coulomb_log=coulomb_log))
+    neutral_input = None
+    if neutral_elastic_file is not None:
+        if coulomb_log is None:
+            raise ValueError('This combined neutral/charged source requires explicit --coulomb-log')
+        neutral_input = read_cross_sections(neutral_elastic_file)
+        sections = [s for s in neutral_input['sections'] if s.kind == 'ELASTIC' and s.target == 'Ar']
+        if len(sections) != 1:
+            raise ValueError('Exactly one Ar ELASTIC momentum-transfer table required')
+        source = ElasticAtomicMoments(network, 39.948*atomic_mass, [0., 0., 0.],
+                                      coulomb_log=coulomb_log, elastic_section=sections[0])
     refinement_species = list(range(network.count)) if refine_heavy_species else None
     identity = provenance(['examples.reactive_material_subcycling'])
     out.mkdir(parents=True)
@@ -53,14 +69,26 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0,
         velocity_refinement_rounds=velocity_refinement_rounds,
         maximum_refined_velocity_cells=maximum_refined_velocity_cells,
         velocity_refinement_species=refinement_species, normalization_shift_bits=normalization_shift_bits,
+        collision_model=None if coulomb_log is None else 'finite_drift_maxwellian_charged_pairs',
+        coulomb_log=coulomb_log,
+        neutral_collision_model=None if neutral_input is None else 'tabulated_ground_argon_electron_elastic',
         minimum_density_width_m=0., coalesce_ulps=coalesce_ulps,
         intervals=[], failure=None, minimum_free_disk_bytes=256*2**20,
         inputs=dict(ionization_sha256=ion.input_sha256, recombination_sha256=rr.input_sha256),
         scope='Full original20ns ground-ladder argon target. Physical masses, all species, '
               'fine density cuts and precise supports retained. Source timing is explicit and '
               'unconverged; actual acoustic/plasma transport steps are recorded separately. '
-              'No physical-width coarsening, shortened success, collision or formation claim.')
+              'No physical-width coarsening or shortened success. Charged collisions are '
+              'enabled only by the recorded collision_model and explicit Coulomb logarithm; '
+              'ground-neutral/electron elastic scattering requires the separately recorded private input. '
+              'Other neutral channels, physical screening and formation validation remain absent.')
+    if neutral_input is not None:
+        report['inputs']['neutral_elastic_sha256'] = neutral_input['input_sha256']
+        report['neutral_elastic_energy_bounds_ev'] = sections[0].energy_ev[[0, -1]].tolist()
+        report['neutral_elastic_provider'] = 'LXCat BSR-500, O. Zatsarinny and K. Bartschat; https://www.lxcat.net/BSR'
     def save():
+        if neutral_input is not None:
+            report['maximum_observed_elastic_probability_outside_table'] = source.maximum_elastic_outside_probability
         report['elapsed_seconds'] = time.perf_counter()-began
         (out/'summary.json').write_text(json.dumps(report, indent=2,
             default=lambda value: value.item())+'\n')
@@ -161,9 +189,12 @@ if __name__ == '__main__':
     parser.add_argument('--refine-heavy-species', action='store_true')
     parser.add_argument('--electron-cells', type=int)
     parser.add_argument('--normalization-shift-bits', type=int, default=0)
+    parser.add_argument('--coulomb-log', type=float)
+    parser.add_argument('--neutral-elastic-file')
     args = parser.parse_args()
     result = run(args.destination, args.source_step_ns, args.cells, args.coalesce_ulps,
                  args.projection_method, args.extend_velocity, args.newborn_spacing_fraction,
                  args.velocity_refinement_rounds, args.maximum_refined_velocity_cells,
-                 args.refine_heavy_species, args.electron_cells, args.normalization_shift_bits)
+                 args.refine_heavy_species, args.electron_cells, args.normalization_shift_bits,
+                 args.coulomb_log, args.neutral_elastic_file)
     raise SystemExit(0 if result['success'] else 1)

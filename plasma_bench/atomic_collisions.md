@@ -58,5 +58,9 @@ cross section, anisotropy, photon escape or physical wall model is added.
 
 Linear independent mass/charge/momentum/energy invariants remain those of the
 reaction model. Populations, current and temperatures change self-consistently
-within this homogeneous local source. There is still no spatial flux or evolving
-electromagnetic field, so this is not yet installed in the moving pulse.
+within this local source. `VectorizedCollisionalAtomicMoments` now connects it
+to the precise moving planar reaction runner; the driven coil path still needs
+changing-population integration. `add_pair_generator` exposes the unchanged
+opposite-row assembly for density-free K0,H0, allowing the explicit elastic
+neutral wrapper to use the same conservative coordinate representation. The
+base class itself still selects only occupied charged pairs.

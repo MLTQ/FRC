@@ -19,7 +19,7 @@ abstract prescribed waveform; this repository does not design pulsed power.
 | Vacuum fields and drive | Axisymmetric circular coils, prescribed waveforms, flux and field calculations, magnetic-only exterior coupling | Actual exterior vacuum is retained; chamber/end/contact assumptions vary by model and must be read with the chosen experiment. |
 | Moving plasma | Conservative material motion, separate electron/ion temperatures, finite carrier masses, Hall/current inertia, full axisymmetric field/current components and moving magnetic vacuum | Several research paths exist. They are not one finished, validated formation solver. Current, thermal and edge accuracy remain open. |
 | Configured coil experiments | Metre-scale JSON experiments and complete bias/pulse trajectories, including paired finite-drift Coulomb force/heat | Preparation is assumed. Strong-pulse current is not time/spatially converged; a refined trajectory stopped at the unimplemented wall/sheath contact. |
-| Atomic physics | Attributed argon ionization/recombination, resolved-level source studies, radiation components and conservative momentum/energy sources | Some channels, product branching, neutral scattering, photon transport and complete moving coupling remain absent. |
+| Atomic physics | Attributed argon ionization/recombination, resolved-level source studies, radiation components, conservative momentum/energy sources and sourced electron/ground-neutral elastic moments | Product branching, other neutral channels, photon transport and complete driven coupling remain absent. |
 | Changing species in motion | Separate-support planar Euler–Poisson transport plus actual argon reactions, exact empty exterior and explicit energy accounting | Newly corrected runs finish, but electron-current refinement and local thermal transfer remain inaccurate. This planar component is separate from the coil experiment. |
 | Molecular gases | New sourced H2/N2/O2 total-ionization cross sections and bounded Maxwellian integrals | Total ionization is only one component. D2 data, products, internal energy, dissociation, attachment and complete transport/coupling remain unfinished. |
 | Visualization | Scientific plots, topology diagnostics and interactive 3D playback of saved axisymmetric runs | Playback shows its archived run. It is not evidence of a three-dimensional solver or an interactive, validated lab-design tool. |
@@ -46,6 +46,15 @@ within0.056% at lower observed cost. It remains34.2% away from the existing
 1024-cell numerical reference, so the256-electron run is now active. Independent analytic
 expansion families now complete their original full durations. [VARIANCE_TRANSFER.md](VARIANCE_TRANSFER.md) records all
 current evidence and limitations. Defaults remain unchanged.
+
+The original variance5ns trajectory now also completes20ns. Its10/5ns current
+difference is0.0434%, but Ar8 T differs0.1612eV RMS, keeping local accuracy open.
+Charged collisions now feed back into the moving reaction slab in a complete
+20ns run. Sourced electron/ground-neutral elastic moments complete independent
+full relaxation comparisons, including recoil and heat, and their moving source
+completes20ns with total-energy drift2.842e-11. See [neutral-collision evidence](ELASTIC_NEUTRALS.md)
+and [moving charged-collision evidence](ATOMIC_COLLISIONS.md). These are distinct
+component advances, not a completed laboratory simulator.
 
 The extreme trace-ion velocity was an approximation error across density
 contrast, reproduced independently at 100-digit precision. A constrained

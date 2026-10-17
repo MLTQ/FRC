@@ -114,3 +114,29 @@ The report records the requested shift; impossible scales reject. This addresses
 measured arithmetic heat loss, not missing physical thermal transport. The
 actual-source100digit comparison and complete20ns control are in
 `docs/VARIANCE_TRANSFER.md`.
+
+`--coulomb-log` optionally enables the existing displaced-Maxwellian paired
+charged-species collision source, with the supplied positive logarithm. The
+default remains reaction-only. Each local source half uses the existing
+collision-half/reaction-full/collision-half composition; updated species
+momenta and energies return to their actual moving supports and alter subsequent
+current, Gauss field and pressure. All occupied charged pairs participate once.
+No prescribed drag or duplicate heating is applied. Ionization, recombination,
+physical masses, exact vacuum, full20ns target and recorded transport steps stay.
+
+This joins previously independent moving/reaction and homogeneous collision
+components. The latter's complete independent velocity-integral comparisons are
+in `docs/ATOMIC_COLLISIONS.md`; they do not validate the new coupled trajectory.
+The declared logarithm, Maxwellian shape, small-drift atomic source, missing
+neutral channels/screening and current spatial accuracy remain limitations.
+Use the matched full reaction-only trajectory to measure the collision effect;
+the low-density slab is not the provisional chamber-fill experiment.
+
+`--neutral-elastic-file PERSONAL_LXCAT_TEXT` additionally enables sourced Ar
+ground-neutral/electron elastic exchange, requiring explicit `--coulomb-log`
+for this combined source. Exactly one Ar ELASTIC momentum-transfer table is
+selected. Both species receive the same paired force/heat with recoil; their
+physical masses and actual populations remain. Other neutral collision channels
+are still absent. The report records private input SHA, attribution, energy bounds
+and maximum observed probability outside the table at collision stages; that
+probability is not a missing-force/heat bound. No provider table is bundled.

@@ -2,6 +2,7 @@
 import numpy as np
 from scipy.constants import elementary_charge as EV, electron_mass as ME
 from .atomic_frame import FixedFrameAtomicMoments
+from .atomic_collisions import CollisionalAtomicMoments
 
 
 class VectorizedAtomicMoments(FixedFrameAtomicMoments):
@@ -73,3 +74,10 @@ class VectorizedAtomicMoments(FixedFrameAtomicMoments):
             diagnostic.update(maximum_drift_over_electron_thermal=None,
                               maximum_heavy_thermal_over_electron_thermal=None)
         return matrix, diagnostic
+
+
+class VectorizedCollisionalAtomicMoments(CollisionalAtomicMoments):
+    """Existing paired collision split with array-assembled reaction moments."""
+    def __init__(self, network, neutral_mass, reference_velocity, *, coulomb_log):
+        super().__init__(network, neutral_mass, reference_velocity, coulomb_log=coulomb_log)
+        self.reactions = VectorizedAtomicMoments(network, neutral_mass, reference_velocity)
