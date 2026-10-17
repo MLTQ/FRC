@@ -18,8 +18,10 @@ Current live work supersedes old live-status statements below:
 -16298: same captured actual initial state with Ar9 density-jump contrast1e4,
  38→42velocity elements, full5ns target, `reaction_density_jump_transport`,
  frozen `/private/tmp/frc-density-jump-20261017`.
--66102: independent cosine density-step64/128/256 family.64/128 complete;
- 256 still running. **Imports main**, so preserve its source closure.
+-66102/PID533: independent cosine density-step64/128/256 family.64/128 complete;
+ 256 archive writer is **SIGSTOP suspended for storage**, not terminated or
+ physically complete. `resource_pause.json` records the05:14:56UTC pause with
+ 921714688bytes free. **Imports main**, so preserve its source closure.
 -Full20ns coupled density-jump prototype: launch tool response truncated and
  handle unavailable; **PID2415 confirmed live** by direct process inspection.
  Output `reactive_material_argon_density_jumps_5ns`, frozen root
@@ -32,10 +34,15 @@ contrast/species options through the existing conservative return, preserving
 old nodes, fine cuts, all species,128-bit scaling and physical masses. Collect
 complete local thermal/front/E/J results before deciding integration. No2.5ns
 source run, unit suite, floor/cutoff or publication. Goal and thermal bead stay
-open. Preserve user poster. Last disk availability~1.7GiB; retain256MiB reserve.
+open. Preserve user poster. Last disk availability~0.86GiB; retain256MiB reserve.
 Cosine256 has left its evolution loop and is writing its full state archive;
 full-duration success is not yet known, and summary still contains only64/128. Monitor disk
 before staging its large raw archive or starting any further simulation.
+User was asked asynchronously to free several GB or provide another local
+volume. That is an operational storage request, not a pause of the active goal.
+Other argon calculations continue. After sufficient free disk is available,
+verify PID533 still names this exact cosine command and send SIGCONT; do not
+restart it, delete its partial NPZ or count an incomplete family as successful.
 
 
 The user explicitly set completion of the lab-facing virtual plasma bench as an

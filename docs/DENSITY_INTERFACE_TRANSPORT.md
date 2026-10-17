@@ -114,7 +114,16 @@ internal jump and both vacuum boundaries while keeping the same physical
 problem and duration. Uniform remains the default. The64/128 runs finish in
 3783/17733 steps, peakcentralT0.822741/0.909599eV, normalized temperature
 L1 error0.955088/0.784399 and maximumErel1.849e-10/4.637e-11. The256 case
-is still live; no full-family claim. Its declared100000-step ceiling and original
+is not yet terminal; no full-family claim. Its declared100000-step ceiling and original
 duration remain unchanged. This run imports main; preserve its source closure
 until terminal. Source SHA
 `786801b144ccc5dcf9eb57dab4b3e1811e6ff385953f8d43bf57be040a6c4873`.
+
+At05:14:56UTC the256-cell raw archive was still growing and only921714688bytes
+remained free on the host. Its identified writerPID533/session66102 was
+temporarily SIGSTOP-suspended to preserve memory and partial output before a
+disk-full failure. `resource_pause.json` records this operational pause. No
+physical state, duration or success flag changed. Resume with SIGCONT after
+verifying identity and sufficient storage; do not restart or delete the partial
+archive. The active goal and other argon calculations continue. The user has
+been asked to free several GB or name another local output volume.
