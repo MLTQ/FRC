@@ -1,5 +1,66 @@
 # Current goal continuation, 2026-10-17
 
+## User-requested pause and latest checkpoint — 17 October 2026
+
+The user asked to wrap up because usage is nearly exhausted. Pause the app goal;
+keep the scientific goal and remaining beads open. This entry supersedes older
+LIVE/next-action notes below. No new long run should start during this pause.
+
+**Preserved replay:** PID33081 / tool session2255 is SIGSTOP-suspended, verified
+state Ts, not killed. It has reproduced1700/2058 original transport steps with
+zero bound and energy differences. The exact in-memory step may be slightly
+later than this100-step reporting checkpoint. It uses frozen source
+/private/tmp/frc-balanced-acoustic-20261017. The original coupled run succeeded
+only through10ns, then completed its third5ns transport and rejected source
+thermal energy; it is not a successful15/20ns coupled result.
+
+**First next action:** recover available disk above the256MiB reserve plus export
+headroom (prefer at least1GiB). Available space at suspension was168MiB (later about319MiB); usual
+uv/npm/Cargo/Gradle caches are already cleared. Do not delete raw research,
+frozen sources or private inputs. Verify PID33081 still has the exact command
+ending outputs/reaction_source_gather_failure/replay.py before sending SIGCONT.
+Then poll2255 to completion, inspect rejected_moments/rejected_gather_input or
+rejected_reaction_input plus traceback, and compare the actual rejected energy
+arithmetic at independent high precision before changing source code. Do not
+restart or shorten this preserved2058-step replay. If the process is lost, the
+immutable10ns input and full original dt sequence enable a fresh reconstruction
+in a new output directory; the live in-memory partial stage is not yet saved.
+
+**Completed kinetic work:** eight full20ns two-species runs and four full20ns
+ion-front runs are terminal. New Vlasov-Poisson component retains physical
+Ar+/electron masses and initially exact vacuum, evolves current/parallel heat,
+and records explicit finite velocity truncation, boundary losses and numerical
+minmod diffusion. Independent Gaussian-characteristic errors decrease for the
+electrons. Coupled energy drift2.8266%→1.0816%→.40548%; successive current
+changes20.59%→15.84%, heat11.08%→4.13%. Current and heavy-front resolution are
+not adequate for adoption. Half-dt and10sigma controls complete. Fluid/kinetic
+current/E differences102.21%/27.50% are distinct-closure sensitivity, not truth.
+Read docs/VLASOV_SLAB.md and the new code companions. Source
+6721a90428179197fc54e282643c820bb9f1d55b6a6157e966b00a17593d34d5.
+Bead frc-transport.4.1 remains in progress for accuracy; no unit suite was run.
+All new raw NPZ arrays remain on disk, deliberately outside Git to avoid disk
+duplication. Their SHA256/size manifest is saved and committed at
+outputs/vlasov_slab_comparison/raw_manifest.json; do not delete those arrays.
+
+**Visualization:** /20mt/ now includes the current paused status and the new
+measured kinetic/fluid comparison. The original3D formation fields and playback
+remain unchanged. URL http://127.0.0.1:8790/20mt/; standalone files are in
+outputs/material_experiment_volume_20mt_10ns_display. The loopback-only server
+serves /private/tmp/frc-wrap-viewer-20261017 (20mt symlink to that directory).
+Server tool session3336 remains live; browserchecked the status, comparison
+image and original playback. Restart with .venv/bin/python -m http.server 8790
+--bind 127.0.0.1 --directory /private/tmp/frc-wrap-viewer-20261017.
+
+**Storage/tool state:** verified Unity children31801/33447 were stopped
+individually; their uv31730/33412 parents exited. Normal uv cleanup removed
+4870files/126.8MiB; no force. Codex47022/47121 remain alive. Further host disk
+consumption drove free space below reserve. The simulation is intentionally
+suspended for this pause, not terminal. Preserve the user's modified
+outputs/frc_showcase/poster.png; it is excluded from our commit. All research
+is local; no remote or publication. H2/D2 MCCC raw inputs stay private in
+/private/tmp/frc-mccc-personal. Molecular coupling, collisional/magnetized heat,
+current/thermal accuracy, walls and converged formation remain open.
+
 ## Acoustic verification complete; reaction-stage rejection captured next (2026-10-17)
 
 Both original balanced runs are terminal; do not restart PID30133 or30147.
