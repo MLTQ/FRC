@@ -1,5 +1,11 @@
 # Density interfaces and mechanical resolution
 
+Current execution note: storage again fell below the reserve after the recovery
+described below. Ar9-only16298/PID1882, coupledPID2415 and all-heavy81727/PID6975
+are now SIGSTOP-suspended with their states preserved. Source/data are unchanged.
+See THREAD_HANDOFF and outputs/storage_clone_checkpoint/blocker.json. Resume the
+same verified processes, preferably serially, after sufficient space is available.
+
 The active lab-facing goal remains unfinished. This experiment addresses the
 local thermal-transport defect in `frc-transport.5.5.5`. It is a concrete
 neutral Euler comparison followed by actual argon-stage and coupled-run trials;

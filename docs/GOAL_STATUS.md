@@ -1,5 +1,19 @@
 # Active research: a credible experimental FRC simulation
 
+## Execution blocked by host storage (2026-10-17)
+
+The full lab-facing objective remains unfinished and unchanged. Storage has
+blocked calculations across three consecutive goal turns, including a preserved
+ENOSPC export failure. Temporary recovery and620MB of byte-identical archive
+sharing were insufficient: free space again fell to153MiB. All three remaining
+argon calculations are suspended in memory, with exact PIDs, source roots and
+resume order in [THREAD_HANDOFF.md](THREAD_HANDOFF.md). Their physics, inputs
+and requested durations are unchanged; no partial run counts as completion.
+Remaining duplicate candidates already share storage, and the small temporary
+source roots are retained. More host space or another writable local volume is
+needed before physical simulation can safely continue. The user request for
+storage is pending. This is an operational blocker, not scientific completion.
+
 ## Density-interface transport defect isolated (2026-10-17)
 
 The lab-facing goal remains active. A complete independent neutral Euler

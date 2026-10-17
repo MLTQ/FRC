@@ -2,6 +2,24 @@
 
 ## Latest checkpoint: density-interface correction candidate
 
+**Execution is blocked by host storage; the full goal remains unfinished.**
+The same resource constraint has recurred across three consecutive goal turns.
+After temporary recovery and storage sharing, free space again fell to153MiB.
+All three remaining processes are now SIGSTOP-suspended, with T state verified:
+Ar9-only PID1882/session16298; coupled PID2415 (tool handle unavailable);
+all-heavy PID6975/session81727. Their resource_pause.json files record the
+latest pause. Do not mistake these processes for terminal or restart them.
+
+The user already has an asynchronous request to free severalGB or supply another
+local volume. Remaining102 duplicate archive candidates already share identical
+inodes; all FRC temporary files total only0.2496GiB and include preserved source
+roots. No further material safe recovery was found. See
+outputs/storage_clone_checkpoint/blocker.json for the three-turn audit.
+After adequate storage is available, verify each PID command before SIGCONT.
+Prefer serial continuation:1882, then2415, then6975. Keep256MiB reserve plus
+severalGiB headroom for exports and host swap. Preserve frozen sources and all
+raw files. The original scientific requirements and objective are unchanged.
+
 Read [DENSITY_INTERFACE_TRANSPORT.md](DENSITY_INTERFACE_TRANSPORT.md) first.
 The independent buried-jump neutral run26418 EXIT1 reaches3040.63eV and
 334km/s before hitting the remote boundary at0.638us. Its matched one-node
@@ -54,8 +72,9 @@ available; their resource_pause.json files record resume. A one-time filesystem
 clone operation shares620266502bytes across92 byte-identical completed NPZ
 duplicates, retaining every path/hash and independent future writes.102 differing
 metadata/link candidates were skipped. See outputs/storage_clone_checkpoint.
-The user's storage question remains pending, but no process is currently paused
-for storage. Do not duplicate the2.1GiB raw archive in Git while space is tight;
+The user's storage question remains pending. The three processes resumed at
+that checkpoint have since been suspended again as described above. Do not
+duplicate the2.1GiB raw archive in Git while space is tight;
 preserve it locally with its source, metadata and checksum. No research data or
 user file was deleted. Run wall times include pauses/export, not pure compute.
 
