@@ -1,5 +1,26 @@
 # Compatible material dynamics with explicit precise geometry
 
+Within one pressure/acoustic/material-rate call, reuse the widths returned by
+that call's full state validation. The private `_pressure_from_widths` helper
+accepts only those just-validated widths. Public pressure still validates every
+call; no state, mutable-array identity or persistent geometry cache is retained.
+Field assembly uses its own just-validated block widths in the unchanged
+factored number-density expression. Totals calls the validating field assembly
+first and reuses that result. All geometry, finite-state, heat and support
+checks still occur before physical assembly; their duplicate computation is
+removed. Physical arithmetic and accumulation order remain unchanged. This
+targets the saved full-run profile's repeated validation/width cost and requires
+a full matched trajectory comparison before a speed or equivalence claim.
+
+The complete matched all-heavy contrast-10000 run with 10 ns source intervals
+now completes the original 20 ns in 1,024 transport steps. Every saved array
+in the initial state, both coupled states and both transport histories is
+identical to the original run, including precise coordinates and accepted dt.
+Final relative energy error is unchanged at 2.63129835904e-11. Observed elapsed
+times are 78.67/72.70 s under different host load, not a controlled speedup.
+See outputs/reactive_material_argon_width_reuse_10ns. Local thermal/current
+convergence and physical closure requirements remain unchanged.
+
 Material membership searches now use `precise_search`: monotone float rounding
 only bounds the index, and all equal-float ties are resolved using the original
 precise coordinates. No cell is assigned from a rounded coordinate alone.
@@ -37,9 +58,12 @@ Acceleration now solves the same physical mass equation using symmetric
 diagonal equilibration from `mass_scaling`, also used by reaction return.
 Saved charged-source states exposed acceleration errors as large as1.96e8
 relative under the old unbalanced solve. No mass regularization or force
-modification is introduced. The existing acoustic generalized eigenvalue
-calculation is unchanged; on those states it agrees with its equilibrated
-form within7.32e-16 relative.
+modification is introduced. The acoustic generalized eigenproblem now uses the
+same invertible diagonal coordinate scaling, via largest_mass_eigenvalue, with
+the original stiffness and physical mass. Earlier states agreed within7.32e-16;
+the new actual Ar2 failure requires balancing at mass condition1e101. Its
+100-digit comparison and full-prefix replay are in reaction_acoustic_eigenfailure.
+No frequency cutoff, retry, mass change or relaxed acoustic timestep is added.
 
 Optional `velocity_faces` selects an exact nested velocity mesh rather than
 rebuilding cosine targets. Its endpoints must span the occupied block and

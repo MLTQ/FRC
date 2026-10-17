@@ -3,8 +3,7 @@ from dataclasses import dataclass
 from .precise_geometry import decimal as Decimal
 import numpy as np
 from scipy.constants import elementary_charge as EV, epsilon_0 as EPS0
-from scipy.linalg import eigh
-from .mass_scaling import solve_mass_banded
+from .mass_scaling import solve_mass_banded, largest_mass_eigenvalue
 from .velocity_selection import select_velocity_indices
 from .precise_search import searchsorted
 from .precise_geometry import coordinates, decimal, widths, fraction, interpolate, geometry_precision
@@ -110,7 +109,10 @@ class PreciseMaterialSubcells(MaterialSubcells):
 
     @geometry_precision
     def pressure(self, state):
-        h = self.validate(state)
+        return self._pressure_from_widths(state, self.validate(state))
+
+    def _pressure_from_widths(self, state, h):
+        """Evaluate stress using widths validated for this exact call's state."""
         pressure = (self.gamma-1)*state.thermal/h
         sound = np.sqrt(self.gamma*(self.gamma-1)*(state.thermal/self.relative_numbers[None, :])/self.mass[0])
         coarse_h = widths(state.faces[0, self.velocity_indices])
@@ -127,26 +129,25 @@ class PreciseMaterialSubcells(MaterialSubcells):
 
     @geometry_precision
     def acoustic_timestep(self, state):
-        p, q, _ = self.pressure(state)
+        fine_h = self.validate(state)
+        p, q, _ = self._pressure_from_widths(state, fine_h)
         h = widths(state.faces[0, self.velocity_indices])
-        coefficient = self.gamma*(p[0]+q[0])*self.validate(state)[0]/h[self.owner]**2
+        coefficient = self.gamma*(p[0]+q[0])*fine_h[0]/h[self.owner]**2
         stiffness = np.zeros_like(self.mass_matrix)
         j = self.owner
         for row, col, sign in [(j, j, 1), (j+1, j+1, 1), (j, j+1, -1), (j+1, j, -1)]:
             np.add.at(stiffness, (row, col), sign*coefficient)
         frequency = 0.
         if np.any(coefficient):
-            eigen = eigh(stiffness/self.mass_scale, self.mass_matrix/self.mass_scale,
-                subset_by_index=[self.velocity_cells, self.velocity_cells], eigvals_only=True, check_finite=False)[0]
-            if eigen < 0:
-                raise ValueError('Negative maximum acoustic eigenvalue')
+            eigen = largest_mass_eigenvalue(stiffness, self.mass_matrix)
             frequency = np.sqrt(eigen)
         deformation = float(np.max(abs(np.diff(state.velocity[0, :, 2]))/h, initial=0.))
         return self.cfl/max(frequency, deformation) if max(frequency, deformation) > 0 else np.inf
 
     @geometry_precision
     def material_rate(self, state, geometry, frame_z):
-        p, q, _ = self.pressure(state)
+        fine_h = self.validate(state)
+        p, q, _ = self._pressure_from_widths(state, fine_h)
         stress, j = p+q, self.owner
         force = np.zeros_like(state.velocity)
         weighted = stress[0]*self.span
@@ -164,7 +165,7 @@ class PreciseMaterialSubcells(MaterialSubcells):
             e0, e1 = electric[:-1][inside], electric[1:][inside]
             mean = (e0+e1)/2
             first = (e0+2*e1)/6
-            weight = EV*self.charge[0]*self.relative_numbers[k]/self.validate(state)[0, k]*h
+            weight = EV*self.charge[0]*self.relative_numbers[k]/fine_h[0, k]*h
             np.add.at(force[0, :, 2], owner, weight*((1-a)*mean-span*first))
             np.add.at(force[0, :, 2], owner+1, weight*(a*mean+span*first))
         acceleration = solve_mass_banded(self.matrix[0], force[0])[None, ...]
@@ -196,17 +197,18 @@ class PreciseMaterialSubcells(MaterialSubcells):
 class PreciseMaterialSet(MaterialSpeciesSet):
     @geometry_precision
     def field(self, state):
-        self.validate(state)
+        block_widths = self.validate(state)
         edges = np.unique(np.r_[self.bounds, state.faces])
         h = widths(edges)
         x = (edges[:-1]+edges[1:])/Decimal(2)
         charge = np.zeros(len(x))
         active = []
-        for m, s in zip(self.models, state.blocks):
+        for m, s, block_h in zip(self.models, state.blocks, block_widths):
             j = searchsorted(s.faces[0], x, side='right')-1
             inside = (j >= 0) & (j < m.cells)
             active.append((j, inside))
-            charge[inside] += EV*m.charge[0]*m.number_density(s)[0, j[inside]]
+            density = (m.relative_numbers[None, :]/block_h)*m.number_scale
+            charge[inside] += EV*m.charge[0]*density[0, j[inside]]
         electric = np.r_[self.left_electric, self.left_electric+np.cumsum(charge*h)/EPS0]
         energy = EPS0/6*np.sum(h*(electric[:-1]**2+electric[:-1]*electric[1:]+electric[1:]**2))
         return edges, electric, active, float(energy)
@@ -228,7 +230,7 @@ class PreciseMaterialSet(MaterialSpeciesSet):
 
     @geometry_precision
     def totals(self, state):
-        self.validate(state)
+        edges, electric, active, field = self.field(state)
         number, momentum, kinetic, thermal = [], np.zeros(3), 0., 0.
         for m, s in zip(self.models, state.blocks):
             left, right = (v+self.reference_velocity for v in m.fine_velocity(s.velocity))
@@ -238,7 +240,6 @@ class PreciseMaterialSet(MaterialSpeciesSet):
             momentum += np.sum(mass[:, None]*(left+right)/2, axis=0)*scale
             kinetic += np.sum(mass/6*np.sum(left*left+left*right+right*right, axis=1))*scale
             thermal += s.thermal.sum()*scale
-        edges, electric, active, field = self.field(state)
         empty = ~np.any(np.stack([inside for _, inside in active]), axis=0)
         exterior = EPS0/6*np.sum(widths(edges)[empty]*(electric[:-1][empty]**2+
             electric[:-1][empty]*electric[1:][empty]+electric[1:][empty]**2))

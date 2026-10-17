@@ -1,5 +1,44 @@
 # Active research: a credible experimental FRC simulation
 
+## All-heavy stage complete; acoustic failure diagnosed and corrected (2026-10-17)
+
+The preserved all-heavy captured stage (81727/PID6975) is TERMINAL EXIT0 at
+its original 5 ns: 350 steps, all 227,649 density cells, Erel 3.29120e-12.
+Ar5–Ar9 peaks fall to .653/.698/.778/.972/.468 eV from 4.21/5.63/7.87/14.18/
+370.16 eV. Ar8/Ar9 volume RMS excess above reversible compression becomes
+.0234416/.0157336 eV. Lower-charge edge cooling and some larger excess remain;
+this is not general thermal convergence. Updated full-support/detail plots
+were inspected. Do not resume or restart the finished PID6975.
+
+The full matched 20 ns width-reuse control completes 1,024 steps with all 202
+saved arrays identical to the original, including precise geometry, dt and
+budgets. Source 7035e614...3684. The subsequent full all-heavy 5 ns-source run
+(30896) is TERMINAL EXIT1 at 10 ns completed coupled time plus 73 internal
+steps, failing an acoustic eigenproblem. All accepted data/source moments stay
+in reactive_material_argon_all_density_jumps_5ns; this is not a full success.
+
+Exact replay reproduces every accepted bound and energy, isolating Ar2's
+53-by-53 problem. Its mass condition is 1.03e101, reduced to 3.005 by invertible
+diagonal equilibration. Balanced gvx/gvd agree with an independent 100-digit
+largest eigenvalue to 1.05e-16. No mass, stiffness, species, mesh, temperature or
+timestep-rule change is introduced. Main now applies that arithmetic scaling.
+See [ACOUSTIC_MASS_SCALING.md](ACOUSTIC_MASS_SCALING.md) for full evidence.
+
+LIVE corrected runs from /private/tmp/frc-balanced-acoustic-20261017:
+- Full original 20 ns all-heavy/5 ns-source: PID30147/session54457, output
+  reactive_material_argon_all_density_balanced_5ns, source e8aeb92c...de81.
+  Completed coupled time 10 ns; interval three remains live.
+- Independent full neutral-decay and charged-affine 16/32/64 family:
+  PID30133/session16983, output precise_material_balanced_acoustic,
+  source 34a50517...b5e0. Decay16 completes; remaining cases live.
+Both process identities were verified running at about15:32 UTC. About2.1GiB
+free; preserve256MiB export reserve and the frozen sources. Unchanged stdout
+is not termination. Next collect both full requested results, inspect analytic
+conservation/convergence and compare full coupled 5/10 ns endpoints. Do not
+restart live jobs, treat a prefix as success, or launch another source interval
+before these results. Physical gas/current/thermal/boundary/formation work and
+the overarching goal remain open. No unit suite or publication.
+
 ## Compression refinement rejected; full 2,048-cell reference (2026-10-17)
 
 The goal remains active. Both full adaptive 20 ns plasma candidates completed

@@ -1,5 +1,36 @@
 # Density interfaces and mechanical resolution
 
+## All-heavy captured stage completes; full coupled comparison underway
+
+The original all-heavy captured 5 ns stage is terminal successful (81727 EXIT0),
+350 steps, all 227,649 density cells retained, Erel 3.29120e-12. Ar5–Ar9 endpoint
+peaks fall from 4.21/5.63/7.87/14.18/370.16 eV to .653/.698/.778/.972/.468 eV.
+Ar8 volume RMS excess above reversible compression falls .722809→.0234416 eV;
+Ar9 falls 29.7306→.0157336 eV. Full-support and interface plots now include
+original, Ar9-only and all-heavy endpoints and have been inspected.
+
+Lower-charge edge cooling increases, and their volume RMS excess can increase:
+Ar0 .00000355→.00078439 eV. This is not general thermal convergence. An adiabatic
+reference is not an exact shock solution, and no population is omitted because
+it is small. Independent 80-digit widths reproduce the new Ar8/Ar9 reversible
+reference within 5.55e-17 eV. Full data and the all-species table are in
+outputs/reaction_density_jump_heavy_transport/README.md. PID6975 is finished.
+
+Eliminating duplicate within-call width calculations preserves every saved
+array in a complete matched 20 ns all-heavy/10 ns-source run: 1,024 steps,
+Erel 2.63129835904e-11. This is a runtime simplification, not a physical change.
+The new full 20 ns all-heavy/5 ns-source trajectory uses that evaluated source
+(7035e61481459796986bded32038e00a468d8133563ea45d5c17c52fbfdb3684), frozen under
+/private/tmp/frc-all-heavy-coupled-5ns-widths-20261017, session30896.
+It is now terminal failed (30896 EXIT1): completed coupled time 10 ns, followed
+by 73 accepted internal steps in the third interval before the acoustic
+generalized eigensolver reported '2 eigenvectors failed to converge'. Source
+moments, exact inherited knots, accepted steps and failure are preserved. This
+is not a full coupled success. Reconstruct that actual state and compare its
+physical eigenproblem with independent high-precision arithmetic before a
+corrected full-duration run. Extra enrichment also prevents a pure temporal-
+order claim. All spatial/current/physical-closure requirements remain.
+
 ## Complete coupled20ns candidate
 
 The original Ar9-only density-interface trajectory now reports terminal success
