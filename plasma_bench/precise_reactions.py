@@ -8,6 +8,7 @@ from .constrained_velocity_projection import constrained_velocity
 from .variance_projection import variance_projection
 from .velocity_extension import inherited_velocity_faces
 from .velocity_refinement import refine_velocity_faces
+from .density_velocity_refinement import refine_density_jumps
 from .precise_geometry import decimal, widths, fraction, quadrature, interpolate, geometry_precision
 from .precise_material import PreciseMaterialSubcells, PreciseMaterialState, PreciseMaterialSet
 from .material_species_set import MaterialSetState
@@ -75,7 +76,8 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
         velocity_knots=None, energy_projection='local_total', projection_method='galerkin', extend_velocity=False, cfl=.15, maximum_plasma_phase=.04,
         numerical_viscosity=(.5, 2.), viscosity_limiter='minmod', newborn_spacing_fraction=0.,
         velocity_refinement_rounds=0, maximum_refined_velocity_cells=256,
-        velocity_refinement_species=None, normalization_shift_bits=0):
+        velocity_refinement_species=None, normalization_shift_bits=0,
+        density_jump_minimum_contrast=None, density_jump_species=None):
     if not isinstance(normalization_shift_bits, int) or not 0 <= normalization_shift_bits <= 512:
         raise ValueError('Explicit integer normalization shift from 0 to 512 bits required')
     if not isinstance(coalesce_ulps, int) or coalesce_ulps < 0:
@@ -92,6 +94,16 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
     if extend_velocity and projection_method == 'bounded_moments':
         raise ValueError('Convex bounded transfer cannot use extrapolating velocity shapes')
     source, network, values = overlap.source, overlap.source.network, state.moments
+    if density_jump_minimum_contrast is not None and (
+            not np.isfinite(density_jump_minimum_contrast) or density_jump_minimum_contrast <= 1):
+        raise ValueError('Explicit density-jump contrast>1 required')
+    selected_density_species = None
+    if density_jump_species is not None:
+        selected = np.asarray(density_jump_species)
+        if (selected.ndim != 1 or not np.issubdtype(selected.dtype, np.integer) or
+                np.any(selected < 0) or np.any(selected >= len(source.mass))):
+            raise ValueError('Valid integer species indices required for density-jump resolution')
+        selected_density_species = set(map(int, selected))
     selected_refinement_species = None
     if velocity_refinement_species is not None:
         selected = np.asarray(velocity_refinement_species)
@@ -172,6 +184,17 @@ def project_precise_reactions(overlap, state, *, velocity_cells, coalesce_ulps=0
                 refined, refinement_record = refine_velocity_faces(faces,
                     faces[model.velocity_indices], velocity_refinement_rounds, maximum_refined_velocity_cells)
                 if refinement_record['velocity_refinement_added_nodes']:
+                    model = PreciseMaterialSubcells(nn[first:last], mass, overlap.charge[species],
+                        (state.edges[0], state.edges[-1]), faces, velocity_cells,
+                        number_scale=population_scale, velocity_faces=refined, extend_velocity=extended,
+                        left_electric=state.left_electric, cfl=cfl, maximum_plasma_phase=maximum_plasma_phase,
+                        numerical_viscosity=numerical_viscosity, viscosity_limiter=viscosity_limiter)
+            if density_jump_minimum_contrast is not None and (
+                    selected_density_species is None or species in selected_density_species):
+                refined, density_record = refine_density_jumps(faces, nn[first:last],
+                    faces[model.velocity_indices], density_jump_minimum_contrast)
+                refinement_record['density_jump_refinement'] = density_record
+                if density_record['velocity_refinement_added_nodes']:
                     model = PreciseMaterialSubcells(nn[first:last], mass, overlap.charge[species],
                         (state.edges[0], state.edges[-1]), faces, velocity_cells,
                         number_scale=population_scale, velocity_faces=refined, extend_velocity=extended,

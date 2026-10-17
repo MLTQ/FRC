@@ -12,13 +12,31 @@ from the isolated5ns stage comparison below; the two refinements start at
 different points in the trajectory and must not be conflated.
 
 Raw endpoint/source/actual-step evidence is in
-outputs/reactive_material_argon_density_jumps_5ns. Its thermal renderer uses
-all Ar8/Ar9 cells; norms of complete E/J and common occupied volume remain to
-be evaluated separately. Keep threshold/space/time convergence and thermal
-accuracy open. PID6975/session81727 is now resumed and verified running on
-the preserved all-heavy captured stage. Main source-return controls remain
-unchanged pending completed comparison and broader evidence. The physics,
-physical masses, exact vacuum and represented populations are unchanged.
+outputs/reactive_material_argon_density_jumps_5ns. Its completed precise-union
+comparison includes455,321 intervals, sampled in8192-interval batches to bound
+memory. E/J L2 differences relative to the original trajectory are
+1.0999492e-7/1.6886118e-4. Ar9 common-volume temperature and velocity RMS changes
+are29.675866eV/6995.04289m/s; Ar8 temperature RMS changes0.003239458eV and
+electron T RMS7.40178e-5eV. Front differences are1.87180e-12m for Ar9 and
+3.65177e-11m for electrons. Pointwise maxima at displaced discontinuities remain
+recorded. This quantifies the local correction without inferring global accuracy.
+
+The evaluated source-return controls are now integrated as explicit options,
+disabled by default. Two fresh full20ns all-heavy10ns-source trajectories from
+main now complete, with contrasts10000 and100. Both take1024steps and retain
+21,385density cells with Erel2.6313e-11. Against the original10ns-source control,
+contrast10000 changes E/J by8.46607e-7/3.24718e-4 relativeL2 and Ar8/Ar9 maxima
+become0.202018/0.201416eV. Lower-charge edge cells cool to0.0078–0.0145eV;
+the neutral center stays0.1eV. Neutral/Ar1 front differences are42.24/41.74um.
+
+Contrast100 actually adds more velocity nodes and changes E/J from10000 by
+5.04981e-15/3.05631e-6. Ar8/Ar9 common-volume T RMS changes2.26503e-4/3.21265e-5eV;
+their velocity RMS changes31.6235/6.86396m/s. Strong edge cooling persists.
+These are threshold-sensitivity measurements, not proof of thermal/space/time
+convergence. READMEs and complete raw evidence are in the all_density_jumps_10ns
+and all_density_jumps_c100_10ns output directories. PID6975/session81727 remains
+live on the preserved all-heavy captured5ns stage. Physical equations, masses,
+exact vacuum and represented populations remain unchanged.
 
 ## Completed actual-stage spatial comparison
 
@@ -149,7 +167,7 @@ retry or temperature floor. The contrast is a spatial-resolution parameter.
 For the captured actual post-source initial state, contrast1e4 selects6 faces,
 adds4 nodes and changes Ar9 from38 to42 velocity elements; minimum spacing
 becomes1.345806842um. The old P1 field is interpolated exactly up to rounding.
-The actual complete final5ns transport trial16298 is running in
+The actual complete final5ns transport trial16298 completed successfully in
 `outputs/reaction_density_jump_transport`, frozen root
 `/private/tmp/frc-density-jump-20261017`, source SHA
 `d06d0a56719348a33ec1a55eae352af3cc08ae9b3d1756197226672f12917eec`.
@@ -189,20 +207,19 @@ The unchanged original half-acoustic/plasma restriction and minmodQ apply.
 A separate frozen full20ns argon trial applies the same explicit1e4 criterion
 only to Ar9 after each source return, alongside existing heavy midpoint
 enrichment. It uses the same variance projection,128-bit number/energy scaling,
-physical masses,5ns source interval and all fine cuts. It is running in
+physical masses,5ns source interval and all fine cuts. It completed successfully in
 `outputs/reactive_material_argon_density_jumps_5ns`, frozen root
 `/private/tmp/frc-source-density-jumps-20261017`, SHA
 `57fc439319938d37ef9643d9b6a129f8dbf292061a121c9b8f4e87d493ff5b8b`.
-At15ns it has completed the first three source intervals (367.368s elapsed).
-At10ns it had completed325/203 transport steps and retained21161 density cells,
-Erel1.71068e-11. Ar9 had30 velocity elements after the second return. This
-prefix is not a completed physical result. Its launch tool handle was lost in
-output truncation; processPID2415 was directly confirmed live. Do not restart.
+Its complete20ns measurements and comparisons are at the top of this document.
+The launch tool handle was lost in output truncation; terminal success is
+established by the final summary/endpoints and process exit, without a separate
+tool exit-code claim. Do not repeat this completed run without a concrete change.
 
-No reaction-return default or main integration is changed by this candidate.
-Collect the complete actual-stage and coupled results before adoption; then
-measure threshold/resolution sensitivity rather than treating this one contrast
-as validated. Current accuracy, molecular reactions/collisions, heat transport,
+The main optional integration is now evaluated; defaults remain unchanged.
+Collect the all-heavy stage and continue source/space/threshold sensitivity
+rather than treating one contrast as validated. Current accuracy,
+molecular reactions/collisions, heat transport,
 chamber boundaries and independent formation comparisons remain open.
 
 ## Independent mesh comparison complete

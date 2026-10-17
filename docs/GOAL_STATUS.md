@@ -1,5 +1,28 @@
 # Active research: a credible experimental FRC simulation
 
+## Interface controls integrated; two full all-heavy trajectories (2026-10-17)
+
+The completed Ar9-only5ns-source comparison now includes every455,321 union
+interval: E/J relativeL2 changes1.09995e-7/1.68861e-4, with Ar9 T/velocity RMS
+changes29.6759eV/6995.04m/s. The evaluated density-interface controls are in main
+as explicit options, disabled by default, with all old nodes and populations kept.
+
+Fresh full20ns all-heavy runs at10ns source intervals and contrasts10000/100
+both complete1024steps,21,385density cells,Erel2.6313e-11. Contrast10000 gives
+Ar8/Ar9 peaks0.202018/0.201416eV and E/J changes8.46607e-7/3.24718e-4 from its
+matched original control. Lowering the contrast to100 adds actual nodes and
+changes J by3.05631e-6; Ar8/Ar9 T RMS changes2.26503e-4/3.21265e-5eV. Some edge
+material cools much more than in the old control; this persists at contrast100.
+These are limited sensitivity measurements, not converged thermal/current
+accuracy. Sources/raw states/step histories and comparisons are preserved.
+
+The original all-heavy captured5ns stage remains live asPID6975/session81727;
+last tool progress100steps/0.689371ns, with processCPU subsequently20:57 and
+running state verified. Preserve it and collect the full requested duration.
+Next evaluate that result, then the full all-heavy5ns-source trajectory and
+source/space sensitivity. Physical gas/collision/heat, boundaries and validated
+formation remain open. About1.3GiB free: keep long runs serial and retain reserve.
+
 ## Full coupled density-interface run completes (2026-10-17)
 
 The preserved Ar9 candidate is terminal successful at its original20ns:

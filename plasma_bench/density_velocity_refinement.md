@@ -31,8 +31,12 @@ and volume RMS excess over reversible compression falls29.73→0.01573eV.
 Ar8 remains14.176eV. Independent80-digit saved-coordinate readout and inspected
 plots are in reaction_density_jump_transport. Reversible compression is not an
 exact shock reference; convergence and other heavy-species errors remain open.
-A separate frozen full20ns coupled candidate is still running, and a preserved
-all-heavy stage remains queued. No production source default is changed.
+A separate frozen full20ns Ar9-only coupled candidate now completes972steps
+with Erel2.79334e-11 and all2,414,399density cells. Ar9 Tmax falls370.173→
+0.637747eV, E/J relative L2 changes1.10e-7/1.69e-4; Ar8 stays4.43230eV.
+The optional controls are now exposed through precise_reactions and the moving
+driver, disabled by default. The preserved all-heavy5ns stage is running.
+Threshold/space/time convergence and general local accuracy remain open.
 
 Inputs are ordered precise density faces, strictly positive finite relative
 amounts, existing ordered nested velocity knots and a finite contrast>1. Output

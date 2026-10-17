@@ -1,5 +1,43 @@
 # Current goal continuation, 2026-10-17
 
+## Latest: explicit controls and full all-heavy10ns-source runs
+
+The previous goal turn was progress, and this turn completed new physical work.
+The full Ar9-only5ns-source endpoint comparison26178 EXIT0 covers455,321 precise
+union intervals in8192-interval batches. E/J relativeL2 changes1.09995e-7/1.68861e-4;
+Ar9 common-volume T/velocity RMS changes29.6759eV/6995.04m/s. All species and
+common supports participate without a floating-density mask for temperature or
+velocity. compare.py/compare.md and comparison.json are in its output directory.
+
+Main precise_reactions.py and reactive_material_subcycling.py now contain the
+exact optional density-jump control path from the completed frozen prototype.
+Defaults remain disabled. Expose contrast and explicit species indices; the
+midpoint heavy-only flag does not select density-jump species. Physical data,
+old nodes, fine cuts, mass and exact vacuum remain. Documentation is updated.
+
+New full20ns all-heavy10ns-source25178 EXIT0:1024steps(527/497),21,385cells,
+78.673s,Erel2.631298e-11. Outputreactive_material_argon_all_density_jumps_10ns,
+source873a6ed93ff807042ed5c0260e60de7d014b77cc58486d29d33ccc7773fb8c48.
+Its complete comparison with scaled-heavy10ns is saved: E/J8.46607e-7/3.24718e-4,
+Ar8/Ar9Tmax0.202018/0.201416eV. Lower-charge edge material cools to0.0078–0.0145eV;
+neutral center stays0.1eV and front changes42.24um. Do not equate positivity or
+smaller peaks with accuracy.
+
+Stricter contrast100 run22543 EXIT0 completes same20ns/1024steps/21,385cells,
+Erel2.631312e-11,78.689s,same source. Actual nodes increase; complete comparison
+from10000 gives E/J5.04981e-15/3.05631e-6, Ar8/Ar9T RMS2.26503e-4/3.21265e-5eV
+and velocity RMS31.6235/6.86396m/s. Strong edge cooling persists. Files in
+reactive_material_argon_all_density_jumps_c100_10ns. Both cases are terminal;
+no repeated simulation or unit suite is needed for this unchanged integration.
+
+The preserved all-heavy captured5ns stage is stillLIVE81727/PID6975. Fresh ps
+showed running,CPU20:56.99,RSS708384KiB; most recent stdout100steps/0.689371ns
+of4.9999999999999985ns. Do not restart or shorten it. It imports the unchanged
+/private/tmp/frc-density-jump-20261017. Free disk~1.3GiB; keep further long runs
+serial and retain256MiB minimum reserve. Next collect its complete result,
+then run/evaluate full all-heavy5ns-source coupling and source/space sensitivity.
+Current resolution, missing gas physics, boundaries and formation remain open.
+
 ## Latest: coupled candidate terminal; all-heavy stage resumed
 
 PID2415 is now absent and summary.json reports terminal=true/success=true,

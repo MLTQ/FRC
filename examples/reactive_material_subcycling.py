@@ -25,7 +25,8 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0,
         projection_method='galerkin', extend_velocity=False, newborn_spacing_fraction=0.,
         velocity_refinement_rounds=0, maximum_refined_velocity_cells=256,
         refine_heavy_species=False, electron_cells=None, normalization_shift_bits=0,
-        coulomb_log=None, neutral_elastic_file=None, electron_spacing='cosine'):
+        coulomb_log=None, neutral_elastic_file=None, electron_spacing='cosine',
+        density_jump_minimum_contrast=None, density_jump_species=None):
     out = Path(destination)
     if out.exists() or not np.isfinite(source_interval_ns) or source_interval_ns <= 0 or cells < 2:
         raise ValueError('Fresh output and positive source interval/velocity resolution required')
@@ -72,6 +73,7 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0,
         velocity_refinement_rounds=velocity_refinement_rounds,
         maximum_refined_velocity_cells=maximum_refined_velocity_cells,
         velocity_refinement_species=refinement_species, normalization_shift_bits=normalization_shift_bits,
+        density_jump_minimum_contrast=density_jump_minimum_contrast, density_jump_species=density_jump_species,
         collision_model=None if coulomb_log is None else 'finite_drift_maxwellian_charged_pairs',
         coulomb_log=coulomb_log,
         neutral_collision_model=None if neutral_input is None else 'tabulated_ground_argon_electron_elastic',
@@ -118,7 +120,8 @@ def run(destination, source_interval_ns=10., cells=32, coalesce_ulps=0,
         newborn_spacing_fraction=newborn_spacing_fraction,
         velocity_refinement_rounds=velocity_refinement_rounds,
         maximum_refined_velocity_cells=maximum_refined_velocity_cells,
-        velocity_refinement_species=refinement_species, normalization_shift_bits=normalization_shift_bits)
+        velocity_refinement_species=refinement_species, normalization_shift_bits=normalization_shift_bits,
+        density_jump_minimum_contrast=density_jump_minimum_contrast, density_jump_species=density_jump_species)
     energy0 = solver.totals(model, state, ledger)['full_energy_j_m2']
     save_states(out/'initial.npz', [model], [state])
     save()
@@ -199,10 +202,13 @@ if __name__ == '__main__':
     parser.add_argument('--coulomb-log', type=float)
     parser.add_argument('--neutral-elastic-file')
     parser.add_argument('--electron-spacing', choices=('cosine', 'uniform'), default='cosine')
+    parser.add_argument('--density-jump-minimum-contrast', type=float)
+    parser.add_argument('--density-jump-species', type=int, nargs='+')
     args = parser.parse_args()
     result = run(args.destination, args.source_step_ns, args.cells, args.coalesce_ulps,
                  args.projection_method, args.extend_velocity, args.newborn_spacing_fraction,
                  args.velocity_refinement_rounds, args.maximum_refined_velocity_cells,
                  args.refine_heavy_species, args.electron_cells, args.normalization_shift_bits,
-                 args.coulomb_log, args.neutral_elastic_file, args.electron_spacing)
+                 args.coulomb_log, args.neutral_elastic_file, args.electron_spacing,
+                 args.density_jump_minimum_contrast, args.density_jump_species)
     raise SystemExit(0 if result['success'] else 1)

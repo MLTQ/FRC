@@ -161,3 +161,18 @@ physical masses and actual populations remain. Other neutral collision channels
 are still absent. The report records private input SHA, attribution, energy bounds
 and maximum observed probability outside the table at collision stages; that
 probability is not a missing-force/heat bound. No provider table is bundled.
+
+`--density-jump-minimum-contrast FACTOR` enables existing-face velocity
+refinement at represented density jumps after each source stage. The optional
+`--density-jump-species ID ...` limits it to those atomic species; omission
+selects all represented species, including electrons. Use explicit heavy
+indices0..18 to isolate heavy refinement; `--refine-heavy-species` controls
+midpoint enrichment only. Contrast must be finite>1 and is a spatial control,
+not a density cutoff. Every old knot, fine cell, species and full20ns target
+remains. Reports preserve both settings and each block's actual additions.
+Defaults remain disabled. The full Ar9-only5ns-source evaluation is saved in
+reactive_material_argon_density_jumps_5ns; its remaining Ar8 error motivates
+the separate all-heavy experiment, not a general accuracy claim.
+Full all-heavy10ns-source contrasts10000/100 now complete20ns in1024steps;
+their outputs and measured limits are in all_density_jumps_10ns and
+all_density_jumps_c100_10ns. The captured5ns stage remains a separate live run.

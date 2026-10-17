@@ -123,3 +123,27 @@ a population or substituting a different shift. Per-block records expose b.
 A single scale still has finite dynamic range; this is not arbitrary precision
 or a proof of accuracy for the source chemistry. Actual-source100digit moment
 integrals and complete trajectories evaluate the change.
+
+# Explicit density-interface velocity refinement
+
+`density_jump_minimum_contrast` optionally adds existing density faces at
+adjacent density ratios above the supplied finite factor>1. The default None
+disables it. `density_jump_species` selects valid atomic indices; None selects
+all represented species. This is separate from midpoint enrichment and its
+species/capacity controls. After midpoint enrichment, resolve selected density
+interfaces and solve the same chosen conservative transfer on the resulting
+space. All inherited nodes, fine cells, supports and populations remain; no
+density cutoff, heat floor or force modification occurs. Density additions have
+no hidden capacity cap and their actual acoustic bound applies. The nested
+`density_jump_refinement` record reports selected faces and actual additions.
+
+The exact integrated control path completed the original20ns Ar9-only trial
+from frozen source57fc4393...b8b:972steps,2,414,399density cells,Erel2.79334e-11.
+Ar9 Tmax370.173→0.637747eV, E/J relative L2 changes1.10e-7/1.69e-4; Ar8 remains
+4.43230eV. This is an evaluated spatial option, not converged formation physics.
+The separate all-heavy stage and threshold/source/space sensitivity remain open.
+See docs/DENSITY_INTERFACE_TRANSPORT.md; the default transfer is unchanged.
+Integrated all-heavy10ns-source counterparts at contrasts10000/100 also complete
+full20ns/1024steps with Erel2.6313e-11. Their J difference is3.06e-6 relative,
+but local velocities still differ and stronger edge cooling needs continued
+source/space analysis. These evaluate the optional path, not general adoption.
