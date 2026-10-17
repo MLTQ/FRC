@@ -59,3 +59,12 @@ whether resolving the initially low-mass rarefaction material improves the
 measured shock/contact and temperature error. The acoustic bound is still
 recomputed from the actual evolving mesh; added cost is measured, not hidden.
 Uniform remains the baseline/default; the spacing is recorded in each report.
+
+The full cosine64/128/256 family now completes1.151043832us in3783/17733/79460
+steps. Normalized temperature L1 decreases.955088/.784399/.577695 and peakT
+rises.822741/.909599/1.002660eV toward exact1.204242eV. Density/pressure/velocity
+errors also decrease; shock/contact location and rarefaction-tail accuracy remain
+open. Spatial mesh and acoustic steps change together, so no formal order is
+claimed. The final PNG was inspected. A storage suspension occurred while
+writing256 history; the same process resumed and completed. Its2.1GiB raw archive
+is preserved locally. Wall elapsed includes export/pause, not pure solver time.

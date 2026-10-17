@@ -39,7 +39,16 @@ material cut. Complete20ns enriched10ns-source runs finish, but the shorter
 source-interval case exposed arithmetic underflow in a cold trace-cell sound
 calculation and loss of a small local mixing-heat contribution. Equivalent
 ratios and explicit binary number/energy scaling address these arithmetic
-errors; full shorter-interval evaluation remains active. Current
+errors. Both corrected shorter-interval cases now complete20ns, but expose
+Ar9 maximum370.17eV. The actual full final5ns transport control independently
+reproduces370.16eV before the last source return, versus0.412eV adiabatic
+temperature at that cell. A neutral Euler experiment isolates a related failure:
+a large density jump inside one velocity element creates a3041eV runaway;
+adding one existing interface node completes the run with peak0.925eV.
+ExactshockT1.204eV means general shock accuracy remains open. Actual stage and
+full coupled density-interface refinements are running; none is adopted.
+[DENSITY_INTERFACE_TRANSPORT.md](DENSITY_INTERFACE_TRANSPORT.md) records the
+completed evidence, storage interruption, continuation and explicit limits. Current
 still differs substantially from an existing fine numerical trajectory, so a
 completed128-electron/32-heavy run reproduces the earlier128-cells-per-species current
 within0.056% at lower observed cost. It remains34.2% away from the existing
@@ -68,8 +77,9 @@ source's small time-halving error does not remove these physical limitations.
 The first uniform-density electron experiment completes but accidentally selects
 only102velocity cells through the old cosine targets. Its worsened current/front
 comparison rejects that mixed mesh. The constructor call is corrected, and the
-new full-duration run starts with128 actual uniform velocity cells; its accuracy
-comparison remains pending. Defaults retain the cosine mesh.
+corrected full-duration run completes with128 actual uniform velocity cells.
+Its40.55% current and11.25mm electron-front differences from the1024 numerical
+reference are worse than128cosine spacing. Defaults retain the cosine mesh.
 
 The extreme trace-ion velocity was an approximation error across density
 contrast, reproduced independently at 100-digit precision. A constrained

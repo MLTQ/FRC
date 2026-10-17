@@ -15,8 +15,13 @@ The actual Ar9 state contains the same unfavorable density/velocity geometry.
 An explicit density-jump refinement adds4 nodes to its captured38-element
 state without changing initial material or velocity. Full5ns actual transport
 and a separate full20ns coupled candidate are running; neither is yet validated
-or adopted as a default. The original stage comparison and independent cosine
-mesh family also remain live. Current physical masses/exact vacuum persist.
+or adopted as a default. The original full5ns control now completes and produces
+370.16eV during transport, with369.75eV excess over adiabatic compression. Its
+next case stops on disk-full export; both proposed midpoint refinements then
+prove unchanged meshes, and duplicate evolution is explicitly retired.
+The full cosine64/128/256 family completes, with temperature normalizedL1
+.9551→.7844→.5777 and finestpeak1.003eV vs exact1.204eV. Current physical
+masses/exact vacuum persist. Storage recovered; live argon candidates resumed.
 Construction-relevant gas physics, boundaries, converged formation and external
 validation remain open; conservation alone does not establish local accuracy.
 

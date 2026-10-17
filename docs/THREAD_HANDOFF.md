@@ -12,16 +12,29 @@ mistaken for full matched endpoints. Sources/raw failures remain saved.
 
 Current live work supersedes old live-status statements below:
 
--56061: original actual final5ns transport and1/2 midpoint-refinement trials,
- `reaction_final_trace_transport`, frozen `/private/tmp/frc-final-trace-thermal-20261017`.
- Original stage now200steps/4.425498152ns of5ns; still live.
+-56061 EXIT1 after completing original full5ns transport:241steps, Ar9
+ maxT370.160809eV, maxadiabaticexcess369.748654eV, Erel4.53608e-12. Its
+ complete baseline arrays decode correctly. Disk filled while writing the
+ next level1 initial state, before refined transport. Preserve storage_failure.json,
+ original summary and partial NPZ. Frozen `/private/tmp/frc-final-trace-thermal-20261017`.
+-Continuation45403 is EXIT143, deliberately retired: both midpoint rounds1/2
+ add ZERO nodes, leaving38elements and every initial array identical to the
+ completed control. `reaction_final_trace_refined/mesh_selection.json` and
+ termination.json record this. Do not rerun or call this refinement evidence.
 -16298: same captured actual initial state with Ar9 density-jump contrast1e4,
  38→42velocity elements, full5ns target, `reaction_density_jump_transport`,
  frozen `/private/tmp/frc-density-jump-20261017`.
--66102/PID533: independent cosine density-step64/128/256 family.64/128 complete;
- 256 archive writer is **SIGSTOP suspended for storage**, not terminated or
- physically complete. `resource_pause.json` records the05:14:56UTC pause with
- 921714688bytes free. **Imports main**, so preserve its source closure.
+-81727: same actual captured initial state with contrast1e4 on all heavy
+ species, output `reaction_density_jump_heavy_transport`, same frozen root.
+ Ar0..9 actual cells100/98/96/96/94/86/84/82/84/42; electrons32 unchanged.
+ Initial P1 discrepancy4.55e-13m/s, measured energy change0.0. Full5ns target;
+ no final source half, endpoint or coupled20ns claim yet.
+-66102 EXIT0: independent cosine density-step64/128/256 family now completes
+ full1.151043832us in3783/17733/79460steps. T normalizedL1 decreases
+ .955088/.784399/.577695; finest peak1.002660eV vs exact1.204242eV. Density,
+ pressure and velocity errors also decrease; no formal order/general validation.
+ PNG inspected. Archive writer resumed after its storage pause; full256 raw
+ NPZ is2.1GiB. No main source remains live from this run.
 -Full20ns coupled density-jump prototype: launch tool response truncated and
  handle unavailable; **PID2415 confirmed live** by direct process inspection.
  Output `reactive_material_argon_density_jumps_5ns`, frozen root
@@ -34,15 +47,17 @@ contrast/species options through the existing conservative return, preserving
 old nodes, fine cuts, all species,128-bit scaling and physical masses. Collect
 complete local thermal/front/E/J results before deciding integration. No2.5ns
 source run, unit suite, floor/cutoff or publication. Goal and thermal bead stay
-open. Preserve user poster. Last disk availability~0.86GiB; retain256MiB reserve.
-Cosine256 has left its evolution loop and is writing its full state archive;
-full-duration success is not yet known, and summary still contains only64/128. Monitor disk
-before staging its large raw archive or starting any further simulation.
-User was asked asynchronously to free several GB or provide another local
-volume. That is an operational storage request, not a pause of the active goal.
-Other argon calculations continue. After sufficient free disk is available,
-verify PID533 still names this exact cosine command and send SIGCONT; do not
-restart it, delete its partial NPZ or count an incomplete family as successful.
+open. Preserve user poster. Last disk availability~2.63GiB; retain256MiB reserve.
+The host temporarily filled its disk. Other live argon calculations were
+SIGSTOP-suspended, then identity-checked and SIGCONT-resumed when>3GiB was
+available; their resource_pause.json files record resume. A one-time filesystem
+clone operation shares620266502bytes across92 byte-identical completed NPZ
+duplicates, retaining every path/hash and independent future writes.102 differing
+metadata/link candidates were skipped. See outputs/storage_clone_checkpoint.
+The user's storage question remains pending, but no process is currently paused
+for storage. Do not duplicate the2.1GiB raw archive in Git while space is tight;
+preserve it locally with its source, metadata and checksum. No research data or
+user file was deleted. Run wall times include pauses/export, not pure compute.
 
 
 The user explicitly set completion of the lab-facing virtual plasma bench as an

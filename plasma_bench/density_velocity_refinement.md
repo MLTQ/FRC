@@ -26,8 +26,10 @@ This does not yet establish the cause or correction of the actual Ar9 heating.
 The explicit contrast1e4 trial adds4 knots (38→42 elements) to its captured
 post-source initial state; every original N/U and physical velocity field is
 retained. The smallest mechanical spacing is1.34581um. Full5ns transport and
-independent adiabatic comparison are required before coupling this choice to
-reaction return. No production source default is changed by this module.
+independent adiabatic comparison are required before adopting this choice in
+reaction return. A separate frozen full20ns coupled experiment evaluates that
+choice explicitly while the stage trial runs. No production source default is
+changed by this module.
 
 Inputs are ordered precise density faces, strictly positive finite relative
 amounts, existing ordered nested velocity knots and a finite contrast>1. Output
