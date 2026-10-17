@@ -11,11 +11,17 @@ replay exactly reproduces every original endpoint array and isolates the Ar8+
 source/return heating. Independent smooth transfers show second-order velocity
 and fourth-order mixing-heat convergence, but real-source local errors remain.
 
-**Live:** full 5 ns-source replacement 73344 and six full analytic cases 57807,
-both frozen at `/private/tmp/frc-variance-20261017`. Poll to actual termination.
+**Live:** full 5 ns-source replacement 73344 (15 ns accepted), six full analytic
+cases 57807 and actual transport-heating diagnosis 69881.
+All use frozen `/private/tmp/frc-variance-20261017`.
+The 64-cell full candidate 71873 and comparison 96533 are terminal EXIT0;
+32/64 E/J differences remain 6.65% / 32.21%, so current accuracy remains open.
+See VARIANCE_TRANSFER for output paths and scope; poll to actual termination.
 Next compare completed 10/5 ns local temperatures, velocities, fronts and E/J.
 Bead 5.5.5 and all parent goals remain open; no adoption or lab-design claim.
 Defaults unchanged, no unit tests, no remote, preserve the user poster.
+Completed code/evidence checkpoint: `d01837617`. Poster SHA remains
+`a783f7cda0f4a249cc4c23ead61debbdf89d356436a2a3dab2189029c6d5deca`.
 
 ## Previous completed continuation, 2026-10-16/17
 

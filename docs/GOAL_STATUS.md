@@ -12,11 +12,15 @@ same source. Independent polynomial transfer has second-order velocity and
 fourth-order numerical-heat convergence. Real-source velocity and thermal
 accuracy are still unresolved; default solver is unchanged.
 
-Full 5 ns-source replacement 73344 and six full analytic cases 57807 are live
-from frozen `/private/tmp/frc-variance-20261017`. Await actual completion and
+Full 5 ns-source replacement 73344 (15 ns accepted), six full analytic cases
+57807 and actual transport-heating diagnosis 69881
+are live from frozen `/private/tmp/frc-variance-20261017`. Await actual completion and
 compare full local source-time sensitivity. All physical formation, gas-specific
 chemistry/collisions, heat, wall and experimental requirements remain open.
 This progress is not validation for choosing construction parameters.
+The new 64-cell candidate 71873 completes the full 20 ns in 2041 steps with
+relative energy error 5.55e-12, but 32/64 E/J differences remain 6.65%/32.21%.
+Thermal transfer progress does not resolve the separate current-transport issue.
 
 ## Complete component runs; reaction accuracy still open (2026-10-16)
 

@@ -32,6 +32,14 @@ protons; it is not a molecular hydrogen discharge model.
 
 ## What the latest continuation established
 
+The active goal continuation adds an explicit conservative variance transfer
+that directly carries source heat and records numerical velocity mixing. Its
+full 32/64-cell 20 ns trajectories and zero-reaction controls complete; the
+separate current discrepancy remains. Exact replay locates trace-ion heating
+both before and during return. The finer source-interval run and independent
+expansions are still in progress; [VARIANCE_TRANSFER.md](VARIANCE_TRANSFER.md)
+records current evidence and limitations. Defaults remain unchanged.
+
 The extreme trace-ion velocity was an approximation error across density
 contrast, reproduced independently at 100-digit precision. A constrained
 velocity transfer fixes that specific failure while preserving block momentum
