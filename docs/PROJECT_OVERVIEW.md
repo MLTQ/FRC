@@ -12,11 +12,13 @@ The user's provisional envelope is about 1 m long, 15 cm diameter and
 to investigate, not established operating settings. Coil hardware remains an
 abstract prescribed waveform; this repository does not design pulsed power.
 
-Cache cleanup recovered about 6.3 GB after the host-storage blocker. The first
-preserved argon calculation has resumed; two remain suspended for serial
-scheduling. The app goal remains marked blocked, and the scientific objective
-is unfinished. See THREAD_HANDOFF for exact process/source state and the next
-resume actions. No partial calculation is a completed result.
+Cache cleanup and the user-authorized shutdown of uv-using tool servers restored
+space after the host-storage blocker; Codex remains running. The first preserved
+argon stage now completes its full 5 ns, reducing final Ar9 maximum temperature
+from 370.16 to 0.46843 eV while Ar8 remains 14.176 eV. The coupled candidate has
+resumed; the all-heavy stage remains suspended for serial scheduling. The app
+goal remains marked blocked, and the scientific objective is unfinished. See
+THREAD_HANDOFF for exact process/source state and next actions.
 
 ## What exists
 

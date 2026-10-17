@@ -1,5 +1,17 @@
 # Density interfaces and mechanical resolution
 
+Latest execution/result note (2026-10-17, 13:49 UTC): the full Ar9-only stage
+16298 is EXIT0 at 5 ns after 221 steps, Erel 5.1023017e-12. Its summary reports
+final Ar9 maximum 0.468429806 eV and maximum/RMS excess over adiabatic
+0.244441032/0.015733633 eV. The matched original control ended at 370.160809 eV;
+Ar8 is unchanged near 14.176049 eV. This does not establish general convergence
+or fix the other heavy species. Raw outputs are preserved; complete coupled
+and all-heavy comparisons remain required. After user-authorized tool shutdown
+and uv cache cleanup, coupled PID 2415 resumed; heavy PID 6975 remains suspended.
+Wall time includes the long storage pause. See the latest THREAD_HANDOFF.
+
+Earlier checkpoint:
+
 Current execution note (2026-10-17, 13:28 UTC): cache cleanup recovered about
 6.3 GB. Ar9-only16298/PID1882 was identity-checked, resumed and confirmed running;
 coupledPID2415 and all-heavy81727/PID6975 remain suspended for serial scheduling.

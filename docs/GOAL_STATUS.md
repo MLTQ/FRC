@@ -1,5 +1,17 @@
 # Active research: a credible experimental FRC simulation
 
+## Tool shutdown, uv cleanup and completed Ar9 stage (2026-10-17, 13:49 UTC)
+
+The user authorized stopping identified uv-using tool servers while preserving
+Codex. Those servers are stopped; normal uv prune/clean completed without force.
+Current free space is 5.41 GB. The first preserved Ar9-only calculation completes
+the full 5 ns in 221 steps with Erel 5.1023e-12 and final Ar9 maximum 0.46843 eV,
+versus the original control's 370.16 eV. Ar8 remains 14.176 eV, so this is a
+targeted correction candidate, not general thermal validation. Coupled PID 2415
+has resumed; all-heavy PID 6975 remains suspended for serial scheduling. See
+THREAD_HANDOFF and outputs/storage_cache_cleanup/uv_cleanup.json. The app goal
+still reports blocked; its full scientific objective remains open.
+
 ## Cache recovery and serial continuation (2026-10-17, 13:28 UTC)
 
 The user's cache-cleanup request recovered about 6.3 GB from regenerable

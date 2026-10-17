@@ -2,6 +2,28 @@
 
 ## Latest checkpoint: density-interface correction candidate
 
+**Latest update, 13:49 UTC:** at the user's request, the identified Unity MCP,
+Blender MCP, Pharaoh and Veritas tool servers were stopped individually while
+Codex remained running. Veritas's KeepAlive launch agent was unloaded for this
+login session; its saved plist is unchanged. Normal uv prune/clean then completed
+without force, reporting 4.5 GiB and 11.4 GiB of cache entries removed. These are
+cache sizes, not physical disk-recovery measurements; current free space is
+5,406,720,000 bytes. See `outputs/storage_cache_cleanup/uv_cleanup.json`.
+
+Ar9-only session 16298/PID 1882 is now **EXIT0**, full original 5 ns in 221
+steps, Erel 5.1023017e-12. Its summary reports Ar9 final maximum 0.468429806 eV
+and maximum/RMS excess over adiabatic 0.244441032/0.015733633 eV, versus the
+completed unrefined control's 370.160809 eV maximum. Ar8 remains 14.176049 eV;
+refining Ar9 alone does not fix other species. Raw endpoint/field/step files and
+summary are saved in `reaction_density_jump_transport`; broader convergence and
+independent endpoint analysis remain open. Wall time includes storage suspension.
+Coupled PID 2415 has been resumed next; all-heavy PID 6975 remains suspended.
+Collect the full coupled result, then verify PID 6975 and storage before SIGCONT.
+Do not restart either preserved calculation. The app goal still reports blocked;
+the scientific requirements remain unfinished.
+
+### Earlier cache recovery, 13:28 UTC
+
 **Cache cleanup recovered storage; one calculation is running again.** At
 13:26 UTC, explicit package/build and old Raspberry Pi Imager download caches
 were removed at the user's request: 6,260,486,144 allocated bytes, with observed
