@@ -226,8 +226,11 @@ errors are 1.42e-15 / 6.94e-17 m, relative energy errors 5.68e-14 / 3.27e-15.
 The inspected figure and raw histories are in `precise_material_mpfr`, source
 `30006fa1cac11705f7e59bb924779255f616ada5546712d57ff8da85b60e5c84`.
 These analytic fixtures retain the reported 8-ULP cleanup option; the charged
-reacting runs use zero. Both full 5 ns-source arithmetic comparisons remain
-active until their actual endpoints are collected.
+reacting runs use zero. The full 5 ns-source MPFR calculation remains active.
+Its redundant Decimal copy is explicitly retired at 15 ns coupled acceptance
+after matching saved physical arrays and reported fourth-interval clocks.
+`termination.json` records actual KeyboardInterrupt exit 1; it is neither a
+physical failure nor a successful full 20 ns trajectory.
 
 The corrected 64-cell MPFR run is now complete: full 20 ns, 2,041 transport
 steps, 42,547 density cells, 271.63 s, relative energy error 5.55e-12 and zero

@@ -57,15 +57,18 @@ Read [REACTION_TRANSFER.md](REACTION_TRANSFER.md) and
   passed 100 actual steps / 2.2315 ns internally. This is split-stage progress,
   not yet a completed 20 ns result. Keep this source root frozen.
   Original isolated dependency: `/private/tmp/frc-gmp-runtime`.
-- 76748, `/private/tmp/frc-newborn-mesh-20261016`, output
-  `reactive_material_argon_newborn_5ns`: Decimal counterpart, also 15 ns accepted,
-  fourth interval active. Its saved physical arrays match MPFR through 15 ns.
-  Keep this source root frozen. No arbitrary timeout or shortened success.
+
+The redundant Decimal counterpart 76748 is now terminal EXIT1/KeyboardInterrupt,
+deliberately retired after matching physical arrays through 15 ns and matching
+reported fourth-interval 100-step clocks. Full 20 ns arithmetic controls and the
+analytic family already completed. Its `termination.json` records 15 ns accepted
+coupled time, not a full success or physical failure. MPFR retains the original
+20 ns target; this retirement does not establish its completion.
 
 No other simulation remains live at this checkpoint. The integrated bracketed
 search run 51902, prototype MPFR/Decimal runs 56959/17187, large-step 80171,
 128-cell argon, analytic family and direct controls are all terminal EXIT0.
-The two live jobs retain their original unoptimized search, not changed code.
+The live MPFR job retains its original unoptimized search, not changed code.
 
 ## Concrete next action
 
