@@ -1,103 +1,98 @@
-# FRC simulation — current continuation, 2026-10-16
+# FRC simulation — current continuation, 2026-10-16/17
 
-Read [REACTION_TRANSFER.md](REACTION_TRANSFER.md) for numerical evidence and
-[MOLECULAR_GASES.md](MOLECULAR_GASES.md) for the user's gas requirements. The full
-`frc-goal` remains open. This is an exploratory simulation project, not yet a
-validated basis for constructing a formation experiment.
+The user wants a credible virtual plasma bench to inform construction of a real
+lab. Keep the provisional 1 m length, 15 cm diameter and 0.1–100 mTorr envelope.
+Available gases include H2, D2, N2, O2 and argon. Hardware remains prescribed
+waveforms. The full `frc-goal` is open: component results are not validated lab
+settings, FRC formation, three-dimensional stability or particle confinement.
 
-The intended lab envelope remains approximately 1 m long, 15 cm in diameter,
-and 0.1–100 mTorr. Available gases include H2, D2, N2, O2 and argon. Argon is the
-present numerical baseline; molecular gases require actual channel and transport
-data, not mass substitutions. Hardware remains prescribed waveforms.
+Read [REACTION_TRANSFER.md](REACTION_TRANSFER.md) and
+[MOLECULAR_GASES.md](MOLECULAR_GASES.md) for equations, evidence and limits.
 
-## Completed numerical work
+## Completed this continuation
 
-- Independent 100-digit assembly reproduces the extreme trace-ion velocity.
-  Density-weighted approximation across steep contrast is the cause, rather
-  than the linear solve. The explicit `constrained_velocity` alternative
-  preserves block momentum and each fine cell's total energy. It avoids that
-  extreme speed, closing the specific bug 5.5.4. Local thermal accuracy remains unresolved. The default is
-  still Galerkin/local_total; the bounded alternative is rejected for 51–62%
-  current error in complete zero-source controls.
-- All six full neutral/charged analytic expansion cases pass with affine edge
-  extension. Finest neutral front error is 1.42e-15 m, energy error 5.68e-14
-  relative. A separate Galerkin extension control passes. Bead 5.5.7 is closed
-  for this specific support-edge defect, not for general reaction accuracy.
-- Exact polynomial electric-force integration retains every density cut and
-  the same integral. A complete 20 ns comparison takes 144 versus 233 seconds;
-  relative E/J differences are 1.86e-14 / 1.70e-8.
-- Complete 32/64-cell argon runs at 10 ns source intervals conserve energy to
-  2.81e-11 / 5.60e-12, but differ in E/J by 6.65% / 32.21%. The electron front
-  differs by 3.47 mm. Spatial refinement also tightens the plasma-phase cap.
-  These are not converged physical predictions.
-- Combined extension/polynomial/constrained transfer completes the full 20 ns
-  at 10 ns source intervals in 971 steps. A separate 192-bit MPFR geometry
-  implementation completes the identical case in 75 versus 136 seconds, with
-  identical saved physical arrays and only approximately 1e-50 m coordinate
-  differences. Its full analytic family is still running. The backend is now
-  available explicitly in main; Decimal remains the default. The integrated
-  full 20 ns replay matches the isolated prototype exactly.
+- Explained the extreme trace velocity with independent 100-digit assembly and
+  an analytic counterexample. The explicit constrained-volume transfer avoids
+  that specific defect, closing 5.5.4. It preserves block momentum and each fine
+  cell's total energy, but local cooling/thermal accuracy remains unresolved.
+  Galerkin/local_total stays default. The bounded-moment alternative is rejected
+  on complete controls with 51–62% current differences.
+- Affine support extension retains old independent knots and every physical
+  endpoint/density cell. All six full neutral/charged analytic cases complete,
+  closing the specific edge-stiffness bug 5.5.7. The MPFR family also completes:
+  handle 95949 EXIT0, 2654.85 s, finest neutral/charged front errors
+  1.42e-15 / 6.94e-17 m and relative energy errors 5.68e-14 / 3.27e-15.
+  These analytic fixtures disclose 8-ULP cleanup; reacting argon uses zero.
+- Exact polynomial force integration, optional 192-bit MPFR geometry and exact
+  bracketed coordinate searches reduce observed cost without changing the
+  physical equations. The integrated full 20 ns search run is EXIT0, 971 steps,
+  71.96 s, with the entire saved endpoint identical to the original integrated
+  MPFR trajectory. Source SHA:
+  `9de32e70da00456d2d8d23fc02c4bc2cf22ceeb95afe4faf50bb6a04af03d18d`.
+  The actual 227839-cell RK4 step costs 7.83 versus 12.21 s with identical output.
+  The earlier two-part-key sorting experiment was slower and is not adopted.
+- Corrected 32/64/128-cell reacting argon runs all complete the full 20 ns at
+  10 ns source intervals. The finest run (82751 EXIT0) uses 4224 actual steps,
+  84343 density cells, 1069.60 s and relative energy error 1.38e-12.
+  Successive E differences decrease 6.65% to 2.70%, but J differences increase
+  32.21% to 38.94%. Electron-front differences are 3.47 and 2.18 mm.
+  This is not converged prediction; the plasma-phase cap also scales with cells.
+- Complete matched direct-transport controls reproduce those E/J discrepancies
+  with reactions/remaps disabled, dominated by electron current. Evidence:
+  `outputs/reaction_direct_comparison`; handles 67617/62563 EXIT0.
+  This locates the spatial limitation in existing transport under 5.5.1.
+  Reuse older fine-grid/half-step evidence; do not automatically double all runs.
+- H2/N2/O2 BEB ionization matches all 293 public NIST table values within printed
+  rounding and completes independent quadrature refinement (scoped bead 6.1
+  closed). Attributed input tables live in `data/molecular/nist_beb`.
+  D2, molecular products/energy partition and complete collision channels remain
+  open. No molecular gas is yet enabled as a coupled discharge model. The older
+  H2 inventory switch assumes complete dissociation/ionization into protons.
 
-## Current solver and live calculations
+## Live calculations: inspect before changing their imported source
 
-The distinct newborn-mesh defect is bead 5.5.8: nominal neighboring targets can
-select almost coincident density faces. The old Ar9+ mechanical interval was
-1.27e-9 m despite nominal spacing 4.18e-5 m, then compressed to approximately
-1e-12 m. An explicit target-relative spacing rule now exists in main and in
-frozen source copies. It affects only newly created velocity spaces, never
-existing knots or density cells. Its default is zero; the experiment uses 0.5.
-Actual newborn dimension can decrease and is recorded. Local accuracy remains
-an acceptance requirement.
-
-Live handles (inspect before changing their imported source):
-
+- 76215, `/private/tmp/frc-mpfr-20261016`, output
+  `reactive_material_argon_newborn_mpfr_5ns`: 15 ns coupled time accepted of the
+  original 20 ns target, 227839 density cells. Fourth-interval transport has
+  passed 100 actual steps / 2.2315 ns internally. This is split-stage progress,
+  not yet a completed 20 ns result. Keep this source root frozen.
+  Original isolated dependency: `/private/tmp/frc-gmp-runtime`.
 - 76748, `/private/tmp/frc-newborn-mesh-20261016`, output
-  `reactive_material_argon_newborn_5ns`: 15 ns coupled time accepted of the full
-  20 ns target, 227,839 density cells; fourth interval is active.
-- 95949, `/private/tmp/frc-mpfr-20261016`, output `precise_material_mpfr`:
-  six full analytic cases; neutral 16/32 cells complete, 64 cells in progress.
-- 76215, the same MPFR source, output `reactive_material_argon_newborn_mpfr_5ns`:
-  15 ns of 20 ns accepted; saved physical arrays match the Decimal run exactly
-  through that endpoint. Both users of this source root must remain frozen.
-  The original isolated dependency is `/private/tmp/frc-gmp-runtime`.
-- 6777, main repository, output `reactive_material_argon_integrated_mpfr_n64_10ns`:
-  corrected 64-cell full 20 ns target with 10 ns source intervals; first 10 ns
-  accepted, second interval in progress. Keep main imported Python sources frozen.
+  `reactive_material_argon_newborn_5ns`: Decimal counterpart, also 15 ns accepted,
+  fourth interval active. Its saved physical arrays match MPFR through 15 ns.
+  Keep this source root frozen. No arbitrary timeout or shortened success.
 
-Main's optional dependency gmpy2 2.3.2 is now installed in `.venv` and pinned by
-`plasma-bench[precision]`. Select `FRC_GEOMETRY_BACKEND=mpfr` before process start;
-192-bit geometry is explicit. Current source SHA:
-`6148d66b931a92019ea5e14fa7c74a6ea16e945ef16e1dd67f2f72c97f369d3a`.
-The newborn-mesh analytic control 93612 is terminal EXIT0: both complete
-16-cell neutral and charged cases, with inspected plots. It is not live.
+No other simulation remains live at this checkpoint. The integrated bracketed
+search run 51902, prototype MPFR/Decimal runs 56959/17187, large-step 80171,
+128-cell argon, analytic family and direct controls are all terminal EXIT0.
+The two live jobs retain their original unoptimized search, not changed code.
 
-The newborn MPFR 10 ns-source calculation is terminal EXIT0: full 20 ns,
-971 steps, 72.34 seconds, relative energy error 2.84e-11. Compare its local
-fields/fronts/temperatures with the original selection using the existing
-`reactive_material_argon_constrained_comparison/compare.py` study.
+## Concrete next action
 
-Old 5 ns jobs 77785, 19305 and 42285 were deliberately interrupted at 10 ns
-accepted coupled time after diagnosis and replacement. Their `termination.json`
-files record actual KeyboardInterrupt exit 1. None is a full-duration success
-or a terminal physical failure. Diagnostic prefixes are explicitly distinct
-from accepted coupled intervals.
+Collect the full 5 ns-source endpoint, then compare its E/J/front/velocity/
+temperature against the completed 10 ns run using the existing
+`outputs/reactive_material_argon_constrained_comparison/compare.py`.
+Keep 5.5.8 open until its full-duration/local-sensitivity criteria are met.
+The explicit newborn spacing fraction 0.5 applies only when initializing a new
+velocity space; actual dimension can decrease and is reported. It never removes
+an old independent knot, density cut or physical endpoint. Its specific 16-cell
+neutral/charged analytic control already completed.
 
-## Next concrete work
+Keep thermal accuracy 5.5.5, full source-time refinement 5.5.6, current/front
+transport 5.5.1, molecular physics 6 and the full FRC goal open. Source interval
+2.5 ns remains pending; assess actual mesh growth from the full 5 ns result
+before launching it. Prioritize physical solver work over new verification
+frameworks. The 20 ns planar n=1e14/m³ case is a numerical component and does
+not represent the user's neutral-fill pressure or full chamber experiment.
 
-Collect the full newborn 5 ns and MPFR analytic endpoints. Measure complete
-10/5 ns E/J, front, velocity and temperature sensitivity with the existing
-comparison. Collect the corrected 64-cell spatial comparison and the full analytic
-results; preserve exact geometry and every population. Keep beads 5.5.5/.6/.8
-open until their actual criteria are met. Molecular physics is `frc-transport.6`.
-Return to physical collision, heat, molecular and formation coupling after the
-specific solver corrections, without expanding a generic verification framework.
-
-Read the companions for precise_material, precise_reactions,
-constrained_velocity_projection, velocity_extension, velocity_selection and
-subcycled_material before editing. Every output has its frozen source archive.
-No unit tests, publication or viewer/poster changes. Latest free disk: 5.8 GiB;
-keep the 256 MiB reserve. There is no Git remote. Runtime and preserved poster
-hash are in the historical material below; current status above takes priority.
+Main optional dependency: gmpy2 2.3.2, selected before import with
+`FRC_GEOMETRY_BACKEND=mpfr`; Decimal remains default. Read module companions
+before edits. Frozen source archives and actual steps accompany every run.
+Old interrupted 5 ns attempts have explicit termination records and are not
+counted as full runs. No unit tests, remote publication or viewer/poster edits.
+Latest free disk is about 5.5 GiB; retain the 256 MiB reserve. Private LXCat data
+stay outside Git. User poster SHA256:
+`a783f7cda0f4a249cc4c23ead61debbdf89d356436a2a3dab2189029c6d5deca`.
 
 ## Historical handoff before this continuation
 

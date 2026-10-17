@@ -3,6 +3,7 @@ from decimal import Decimal, localcontext
 from functools import wraps
 import os
 import numpy as np
+from .precise_search import searchsorted
 
 
 ARITHMETIC = os.environ.get('FRC_GEOMETRY_BACKEND', 'decimal')
@@ -61,7 +62,7 @@ def fraction(points, left, right):
 @geometry_precision
 def interpolate(points, edges, values):
     x = coordinates(points)
-    j = np.clip(np.searchsorted(edges, x, side='right')-1, 0, len(edges)-2)
+    j = np.clip(searchsorted(edges, x, side='right')-1, 0, len(edges)-2)
     a = fraction(x, edges[j], edges[j+1])
     return (1-a)*values[j]+a*values[j+1]
 

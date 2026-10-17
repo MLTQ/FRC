@@ -18,10 +18,12 @@ from .precise_material import save_states
 from .implicit_plasma_records import provenance, freeze
 
 
-def run(destination, projection_method='galerkin'):
+def run(destination, projection_method='galerkin', cells=32, direct_only=False):
     out = Path(destination)
     if out.exists():
         raise ValueError('Fresh output required')
+    if not isinstance(cells, int) or cells < 2:
+        raise ValueError('At least two velocity cells required')
     ion = ImpactIonization.from_file('data/atomic/argon/argon.json')
     rr = RadiativeRecombination.from_file('data/atomic/recombination/argon_rr.json')
     network = AtomicNetwork(ion, rr, ionization_enabled=False, recombination_enabled=False)
@@ -30,27 +32,28 @@ def run(destination, projection_method='galerkin'):
     out.mkdir(parents=True)
     freeze(out, identity)
     report = dict(terminal=False, source_sha256=identity['source_sha256'], cases=[],
-        projection_method=projection_method,
+        projection_method=projection_method, velocity_cells=cells,
+        maximum_plasma_phase=.04*32/cells, direct_only=bool(direct_only),
         scope='Original20ns argon initial states with DI/RR disabled in every case. '
               'Compare direct transport with exact-zero source gather/return. '
               'Isolates numerical transfer; not a reacting experiment or source-time convergence.',
         inputs=dict(ionization_sha256=ion.input_sha256, recombination_sha256=rr.input_sha256))
     began = time.perf_counter()
     reference = None
-    for interval_ns in (0., 10., 5.):
-        faces = -.01*np.cos(np.linspace(0, np.pi, 33))[None, :]
+    for interval_ns in ((0.,) if direct_only else (0., 10., 5.)):
+        faces = -.01*np.cos(np.linspace(0, np.pi, cells+1))[None, :]
         ids = [network.ground[0], network.ground[1], network.count]
         models, blocks = [], []
         for index, temperature in zip(ids, [.1, .2, 2.]):
             m = PreciseMaterialSubcells(1e14*np.diff(faces)[0], source.mass[index],
-                np.r_[network.charge, -1.][index], (-.2, .2), faces[0], 32,
-                maximum_plasma_phase=.04, numerical_viscosity=(.5, 2.), viscosity_limiter='minmod')
+                np.r_[network.charge, -1.][index], (-.2, .2), faces[0], cells,
+                maximum_plasma_phase=.04*32/cells, numerical_viscosity=(.5, 2.), viscosity_limiter='minmod')
             models.append(m)
             blocks.append(m.state(faces, temperature))
         model, state = PreciseMaterialSet(models, ids), MaterialSetState(tuple(blocks))
         ledger = MaterialReservoirs()
-        solver = SubcycledReactiveMaterial(source, 1e14, velocity_cells=32,
-            maximum_plasma_phase=.04, coalesce_ulps=0, transport_fraction=.5,
+        solver = SubcycledReactiveMaterial(source, 1e14, velocity_cells=cells,
+            maximum_plasma_phase=.04*32/cells, coalesce_ulps=0, transport_fraction=.5,
             projection_method=projection_method)
         initial_energy = solver.totals(model, state, ledger)['full_energy_j_m2']
         elapsed, steps, history, failure = 0., 0, [], None
@@ -109,6 +112,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('destination')
     parser.add_argument('--projection-method', choices=('galerkin', 'bounded_moments', 'constrained_velocity'), default='galerkin')
+    parser.add_argument('--cells', type=int, default=32)
+    parser.add_argument('--direct-only', action='store_true')
     args = parser.parse_args()
-    result = run(args.destination, args.projection_method)
+    result = run(args.destination, args.projection_method, args.cells, args.direct_only)
     raise SystemExit(0 if result['success'] else 1)

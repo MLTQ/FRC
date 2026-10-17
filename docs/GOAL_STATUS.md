@@ -10,8 +10,11 @@ validated lab design or a demonstration of formation, stability or confinement.
 Independent analysis explains the extreme trace-ion velocity as a projection
 error across large density contrast, closing the specific velocity bug 5.5.4.
 Explicit constrained-volume transfer now
-completes the 32/64-cell, full 20 ns argon cases at 10 ns source intervals.
-Their energy conservation is strong, but E/J still differ by 6.65% / 32.21%.
+completes the 32/64/128-cell, full 20 ns argon cases at 10 ns source intervals.
+Successive E differences decrease 6.65% to 2.70%, but J differences increase
+32.21% to 38.94% despite strong energy conservation. Complete direct controls
+with reactions/remaps disabled reproduce those differences, locating the
+dominant electron-current discrepancy in transport under bead 5.5.1.
 Local thermal accuracy is unresolved. Galerkin/local_total stays the default.
 The bounded-transfer alternative is rejected on complete current controls.
 
@@ -19,9 +22,12 @@ All six full independent neutral/charged analytic expansion cases pass with
 support-edge extension, closing only bead 5.5.7. Exact polynomial force
 integration also matches the full original trajectory while reducing observed
 runtime. A 192-bit MPFR geometry experiment reproduces every saved physical
-array in the matched 20 ns run and takes 75 versus 136 seconds. Its complete
-analytic family remains in progress. Main now exposes it as an explicit option;
+array in the matched 20 ns run and takes 75 versus 136 seconds. All six full
+analytic cases now also complete. Main exposes it as an explicit option;
 Decimal remains default. The integrated full 20 ns run matches its prototype.
+Exact bracketed coordinate searches also preserve the complete endpoint and
+reduce a measured actual large-state RK4 step from 12.21 to 7.83 seconds;
+no density cut, coordinate or physical coefficient changes.
 
 A distinct initial-mesh defect creates nearly coincident velocity nodes for
 new trace species. Explicit target-relative selection preserves all old knots,
@@ -33,9 +39,11 @@ retired at 10 ns coupled acceptance, not counted as successful full runs.
 
 Available gases now explicitly include H2, D2, N2 and O2; argon remains the
 baseline. [MOLECULAR_GASES.md](MOLECULAR_GASES.md) records primary sources and
-missing channel/transport requirements under bead frc-transport.6. The retained
-1 m / 15 cm / 0.1–100 mTorr envelope is an exploration target. No new molecular
-gas is enabled by this source review. No unit tests or publication occurred;
+missing channel/transport requirements under bead frc-transport.6. A new
+H2/N2/O2 BEB component reproduces all 293 attributed NIST cross sections and
+completes independent quadrature refinement; scoped bead 6.1 is closed. D2 and
+full molecular products/energy/collisions remain open. The retained
+1 m / 15 cm / 0.1–100 mTorr envelope is an exploration target. No molecular gas is yet enabled as a coupled discharge model. No unit tests or publication occurred;
 the viewer and user poster are unchanged. The older entries below are history.
 
 ## Session handoff: local reaction projection still unresolved (2026-10-16)

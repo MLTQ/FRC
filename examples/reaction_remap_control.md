@@ -35,3 +35,11 @@ introduced by the candidate even when the atomic source is exactly zero.
 projection with physical block momentum and each fine cell total energy
 constrained. Source and transport physics are unchanged; barrier/constraint
 activity is a numerical approximation, not an adoption criterion.
+
+`--cells` selects initial velocity resolution, default 32. The plasma-phase cap
+is 0.04*32/cells, matching the reacting refinement, so this changes spatial and
+transport resolution together. `--direct-only` evolves the same complete 20 ns
+without source calls or remaps. This isolates whether the reacting 32/64/128
+current discrepancy already occurs in pure material/Poisson transport. It does
+not rerun the already measured remap controls or certify spatial order. Saved
+states, physical energy and every actual dt follow the existing record format.

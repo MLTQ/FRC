@@ -29,6 +29,14 @@ Physical coefficients remain float64, and no spatial cut or population is remove
 
 The complete matched 20 ns MPFR experiment retains identical saved physical
 arrays and all 21,351 density cells, with coordinate differences around 1e-50 m.
-Its full independent analytic family remains a separate validation requirement.
+All six full independent analytic cases now complete in `precise_material_mpfr`:
+finest neutral/charged front errors 1.42e-15/6.94e-17 m and relative energy errors
+5.68e-14/3.27e-15. These fixtures retain their disclosed 8-ULP cleanup option;
+the charged reacting cases use zero. This does not certify physical convergence.
 Source archives record backend, precision and gmpy2/MPFR/GMP versions. This is
 an opt-in performance alternative, not a repair of physical convergence errors.
+
+`interpolate` uses `precise_search.searchsorted`: monotone rounded values bound
+the search, then original precise comparisons resolve every equal-float tie.
+The returned index is exact; geometry, fractions and physical coefficients are
+unchanged. There is no rounded-coordinate membership approximation.

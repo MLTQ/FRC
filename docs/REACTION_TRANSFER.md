@@ -220,6 +220,60 @@ The newborn spacing option separately completes both full 16-cell analytic
 families in `precise_material_newborn`: neutral front error 1.88e-13 m,
 population error 8.19e-15 and energy error 1.28e-13 relative; charged front error
 2.01e-13 m and energy error 7.60e-13 relative. The inspected figures retain the
-independent analytic comparison. The complete MPFR 16/32/64 family and both
-full 5 ns-source arithmetic comparisons are still active; these limits must
-remain visible until their actual endpoints are collected.
+independent analytic comparison. The complete MPFR 16/32/64 family is now
+terminal EXIT0, all six full cases in 2654.85 s. Finest neutral/charged front
+errors are 1.42e-15 / 6.94e-17 m, relative energy errors 5.68e-14 / 3.27e-15.
+The inspected figure and raw histories are in `precise_material_mpfr`, source
+`30006fa1cac11705f7e59bb924779255f616ada5546712d57ff8da85b60e5c84`.
+These analytic fixtures retain the reported 8-ULP cleanup option; the charged
+reacting runs use zero. Both full 5 ns-source arithmetic comparisons remain
+active until their actual endpoints are collected.
+
+The corrected 64-cell MPFR run is now complete: full 20 ns, 2,041 transport
+steps, 42,547 density cells, 271.63 s, relative energy error 5.55e-12 and zero
+cell-total-energy redistribution. Its E/J differ from the corrected 32-cell
+case by 6.65162% / 32.21361%, with electron-front difference 3.46585 mm and
+electron volume RMS temperature difference 0.14337 eV. Thus the spatial error
+persists after holding the corrected support, newborn mesh and arithmetic
+treatments fixed. The full 128-cell trajectory is now terminal EXIT0:
+4224 actual steps, 84343 density cells, 1069.60 s, minimum width 7.93e-25 m,
+relative energy error 1.38e-12, numerical thermal change -1.65e-12 J/m2 and zero
+cell-total-energy redistribution. Its E/J differences from 64 cells are
+2.70462% / 38.93526%; electron-front difference is 2.18483 mm and common-volume
+electron temperature RMS difference 0.103924 eV. Current does not show decreasing
+successive differences on these grids. Actual newborn Ar9+ resolution is 92
+velocity cells, with 128 for the other populated species.
+
+The existing direct-control runner now permits explicit resolution and a
+direct-only path. Full 64/128-cell runs without reactions or remaps complete
+2040/4224 steps, energy errors 5.55e-12/1.39e-12. Against the earlier complete
+32-cell direct control, successive E/J differences are 6.65162%/32.21368% and
+2.70462%/38.93526%. The electron-current absolute L2 difference dominates the
+ion contribution by hundreds of times. Thus this particular spatial limitation
+already occurs in transport; reaction transfer does not explain it. All current,
+front and temperature results and the inspected figure are retained in
+`outputs/reaction_direct_comparison`. Existing finer-grid and half-step results
+under bead 5.5.1 remain relevant; do not infer convergence from this diagnosis.
+
+An isolated exact-key ordering experiment reproduces the entire 20 ns state
+and a full RK4 step of the actual 227,839-cell state bit for bit. Its measured
+large-state step takes 18.66 s versus 12.21 s for original ordering, so it is
+not adopted. Timings reflect concurrent load. Evidence:
+`outputs/precise_ordering_cost`, `reactive_material_argon_ordered_mpfr_tracked_10ns`.
+The first ordered run omitted a helper from its original source closure because
+of an unsupported import spelling; its explicit supplement and limitation are
+preserved. The fresh tracked run archives the helper correctly. These are
+performance experiments, not an additional physical model or shortened success.
+
+A distinct bracketed-search optimization is adopted after concrete comparisons.
+Float rounding only bounds insertion indices; every equal-float tie receives
+original precise binary comparisons. Object sorting is unchanged. The complete
+actual 227839-cell RK4 state is identical to the original, with observed step
+cost 7.83 versus 12.21 s. Full MPFR/Decimal 20 ns prototypes complete with
+identical physical arrays, and the MPFR endpoint including precise coordinates
+matches original ordering. The integrated main run also preserves the complete
+endpoint, 971 steps in 71.96 s, source
+`9de32e70da00456d2d8d23fc02c4bc2cf22ceeb95afe4faf50bb6a04af03d18d`.
+See `precise_ordering_cost/bracketed_comparison.json`, the two bracketed output
+directories and `reactive_material_argon_integrated_search_10ns`. This changes
+computational cost, not physical accuracy; timings reflect concurrent load.

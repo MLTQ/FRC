@@ -1,5 +1,11 @@
 # Compatible material dynamics with explicit precise geometry
 
+Material membership searches now use `precise_search`: monotone float rounding
+only bounds the index, and all equal-float ties are resolved using the original
+precise coordinates. No cell is assigned from a rounded coordinate alone.
+Sorting, geometry, physical arrays and equations remain unchanged. The actual
+227839-cell RK4 step and complete 20 ns prototype retain identical saved arrays.
+
 Electric force now integrates its exact polynomial on every existing union
 interval. For t in [0,1], E=E0+(E1-E0)t and phi_right=a+b*t, b=h/H,
 integral(E phi_right)/h=a*(E0+E1)/2+b*(E0+2*E1)/6. The left moment uses

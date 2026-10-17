@@ -1,0 +1,7 @@
+Molecular Orbital Constants for Nitrogen molecule (N2)
+
+MO	B (eV)	U (eV)	N	Q	DblIon	Special	Remarks
+2greek:sigma<sub>g</sub>	41.72	71.13	2	1	No	none	none
+2greek:sigma<sub>u</sub>	21.00	63.18	2	1	No	none	none
+1greek:pi<sub>u</sub>	17.07	44.30	4	1	No	none	none
+3greek:sigma<sub>g</sub>	15.58	54.91	2	1	No	none	none

@@ -6,6 +6,7 @@ from scipy.constants import elementary_charge as EV, epsilon_0 as EPS0
 from scipy.linalg import eigh
 from .mass_scaling import solve_mass_banded
 from .velocity_selection import select_velocity_indices
+from .precise_search import searchsorted
 from .precise_geometry import coordinates, decimal, widths, fraction, interpolate, geometry_precision
 from .species_material import MaterialSpecies, SpeciesMaterialState
 from .material_subcells import MaterialSubcells
@@ -48,12 +49,12 @@ class PreciseMaterialSubcells(MaterialSubcells):
                     coarse[0] < self.reference_faces[0] or coarse[-1] > self.reference_faces[-1] or
                     (not self.extend_velocity and (coarse[0] != self.reference_faces[0] or coarse[-1] != self.reference_faces[-1]))):
                 raise ValueError('Ordered velocity faces with explicit support extension required')
-            self.velocity_indices = np.searchsorted(self.reference_faces, coarse)
+            self.velocity_indices = searchsorted(self.reference_faces, coarse)
             if not np.array_equal(self.reference_faces[self.velocity_indices], coarse):
                 raise ValueError('Every velocity face must be an existing precise density face')
         self.velocity_cells = len(self.velocity_indices)-1
         coarse = self.reference_faces[self.velocity_indices]
-        self.owner = np.searchsorted(coarse, self.reference_faces[:-1], side='right')-1
+        self.owner = searchsorted(coarse, self.reference_faces[:-1], side='right')-1
         self.owner = np.clip(self.owner, 0, self.velocity_cells-1)
         length = np.diff(coarse)[self.owner]
         fine = np.stack((self.reference_faces[:-1], self.reference_faces[1:]), axis=1)
@@ -178,7 +179,7 @@ class PreciseMaterialSubcells(MaterialSubcells):
     def sample(self, state, points):
         x = coordinates(points)
         h = self.validate(state)[0]
-        cell = np.searchsorted(state.faces[0], x, side='right')-1
+        cell = searchsorted(state.faces[0], x, side='right')-1
         inside = (cell >= 0) & (cell < self.cells)
         j = cell[inside]
         owner = self.owner[j]
@@ -202,7 +203,7 @@ class PreciseMaterialSet(MaterialSpeciesSet):
         charge = np.zeros(len(x))
         active = []
         for m, s in zip(self.models, state.blocks):
-            j = np.searchsorted(s.faces[0], x, side='right')-1
+            j = searchsorted(s.faces[0], x, side='right')-1
             inside = (j >= 0) & (j < m.cells)
             active.append((j, inside))
             charge[inside] += EV*m.charge[0]*m.number_density(s)[0, j[inside]]

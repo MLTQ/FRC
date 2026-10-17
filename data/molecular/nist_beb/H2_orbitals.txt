@@ -1,0 +1,4 @@
+Molecular Orbital Constants for Hydrogen molecule (H2)
+
+MO	B (eV)	U (eV)	N	Q	DblIon	Special	Remarks
+1greek:sigma<sub>g</sub>	15.43	15.98	2	1	No	none	none

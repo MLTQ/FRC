@@ -1,0 +1,8 @@
+Molecular Orbital Constants for Oxygen molecule (O2)
+
+MO	B (eV)	U (eV)	N	Q	DblIon	Special	Remarks
+2greek:sigma<sub>g</sub>	46.19	79.73	2	1	No	none	none
+2greek:sigma<sub>u</sub>	29.82	90.92	2	1	No	none	none
+1greek:pi<sub>u</sub>	19.64	59.89	4	1	No	none	none
+3greek:sigma<sub>g</sub>	19.79	71.84	2	1	No	none	none
+1greek:pi<sub>g</sub>	12.07	84.88	2	1	No	none	none

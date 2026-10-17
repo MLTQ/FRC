@@ -23,8 +23,11 @@ inputs. Its pages for [H2](https://physics.nist.gov/cgi-bin/Ionization/table.pl?
 Total ionization alone does not specify product branching, fragment energy or
 the other collisions needed for a discharge. The database distinguishes total
 and differential information and declares the model nonrelativistic. Its
-HTML/ASCII cross-section download links returned HTTP500 during this review;
-no independently tabulated cross sections were imported or compared.
+HTML/ASCII links initially failed because the reader changed their bare query
+strings. Browser verification and direct downloads resolved this: the original
+H2/N2/O2 orbital and cross-section tables are now preserved with URLs and hashes
+in `data/molecular/nist_beb`. They provide an independent numerical reference
+for the BEB implementation, rather than an experimental calibration.
 
 The [MCCC database](https://mccc-db.org/) exposes isotope and vibronic-state
 selection. The authors' [IAEA contribution](https://conferences.iaea.org/event/359/contributions/29407/)
@@ -57,5 +60,35 @@ distribution and regime. A total ionization curve must not silently be assigned
 to one molecular-ion product. Chemistry must conserve nuclei, charge, momentum
 and declared energy reservoirs with physical masses and explicit radiation.
 Use independent experimental/swarm comparisons and complete coupled refinement
-before enabling a gas as a lab-facing prediction. None of these new molecular
-gases is currently enabled by this source review.
+before enabling a gas as a lab-facing prediction. None of these molecular gases
+is enabled as a coupled discharge model by the component work below.
+
+## Implemented total-ionization component
+
+`plasma_bench/molecular_beb.py` loads the attributed H2/N2/O2 orbital constants
+and implements NIST's declared ground-target BEB formula. It accepts only the
+supplied unmodified Q=1 orbitals, with no double-ionization multiplier or
+invented product branching. D2 is explicitly unsupported by this dataset.
+Energy inputs are limited to the 0–5000 eV comparison range. The optional
+Maxwellian integral assumes stationary targets and zero electron drift, returns
+only the supported-energy contribution, and reports the omitted electron
+probability without renormalizing the distribution.
+
+The complete `examples.molecular_beb` calculation in
+`outputs/molecular_beb_codata` reproduces all 293 independent NIST tabulated
+values within their printed 0.001 angstrom² rounding. Maximum absolute
+differences are 0.0004982 / 0.0004983 / 0.0004889 angstrom² for H2/N2/O2.
+Across electron temperatures 1–100 eV, maximum relative differences from
+independent adaptive quadrature fall from 1.20e-6 at order 8 to 1.14e-11 at
+order 16 and 5.58e-16 at order 32. The largest electron probability above
+5000 eV is 1.55e-21; it is not a bound on the unknown rate outside that range.
+Raw numerical comparisons and the inspected scientific PNG/PDF are retained.
+
+The first calculation using the introduction's rounded explanatory constants
+is preserved as a terminal failure in `outputs/molecular_beb`. The corrected
+version uses independently published NIST CODATA 2022 Bohr radius and Rydberg
+energy, keeping the original data and tolerance. Source identity:
+`ef2c7cb935d2cd0b39f52b902ab554dbd0beffee77baacbc5cb6984c29e9b615`.
+Bead `frc-transport.6.1` covers this component. Molecular products, energy
+partition, excitation/dissociation/attachment, D2 data and moving coupling stay
+open under `frc-transport.6`.

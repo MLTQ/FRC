@@ -1,0 +1,48 @@
+{
+  "source": "NIST Electron-Impact Ionization Cross Section Database",
+  "retrieved_utc": "2026-10-17T00:56:17.233422+00:00",
+  "files": {
+    "H2_orbitals.txt": {
+      "url": "https://physics.nist.gov/cgi-bin/Ionization/tbldwnload?H2",
+      "sha256": "ba842c860120d5d58fa2d32186205746dd25cedc8828059775133b7bb7a7231a",
+      "bytes": 154
+    },
+    "H2_cross_sections.txt": {
+      "url": "https://physics.nist.gov/cgi-bin/Ionization/bebcsdwnload_ascii?H2",
+      "sha256": "4afdd58a14fabfb3097d56333e8d7eb5ffa9d83bb1b9708842a03c5c6e454883",
+      "bytes": 2063
+    },
+    "N2_orbitals.txt": {
+      "url": "https://physics.nist.gov/cgi-bin/Ionization/tbldwnload?N2",
+      "sha256": "fc6386cce289d348336b246dc95844316923c72f72e3f3c5c67da54c7bda21ac",
+      "bytes": 313
+    },
+    "N2_cross_sections.txt": {
+      "url": "https://physics.nist.gov/cgi-bin/Ionization/bebcsdwnload_ascii?N2",
+      "sha256": "b7af269f3a3cf152057b19e35fcc5b0841147e4f6abf1cb2e38a797007c0e5cc",
+      "bytes": 2042
+    },
+    "O2_orbitals.txt": {
+      "url": "https://physics.nist.gov/cgi-bin/Ionization/tbldwnload?O2",
+      "sha256": "796cf918dadac6bf0821bcb04dcb82508a0321e2876213b3027699215fe71195",
+      "bytes": 362
+    },
+    "O2_cross_sections.txt": {
+      "url": "https://physics.nist.gov/cgi-bin/Ionization/bebcsdwnload_ascii?O2",
+      "sha256": "762123f44472d5687600f75670e791548a578aa140175596592f828b4d986400",
+      "bytes": 2187
+    }
+  },
+  "orbital_units": {
+    "B": "eV",
+    "U": "eV",
+    "N": "electron count",
+    "Q": "dimensionless"
+  },
+  "cross_section_units": {
+    "energy": "eV",
+    "sigma": "angstrom^2"
+  },
+  "formula": "https://physics.nist.gov/PhysRefData/Ionization/Eqs/latex.html",
+  "scope": "Ground-target BEB total-ionization model tables. No product branching, elastic/excitation/dissociation/attachment model or D2 dataset."
+}
