@@ -17,6 +17,10 @@ velocity knot passes through this selection: retained meshes bypass it. Every
 fine density cell and physical endpoint is unchanged, with the same N/U/mass.
 There is no minimum physical density width, force modification or timestep fix.
 
-Full charged runs and analytic expansion must evaluate this choice. Convergence
-and local thermal/front errors remain requirements; avoiding tiny artificial
-mechanical intervals alone does not validate a reacting plasma model.
+The corrected full 20 ns charged 10/5 ns trajectories and analytic expansion
+now evaluate this choice. The 5 ns case retains 2.42 million density cells and
+Ar9+ has 22 velocity cells, minimum physical element 0.269 mm. Its E/J differences
+from 10 ns intervals are 9.209e-6/3.792e-4 relative. This closes initialization
+clustering (bead 5.5.8); other trace ions still show large thermal sensitivity.
+Avoiding tiny artificial mechanical intervals does not validate a reacting
+plasma model. See REACTION_TRANSFER.md for every local norm and remaining limit.

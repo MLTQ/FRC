@@ -49,6 +49,12 @@ dominates its exact density/velocity decomposition. This points to the existing
 transport approximation, rather than reaction return, as the dominant spatial
 current limitation in this case. Conservation alone does not establish accuracy.
 
+The corrected 5 ns-reaction-interval trajectory also completes the full 20 ns,
+retaining 2.42 million density cells. Relative to 10 ns reaction intervals,
+E/J differences are 0.000921% / 0.0379%. The newborn velocity-mesh defect is
+resolved, but Ar8+ temperature differs by 0.22056 eV RMS and 3.34554 eV locally.
+The complete result therefore keeps thermal accuracy and the broader goal open.
+
 The H2/N2/O2 component reproduces all 293 NIST theoretical table points within
 printed rounding and agrees with independent rate quadrature. That verifies the
 implementation of this component; it is not experimental discharge validation.
@@ -74,7 +80,7 @@ full chamber geometry or demonstrated preparation procedure.
 
 The project is substantial working research software, but is not finished or
 validated for choosing laboratory construction parameters. The full goal stays
-open. Current live runs, exact next action and local checkpoint state are in
+open. Run status, exact next action and local checkpoint state are in
 [THREAD_HANDOFF.md](THREAD_HANDOFF.md); older dated entries are history. Work is
 saved locally, without a configured remote or publication. Verification follows
 complete simulations and independent comparisons, not the historical unit suite.

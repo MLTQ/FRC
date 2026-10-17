@@ -133,7 +133,8 @@ intervals with971steps, relative energy2.84e-11 and no cell-energy redistributio
 E/J change1.53e-6/1.46e-4 relative versus unextended; neutral front changes51.34um
 and worst-cell temperatures remain sensitive. The maximum temperature change at
 the last source return is0.06161eV versus0.11055eV before extension. These values
-do not certify local accuracy. A full5ns extension run is now in progress.
+do not certify local accuracy. Its original 5 ns extension run was retired after
+the distinct newborn-mesh diagnosis; the corrected full result appears below.
 
 ## Equivalent force integration and live refinement
 
@@ -160,7 +161,7 @@ shortened target is called a success; every active source closure stays frozen.
 
 The specific extreme trace-velocity bug `frc-transport.5.5.4` is closed on the
 independent diagnosis, corrected explicit transfer and measured local errors.
-Keep `frc-transport.5.5.5/.6/.8`, their parents and `frc-goal` open until their
+Keep `frc-transport.5.5.5/.6`, their parents and `frc-goal` open until their
 actual accuracy and full-duration criteria are met. No unit tests were run.
 
 ## A distinct newborn velocity-mesh defect
@@ -182,11 +183,32 @@ rejects nearly coincident candidate knots before creating a newborn space.
 Its explicit spacing fraction is0.5 of associated nominal target spacing;
 actual newborn velocity dimension can decrease and is reported. Ar9+ has22
 well-spaced cells, minimum width0.26mm, while all21207 density cells remain at
-10ns. The full 20 ns, 5 ns-interval run has now accepted 15 ns coupled time,
-with 325/203/223 transport steps in the first three intervals and 227,839 density
-cells. The last interval is active. This is progress, not yet full-run success or
-a local accuracy claim. Source copy:/private/tmp/frc-newborn-mesh-20261016; output:
-reactive_material_argon_newborn_5ns. Preserve that imported source while live.
+10ns. The MPFR version now completes the full 20 ns with 5 ns source intervals,
+terminal EXIT0 in 5342.87 s, source
+`bfa29713ca0a32407971b23f277453a9255667e60aea688f51d39242f0ad40c1`.
+Actual transport counts are 325/203/223/221 (972 total). The endpoint retains
+2417135 density cells, minimum width 2.68e-27 m, and relative energy error
+2.77e-11. Ar9+ has 22 independent velocity cells with minimum physical element
+0.269 mm. Every old knot, density cut and physical endpoint remains.
+
+The complete 10/5 ns comparison gives E/J relative differences
+9.20904e-6 / 3.79154e-4. Neutral front/T RMS differences are 1.731 um /
+0.0008824 eV; electron differences are 3.526e-11 m / 0.0001634 eV.
+Ar9+ front/velocity/T RMS differences are 2.691e-10 m / 154.01 m/s / 0.01080 eV,
+with maximum T difference 0.11188 eV. These full trajectories plus the analytic
+controls close the specific initialization-clustering bug 5.5.8.
+
+Local thermal accuracy remains open. Ar8+ T RMS/max differences are
+0.22056 / 3.34554 eV. Its final range is 1.10e-13..3.54570 eV; Ar5/6/7 also
+approach 1e-13 eV. Maximum last-return temperature changes across accepted
+intervals are 0.00490 / 0.04966 / 7.18286 / 1.47703 eV. Cumulative numerical
+thermal change is -1.612e-11 J/m2, with zero cell-total-energy redistribution.
+Electron pointwise T difference reaches 0.94810 eV despite its much smaller
+volume RMS; no narrow region is omitted. Evidence is in
+`reactive_material_argon_newborn_mpfr_5ns` and the existing constrained comparison.
+Source intervals also change partitions/newborn spaces, so this is not an
+isolated second-order source-error measurement. Full 2.5 ns remains pending;
+the measured thermal defect is the next solver target before further halving.
 
 
 ## Optional high-precision arithmetic and integrated checks
@@ -226,7 +248,7 @@ errors are 1.42e-15 / 6.94e-17 m, relative energy errors 5.68e-14 / 3.27e-15.
 The inspected figure and raw histories are in `precise_material_mpfr`, source
 `30006fa1cac11705f7e59bb924779255f616ada5546712d57ff8da85b60e5c84`.
 These analytic fixtures retain the reported 8-ULP cleanup option; the charged
-reacting runs use zero. The full 5 ns-source MPFR calculation remains active.
+reacting runs use zero. The full 5 ns-source MPFR calculation is now complete.
 Its redundant Decimal copy is explicitly retired at 15 ns coupled acceptance
 after matching saved physical arrays and reported fourth-interval clocks.
 `termination.json` records actual KeyboardInterrupt exit 1; it is neither a

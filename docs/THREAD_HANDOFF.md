@@ -49,51 +49,70 @@ Read [REACTION_TRANSFER.md](REACTION_TRANSFER.md) and
   open. No molecular gas is yet enabled as a coupled discharge model. The older
   H2 inventory switch assumes complete dissociation/ionization into protons.
 
-## Live calculations: inspect before changing their imported source
+## All calculations are terminal
 
-- 76215, `/private/tmp/frc-mpfr-20261016`, output
-  `reactive_material_argon_newborn_mpfr_5ns`: 15 ns coupled time accepted of the
-  original 20 ns target, 227839 density cells. Fourth-interval transport has
-  passed 200 actual steps / 4.5261 ns internally. This is split-stage progress,
-  not yet a completed 20 ns result. Keep this source root frozen.
-  Original isolated dependency: `/private/tmp/frc-gmp-runtime`.
+The 5 ns-source MPFR run 76215 is terminal EXIT0: full 20 ns in 972 actual
+transport steps (325/203/223/221), 5342.87 s, 2417135 density cells, minimum
+width 2.68e-27 m and relative energy error 2.77e-11. The exact source is
+`bfa29713ca0a32407971b23f277453a9255667e60aea688f51d39242f0ad40c1`.
+Its complete archived state and endpoint readout are in
+`outputs/reactive_material_argon_newborn_mpfr_5ns`. Ar9+ uses 22 independent
+velocity cells, minimum physical element 0.269 mm. No old knot, density cut,
+physical endpoint or represented population was removed.
 
-The redundant Decimal counterpart 76748 is now terminal EXIT1/KeyboardInterrupt,
-deliberately retired after matching physical arrays through 15 ns and matching
-reported fourth-interval 100-step clocks. Full 20 ns arithmetic controls and the
-analytic family already completed. Its `termination.json` records 15 ns accepted
-coupled time, not a full success or physical failure. MPFR retains the original
-20 ns target; this retirement does not establish its completion.
+The complete comparison 89248 is terminal EXIT0 and its figure was inspected.
+Against 10 ns source intervals, E/J differences are 9.209e-6 / 3.792e-4 relative.
+Neutral front difference is 1.731 um; electron front difference is 3.526e-11 m.
+Their common-volume temperature RMS differences are 0.0008824 / 0.0001634 eV.
+Ar9+ velocity/T RMS differences are 154.01 m/s / 0.01080 eV. This completes the
+narrow newborn-mesh bug criteria, closing bead 5.5.8.
 
-No other simulation remains live at this checkpoint. The integrated bracketed
-search run 51902, prototype MPFR/Decimal runs 56959/17187, large-step 80171,
-128-cell argon, analytic family and direct controls are all terminal EXIT0.
-The live MPFR job retains its original unoptimized search, not changed code.
+Thermal accuracy is NOT resolved. Ar8+ temperature differs by 0.22056 eV RMS
+and 3.34554 eV maximum. Its final range is 1.10e-13 to 3.54570 eV; several other
+trace ions approach 1e-13 eV. Largest last-return temperature changes across
+accepted intervals are 0.00490 / 0.04966 / 7.18286 / 1.47703 eV. Total numerical
+thermal change is -1.612e-11 J/m2 with zero cell-total-energy redistribution.
+Good energy conservation and small net E/J sensitivity do not validate this heat.
+Electron maximum pointwise T difference is 0.94810 eV despite small volume RMS;
+all narrow regions remain included in both norms.
+
+The redundant Decimal counterpart 76748 is terminal EXIT1/KeyboardInterrupt,
+retired at 15 ns coupled acceptance after matching saved physical arrays and
+reported fourth-interval clocks. Its termination record is explicit; it is not
+counted as a full run or physical failure. All analytic, spatial, direct-control,
+search-equivalence and molecular calculations are also terminal. No source root
+needs to stay frozen for a live process. Original private roots remain available
+and every result has a source archive. The N2 configured-entry check is an
+expected unsupported-model initialization rejection, not a physical trajectory.
 
 ## Concrete next action
 
-Collect the full 5 ns-source endpoint, then compare its E/J/front/velocity/
-temperature against the completed 10 ns run using the existing
-`outputs/reactive_material_argon_constrained_comparison/compare.py`.
-Keep 5.5.8 open until its full-duration/local-sensitivity criteria are met.
-The explicit newborn spacing fraction 0.5 applies only when initializing a new
-velocity space; actual dimension can decrease and is reported. It never removes
-an old independent knot, density cut or physical endpoint. Its specific 16-cell
-neutral/charged analytic control already completed.
+Fix local thermal transfer under 5.5.5 using the actual completed 5 ns trajectory,
+including the large Ar8+ discrepancy. The accepted 10/15/20 ns states and frozen
+source make the affected third/fourth intervals reproducible. Keep the requested
+full duration, physical masses, populated species and fine density cuts when
+comparing a replacement. The existing 10/5 ns postprocessor already measures
+local E/J/front/velocity/T; do not build a generic verification framework.
 
-Keep thermal accuracy 5.5.5, full source-time refinement 5.5.6, current/front
-transport 5.5.1, molecular physics 6 and the full FRC goal open. Source interval
-2.5 ns remains pending; assess actual mesh growth from the full 5 ns result
-before launching it. Prioritize physical solver work over new verification
-frameworks. The 20 ns planar n=1e14/m³ case is a numerical component and does
-not represent the user's neutral-fill pressure or full chamber experiment.
+Transport issue 5.5.1 also requires
+better interior electron velocity/pressure accuracy; the complete no-reaction
+controls locate that limitation independently of projection. Reuse existing
+finer-grid, half-step and analytic evidence rather than automatically doubling
+all runs. Full 2.5 ns-source refinement remains pending under 5.5.6; the 5 ns
+case already grows to 2.42 million density cells and exposes an accuracy defect,
+so a solver correction is the next milestone. Molecular physics remains bead 6.
+All parent goals, including frc-goal, stay open.
+
+The 20 ns planar n=1e14/m³ case is a numerical component and does not represent
+the user's neutral-fill pressure, full chamber or demonstrated preparation.
+A concise whole-project map is [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md).
 
 Main optional dependency: gmpy2 2.3.2, selected before import with
 `FRC_GEOMETRY_BACKEND=mpfr`; Decimal remains default. Read module companions
 before edits. Frozen source archives and actual steps accompany every run.
 Old interrupted 5 ns attempts have explicit termination records and are not
 counted as full runs. No unit tests, remote publication or viewer/poster edits.
-Latest free disk is about 5.5 GiB; retain the 256 MiB reserve. Private LXCat data
+Latest free disk is about 4.9 GiB; retain the 256 MiB reserve. Private LXCat data
 stay outside Git. User poster SHA256:
 `a783f7cda0f4a249cc4c23ead61debbdf89d356436a2a3dab2189029c6d5deca`.
 

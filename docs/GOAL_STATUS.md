@@ -2,8 +2,8 @@
 
 ## Complete component runs; reaction accuracy still open (2026-10-16)
 
-Current evidence: [REACTION_TRANSFER.md](REACTION_TRANSFER.md). Live handles,
-frozen source roots and exact next actions: [THREAD_HANDOFF.md](THREAD_HANDOFF.md).
+Current evidence: [REACTION_TRANSFER.md](REACTION_TRANSFER.md). Terminal results,
+preserved source roots and exact next actions: [THREAD_HANDOFF.md](THREAD_HANDOFF.md).
 The original FRC objective remains open; these planar components are not a
 validated lab design or a demonstration of formation, stability or confinement.
 
@@ -32,10 +32,14 @@ no density cut, coordinate or physical coefficient changes.
 A distinct initial-mesh defect creates nearly coincident velocity nodes for
 new trace species. Explicit target-relative selection preserves all old knots,
 fine density cells and physical endpoints while reporting actual newborn
-resolution. The replacement 5 ns-source trajectory has passed the old slowdown
-and accepts 15 ns while retaining the original 20 ns target. Full endpoints and local sensitivity are
-still pending; bead 5.5.8 remains open. The diagnosed old 5 ns jobs are explicitly
-retired at 10 ns coupled acceptance, not counted as successful full runs.
+resolution. The replacement 5 ns-source trajectory now completes the original
+20 ns: 972 steps, 2.42 million density cells, relative energy error 2.77e-11.
+Complete 10/5 ns E/J differences are 9.209e-6 / 3.792e-4 relative, closing the
+specific newborn-mesh bug 5.5.8. Ar8+ temperature sensitivity is still large:
+0.22056 eV volume RMS and 3.34554 eV maximum; thermal accuracy 5.5.5 stays open.
+All calculations are terminal. The old 5 ns jobs were retired at 10 ns coupled
+acceptance, and the redundant Decimal newborn copy at 15 ns; their termination
+records are explicit. Only the MPFR successor supplies a full 5 ns-source endpoint.
 
 Available gases now explicitly include H2, D2, N2 and O2; argon remains the
 baseline. [MOLECULAR_GASES.md](MOLECULAR_GASES.md) records primary sources and
