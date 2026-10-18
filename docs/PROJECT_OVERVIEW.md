@@ -7,18 +7,13 @@ FRC formation is the first major application. Field reversal, closed flux,
 force balance, lifetime, three-dimensional stability and particle confinement
 are separate claims with separate evidence requirements.
 
-The user's provisional envelope is about 1 m long, 15 cm diameter and
-0.1–100 mTorr. Available gases include argon, H2, D2, N2 and O2. These are inputs
-to investigate, not established operating settings. Coil hardware remains an
-abstract prescribed waveform; this repository does not design pulsed power.
-
-Cache cleanup and the user-authorized shutdown of uv-using tool servers restored
-space after the host-storage blocker; Codex remains running. The first preserved
-argon stage now completes its full 5 ns, reducing final Ar9 maximum temperature
-from 370.16 to 0.46843 eV while Ar8 remains 14.176 eV. The coupled candidate has
-resumed; the all-heavy stage remains suspended for serial scheduling. The app
-goal remains marked blocked, and the scientific objective is unfinished. See
-THREAD_HANDOFF for exact process/source state and next actions.
+The user's lab envelope (2026-10-18) is a Pyrex tube about 15 cm in diameter
+and 1 m long, with H2/D2 as working gases and N2 for commissioning. The goal is
+now a specific buildable benchtop FRC experiment. The repository specifies the
+required field and current waveforms and the equivalent coil/bank numbers; the
+user builds the hardware. The current status and plan are in
+[GOAL_STATUS.md](GOAL_STATUS.md); the first-cut regime is in
+[FRC_DESIGN_WINDOW.md](FRC_DESIGN_WINDOW.md).
 
 ## What exists
 
@@ -38,106 +33,29 @@ See [the configured experiment](MATERIAL_EXPERIMENT.md),
 The earlier H2 inventory option assumes complete dissociation into fully ionized
 protons; it is not a molecular hydrogen discharge model.
 
-## What the latest continuation established
 
-The active goal continuation adds conservative variance transfer and explicit
-mechanical refinement. Refining the actual trace-ion transport stage reduces
-its peak temperature from7.04 to0.35eV while retaining every population and
-material cut. Complete20ns enriched10ns-source runs finish, but the shorter
-source-interval case exposed arithmetic underflow in a cold trace-cell sound
-calculation and loss of a small local mixing-heat contribution. Equivalent
-ratios and explicit binary number/energy scaling address these arithmetic
-errors. Both corrected shorter-interval cases now complete20ns, but expose
-Ar9 maximum370.17eV. The actual full final5ns transport control independently
-reproduces370.16eV before the last source return, versus0.412eV adiabatic
-temperature at that cell. A neutral Euler experiment isolates a related failure:
-a large density jump inside one velocity element creates a3041eV runaway;
-adding one existing interface node completes the run with peak0.925eV.
-ExactshockT1.204eV means general shock accuracy remains open. Actual stage and
-full coupled density-interface refinements are running; none is adopted.
-[DENSITY_INTERFACE_TRANSPORT.md](DENSITY_INTERFACE_TRANSPORT.md) records the
-completed evidence, storage interruption, continuation and explicit limits. Current
-still differs substantially from an existing fine numerical trajectory, so a
-completed128-electron/32-heavy run reproduces the earlier128-cells-per-species current
-within0.056% at lower observed cost. It remains34.2% away from the existing
-1024-cell numerical reference. The completed256-electron/32-heavy run reduces
-that current difference to19.1% and electron-front difference3.39→1.86mm.
-The1024reference is itself unconverged; current accuracy is still open. Independent analytic
-expansion families now complete their original full durations. [VARIANCE_TRANSFER.md](VARIANCE_TRANSFER.md) records all
-current evidence and limitations. Defaults remain unchanged.
+## Paused component work (argon)
 
-The original variance5ns trajectory now also completes20ns. Its10/5ns current
-difference is0.0434%, but Ar8 T differs0.1612eV RMS, keeping local accuracy open.
-Charged collisions now feed back into the moving reaction slab in a complete
-20ns run. Sourced electron/ground-neutral elastic moments complete independent
-full relaxation comparisons, including recoil and heat, and their moving source
-completes20ns with total-energy drift2.842e-11. See [neutral-collision evidence](ELASTIC_NEUTRALS.md)
-and [moving charged-collision evidence](ATOMIC_COLLISIONS.md). These are distinct
-component advances, not a completed laboratory simulator.
-
-The full3.5us heated source now includes electron/ground-neutral collisions at
-two time resolutions. It shows why vector current and neutral motion matter:
-azimuthal current damps faster while different neutral/ion flows sustain axial
-current. Ground-ion/neutral scattering is the next missing physical channel;
-the published table's low-energy gap covers up to11.6% of the modeled pair
-distribution. Excited-neutral channels are also incomplete. The coupled
-source's small time-halving error does not remove these physical limitations.
-The first uniform-density electron experiment completes but accidentally selects
-only102velocity cells through the old cosine targets. Its worsened current/front
-comparison rejects that mixed mesh. The constructor call is corrected, and the
-corrected full-duration run completes with128 actual uniform velocity cells.
-Its40.55% current and11.25mm electron-front differences from the1024 numerical
-reference are worse than128cosine spacing. Defaults retain the cosine mesh.
-
-The extreme trace-ion velocity was an approximation error across density
-contrast, reproduced independently at 100-digit precision. A constrained
-velocity transfer fixes that specific failure while preserving block momentum
-and each fine cell's total energy. It does not establish local thermal accuracy.
-Affine edge extension also removes artificial tiny velocity elements; independent
-full neutral/charged expansion families complete. Exact force integration and
-coordinate-search improvements reduce cost without changing the physical model.
-
-Complete corrected 32/64/128-cell argon trajectories reach the same 20 ns target.
-Successive electric-field differences decrease from 6.65% to 2.70%, while current
-differences increase from 32.21% to 38.94%. Full controls with reactions and
-remaps disabled reproduce these differences. At 64/128, about 87.7% of the
-electron-current squared difference lies inside |x|<9 mm and the velocity term
-dominates its exact density/velocity decomposition. This points to the existing
-transport approximation, rather than reaction return, as the dominant spatial
-current limitation in this case. Conservation alone does not establish accuracy.
-
-The corrected 5 ns-reaction-interval trajectory also completes the full 20 ns,
-retaining 2.42 million density cells. Relative to 10 ns reaction intervals,
-E/J differences are 0.000921% / 0.0379%. The newborn velocity-mesh defect is
-resolved, but Ar8+ temperature differs by 0.22056 eV RMS and 3.34554 eV locally.
-The complete result therefore keeps thermal accuracy and the broader goal open.
-
-The H2/N2/O2 component reproduces all 293 NIST theoretical table points within
-printed rounding and agrees with independent rate quadrature. That verifies the
-implementation of this component; it is not experimental discharge validation.
-Detailed measurements, failures and source archives are linked from
-[reaction-transfer results](REACTION_TRANSFER.md) and [gas scope](MOLECULAR_GASES.md).
-
-The 20 ns planar case uses 1e14/m³ initial component densities and a 20 mm slab.
-It is a numerical component problem, not the user's neutral-fill pressure,
-full chamber geometry or demonstrated preparation procedure.
+The 1D argon reaction/transport slab and the Vlasov slab are complete,
+energy-conserving component studies. Their current and local thermal accuracy
+are unresolved, and they are paused under the benchtop refocus. Evidence and
+limitations: [REACTION_TRANSFER.md](REACTION_TRANSFER.md),
+[DENSITY_INTERFACE_TRANSPORT.md](DENSITY_INTERFACE_TRANSPORT.md),
+[VARIANCE_TRANSFER.md](VARIANCE_TRANSFER.md), [VLASOV_SLAB.md](VLASOV_SLAB.md),
+[ELASTIC_NEUTRALS.md](ELASTIC_NEUTRALS.md) and
+[ATOMIC_COLLISIONS.md](ATOMIC_COLLISIONS.md). The H2/N2/O2 total-ionization
+component reproduces the 293 NIST theoretical table points; that verifies the
+implementation, not discharge behaviour.
 
 ## What remains before lab-facing predictions
 
-1. Resolve local current/front and thermal accuracy in the moving species solver,
-   including complete source-time sensitivity with every species retained.
-2. Couple the physical reaction, collision and heat models into the driven
-   moving-plasma path, with gas-specific chemistry and distribution-validity limits.
-3. Implement the required chamber/wall/sheath/end interactions and preparation
-   physics, rather than continuing through an unsupported contact or assuming it.
-4. Complete formation trajectories with converged fields/topology and compare
-   matching physical inputs against independent experimental measurements.
-5. Expose the supported model and diagnostics through the interactive interface
-   without presenting axisymmetric results as proof of 3D stability/confinement.
+1. Reproduce a documented small field-reversed theta-pinch experiment with the
+   most complete coil-driven solver path (beads frc-ibl.2).
+2. Add only what that benchmark requires: hydrogenic plasma, pre-ionization and
+   bias-flux trapping, wall/end contact, and a coil circuit with crowbar.
+3. Scan the design for the user's geometry, with converged fields and topology
+   and an independent cross-check.
+4. Do not present axisymmetric results as proof of 3D stability or confinement.
 
-The project is substantial working research software, but is not finished or
-validated for choosing laboratory construction parameters. The full goal stays
-open. Run status, exact next action and local checkpoint state are in
-[THREAD_HANDOFF.md](THREAD_HANDOFF.md); older dated entries are history. Work is
-saved locally, without a configured remote or publication. Verification follows
-complete simulations and independent comparisons, not the historical unit suite.
+Verification follows complete simulations and independent comparisons, not the
+historical unit suite. Work is local, with no remote.

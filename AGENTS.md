@@ -37,9 +37,21 @@ and conservation measurements, and complete replays for new verification.
 Do not add unit tests or run the existing unit-test suite unless the user
 explicitly changes this preference. Historical test results remain historical.
 
-No sub-agent delegation is required by this repository. Hardware remains abstract
-prescribed waveforms. Neither closed flux nor an axisymmetric equilibrium proves
-three-dimensional stability or particle confinement.
+No sub-agent delegation is required by this repository. Neither closed flux nor
+an axisymmetric equilibrium proves three-dimensional stability or particle
+confinement.
+
+## Benchtop design goal (user, 2026-10-18)
+
+The goal is a buildable benchtop FRC experiment in the user's lab (beads epic
+frc-ibl; see docs/GOAL_STATUS.md). Specify the required fields and currents in
+space and time, plus equivalent coil/bank numbers (energy, current, voltage,
+capacitance, inductance, crowbar L/R). The user builds the pulsed power and
+handles hardware safety; do not engineer the hardware itself. Work in
+dependency order: design window, then the benchmark against a published
+experiment, then only the gaps the benchmark exposes, then the design scan.
+Keep docs/GOAL_STATUS.md a short current-state page; replace sections rather
+than appending dated logs. Do not commit simulation outputs.
 
 ## Simulation-first priority (user, 2026-10-14)
 

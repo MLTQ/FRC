@@ -17,7 +17,7 @@ No artificial heat or force correction is allowed to close the total.
 Candidate only. `run_case()` has focused-test coverage; `main()` is unfinished
 because `current_transport_records` has not been written. No frozen 16-case
 study, independent audit, or full regression has run for this candidate. Resume
-with beads frc-7mm.3 and docs/NEXT_SESSION.md before invoking the study CLI.
+with beads frc-7mm.3 and docs/GOAL_STATUS.md before invoking the study CLI.
 
 ## Resumed verification (2026-10-04)
 

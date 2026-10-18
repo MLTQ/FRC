@@ -123,7 +123,7 @@ are not asserted to match current code. Final source union: 164 files, SHA
 Metrics, manifests and checkpoint: `outputs/scheduled_workspace_diagnostics`.
 Standalone PNG/PDF: `outputs/directional_workspace_report`; PNG visually checked.
 All previous evidence and the user's poster remain unchanged. No publication or
-remote is used. Follow NEXT_SESSION for refined amplitude/residual controls,
+remote is used. Follow GOAL_STATUS for refined amplitude/residual controls,
 combined/further spatial refinement, full trajectories and local budgets.
 Heated moving exact vacuum, transport/ionization and validity, prescribed real
 coils/ends, converged formation and the experiment UI remain open. Provisional

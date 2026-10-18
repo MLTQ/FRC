@@ -61,7 +61,7 @@ Handoff evidence (2026-10-16): the explicit candidate succeeds on the saved
 retained-knot10ns rejected source, but Ar9+ reaches2.882045e6eV from~0.199eV.
 Global energy error3.03e-15 relative therefore does not justify adoption.
 See outputs/reactive_material_argon_retained_knots_10ns/projected_frame_local_errors.json
-and docs/THREAD_HANDOFF.md. No full candidate trajectory has been run;
+and docs/GOAL_STATUS.md. No full candidate trajectory has been run;
 local_total remains the default. Beads5.5.4/.5 track the local velocity and
 energy defects before full E2E refinement under5.5.6.
 

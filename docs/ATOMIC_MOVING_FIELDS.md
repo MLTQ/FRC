@@ -16,7 +16,7 @@ See projection_energy.md for assumptions. Default remains local_total; there
 is no complete candidate trajectory and no formation adoption or heat repair.
 
 All evidence, exact source/knot state and candidate overlay source are retained
-in outputs/reactive_material_argon_retained_knots_10ns. THREAD_HANDOFF.md is the
+in outputs/reactive_material_argon_retained_knots_10ns. GOAL_STATUS.md is the
 current entry point. New beads5.5.4/.5/.6 isolate actual projection fixes and full
 charged refinement. No jobs remain live; older progress sections are historical.
 

@@ -108,14 +108,14 @@ Ar8 is unchanged near 14.176049 eV. This does not establish general convergence
 or fix the other heavy species. Raw outputs are preserved; complete coupled
 and all-heavy comparisons remain required. After user-authorized tool shutdown
 and uv cache cleanup, coupled PID 2415 resumed; heavy PID 6975 remains suspended.
-Wall time includes the long storage pause. See the latest THREAD_HANDOFF.
+Wall time includes the long storage pause. See the latest GOAL_STATUS.
 
 Earlier checkpoint:
 
 Current execution note (2026-10-17, 13:28 UTC): cache cleanup recovered about
 6.3 GB. Ar9-only16298/PID1882 was identity-checked, resumed and confirmed running;
 coupledPID2415 and all-heavy81727/PID6975 remain suspended for serial scheduling.
-Source/data are unchanged. See THREAD_HANDOFF and
+Source/data are unchanged. See GOAL_STATUS and
 outputs/storage_cache_cleanup/cleanup.json. Collect the first full endpoint,
 then verify identity and available export/swap space before resuming each
 remaining process. Earlier storage failures remain preserved.

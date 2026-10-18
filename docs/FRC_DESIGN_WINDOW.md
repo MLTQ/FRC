@@ -1,0 +1,134 @@
+# First-cut benchtop FRC design window (2026-10-18)
+
+This document gives the fields needed, where and when, to form an FRC by field-reversed
+theta pinch in the user's tube. It is a scaling estimate, not a simulation. Its
+purpose is to fix the regime that the benchmarked solver (beads frc-ibl.2) will
+refine. Expect factor-of-2–3 uncertainty, mostly from the empirical formation
+efficiencies listed below.
+
+Reproduce it with `python -m examples.frc_design_window`. The equations are in
+[plasma_bench/frc_scaling.md](../plasma_bench/frc_scaling.md).
+
+## Lab envelope used
+- Pyrex tube with about 15 cm OD; the bore radius is taken as r_w = 7.1 cm.
+- Single-turn sheet main coil hugging the tube: r_c = 8.0 cm, length 0.5 m,
+  centred in the ~1 m tube so reconnection has room at both ends.
+- Stray (bank, switch, feed) inductance of 30 nH, with 15 and 60 nH as sensitivity cases.
+- Gases: H2 as the workhorse, D2 sparingly, N2 for commissioning only.
+
+## Independent checks of the formulas
+| Check | Closed form | Independent value |
+|---|---|---|
+| Rigid-rotor trapped flux, K=1/2/3 (units of π r_s² B_e) | 0.21689 / 0.33125 / 0.38489 | identical to 1e-16 (quadrature) |
+| Net flux at the separatrix | 0 | ≤ 4e-17 |
+| Classical decay factor τη/(μ0 r_s²), K=1/2/3 | 0.054223 / 0.041406 / 0.032074 | agree to 1e-10 (finite-difference null current) |
+| Sheet-coil centre field per ampere | 2.39370e-6 T | 2.39370e-6 (4000 elliptic-integral loops, 3e-9 rel.) |
+| Coil inductance | 44.17 nH (Wheeler) | 44.29 nH (flux linkage, 4000 loops; 0.27%) |
+
+These checks verify the arithmetic and geometry. They do not validate the physics assumptions.
+
+## What sets the design (the useful scalings)
+- **Temperature** comes from pressure balance: T ∝ B_e² / fill pressure. Doubling
+  the field quadruples the temperature at a fixed fill.
+- **s̄** (ion gyroradii across the FRC) depends only on the fill and the gas:
+  s̄ ∝ √(n/m). It does not depend on the field. Stable formation is reported
+  for s̄ of order 1–4; this design targets about 2.
+- **Bank energy** depends only on the field and the inductance: E = L I²/2 ∝ B_e².
+  A faster rise costs voltage, not energy.
+- **The required rise time** comes from the implosion: the main field should
+  reach full strength within a few snowplow transit times, t_sp ∝ √ρ_fill / B_e.
+  Hydrogen implodes √2 faster than deuterium at the same fill and field. A bank
+  fast enough for H2 is therefore also fast enough for D2.
+- **Classical lifetime** scales as τ_φ ∝ r_s² T_e^{3/2}. The tube bore is the
+  strongest lever: a 10 cm bore doubles τ_φ at 1.6× the energy (see sensitivity).
+
+## Nominal design point
+Fill 10 mTorr, B_e = 0.3 T, x_s = r_s/r_c = 0.44.
+
+| | D2 | H2 |
+|---|---|---|
+| Separatrix radius | 3.55 cm | 3.55 cm |
+| ⟨n⟩ (peak) | 2.3e21 (2.5e21) m⁻³ | same |
+| T_e + T_i | 88 eV | 88 eV |
+| s̄ / r_s/d_i | 1.96 / 5.6 | 2.78 / 7.9 |
+| Trapped flux | 0.39 mWb | 0.39 mWb |
+| Classical τ_φ (upper bound) | 18 µs | 18 µs |
+| Bias field | −62 mT | −62 mT |
+| Snowplow time / quarter period | 0.55 / 1.65 µs | 0.39 / 1.17 µs |
+| Coil current (single turn) | 125 kA | 125 kA |
+| Lossless bank: E, C, V | 583 J, 15 µF, 8.8 kV | 583 J, 7.5 µF, 12.5 kV |
+| Minimum PI T_e | 1.5 eV | 1.1 eV |
+
+**Recommendation:** build the main bank for the H2 case: about 7.5 µF at
+12.5 kV with ≤ 30 nH stray inductance. That is 583 J delivered; plan for about
+2× stored-energy margin. The same bank then covers D2 and N2 commissioning.
+
+Stretch option: 0.5 T at 10–20 mTorr D2 gives T_e + T_i of 120–245 eV and a
+classical τ_φ of 30–78 µs. It needs 1.6 kJ and 17–25 kV.
+
+## Field timeline (where and when)
+| Phase | When (relative to main fire) | Where | What |
+|---|---|---|---|
+| Vacuum and fill | before shot | tube | Base pressure ≤ 1e-5 Torr (turbo), then a static fill of about 10 mTorr. Glow-discharge clean the Pyrex. |
+| Bias | ms before → through reversal | coil length plus ~10 cm beyond each end, ±5% uniform | B_b ≈ −60 mT, opposing the main field. Supply it slowly (or DC) through the main coil via isolation, or from an outer coil if the main coil's eddy time is short. It stores about 25 J. |
+| Pre-ionization | tens of µs before main (a scan parameter) | under the coil | Ringing theta PI (HFRC-F used 150 kHz) or a z-discharge, fired with bias at full strength. Target T_e ≳ 2 eV and near-full ionization so the plasma freezes the bias flux. |
+| Main rise | 0 → τ_q ≈ 1.2–1.7 µs | main coil | +0.3 T on axis, from 125 kA in a single turn. The reversal at the wall drives the implosion and the field-line reconnection at the coil ends. |
+| Crowbar | at peak current | main circuit | Hold the field. The decay time is L/R with L = 74 nH: 50 µs needs R ≤ 1.5 mΩ and 100 µs needs R ≤ 0.74 mΩ in the crowbar loop. FRC lifetime cannot exceed the field hold. |
+| End mirrors | with main | coil ends | Provide for end coils raising the field 1.2–1.5× at the ends to control reconnection and axial contraction. The value comes from the frc-ibl.6 scan, not this estimate. |
+| Multipole (later) | through equilibrium | outside the coil | Weak quadrupole windings are reported to suppress the n=2 rotational mode. They only matter once lifetimes exceed tens of µs. |
+
+## Sensitivity at the nominal point (D2, 10 mTorr, 0.3 T)
+| Varied input | T_e+T_i (eV) | s̄ | classical τ_φ (µs) | bias (mT) | E (J) / V (kV) |
+|---|---|---|---|---|---|
+| nominal | 88 | 1.96 | 18.5 | −62 | 583 / 8.8 |
+| particle retention 0.2 / 0.6 | 176 / 59 | 1.39 / 2.41 | 47 / 11 | −62 | same |
+| flux retention 0.2 / 0.6 | 88 | 1.96 | 18.5 | −124 / −41 | same |
+| r_s/r_w 0.4 / 0.6 | 59 / 121 | 1.93 / 2.01 | 6.8 / 41 | −40 / −89 | same |
+| l_s/l_c 0.4 / 0.8 | 59 / 117 | 2.41 / 1.70 | 11 / 27 | −62 | same |
+| T_i/T_e 0.5 / 2 | 88 | 2.41 / 1.70 | 28 / 11 | −62 | same |
+| stray L 15 / 60 nH | 88 | 1.96 | 18.5 | −62 | 465/7.1 · 818/12.4 |
+| bore 5 / 10 cm | 89 / 87 | 1.38 / 2.78 | 9.3 / 36 | −62 | 412/9.1 · 919/9.5 |
+
+The particle and flux retention are the least certain inputs. They come from
+the pre-ionization and reversal physics, which is what the benchmark and the PI
+model must pin down.
+
+## Lab implications
+1. **The turbo pump is required for H2/D2 FRC work, not optional.** With a
+   10 mTorr base pressure and a 10–20 mTorr fill, a third to a half of the gas
+   is air. Oxygen and nitrogen line radiation would then dominate the energy
+   budget at 10–100 eV. A 1e-5 Torr base keeps base-pressure impurities at 0.1%
+   of a 10 mTorr fill.
+2. **Crowbar resistance sets the lifetime ceiling.** Sub-mΩ crowbar loops are
+   hard to hand-build. A 15 cm tube gives a classical τ_φ of about 20 µs at the
+   nominal point, so a crowbar time of 50 µs is sufficient for a first device.
+3. **Low stray inductance saves both energy and voltage.** Keep the bank
+   physically close to the coil with parallel low-inductance feeds.
+4. **Expect lifetimes well below classical.** Published small FRCs often lose
+   flux several times faster than classical resistivity predicts. Treat
+   18 µs as an upper bound and plan diagnostics with ≤ 100 ns resolution.
+5. **N2 is for commissioning only:** checking bias, PI, timing, the implosion
+   signature in excluded flux, and the camera. Nitrogen ionizes to several
+   charge states and radiates strongly at these temperatures, so its rows in
+   `scan.csv` (which assume Z = 1) are not FRC predictions.
+
+## Experimental anchors
+- HFRC-F (Huazhong; [conference paper](https://indico.fusenet.eu/event/28/contributions/101/attachments/115/999/Formation%20studies%20of%20field-reversed%20configurations%20on%20the%20HFRC-F%20device.pdf))
+  - Uses the same FRTP sequence as here (bias, ringing PI at 150 kHz, main
+    rise, crowbar).
+  - Typical shot: bias −15 mT, PI 15 mT, main 35 mT; reported lifetime about
+    75 µs at density about 4e20 m⁻³.
+  - Reports that PI voltage and timing change the frozen flux, which supports
+    treating flux retention as the key empirical input.
+  - It is a much larger machine, so it is not a direct size match.
+- FAT-CM reports initial FRCs with r ≈ 6 cm and 0.4–0.5 mWb trapped flux at a
+  0.4 T compression field, the same scale as the 0.39 mWb nominal point here
+  (secondary summary; to be confirmed against the primary paper in frc-ibl.2).
+
+## What this does not establish
+This does not establish formation, the reconnection timing, the actual flux or
+particle retention, the end dynamics, stability or lifetime. It ignores
+radiation, ionization balance and circuit loading. The next step is frc-ibl.2:
+choose a documented small FRTP experiment near this regime, reproduce it with
+the repository's most complete coil-driven solver path, and only then trust a
+design scan of this geometry.

@@ -2,7 +2,7 @@
 
 Preserved verbatim from the original attached request for use by the next thread.
 The later active objective and verified project status are recorded in
-THREAD_HANDOFF.md and GOAL_STATUS.md.
+GOAL_STATUS.md.
 
 ---
 
