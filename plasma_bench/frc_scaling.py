@@ -117,5 +117,10 @@ def design_point(gas, fill_mtorr, b_ext, device=Device(), a=Assumptions()):
         pi_te_min_ev=pi_temperature(z*n_fill, device.pi_skin_margin*t_q, r_w, z))
 
 
+def fill_for_s_bar(gas, s_bar, b_ext, device=Device(), a=Assumptions()):
+    """Fill pressure [mTorr] giving the target s_bar; s_bar scales exactly as sqrt(fill) here."""
+    return 10.*(s_bar/design_point(gas, 10., b_ext, device, a)["s_bar"])**2
+
+
 def record(device, assumptions):
     return dict(device=asdict(device), assumptions=asdict(assumptions))

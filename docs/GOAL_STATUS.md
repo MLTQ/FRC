@@ -43,6 +43,15 @@ Lab envelope:
 4. Design scan and independent cross-check for the user's geometry (frc-ibl.6).
    WarpX is already installed on the user's GPU host; see ENGINE_COMPARISON.md.
 5. N2 commissioning expectations (frc-ibl.7).
+6. Quadrupole stabilization of the n=2 rotational mode (frc-ibl.8).
+
+**Target geometry (user, 2026-10-18): 12" bore to maximize lifetime.**
+- Tube about 2.2 m long; 1.2 m single-turn coil fed by eight modules.
+- Baseline D2 at about 3.5 mTorr. First light at 0.2 T (8.3 kV, 1.6 kJ),
+  upgrade to 0.3 T (12.5 kV, 3.7 kJ) on the same capacitors.
+- Classical τ_φ is 113–354 µs. LSX/FRX-C scaling suggests about 50–150 µs is
+  realistic with quadrupole stabilization.
+- See FRC_DESIGN_WINDOW.md. The 6" nominal point above is kept for comparison.
 
 ## Solver state (honest summary)
 - Several separate research paths exist, not one validated formation solver.

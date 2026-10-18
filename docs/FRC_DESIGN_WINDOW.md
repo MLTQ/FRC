@@ -148,6 +148,66 @@ lower fill to keep s̄ near 2–3, which also raises the temperature and the
 classical lifetime but needs a faster rise. The classical lifetimes remain upper
 bounds.
 
+## 12-inch bore for maximum lifetime (user target, 2026-10-18)
+**Geometry:**
+- Bore: 12" ID, r_w = 15.2 cm.
+- Coil: single turn, r_c = 16.5 cm, 1.2 m long, fed by eight parallel modules.
+  A 0.5 m coil would make a squat FRC; 1.2 m keeps l_s/(2r_s) ≈ 4.7, inside
+  the elongated-FRC relations used here.
+- Tube: about 2–2.4 m long.
+
+The fill is chosen to hold s̄ at 2.5 or 3.5 (`large_bore.csv`).
+
+| Gas, fill | B_e | s̄ | T_e+T_i | Classical τ_φ | Loop V per turn | Module V | Total E |
+|---|---|---|---|---|---|---|---|
+| D2, 3.5 mTorr | 0.2 T | 2.5 | 111 eV | 113 µs | 7.9 kV | 8.3 kV | 1.6 kJ |
+| H2, 3.4 mTorr | 0.2 T | 3.5 | 113 eV | 116 µs | 11.3 kV | 11.9 kV | 1.6 kJ |
+| D2, 6.8 mTorr | 0.3 T | 3.5 | 128 eV | 141 µs | 12.8 kV | 13.4 kV | 3.7 kJ |
+| D2, 3.5 mTorr | 0.3 T | 2.5 | 250 eV | 354 µs | 17.9 kV | 18.7 kV | 3.7 kJ |
+| H2, 3.4 mTorr | 0.3 T | 3.5 | 255 eV | 363 µs | 25.5 kV | 26.7 kV | 3.7 kJ |
+| D2, 3.5 mTorr | 0.4 T | 2.5 | 445 eV | 799 µs | 31.7 kV | 33.2 kV | 6.6 kJ |
+| H2, 1.7 mTorr | 0.5 T | 2.5 | 1390 eV | 3.9 ms | 99 kV | 104 kV | 10.3 kJ |
+
+**What limits the lifetime:**
+1. **Classical flux decay.** At fixed s̄, τ_φ ∝ B_e³ r_s⁵ / (m_i^{3/2} s̄³).
+   Field and bore dominate; at equal fill and field, H2 and D2 reach the same
+   temperature and the same classical τ_φ.
+2. **Formation voltage.** The loop voltage per turn grows about as B_e² at
+   fixed fill, because the field must also rise faster. This is why
+   field-reversed theta-pinch formation gets hard in large, high-s̄ devices
+   (LSX needed "elaborate formation controls"). D2 implodes more slowly than H2
+   at the same fill, so it needs about 70% of the H2 voltage. That makes D2
+   the better large-bore gas.
+3. **Measured confinement is below classical.** Reported results:
+   - LSX: up to 0.5 ms for s̄ ≤ 4.
+   - FRX-C: over 300 µs with weak quadrupole fields suppressing the n=2
+     rotational mode, with particle confinement scaling as R².
+
+   Both machines are larger than this bore. Scaling them down by R² suggests
+   roughly **50–150 µs** is realistic here. The table's classical values are
+   ceilings.
+4. **The n=2 rotational instability** ends theta-pinch FRCs unless suppressed.
+   Quadrupole windings are required for this target (beads frc-ibl.8).
+5. **Field hold.** Hold at least 3× the target lifetime: 300 µs with
+   L_mod = 671 nH needs R ≤ 2.2 mΩ per module loop.
+
+**Recommended 12" baseline:**
+- **Gas and fill:** D2 at about 3.5 mTorr, s̄ ≈ 2.5.
+- **Modules:** eight, each about 6 µF and rated to at least 15 kV.
+- **First light:** charge to 8.3 kV for 0.2 T (1.6 kJ). This meets the rise
+  criterion; classical τ_φ ≈ 113 µs.
+- **Upgrade:** charge the same capacitors to 12.5 kV for 0.3 T (3.7 kJ).
+  Field scales with charge voltage at fixed capacitance, but the quarter period
+  stays at 3.1 µs, which is 4.5 snowplow times instead of 3. Whether that
+  slower relative rise still forms well is for frc-ibl.6 to determine.
+- **Gas use:** D2 consumption is negligible. A static fill of a
+  12" × 2.2 m tube at 7 mTorr is about 1.4 mL at STP per shot.
+- **Vacuum:** base pressure of about 1e-6 Torr, which keeps base-gas
+  impurities near 0.1% of a 3.5 mTorr fill. A turbo and a clean or baked tube
+  are required.
+- **Radiation:** D2 at a few hundred eV will produce some D-D neutrons; this is
+  for the radiation consultant.
+
 ## Sensitivity at the nominal point (D2, 10 mTorr, 0.3 T)
 | Varied input | T_e+T_i (eV) | s̄ | classical τ_φ (µs) | bias (mT) | E (J) / V (kV) |
 |---|---|---|---|---|---|

@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 from scipy.integrate import quad
 from plasma_bench.electromagnetics import loop_field
-from plasma_bench.frc_scaling import (Assumptions, Device, design_point, rigid_rotor_flux,
+from plasma_bench.frc_scaling import (Assumptions, Device, design_point, fill_for_s_bar, rigid_rotor_flux,
                                       rigid_rotor_decay, sheet_coil_center_field,
                                       wheeler_inductance, record)
 
@@ -21,6 +21,7 @@ KEYS = ("gas", "fill_mtorr", "b_ext_t", "total_t_ev", "te_ev", "n_avg_m3", "s_ba
         "tau_phi_classical_s", "bias_t", "trapped_flux_wb", "snowplow_s", "quarter_period_s",
         "coil_current_a", "turns", "segments", "module_current_a", "loop_voltage_v",
         "bank_energy_j", "bank_voltage_v", "module_capacitance_f", "bank_capacitance_f", "pi_te_min_ev")
+LARGE_BORE = Device(wall_radius=.1524, coil_radius=.1654, coil_length=1.2, segments=8)  # 12" ID
 DRIVES = ((1, 1), (2, 1), (3, 1), (4, 1), (1, 2), (1, 4), (2, 2), (1, 8))  # (series turns, parallel modules)
 
 
@@ -92,6 +93,9 @@ def main(out=Path("outputs/frc_design_window"), gas="D2", fill=10., field=.3):
     drives = [{k: design_point(g, fill, field, replace(device, turns=n, segments=m), base)[k] for k in KEYS}
               for g in ("H2", "D2") for n, m in DRIVES]
     write_csv(out/"drive_options.csv", drives)
+    large = [{k: design_point(g, fill_for_s_bar(g, s_t, b, LARGE_BORE, base), b, LARGE_BORE, base)[k] for k in KEYS}
+             for g in ("H2", "D2") for s_t in (2.5, 3.5) for b in (.2, .3, .4, .5)]
+    write_csv(out/"large_bore.csv", large)
     write_csv(out/"scan.csv", scan)
     write_csv(out/"sensitivity.csv", sensitivity)
     (out/"checks.json").write_text(json.dumps(checks, indent=2))
@@ -102,6 +106,10 @@ def main(out=Path("outputs/frc_design_window"), gas="D2", fill=10., field=.3):
     for row in sensitivity:
         print("{case:>26} T={total_t_ev:6.1f}eV n={n_avg_m3:.2e} s={s_bar:4.2f} tau={tau_phi_classical_s:.2e}s "
               "bias={bias_t:+.4f}T E={bank_energy_j:6.0f}J V={bank_voltage_v:6.0f}V".format(**row))
+    for row in large:
+        print("12in {gas} {fill_mtorr:5.2f}mTorr {b_ext_t:.1f}T s={s_bar:.1f} T={total_t_ev:5.0f}eV "
+              "tau={tau_phi_classical_s:.2e}s loop={loop_voltage_v:6.0f}V V={bank_voltage_v:6.0f}V "
+              "I/mod={module_current_a:6.0f}A E={bank_energy_j:6.0f}J".format(**row))
     for row in drives:
         print("{gas} turns={turns} modules={segments}: {module_current_a:8.0f} A/module {bank_voltage_v:6.0f} V "
               "{module_capacitance_f:.2e} F/module total {bank_energy_j:4.0f} J, loop {loop_voltage_v:5.0f} V/turn".format(**row))
