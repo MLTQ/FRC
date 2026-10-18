@@ -56,7 +56,9 @@ class Device:
     wall_radius: float = .071        # Pyrex bore [m]
     coil_radius: float = .080        # single-turn sheet coil [m]
     coil_length: float = .5          # [m]
-    stray_inductance: float = 30e-9  # bank, switch and feed [H]
+    turns: int = 1                   # series turns per segment, wound uniformly
+    segments: int = 1                # parallel coil sections, each fed by its own module
+    stray_inductance: float = 30e-9  # bank, switch and feed, per module [H]
     gas_temperature_k: float = 300.
     rise_per_implosion: float = 3.   # main-bank quarter period / snowplow time
     pi_skin_margin: float = 10.      # required PI column skin time / quarter period
@@ -92,10 +94,14 @@ def design_point(gas, fill_mtorr, b_ext, device=Device(), a=Assumptions()):
     phi_p = rigid_rotor_flux(a.profile_k)*np.pi*r_s**2*b_ext
     v_a = b_ext/np.sqrt(mu_0*n_fill*m_i)
     t_sp = np.sqrt(2)*r_w/v_a                                      # planar snowplow transit
-    current = b_ext*np.hypot(l_c, 2*r_c)/mu_0
-    l_coil = wheeler_inductance(r_c, l_c)
-    l_tot = l_coil+device.stray_inductance
+    current = b_ext*np.hypot(l_c, 2*r_c)/mu_0                      # total ampere-turns
+    l_coil = wheeler_inductance(r_c, l_c)                          # single-turn equivalent
+    k, n = device.segments, device.turns
+    # Synchronous segments share the coil flux: each module sees k N^2 L_coil plus its own stray.
+    l_mod = k*n*n*l_coil+device.stray_inductance
+    i_mod = current/(k*n)
     t_q = device.rise_per_implosion*t_sp
+    omega = np.pi/(2*t_q)
     return dict(
         gas=gas, fill_mtorr=fill_mtorr, b_ext_t=b_ext, fill_atoms_m3=n_fill,
         separatrix_radius_m=r_s, x_s=x_s, avg_beta=beta, n_avg_m3=n_avg, n_peak_m3=n_peak,
@@ -104,8 +110,10 @@ def design_point(gas, fill_mtorr, b_ext, device=Device(), a=Assumptions()):
         rho_i_m=rho_i, s_bar=r_s/(4*rho_i), rs_over_di=r_s/d_i, trapped_flux_wb=phi_p,
         bias_t=-phi_p/(a.flux_retention*np.pi*r_w**2), snowplow_s=t_sp,
         quarter_period_s=t_q, coil_current_a=current, coil_inductance_h=l_coil,
-        bank_energy_j=l_tot*current**2/2, bank_voltage_v=current*l_tot*np.pi/(2*t_q),
-        bank_capacitance_f=(2*t_q/np.pi)**2/l_tot,
+        turns=n, segments=k, module_current_a=i_mod, module_inductance_h=l_mod,
+        loop_voltage_v=l_coil*current*omega, bank_energy_j=k*l_mod*i_mod**2/2,
+        bank_voltage_v=i_mod*l_mod*omega, module_capacitance_f=1/(omega**2*l_mod),
+        bank_capacitance_f=k/(omega**2*l_mod),
         pi_te_min_ev=pi_temperature(z*n_fill, device.pi_skin_margin*t_q, r_w, z))
 
 

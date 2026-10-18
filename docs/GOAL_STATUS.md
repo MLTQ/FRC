@@ -25,8 +25,9 @@ Lab envelope:
 1. **Done: first-cut design window (frc-ibl.1)**, in
    [FRC_DESIGN_WINDOW.md](FRC_DESIGN_WINDOW.md). Nominal point: H2 or D2 at
    10 mTorr, external field 0.3 T, bias about −60 mT, main rise about 1.2–1.7 µs
-   from a single-turn 16 cm × 50 cm coil (125 kA, ~600 J; ~7.5 µF at 12.5 kV
-   with ≤30 nH stray), and a crowbar. The estimates are T_e+T_i ≈ 90 eV,
+   from a 16 cm × 50 cm single-turn coil (125 kA-turns). The coil is driven by
+   four parallel modules, each about 2.7 µF at 9 kV carrying 31 kA (~400 J in
+   total), with a crowbar. The estimates are T_e+T_i ≈ 90 eV,
    s̄ ≈ 2–2.8, r_s ≈ 3.5 cm and a classical τ_φ of at most ~18 µs. The
    empirical formation efficiencies are the main uncertainty.
 2. **Next: benchmark (frc-ibl.2).** Reproduce a documented small FRTP

@@ -29,9 +29,15 @@ the benchmarked solver then refines.
   Main-bank quarter period `t_q = rise_per_implosion * t_sp` (default 3).
 - Coil: thin single-turn sheet, centre field `B = mu_0 I/sqrt(l^2 + 4a^2)`,
   Wheeler inductance `mu_0 pi a^2/(l + 0.9a)`.
-- Bank (lossless LC into coil plus stray L): `E = L I^2/2`,
-  `C = (2 t_q/pi)^2/L`, `V = I L pi/(2 t_q)`. Energy is set by the field and
-  inductance; a faster rise costs voltage, not energy.
+- Drive: `turns` N in series per section and `segments` k parallel modules,
+  fired synchronously. Each module sees `L_mod = k N^2 L_coil + L_stray` and
+  carries `I/(kN)`. `L_coil` is the single-turn-equivalent Wheeler inductance;
+  the long-coil approximation ignores the weaker flux linkage of end sections.
+- Bank (lossless LC per module, `w = pi/(2 t_q)`): `V = I_mod L_mod w`,
+  `C_mod = 1/(w^2 L_mod)`, total `E = k L_mod I_mod^2/2
+  = I^2 (L_coil + L_stray/(k N^2))/2`. A faster rise costs voltage, not energy.
+  The loop voltage per turn, `L_coil I w = pi r_c^2 dB/dt`, is independent of
+  N and k.
 - Pre-ionization: the minimum T_e at which the column skin time
   `mu_0 r_w^2/eta` is `pi_skin_margin` (default 10) quarter periods.
 

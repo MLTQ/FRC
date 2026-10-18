@@ -13,6 +13,9 @@ It writes:
 - `sensitivity.csv`: each empirical assumption at its range ends, stray
   inductance 15/60 nH, and 5/10 cm bores around the nominal point
   (D2, 10 mTorr, 0.3 T);
+- `drive_options.csv`: series turns × parallel modules at the nominal fill and
+  field for H2 and D2 (current per switch, charge voltage, capacitance per
+  module, total energy, loop voltage per turn);
 - `summary.json`: device, assumptions, window and ranges.
 
 The window limits are design preferences, not physics thresholds. Results and

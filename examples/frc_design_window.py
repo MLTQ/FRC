@@ -19,7 +19,9 @@ RANGES = dict(particle_retention=(.2, .6), flux_retention=(.2, .6), separatrix_t
               length_to_coil=(.4, .8), shape=(2/3, .9), profile_k=(1., 3.), ti_over_te=(.5, 2.))
 KEYS = ("gas", "fill_mtorr", "b_ext_t", "total_t_ev", "te_ev", "n_avg_m3", "s_bar", "rs_over_di",
         "tau_phi_classical_s", "bias_t", "trapped_flux_wb", "snowplow_s", "quarter_period_s",
-        "coil_current_a", "bank_energy_j", "bank_voltage_v", "bank_capacitance_f", "pi_te_min_ev")
+        "coil_current_a", "turns", "segments", "module_current_a", "loop_voltage_v",
+        "bank_energy_j", "bank_voltage_v", "module_capacitance_f", "bank_capacitance_f", "pi_te_min_ev")
+DRIVES = ((1, 1), (2, 1), (3, 1), (4, 1), (1, 2), (1, 4), (2, 2), (1, 8))  # (series turns, parallel modules)
 
 
 def check_rigid_rotor(k, r_s=1., b_e=1.):
@@ -87,6 +89,9 @@ def main(out=Path("outputs/frc_design_window"), gas="D2", fill=10., field=.3):
     for r_w in (.05, .10):
         d = replace(device, wall_radius=r_w, coil_radius=r_w+.009)
         sensitivity.append(dict(case=f"wall_radius={r_w:.3g}", **{k: design_point(gas, fill, field, d, base)[k] for k in KEYS}))
+    drives = [{k: design_point(g, fill, field, replace(device, turns=n, segments=m), base)[k] for k in KEYS}
+              for g in ("H2", "D2") for n, m in DRIVES]
+    write_csv(out/"drive_options.csv", drives)
     write_csv(out/"scan.csv", scan)
     write_csv(out/"sensitivity.csv", sensitivity)
     (out/"checks.json").write_text(json.dumps(checks, indent=2))
@@ -97,6 +102,9 @@ def main(out=Path("outputs/frc_design_window"), gas="D2", fill=10., field=.3):
     for row in sensitivity:
         print("{case:>26} T={total_t_ev:6.1f}eV n={n_avg_m3:.2e} s={s_bar:4.2f} tau={tau_phi_classical_s:.2e}s "
               "bias={bias_t:+.4f}T E={bank_energy_j:6.0f}J V={bank_voltage_v:6.0f}V".format(**row))
+    for row in drives:
+        print("{gas} turns={turns} modules={segments}: {module_current_a:8.0f} A/module {bank_voltage_v:6.0f} V "
+              "{module_capacitance_f:.2e} F/module total {bank_energy_j:4.0f} J, loop {loop_voltage_v:5.0f} V/turn".format(**row))
     for row in scan:
         if row["in_window"]:
             print("{gas} {fill_mtorr:>4.0f}mTorr {b_ext_t:.2f}T  T={total_t_ev:7.1f}eV s={s_bar:4.2f} "

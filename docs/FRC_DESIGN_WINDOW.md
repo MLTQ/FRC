@@ -59,12 +59,63 @@ Fill 10 mTorr, B_e = 0.3 T, x_s = r_s/r_c = 0.44.
 | Lossless bank: E, C, V | 583 J, 15 µF, 8.8 kV | 583 J, 7.5 µF, 12.5 kV |
 | Minimum PI T_e | 1.5 eV | 1.1 eV |
 
-**Recommendation:** build the main bank for the H2 case: about 7.5 µF at
-12.5 kV with ≤ 30 nH stray inductance. That is 583 J delivered; plan for about
-2× stored-energy margin. The same bank then covers D2 and N2 commissioning.
+The single-turn column is the reference case. 125 kA through one switch is
+impractical, so the recommended drive splits the current; see the next section.
+Build for the H2 rise rate, and the same hardware covers D2 and N2
+commissioning.
 
 Stretch option: 0.5 T at 10–20 mTorr D2 gives T_e + T_i of 120–245 eV and a
-classical τ_φ of 30–78 µs. It needs 1.6 kJ and 17–25 kV.
+classical τ_φ of 30–78 µs. It needs 1.6 kJ and 17–25 kV with a single turn.
+
+## Coil drive options (series turns vs parallel modules)
+The required rise rate fixes the voltage around each turn of the coil:
+V_turn = π r_c² dB/dt at peak. That is 7.4 kV for H2 and 5.3 kV for D2 at the
+nominal point, whatever the winding.
+
+- **Series turns:** N turns divide the current by N, but the terminal voltage
+  is N × V_turn plus the stray-inductance drop.
+- **Parallel modules:** k capacitor/switch modules feed the coil together,
+  either at several points on one single-turn coil or through k separate
+  single-turn sections. Each module carries I/k at roughly one turn's voltage.
+
+In both cases the stray inductance becomes a smaller share of the total, so the
+stored energy falls. The model for synchronously fired modules: each module
+sees k N² L_coil + its own 30 nH stray.
+
+Nominal point, 10 mTorr, 0.3 T, lossless:
+
+| Turns × modules | Current per switch | H2 charge V | H2 C per module | D2 charge V | Total energy |
+|---|---|---|---|---|---|
+| 1 × 1 | 125 kA | 12.5 kV | 7.5 µF | 8.8 kV | 583 J |
+| 2 × 1 | 63 kA | 17.4 kV | 2.7 µF | 12.3 kV | 406 J |
+| 3 × 1 | 42 kA | 24.0 kV | 1.3 µF | 17.0 kV | 373 J |
+| 4 × 1 | 31 kA | 31.0 kV | 0.75 µF | 22.0 kV | 362 J |
+| 1 × 2 | 63 kA | 10.0 kV | 4.7 µF | 7.1 kV | 465 J |
+| **1 × 4** | **31 kA** | **8.7 kV** | **2.7 µF** | **6.2 kV** | **406 J** |
+| 2 × 2 | 31 kA | 16.2 kV | 1.4 µF | 11.4 kV | 376 J |
+| 1 × 8 | 16 kA | 8.1 kV | 1.4 µF | 5.7 kV | 376 J |
+
+**Recommendation: four parallel modules on a single-turn coil.** Each module is
+2.7 µF at about 9 kV (about 100 J) with its own switch carrying 31 kA. The
+total is about 400 J delivered; plan for about 2× stored margin. This divides
+the switch current by four without raising the voltage.
+
+Splitting the coil into four 12.5 cm sections, each fed by its own module, also
+lets the end sections run harder or carry an extra turn to make the end mirrors.
+The cost is that the switches must fire together, with jitter well below the
+1.2 µs rise (target ≲ 50 ns). The end sections link less flux, so their
+currents will not share evenly; the circuit model (frc-ibl.5) has to resolve
+that.
+
+Two series turns on one switch (63 kA, 17 kV) is the alternative if you would
+rather have one switch than four. It needs turn-to-turn insulation rated for the
+7.4 kV per turn during the µs rise, and the spacing between turns leaves a
+small helical ripple in the field near the wall.
+
+Either way of splitting also helps the crowbar. Each crowbar loop has more
+inductance for a similar switch and joint resistance: with four modules, each
+loop is 207 nH instead of 74 nH. The hold time L/R therefore roughly triples for
+the same loop resistance.
 
 ## Field timeline (where and when)
 | Phase | When (relative to main fire) | Where | What |
@@ -72,8 +123,8 @@ classical τ_φ of 30–78 µs. It needs 1.6 kJ and 17–25 kV.
 | Vacuum and fill | before shot | tube | Base pressure ≤ 1e-5 Torr (turbo), then a static fill of about 10 mTorr. Glow-discharge clean the Pyrex. |
 | Bias | ms before → through reversal | coil length plus ~10 cm beyond each end, ±5% uniform | B_b ≈ −60 mT, opposing the main field. Supply it slowly (or DC) through the main coil via isolation, or from an outer coil if the main coil's eddy time is short. It stores about 25 J. |
 | Pre-ionization | tens of µs before main (a scan parameter) | under the coil | Ringing theta PI (HFRC-F used 150 kHz) or a z-discharge, fired with bias at full strength. Target T_e ≳ 2 eV and near-full ionization so the plasma freezes the bias flux. |
-| Main rise | 0 → τ_q ≈ 1.2–1.7 µs | main coil | +0.3 T on axis, from 125 kA in a single turn. The reversal at the wall drives the implosion and the field-line reconnection at the coil ends. |
-| Crowbar | at peak current | main circuit | Hold the field. The decay time is L/R with L = 74 nH: 50 µs needs R ≤ 1.5 mΩ and 100 µs needs R ≤ 0.74 mΩ in the crowbar loop. FRC lifetime cannot exceed the field hold. |
+| Main rise | 0 → τ_q ≈ 1.2–1.7 µs | main coil | +0.3 T on axis: 125 kA-turns in total, e.g. four 31 kA modules at about 9 kV. The reversal at the wall drives the implosion and the field-line reconnection at the coil ends. |
+| Crowbar | at peak current | each module loop | Hold the field. The decay time is L/R. With four modules (207 nH per loop), 50 µs needs R ≤ 4 mΩ per loop and 100 µs needs R ≤ 2 mΩ. A single turn on one module (74 nH) would need 1.5 / 0.74 mΩ. FRC lifetime cannot exceed the field hold. |
 | End mirrors | with main | coil ends | Provide for end coils raising the field 1.2–1.5× at the ends to control reconnection and axial contraction. The value comes from the frc-ibl.6 scan, not this estimate. |
 | Multipole (later) | through equilibrium | outside the coil | Weak quadrupole windings are reported to suppress the n=2 rotational mode. They only matter once lifetimes exceed tens of µs. |
 
@@ -99,11 +150,12 @@ model must pin down.
    is air. Oxygen and nitrogen line radiation would then dominate the energy
    budget at 10–100 eV. A 1e-5 Torr base keeps base-pressure impurities at 0.1%
    of a 10 mTorr fill.
-2. **Crowbar resistance sets the lifetime ceiling.** Sub-mΩ crowbar loops are
-   hard to hand-build. A 15 cm tube gives a classical τ_φ of about 20 µs at the
-   nominal point, so a crowbar time of 50 µs is sufficient for a first device.
-3. **Low stray inductance saves both energy and voltage.** Keep the bank
-   physically close to the coil with parallel low-inductance feeds.
+2. **Crowbar resistance sets the lifetime ceiling.** Splitting the drive into
+   modules relaxes it to a few mΩ per loop. A 15 cm tube gives a classical τ_φ
+   of about 20 µs at the nominal point, so a crowbar time of 50 µs is sufficient
+   for a first device.
+3. **Low stray inductance saves both energy and voltage.** Keep each module
+   physically close to the coil with low-inductance feeds.
 4. **Expect lifetimes well below classical.** Published small FRCs often lose
    flux several times faster than classical resistivity predicts. Treat
    18 µs as an upper bound and plan diagnostics with ≤ 100 ns resolution.
