@@ -68,8 +68,11 @@ Lab envelope:
 ## Repository state
 - Simulation outputs are no longer tracked; they regenerate from `examples/`.
   The local `outputs/` directory still holds the old data (~17 GB).
-- History before the untracking is unchanged, so `.git` is still ~10 GB.
-  Purging outputs from history needs the user's go-ahead.
+- Outputs were purged from all history on 2026-10-18 at the user's request.
+  The purge used git-filter-repo, which rewrites every commit hash; `.git` went
+  from 10 GB to 9 MB. Codex's two turn-diff checkpoint refs were deleted, and
+  the index of its worktree (/private/tmp/frc-finite-drift, branch
+  codex/finite-drift-collisions, unmerged) was reset to the rewritten branch.
 - No processes are left running. The paused 2058-step replay (PID 33081) was
   killed on 2026-10-18 at the user's request.
 - Unrelated: a loopback http.server from an earlier agent may still serve
