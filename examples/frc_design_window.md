@@ -16,6 +16,8 @@ It writes:
 - `drive_options.csv`: series turns × parallel modules at the nominal fill and
   field for H2 and D2 (current per switch, charge voltage, capacitance per
   module, total energy, loop voltage per turn);
+- `large_bore.csv`: a 12" ID bore with a 1.2 m coil and eight modules, H2/D2 at
+  s_bar 2.5 and 3.5, for B_e 0.2–0.5 T;
 - `summary.json`: device, assumptions, window and ranges.
 
 The window limits are design preferences, not physics thresholds. Results and

@@ -38,6 +38,8 @@ the benchmarked solver then refines.
   = I^2 (L_coil + L_stray/(k N^2))/2`. A faster rise costs voltage, not energy.
   The loop voltage per turn, `L_coil I w = pi r_c^2 dB/dt`, is independent of
   N and k.
+- `fill_for_s_bar`: the fill giving a target s_bar. In this model s_bar ∝ sqrt(fill)
+  exactly, so one evaluation at 10 mTorr is rescaled.
 - Pre-ionization: the minimum T_e at which the column skin time
   `mu_0 r_w^2/eta` is `pi_skin_margin` (default 10) quarter periods.
 
