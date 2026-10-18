@@ -15,7 +15,10 @@ specifies the required field and current waveforms and the equivalent
 coil/bank numbers; it does not engineer the hardware.
 
 Lab envelope:
-- Pyrex tube (McMaster), about 15 cm diameter × 1 m.
+- Glass tube about 15 cm diameter × 1 m. The bore is still open. McMaster's
+  borosilicate tops out at 5.5" OD × 7" long (checked 2026-10-18), so the tube
+  must come from a scientific-glass or process-pipe supplier. Bore options are
+  in FRC_DESIGN_WINDOW.md.
 - Two-stage roughing pump (~10 mTorr base); turbo planned.
 - Gases: H2 as workhorse, D2 sparingly, N2 for cheap commissioning demos.
 - Diagnostics: interferometer, borrowed high-speed camera, home-built magnetic

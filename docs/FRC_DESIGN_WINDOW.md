@@ -128,6 +128,26 @@ the same loop resistance.
 | End mirrors | with main | coil ends | Provide for end coils raising the field 1.2–1.5× at the ends to control reconnection and axial contraction. The value comes from the frc-ibl.6 scan, not this estimate. |
 | Multipole (later) | through equilibrium | outside the coil | Weak quadrupole windings are reported to suppress the n=2 rotational mode. They only matter once lifetimes exceed tens of µs. |
 
+## Tube bore options (H2, 0.3 T, four parallel modules)
+McMaster does not stock a suitable tube. On 2026-10-18 its largest borosilicate
+tube was 5.5" OD × 5" ID × 7" long (a pressure-rated sight glass), and its 12"
+stock lengths stop at 1" OD. Large bores come from borosilicate process pipe
+(DN150 and up) or fused-quartz fabricators. The bore is therefore a free design
+choice:
+
+| Tube OD (bore radius) | Fill | r_s | s̄ | T_e+T_i | Classical τ_φ | Module V | Total E |
+|---|---|---|---|---|---|---|---|
+| 6" (7.1 cm) | 10 mTorr | 3.5 cm | 2.8 | 88 eV | 19 µs | 8.7 kV | 406 J |
+| 8" (9.5 cm) | 10 mTorr | 4.8 cm | 3.7 | 87 eV | 33 µs | 10.3 kV | 664 J |
+| 8" (9.5 cm) | 5 mTorr | 4.8 cm | 2.6 | 175 eV | 84 µs | 14.6 kV | 664 J |
+| 10" (12.0 cm) | 10 mTorr | 6.0 cm | 4.7 | 87 eV | 52 µs | 12.2 kV | 1030 J |
+| 12" (14.5 cm) | 10 mTorr | 7.2 cm | 5.7 | 87 eV | 76 µs | 14.2 kV | 1515 J |
+
+s̄ grows with the bore at fixed fill. A larger tube should therefore run at a
+lower fill to keep s̄ near 2–3, which also raises the temperature and the
+classical lifetime but needs a faster rise. The classical lifetimes remain upper
+bounds.
+
 ## Sensitivity at the nominal point (D2, 10 mTorr, 0.3 T)
 | Varied input | T_e+T_i (eV) | s̄ | classical τ_φ (µs) | bias (mT) | E (J) / V (kV) |
 |---|---|---|---|---|---|
