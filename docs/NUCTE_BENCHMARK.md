@@ -484,7 +484,7 @@ time is a least-squares fit of ln φ over the closed frames from 8 µs on.
 | n̄ inside separatrix | 2.0e21 m⁻³ | 2.2e21 |
 | Te+Ti | 320 eV | 120 eV |
 | Trapped flux | 2.3 mWb (e-folding 47 µs over 8–15 µs) | not published (Δφ_s = 0.4 mWb is contraction strength) |
-| Lifetime (closed FRC exists; open-line conduction f = 0.1) | ~41 µs | 50 µs |
+| Lifetime (closed FRC exists; open-line conduction f = 0.1) | ~41 µs at 16×128 (numerical: still closed at 50 µs at 32×256) | 50 µs (n=2-limited) |
 
 **Case 1** (mirror 1.10, bias −0.06 T): no axial contraction within 10 µs.
 The separatrix fills the tube and shortens only from 11 µs, to 1.0 m by 15 µs.
@@ -560,3 +560,62 @@ order:
   (2× long at 10 µs).
 - **For design use:** take T from the NUCTE-anchored empirical scaling in
   `frc_scaling`, not from this model.
+
+### Calibrated case 6 and the resolution study (2026-10-19)
+**Calibration.** Two unpublished drive values are fixed from NUCTE's own
+published numbers, not fitted to the outputs compared below:
+- **Bias −0.05 T.** The paper's rigid-rotor estimate for case 6 is
+  φ_p ≈ 1.1 mWb. In our model, trapped flux scales with bias: 2.3, 1.4 and
+  0.6 mWb at −0.09, −0.06 and −0.04 T.
+- **Peak vacuum field 0.3 T.** NUCTE's n̄ = 2.2e21 m⁻³ and T = 120 eV with
+  ⟨β⟩ = 1 − x_s²/2 imply B_e ≈ 0.35 T at equilibrium. With the FRC excluding
+  flux from a coil of radius 0.17–0.18 m, that needs a vacuum peak near 0.3 T,
+  not the 0.6 T rating.
+
+Configuration: graded coil (0.18 → 0.127 m from |z| = 0.1 m, R_M 1.72,
+n̄_z 0.31), open-line conduction f = 0.1, 16×128.
+Run: `outputs/nucte_c6g_b05_p030`.
+
+| Quantity | Simulation | NUCTE-III case 6 |
+|---|---|---|
+| Contraction | front reaches l_s 44 cm at 8 µs | front at the midplane at 6 µs, peak at 7 µs |
+| At 10 µs: r_s(0), l_s | 8.5 cm, 44 cm | 8.0 cm, 38 cm (equilibrium at 10–12 µs) |
+| At 10 µs: n̄, Te+Ti | 2.6e21 m⁻³, 162 eV | 2.2e21, 120 eV |
+| 20–30 µs: r_s(0), l_s | 7.5–8.5 cm, 28–44 cm | — |
+| 20–30 µs: n̄, Te+Ti | 1.7–2.3e21 m⁻³, **126–142 eV** | — |
+| Trapped flux | 1.0–1.1 mWb, flat from 10 to 30 µs | φ_p ≈ 1.1 mWb (paper's estimate) |
+| Axial bounce | l_s back to 78 cm at 14 µs, then damps | not reported (equilibrium by 10–12 µs) |
+
+At these drive values the remaining gap is within 15–35%. The FRC rings
+axially once more than NUCTE's does, so its equilibrium is reached later.
+That is consistent with this model having no viscosity or two-fluid damping.
+
+**Resolution study (frc-ibl.2.1).** Case 6 with the two-radius coil, bias
+−0.09 T, 0.4 T peak and conduction:
+
+| Quantity at 10 µs | 16×128 | 32×256 |
+|---|---|---|
+| r_s(0) | 7.2 cm | 6.9 cm |
+| l_s | 78 cm | 81 cm |
+| n̄ | 1.97e21 | 1.79e21 |
+| T | 323 eV | 310 eV |
+
+Formation-phase quantities agree to within about 10%.
+
+**Lifetime is not converged at 16×128:**
+- At 16×128 the trapped flux collapses at about 41 µs (e-folding 43 µs).
+- At 32×256 the same FRC is still closed at 50 µs, with r_s 9.5 cm,
+  l_s 38 cm and φ 2.6 mWb, and its flux e-folds in about 250 µs.
+- The 16×128 collapse is therefore numerical.
+- The axisymmetric model's flux decay is far slower than NUCTE's 50 µs
+  lifetime, which the paper attributes to the n=2 rotational instability
+  (onset 22 µs).
+
+**Consequences for the design:**
+- The 2D model is benchmarked for **formation**: sequence, timing, r_s, l_s,
+  n̄ and T to 15–35% at NUCTE-consistent drive values.
+- It is **not** a lifetime predictor. Lifetime in the design must come from
+  n=2 stability (quadrupole stabilization, frc-ibl.8) and empirical
+  FRC-confinement scaling, not from 2D flux decay.
+- Formation runs need at least 16×128. Anything after formation needs
+  ≥ 32×256 and is still not a lifetime result.
