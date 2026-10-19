@@ -39,6 +39,7 @@ class Nucte:
     crowbar_decay_s: float = 100e-6   # ASSUMED L/R after crowbar
     resistivity: float = 1e-5         # ASSUMED uniform, Ohm m (Spitzer at ~13 eV); used when resistivity_model="uniform"
     resistivity_model: str = "uniform"  # or "spitzer": NRL eta_perp of local Te (Te=Ti, lnL=10, Te>=1 eV for eta)
+    chodura: float = 0.               # Chodura anomalous-resistivity coefficient (standard ~0.1; 0 disables)
     nr: int = 16
     nz: int = 128
     exterior_cells: int = 6           # fixed induced-flux boundary just inside the coil
@@ -112,7 +113,7 @@ def build(c):
         residual = max(c.floor_fraction, 1e-3)
         fraction = residual+(1-residual)*shape
         rho, p = rho*fraction*np.ones((c.nr, 1)), p*fraction*np.ones((c.nr, 1))
-    params = ConservativeParameters(resistivity=c.resistivity, resistivity_model=c.resistivity_model,
+    params = ConservativeParameters(resistivity=c.resistivity, resistivity_model=c.resistivity_model, chodura_coefficient=c.chodura,
                                     spitzer_ion_mass=D_MASS, vacuum_boundary="fixed", cfl=c.cfl,
                                     dual_energy=c.dual_energy, max_step_halvings=c.max_step_halvings,
                                     interface_diffusion=c.interface_diffusion,

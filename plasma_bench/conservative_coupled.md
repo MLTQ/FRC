@@ -132,3 +132,14 @@ perpendicular Spitzer value, 1.03e-4 lnΛ T_e^-1.5 Ω·m.
   coil-pulse fixture's uniform η at its initial temperature, states agree to
   2e-6 at t = 0.01 and then drift only as heating changes T. The fluid energy
   residual stays at roundoff.
+
+`chodura_coefficient=c > 0` adds the Chodura (1975) anomalous resistivity used
+by theta-pinch formation codes: η_ch = c m_e ω_pi/(n e²) [1 − exp(−v_d/(f c_s))].
+- **Inputs:** n and c_s are averaged from cells to nodes; v_d = |J|/(n e) at
+  the node; ω_pi uses `spitzer_ion_mass`; `chodura_f` defaults to 3.
+- **Where it acts:** where the electron drift exceeds about f c_s, i.e. in thin
+  current sheets such as the end reconnection sites. It grows as n^-1/2 in
+  tenuous plasma.
+- **Status:** a declared model, not a fit, with c ≈ 0.1 from the literature.
+- **Check:** recomputing it by hand at the node of largest current reproduces
+  the solver's value exactly, and energy closes to roundoff.

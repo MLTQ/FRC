@@ -23,6 +23,8 @@ class ConservativeParameters:
     spitzer_coulomb_log: float = 10.
     spitzer_min_te_ev: float = 1.       # Te floor for evaluating Spitzer eta only (no state change)
     spitzer_ion_mass: float = 2.01410*1.66053906660e-27  # kg per ion (Z=1, Te=Ti)
+    chodura_coefficient: float = 0.     # >0 adds Chodura anomalous eta = c m_e w_pi/(n e^2) (1-exp(-v_d/(f c_s)))
+    chodura_f: float = 3.
     cfl: float = .2
     max_timestep: float | None = None
     vacuum_boundary: str = "multipole"
@@ -54,6 +56,8 @@ class ConservativeParameters:
             raise ValueError("Resistivity model must be uniform or spitzer")
         if not (self.spitzer_coulomb_log > 0 and self.spitzer_min_te_ev > 0 and self.spitzer_ion_mass > 0):
             raise ValueError("Spitzer parameters must be positive")
+        if not (np.isfinite(self.chodura_coefficient) and self.chodura_coefficient >= 0 and self.chodura_f > 0):
+            raise ValueError("Chodura coefficient must be nonnegative and f positive")
         if not np.isfinite(self.cfl) or not 0 < self.cfl <= .3:
             raise ValueError("Use 0 < CFL <= 0.3")
         if self.max_timestep is not None and (not np.isfinite(self.max_timestep) or self.max_timestep <= 0):
@@ -185,21 +189,38 @@ class ConservativeVacuumMHD:
         waves = np.max((abs(q[..., 1])+fast_speed(q, 0, p.gamma))/mesh.dr+
                        (abs(q[..., 2])+fast_speed(q, 1, p.gamma))/mesh.dz)
         eta = interface_resistivity(self.mapping, q, p.gamma) if p.interface_diffusion else np.zeros(1)
-        physical = float(np.max(self._node_resistivity(q)))
+        physical = float(np.max(self._node_resistivity(q, self._node_current(self.state)[1])))
         diffusion = 2*(physical+float(eta.max()))/MU0*(1/mesh.dr**2+1/mesh.dz**2)
         limit = float(p.cfl/(waves+diffusion))
         return limit if p.max_timestep is None else min(limit, p.max_timestep)
 
-    def _node_resistivity(self, q):
-        """Physical resistivity at mapping nodes: uniform scalar, or NRL perpendicular Spitzer
-        1.03e-4 lnL Te^-1.5 ohm m with Te = p/(2 n e) (Z=1, Te=Ti), cell values averaged to nodes."""
+    def _node_resistivity(self, q, current=None):
+        """Physical resistivity at mapping nodes.
+
+        Base: uniform scalar, or NRL perpendicular Spitzer 1.03e-4 lnL Te^-1.5 ohm m with
+        Te = p/(2 n e) (Z=1, Te=Ti), cell values averaged to nodes. Optional Chodura anomalous
+        term (theta-pinch formation standard): c m_e w_pi/(n e^2) [1-exp(-v_d/(f c_s))], with
+        node density/sound speed averaged from cells and v_d = |J|/(n e) at the node.
+        """
         p = self.parameters
+        from scipy.constants import e as QE, m_e as ME, epsilon_0 as EPS0
+        to_nodes = lambda cell: np.asarray(self.mapping.heat_to_cells.T@cell.ravel())
         if p.resistivity_model == "uniform":
-            return p.resistivity
-        from scipy.constants import e as QE
-        te = np.maximum(q[..., 3]/(2*q[..., 0]/p.spitzer_ion_mass*QE), p.spitzer_min_te_ev)
-        cell = 1.03e-4*p.spitzer_coulomb_log*te**-1.5
-        return np.asarray(self.mapping.heat_to_cells.T@cell.ravel())
+            base = p.resistivity
+        else:
+            te = np.maximum(q[..., 3]/(2*q[..., 0]/p.spitzer_ion_mass*QE), p.spitzer_min_te_ev)
+            base = to_nodes(1.03e-4*p.spitzer_coulomb_log*te**-1.5)
+        if p.chodura_coefficient == 0:
+            return base
+        if current is None:
+            current = self._node_current(self.state)[1]
+        n = to_nodes(q[..., 0]/p.spitzer_ion_mass)
+        cs = to_nodes(np.sqrt(p.gamma*q[..., 3]/q[..., 0]))
+        safe = np.where(n > 0, n, 1.)
+        drift = np.abs(current)/(safe*QE)
+        w_pi = np.sqrt(safe*QE**2/(EPS0*p.spitzer_ion_mass))
+        anomalous = p.chodura_coefficient*ME*w_pi/(safe*QE**2)*(1-np.exp(-drift/(p.chodura_f*np.where(cs > 0, cs, 1.))))
+        return base+np.where(n > 0, anomalous, 0.)
 
     def _node_current(self, state):
         m = self.mapping
@@ -210,7 +231,8 @@ class ConservativeVacuumMHD:
         """Advected rho*A with physical Ohmic heating only (numerical interface heat excluded)."""
         m, p = self.mapping, self.parameters
         q = self._primitive(state, time)
-        joule = m.fluid_flux(m.full(self._node_resistivity(q)*self._node_current(state)[1]**2))
+        current = self._node_current(state)[1]
+        joule = m.fluid_flux(m.full(self._node_resistivity(q, current)*current**2))
         heating = .25*(joule[:-1, :-1]+joule[1:, :-1]+joule[:-1, 1:]+joule[1:, 1:])
         return entropy_rate(self.mesh, q, state.entropy, heating, p.gamma)
 
@@ -218,7 +240,7 @@ class ConservativeVacuumMHD:
         m, p = self.mapping, self.parameters
         q = self._primitive(state, time)
         ku, current = self._node_current(state)
-        node_eta = self._node_resistivity(q)
+        node_eta = self._node_resistivity(q, current)
         electric = m.fluid_flux(m.full(node_eta*current))
         full_total = self.total_flux(state, time)
         total = m.fluid_flux(full_total)
