@@ -45,9 +45,11 @@ self-consistently with the plasma:
 | Run | Gas | Bias, peak | Coil (R_M) | Charge, bank | Closed FRC from | At 10 µs (r_s, l_s, n̄, Te+Ti, φ) | Later |
 |---|---|---|---|---|---|---|---|
 | d12_uniform_p020 | D2 | −0.05, 0.20 T | uniform (1.00) | 11.6 kV, 3.2 kJ | 13 µs | still open: reversed to the tube ends | 20 µs: 10.6 cm, 141 cm, 4.7e20, 150 eV, 1.5 mWb |
-| d12_uniform_p030 | D2 | −0.05, 0.30 T | uniform (1.00) | 16.2 kV, 6.3 kJ | not by 16 µs | open | open, flux decaying |
+| d12_uniform_p030 | D2 | −0.05, 0.30 T | uniform (1.00) | 16.2 kV, 6.3 kJ | not held (open to 30 µs) | open | open; flux e-folds in 18 µs |
 | d12_uniform_h2_p020 | H2 | −0.05, 0.20 T | uniform (1.00) | 11.6 kV, 3.2 kJ | 2 µs | 11.4 cm, 86 cm, 6.0e20, 157 eV, 2.0 mWb | 15 µs: 11.1 cm, 110 cm, 5.4e20, 156 eV, 1.85 mWb |
 | d12_graded24_p030 | D2 | −0.05, 0.30 T | 0.24 → 0.165 (1.62) | 27.6 kV, 18.3 kJ | 2 µs | 11.4 cm, 58 cm, 9.1e20, 485 eV, 2.75 mWb | 12 µs: l_s 40 cm |
+| d12_graded24_p020 | D2 | −0.05, 0.20 T | 0.24 → 0.165 (1.62) | 19.7 kV, 9.3 kJ | 2 µs | 11.1 cm, 98 cm, 5.5e20, 282 eV, 2.84 mWb | 20 µs: 11.8 cm, 67 cm, 5.4e20, 311 eV, 2.58 mWb; flux e-fold 80 µs |
+| d12_uniform_h2_p020_f03 (3% floor) | H2 | −0.05, 0.20 T | uniform (1.00) | 11.6 kV, 3.2 kJ | 6 µs | 11.5 cm, 79 cm, 6.4e20, 158 eV, 2.0 mWb | 20 µs: 11.0 cm, 79 cm, 5.8e20, 143 eV, 1.75 mWb |
 
 ## Findings so far
 1. **Without a mirror, D2 forms slowly or not at all.** The reversed field

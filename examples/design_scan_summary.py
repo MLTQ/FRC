@@ -61,3 +61,28 @@ def main(runs):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+
+
+def signatures(run):
+    """Per-microsecond signals the lab diagnostics would record (midplane unless stated):
+    wall Bz (B-dot probe just inside the tube), excluded-flux radius r_dphi from a flux loop at the wall,
+    side-on interferometer integral of n dl through the axis, separatrix length (camera), and the bank's
+    coil current and module capacitor voltage (Rogowski, voltage divider)."""
+    import numpy as np
+    from examples.nucte_compare import load
+    setup, rf, zf, frames, history = load(run)
+    mass = {"D2": 2.01410, "H2": 1.00784}[setup["case"].get("gas", "D2")]*1.66053906660e-27
+    j = len(zf)//2
+    out = []
+    for k, psi, rho, p in frames:
+        h = history[k] if k < len(history) else {}
+        b_wall = (psi[-1, j]-psi[-2, j])/(rf[-1]-rf[-2])*2/(rf[-1]+rf[-2])
+        r_dphi = np.sqrt(max(rf[-1]**2-2*psi[-1, j]/b_wall, 0.)) if b_wall != 0 else np.nan
+        chord = float(2*np.sum(.5*(rho[:, j-1]+rho[:, j])/mass*np.diff(rf)))
+        c = h.get("circuit") or {}
+        coil = sum(c.get("vacuum_current_a", [np.nan]))+sum(c.get("image_current_a", [0.]))
+        caps = [v for v, m in zip(c.get("capacitor_voltage_v", []), range(10**6))]
+        out.append(dict(time_us=h.get("time_s", np.nan)*1e6, wall_bz_t=float(b_wall), excluded_flux_radius_cm=100*float(r_dphi),
+                        interferometer_ndl_m2=chord, separated_length_m=h.get("separated_length_m"),
+                        coil_current_ka=coil/1e3, main_capacitor_kv=(caps[-1]/1e3 if caps else np.nan)))
+    return out
