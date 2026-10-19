@@ -312,6 +312,71 @@ current per turn in 2–4 turns. That is a 4–13 µH circuit, needing more than
 formation question for frc-ibl.6. NUCTE's data suggest a weak mirror forms more
 slowly but is not worse for lifetime.
 
+### Pre-ionization bank (ringing θ-PI)
+**Model.** The PI bank rings on the same 77 nH coil, with the bias bank's
+2.4 µH branch in parallel. The wall electric field at the first current peak is
+E_θ = ω B_PI r_w/2.
+
+| Frequency | PI stray | C | 20 V/cm at the wall | 40 V/cm at the wall |
+|---|---|---|---|---|
+| 150 kHz | 40 nH | 9.8 µF | B_PI 0.028 T: 3.5 kV, 60 J, 31 kA | B_PI 0.056 T: 7.0 kV, 240 J, 62 kA |
+| 150 kHz | 80 nH | 7.3 µF | 4.7 kV, 80 J | 9.4 kV, 320 J |
+| 100 kHz | 40 nH | 22 µF | B_PI 0.042 T: 3.5 kV, 140 J, 46 kA | B_PI 0.084 T: 7.0 kV, 550 J, 92 kA |
+
+For comparison, NUCTE-III used 11.25 µF ringing at 124 kHz, up to 135 kA.
+
+**Constraints:**
+- **Keep the PI field below the bias.** The ringing field adds to the bias, so
+  |B_PI| < |B_bias| (0.05 T) keeps the field from reversing during PI. That
+  limits a −0.05 T bias to roughly 20–30 V/cm at 150 kHz. A stronger PI needs a
+  stronger bias or a higher frequency.
+- **Conductivity is not the hard part.** The minimum PI electron temperature for
+  the plasma column to hold the bias flux through the main rise (skin time ≥ 10
+  quarter periods) is 0.56 eV here.
+- **What the formation runs assume:** full ionization at 2 eV. Partial
+  ionization is not modeled (frc-ibl.4).
+
+### n=2 rotational stabilization (literature, frc-ibl.8; not simulated)
+Theta-pinch FRCs spin up, and the n=2 rotational instability ends them. NUCTE-III
+saw its onset at 22–28 µs, and its lifetimes (50–65 µs) are set by it. The
+axisymmetric solver cannot model it. These numbers come from experiments:
+
+- **Threshold:** a quadrupole field of about 7% of the external confinement field
+  suppressed n=2 completely in FRX-C/T with straight coils, and 9% with helical
+  coils (Tuszewski et al., Phys. Fluids 29, 852 (1986)).
+- **First demonstration:** suppression with a quadrupole field "much smaller than
+  the axial confinement field at the separatrix", about 2.5× below the MHD
+  prediction (Ohi et al., PRL 51, 1042 (1983)).
+- **Payoff:** FRX-C lifetimes exceeded 300 µs once n=2 was stabilized.
+- **Penalty:** quadrupole-stabilized FRCs shrink axially and lose particles
+  faster. Hexapole and octupole fields are reported with much smaller penalties
+  (JPSJ 63, 2845 (1994); Fusion Technol. 27 (1995)), but they fall off faster
+  with radius.
+
+**Straight quadrupole for the 12" baseline.** Four axial bars at a = 0.20 m,
+just outside the main coil, with currents ±I alternating:
+- Field inside: |B| = (2μ0 I/(π a))(r/a). This leading-order form is within
+  1–7% of the exact line-current sum out to the wall.
+- For 7% of B_e = 0.35 T, each bar carries:
+  - about 15 kA if the 7% is set at r_s = 8 cm;
+  - about 8 kA if it is set at the wall.
+
+  The papers quote the field "at the separatrix"; budget for the larger number.
+- Use several turns per bar to bring the current down.
+
+**Timing.** Establish the quadrupole slowly, over a ms or more, before the main
+bank fires:
+- A steady m=2 field induces no currents in the single-turn sheet coil, which
+  then keeps it frozen through the µs compression.
+- A quadrupole pulsed on µs scales would be screened by the sheet coil unless
+  it is slotted.
+
+**Recommendation:**
+- Start without multipoles to measure the n=2 onset and rotation (camera, end-on
+  view).
+- Add the straight quadrupole once lifetimes approach the onset time.
+- Consider an octupole if particle loss with the quadrupole is a problem.
+
 ### Plasma loading of the bank
 **For the 12" baseline:** the bank's stray inductance (30 nH / 8 = 3.75 nH) is
 5% of the coil's, so the plasma's flux exclusion barely loads it. The early

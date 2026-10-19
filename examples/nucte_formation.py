@@ -20,6 +20,7 @@ from plasma_bench.coil_circuit import Strap, section_coil, Module, Crowbar, simu
 from scipy.constants import mu_0 as MU0
 
 D_MASS = 2.01410*AMU
+ION_MASS = {"D2": D_MASS, "H2": 1.00784*AMU}   # dissociated, fully ionized (Z = 1)
 
 
 @dataclass(frozen=True)
@@ -35,7 +36,8 @@ class Nucte:
     centre_straps: int = 18
     end_straps: int = 5
     filaments: int = 4                # per strap, equal share of the strap current
-    fill_pa: float = 1.33             # D2
+    gas: str = "D2"                   # "D2" or "H2" (atomic ions, Z = 1)
+    fill_pa: float = 1.33             # molecular fill pressure [Pa] (NUCTE-III: D2 at 1.33 Pa)
     gas_k: float = 300.
     pi_temperature_ev: float = 2.     # ASSUMED complete pre-ionization, Te = Ti
     pi_half_length: float = .7        # >0: ionized only for |z| < this (theta-PI under the coil); beyond, floor-level plasma
@@ -70,6 +72,8 @@ class Nucte:
                                       # coil filaments sit within two field cells of the wall, e.g. case 6)
     local_trace_bounds: bool = True   # reconstructed density/pressure bounded by neighbour minima
     floor_fraction: float = .01       # DECLARED gap closure: minimum density as a fraction of the fill (0 disables)
+    gap_resistivity: float = 0.       # >0: DECLARED resistivity [ohm m] of near-floor cells (un-ionized gas, wall gap)
+    gap_density_fraction: float = .03  # ... applied below this fraction of the fill density (smooth 1/(1+x^4) weight)
     drive: str = "ideal"              # "ideal": centre_field waveform; "circuit": capacitor banks through coil_circuit,
                                       # voltages set so the vacuum centre field is bias_t at t=0 and peaks at peak_t;
                                       # "coupled": same banks, but the plasma's image current loads them each step
@@ -216,7 +220,8 @@ def build(c):
         drive = None
     sources = VacuumField(grid, coils)
     n_d = 2*c.fill_pa/(KB*c.gas_k)
-    rho, p = n_d*D_MASS, 2*n_d*c.pi_temperature_ev*QE
+    mass = ION_MASS[c.gas]
+    rho, p = n_d*mass, 2*n_d*c.pi_temperature_ev*QE
     if c.pi_half_length > 0:
         # ASSUMED theta-PI profile: full ionization under the coil, residual (floor-level) plasma beyond
         z = fluid.z[None, :]
@@ -225,7 +230,7 @@ def build(c):
         fraction = residual+(1-residual)*shape
         rho, p = rho*fraction*np.ones((c.nr, 1)), p*fraction*np.ones((c.nr, 1))
     params = ConservativeParameters(resistivity=c.resistivity, resistivity_model=c.resistivity_model, chodura_coefficient=c.chodura,
-                                    spitzer_ion_mass=D_MASS, vacuum_boundary="fixed", cfl=c.cfl,
+                                    spitzer_ion_mass=mass, vacuum_boundary="fixed", cfl=c.cfl,
                                     dual_energy=c.dual_energy, max_step_halvings=c.max_step_halvings,
                                     dual_energy_mode=c.dual_energy_mode, dual_energy_criterion=c.dual_energy_criterion,
                                     energy_quadrature=c.energy_quadrature, boundary_poynting=c.boundary_poynting,
@@ -236,18 +241,21 @@ def build(c):
                                     analytic_source_traces=c.analytic_traces, magnetic_energy_flux=c.magnetic_energy_flux,
                                     open_line_wall_temperature_ev=c.pi_temperature_ev,
                                     local_trace_bounds=c.local_trace_bounds,
-                                    minimum_density=c.floor_fraction*2*c.fill_pa/(KB*c.gas_k)*D_MASS if c.floor_fraction > 0 else None,
-                                    floor_temperature_ev=c.pi_temperature_ev, floor_ion_mass=D_MASS)
+                                    minimum_density=c.floor_fraction*2*c.fill_pa/(KB*c.gas_k)*mass if c.floor_fraction > 0 else None,
+                                    floor_temperature_ev=c.pi_temperature_ev, floor_ion_mass=mass,
+                                    gap_resistivity=c.gap_resistivity,
+                                    gap_density=c.gap_density_fraction*n_d*mass if c.gap_resistivity > 0 else None)
     # Initial plasma is current-free in the bias: induced flux zero, total flux = source flux.
     probe = ConservativeState(np.zeros((c.nr, c.nz, 4)), np.zeros((grid.nr, grid.nz)))
     total = sources.at(0.).psi[:c.nr+1, c.end_cells:c.end_cells+c.nz+1]
     state = from_primitive(fluid, total, rho, p, energy_quadrature=c.energy_quadrature)
     model = ConservativeVacuumMHD(fluid, sources, ConservativeState(state.conserved, probe.induced_psi), params)
     model.coil_half_length = (c.centre_straps/2+c.end_straps)*c.strap_width
+    model.ion_mass = mass
     model.coupler = None
     if stepper is not None:
         model.coupler = coupler(model, coil, stepper, sources)
-    return model, dict(fill_deuterons_m3=n_d, density_kg_m3=n_d*D_MASS, pressure_pa=2*n_d*c.pi_temperature_ev*QE,
+    return model, dict(fill_ions_m3=n_d, density_kg_m3=n_d*mass, pressure_pa=2*n_d*c.pi_temperature_ev*QE,
                        strap_currents_a_per_t=current.tolist(),
                        centre_strap_share=float(current[:c.centre_straps].sum()/current.sum()) if c.drive == "ideal" else None,
                        circuit=drive)
@@ -336,8 +344,8 @@ def observe(model):
                 reversed_length_m=float(np.ptp(z[finite])) if finite.sum() > 1 else 0.,
                 separated_length_m=float(np.ptp(z[closed])) if closed.sum() > 1 else 0.,
                 excluded_radius_mid_m=float(rdphi[mid]),
-                axis_density_m3=float(q[0, q.shape[1]//2, 0]/D_MASS),
-                max_density_m3=float(q[..., 0].max()/D_MASS), min_density_m3=float(q[..., 0].min()/D_MASS),
+                axis_density_m3=float(q[0, q.shape[1]//2, 0]/model.ion_mass),
+                max_density_m3=float(q[..., 0].max()/model.ion_mass), min_density_m3=float(q[..., 0].min()/model.ion_mass),
                 max_pressure_pa=float(q[..., 3].max()), max_speed_m_s=float(np.hypot(q[..., 1], q[..., 2]).max()),
                 image_current_a=image_current(model, model.coil_half_length),
                 circuit=model.coupler.stepper.snapshot() if model.coupler else None)

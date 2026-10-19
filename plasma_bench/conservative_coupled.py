@@ -26,6 +26,8 @@ class ConservativeParameters:
     spitzer_ion_mass: float = 2.01410*1.66053906660e-27  # kg per ion (Z=1, Te=Ti)
     chodura_coefficient: float = 0.     # >0 adds Chodura anomalous eta = c m_e w_pi/(n e^2) (1-exp(-v_d/(f c_s)))
     chodura_f: float = 3.
+    gap_resistivity: float = 0.         # >0: DECLARED resistivity [ohm m] of near-floor cells (un-ionized gas / gap):
+    gap_density: float | None = None    # weight 1/(1+(rho/gap_density)^4) at nodes; makes them magnetically transparent
     cfl: float = .2
     max_timestep: float | None = None
     vacuum_boundary: str = "multipole"
@@ -68,6 +70,10 @@ class ConservativeParameters:
             raise ValueError("Spitzer parameters must be positive")
         if not (np.isfinite(self.chodura_coefficient) and self.chodura_coefficient >= 0 and self.chodura_f > 0):
             raise ValueError("Chodura coefficient must be nonnegative and f positive")
+        if not (np.isfinite(self.gap_resistivity) and self.gap_resistivity >= 0):
+            raise ValueError("Gap resistivity must be finite and nonnegative")
+        if self.gap_resistivity > 0 and not (self.gap_density is not None and self.gap_density > 0):
+            raise ValueError("Gap resistivity needs a positive gap density")
         if not np.isfinite(self.cfl) or not 0 < self.cfl <= .3:
             raise ValueError("Use 0 < CFL <= 0.3")
         if self.max_timestep is not None and (not np.isfinite(self.max_timestep) or self.max_timestep <= 0):
@@ -235,6 +241,9 @@ class ConservativeVacuumMHD:
         else:
             te = np.maximum(q[..., 3]/(2*q[..., 0]/p.spitzer_ion_mass*QE), p.spitzer_min_te_ev)
             base = to_nodes(1.03e-4*p.spitzer_coulomb_log*te**-1.5)
+        if p.gap_resistivity > 0:
+            rho = to_nodes(q[..., 0])
+            base = base+p.gap_resistivity/(1+(rho/p.gap_density)**4)
         if p.chodura_coefficient == 0:
             return base
         if current is None:

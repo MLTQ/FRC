@@ -619,3 +619,60 @@ Formation-phase quantities agree to within about 10%.
   FRC-confinement scaling, not from 2D flux decay.
 - Formation runs need at least 16×128. Anything after formation needs
   ≥ 32×256 and is still not a lifetime result.
+
+### Circuit-driven formation (frc-ibl.5, 2026-10-19)
+`drive="circuit"` replaces the ideal quarter-sine/L-R waveform with NUCTE-III's
+banks through `plasma_bench/coil_circuit.py`:
+- 67.5 µF main bank with a 27 nH stray (from the published 4 µs rise and the
+  modeled coil);
+- 2000 µF, 2.4 µH, 8 mΩ bias bank;
+- crowbar at the capacitor-voltage zero with 5 nH;
+- unidirectional start switch.
+
+Charges are set in vacuum: bias −0.05 T at t = 0, 0.3 T peak. That takes
+21.9 kV (16 kJ) on the graded coil, which is under the published 32 kV maximum.
+
+**Prescribed circuit against the ideal waveform** (calibrated case 6):
+- The crowbar transfer drops the field by L_cb/L_coil ≈ 9% within 2 µs. After
+  that it decays faster than the ideal 100 µs.
+- Results at 10 µs:
+
+| Drive | r_s(0) | l_s | n̄ (m⁻³) | Te+Ti |
+|---|---|---|---|---|
+| Circuit | 8.8 cm | 44 cm | 2.4e21 | 155 eV |
+| Ideal | 8.5 cm | 44 cm | 2.6e21 | 162 eV |
+
+- At 15 µs the circuit-driven run gives 130 eV and 1.8e21, closer to the
+  published 120 eV and 2.2e21.
+
+**Axial sections and skew:**
+- The coil split into two halves with their own banks and fired together
+  reproduces the single-collector run to every printed digit through 6 µs, past
+  the crowbar and switch opening.
+- Halves fired 100 or 300 ns apart move the trapped-flux centroid by ≤ 0.5 or
+  1.5 cm, with left/right flux asymmetry ≤ 2.4% or 6%.
+- Their r_s, l_s, n̄ and T at 10–15 µs agree with the unskewed run to 1–3%.
+
+**Plasma loading** (`drive="coupled"`):
+- The flux-conserving coil boundary hides the bank's stray inductance. The
+  coupled drive restores it: the plasma's flux linkage loads the banks every
+  step, and the energy exchanged equals the solver's source work exactly
+  (962 vs 962 J at 1 µs).
+- At NUCTE's charge, the coil's vacuum current peaks at 442 kA instead of the
+  prescribed 520 kA (−15%). It is 22% low at 1 µs.
+- The FRC then contracts more slowly: l_s 72 cm at 7 µs.
+- NUCTE's own operating charge is not published. Two coupled runs bracket it:
+
+| Coupled run | 10 µs: r_s(0), l_s | 10 µs: n̄, Te+Ti | Later | Trapped flux |
+|---|---|---|---|---|
+| 21.9 kV (the vacuum-calibrated charge) | 9.4 cm, 44 cm | 2.24e21, 145 eV | 25–30 µs: 8.8–8.9 cm, 41–44 cm, 1.3–1.5e21, 100–105 eV | 1.05–1.13 mWb |
+| 25.2 kV (raised 18%, peak vacuum current 531 kA, matching the prescribed drive) | 8.7 cm, 47 cm | 2.27e21, 160 eV | 15–20 µs: 137–139 eV | — |
+
+- **Reading:** the 25.2 kV run reproduces the ideal calibrated case. With the
+  stray inductance included, NUCTE's case-6 field corresponds to about 25 kV of
+  its 32 kV. The 21.9 kV run is at least as close to the published r_s, l_s, T
+  and flux, though 35–40% low in density late.
+- **Published values:** r_s 8.0 cm, l_s 38 cm, 2.2e21 m⁻³, 120 eV, φ_p ≈
+  1.1 mWb.
+- **Energy:** in both runs the energy the banks deliver to the plasma equals the
+  solver's source work to 1 J, and the response residual stays ≤ 6e-4.

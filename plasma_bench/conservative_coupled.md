@@ -189,3 +189,28 @@ drift reset mode corrects), at 2.5 and 3.5 µs:
 
 On the historical cell/Riemann path, `dissipative` made no difference to the
 reservoir failure. That failure was a criterion error, not a flux error.
+
+`gap_resistivity` (Ω·m; default 0) and `gap_density` (kg/m³) add a declared
+resistivity η_gap/(1 + (ρ/ρ_gap)⁴) at nodes. ρ is averaged from cells, so the
+term acts on near-floor cells: the wall–piston gap and the un-pre-ionized gas
+beyond the coil.
+
+**Why:**
+- The declared density floor is a fully ionized 2 eV plasma. Spitzer resistivity
+  does not depend on density, so this tenuous floor plasma conducts as well as
+  the real plasma and freezes the bias flux.
+- Beyond the pre-ionized zone, that frozen flux keeps the reversed field reaching
+  the tube ends. In NUCTE-III case 1 and in a uniform 12" coil with D2 this
+  blocks end reconnection.
+- Un-ionized gas is an insulator, and the gap is near-vacuum. A large η makes
+  both magnetically transparent.
+
+**Accounting:** the same node η enters the electric field, the Ohmic power and
+entropy heating, and the diffusion time-step limit, so energy accounting is
+unchanged.
+
+**Cost:**
+- Diffusion across a length L takes μ0L²/η_gap.
+- Making 15 cm transparent within a 3 µs rise needs η_gap ≳ 0.05 Ω·m, which
+  shrinks the explicit time step about 5×.
+- 1e-2 Ω·m clears a few-cm gap in about 0.3 µs.

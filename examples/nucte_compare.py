@@ -6,6 +6,7 @@ import numpy as np
 from scipy.constants import mu_0 as MU0, e as QE, atomic_mass as AMU
 
 D_MASS = 2.01410*AMU
+ION_MASS = {"D2": D_MASS, "H2": 1.00784*AMU}
 # Takahashi et al. 2000, Table 1 (experiments on six coil configurations) and text; units SI.
 # tau_ax: onset of axial contraction; tau_Max: contraction peak at the midplane; tau_eq: equilibrium.
 # n is the interferometer line average over the separatrix, int(n dl)/(2 r_s(0)); T = Te+Ti is from
@@ -103,7 +104,7 @@ def closed_region(rf, zf, psi):
                 trapped_flux_wb=2*np.pi*o_point, profile=rs)
 
 
-def plasma_inside(rf, zf, rho, p, rs, lo, hi):
+def plasma_inside(rf, zf, rho, p, rs, lo, hi, mass=D_MASS):
     """Volume-average density and total temperature (Te+Ti = p/(n e)) inside r < r_s(z)."""
     rc = .5*(rf[:-1]+rf[1:])
     dz = zf[1]-zf[0]
@@ -114,27 +115,28 @@ def plasma_inside(rf, zf, rho, p, rs, lo, hi):
         inside[:, j] = rc < r_s
     if not inside.any():
         return None, None
-    n = rho/D_MASS
+    n = rho/mass
     nbar = float(np.sum(n*vol*inside)/np.sum(vol*inside))
     temperature = float(np.sum(p*vol*inside)/np.sum(n*vol*inside)/QE)  # p = n_i k(Ti+Te), Z=1
     return nbar, temperature
 
 
-def chord_density(rf, rho, j):
+def chord_density(rf, rho, j, mass=D_MASS):
     """Side-on chord through the axis at axial cell j: integral n dl = 2 * integral_0^rw n dr."""
-    return float(2*np.sum(rho[:, j]/D_MASS*np.diff(rf)))
+    return float(2*np.sum(rho[:, j]/mass*np.diff(rf)))
 
 
 def summarize(run):
     setup, rf, zf, frames, history = load(run)
+    mass = ION_MASS[setup["case"].get("gas", "D2")]
     rows = []
     for k, psi, rho, p in frames:
         t = history[k]["time_s"] if k < len(history) else np.nan
         region = closed_region(rf, zf, psi)
         mid_cell = rho.shape[1]//2
-        row = dict(time_s=t, chord_density_m2=chord_density(rf, rho, mid_cell))
+        row = dict(time_s=t, chord_density_m2=chord_density(rf, rho, mid_cell, mass))
         if region:
-            nbar, temp = plasma_inside(rf, zf, rho, p, region["profile"], region["lo"], region["hi"])
+            nbar, temp = plasma_inside(rf, zf, rho, p, region["profile"], region["lo"], region["hi"], mass)
             row.update({k2: v for k2, v in region.items() if k2 != "profile"}, density_m3=nbar, total_temperature_ev=temp)
             row["profile"] = [None if not np.isfinite(x) else float(x) for x in region["profile"]]
         rows.append(row)
