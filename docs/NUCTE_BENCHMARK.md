@@ -21,21 +21,63 @@ design, and its formation measurements are published openly.
   circuit parameters for field-reversed theta pinch device".
 
 ### Measured targets
-From Takahashi 2000, Table 1 and Fig. 2:
+Takahashi 2000, Table 1 and text. These are **experiments** on six
+arrangements of a stepped coil, whose elements are 36, 34, 32, 30, 28 and
+26 cm in diameter, arranged symmetrically about the midplane.
 
-| Case | Mirror ratio | Field index | Axial contraction time (µs) | v_ax (cm/µs) | Reported flux Δφ (mWb) | r_s(0) (cm) | l_s (cm) | Lifetime (µs) | n=2 onset (µs) |
-|---|---|---|---|---|---|---|---|---|---|
-| 1 | 1.10 | 0.03 | 6.5 | 3.8 | 0.15 | 6.2 | 62 | 65 | 28 |
-| 6 | 1.80 | 0.30 | 3.0 | 8.5 | 0.4 | 8.0 | 38 | 50 | 22 |
+**Experimental conditions:**
+- pre-heating by a ringing I_z discharge;
+- bias up to 0.09 T with a 90 µs rise;
+- compression field 0.6 T with a 4 µs rise, from a 32 kV, 67.5 µF fast bank
+  plus a 5 kV, 1920 µF slow bank;
+- D2 at 1.33 Pa.
 
-Across all cases, n̄_e ≈ 2.2e21 m⁻³ and T_e+T_i ≈ 120 eV. For case 6:
-- implosion with faster radial motion near the coil ends;
+**Definitions:**
+- **Field index:** n_z = (z/B_z)∂B_z/∂z, averaged between the mirror points,
+  which are L_c ≈ 1.35 m apart.
+- **τ_ax:** onset of axial contraction.
+- **τ_Max:** contraction peak at the midplane.
+- **τ_eq:** equilibrium.
+- **Δφ_s:** the midplane excluded-flux drop from peak contraction to
+  equilibrium, i.e. the contraction strength. It is *not* trapped flux.
+
+| Case | R_M | n̄_z | τ_ax (µs) | v_ax (cm/µs) | Δφ_s (mWb) | τ_Max (µs) | τ_eq (µs) | r_s(0) (cm) | l_s (cm) | Lifetime (µs) | n=2 onset (µs) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 1.10 | 0.03 | 6.5 | 3.8 | 0.15 | 12.5 | 30 | 6.2 | 62 | 65 | 28 |
+| 6 | 1.80 | 0.30 | 3.0 | 8.5 | 0.4 | 7.0 | 12 | 8.0 | 38 | 50 | 22 |
+
+**How the plasma quantities were measured:**
+- **Density:** n̄_e = ∫n dl/(2 r_s(0)) from a side-on He-Ne interferometer;
+  n̄_e ≈ 2.2e21 m⁻³ in all compared cases.
+- **Temperature:** T_e + T_i ≈ 120 eV, from pressure balance with
+  ⟨β⟩ = 1 − x_s²/2.
+- **Lifetime:** limited by the n=2 rotational instability, which an
+  axisymmetric model cannot contain.
+
+**Case 6:**
 - reconnection complete by 3 µs;
-- the contraction front reaches the midplane at 6 µs;
-- equilibrium by 10 µs.
+- contraction front at the midplane by 6 µs;
+- equilibrium at 10 µs, with r_s ≈ 8 cm and l_s ≈ 40 cm.
 
-The diagnostics were an excluded-flux array, a side-on He-Ne interferometer and
-visible light.
+**Case 1:**
+- radial compression is uniform along the coil;
+- a hump forms at the coil ends at 5 µs, and contraction starts at 7 µs;
+- the front reaches the midplane at 15 µs;
+- equilibrium at about 25 µs, with r_s ≈ 6 cm and l_s ≈ 60 cm.
+
+**Modeled coil against these numbers** (`nucte_compare.coil_profile`):
+
+| Coil model | R_M | n̄_z | Published |
+|---|---|---|---|
+| Case-1 two-radius coil | 1.08 | 0.06 | 1.10, 0.03 |
+| Case-6 two-radius coil (end straps at 12.7 cm) | 1.79 | 0.42 | 1.80, 0.30 |
+| Graded 0.18 → 0.127 m from \|z\| = 0.1 m | 1.72 | 0.31 | 1.80, 0.30 |
+
+The case-6 two-radius coil has too sharp a mirror. The graded coil is closer
+to NUCTE's stepped elements.
+
+The diagnostics were an excluded-flux array, a side-on He-Ne interferometer
+and visible bremsstrahlung light.
 
 **Circuit (2014 paper):**
 - Bias: 2000 µF, L = 2.4 µH, R = 8 mΩ, up to 60 kA.
@@ -61,8 +103,12 @@ B_e = 0.34 T gives:
   B_e itself was inferred from NUCTE's n and T through the same ⟨β⟩ relation.
 - **Classical τ_φ:** 72–115 µs, against measured lifetimes of 50–65 µs. This
   device class lives at roughly 0.5–0.9 of the classical estimate.
-- **Trapped flux:** the rigid rotor (K=2) gives φ_p = 1.2–2.3 mWb, 3–10× the
-  reported Δφ. Resolving this is part of the benchmark.
+- **Trapped flux:** the rigid rotor (K=2) gives φ_p = 1.2–2.3 mWb. The
+  paper's own rigid-rotor estimate for case 6 is φ_p ≈ 1.1 mWb (its case 1 is
+  1/2.2 of that). The table's Δφ_s is the contraction strength, not trapped
+  flux. Simulated trapped flux scales with the unpublished bias: 2.3, 1.4 and
+  0.6 mWb at −0.09, −0.06 and −0.04 T. That places NUCTE's case-6 bias near
+  −0.05 T.
 
 ## Solver paths against the benchmark's needs
 A field-reversed theta pinch starts with plasma filling the tube up to the
@@ -437,8 +483,8 @@ time is a least-squares fit of ln φ over the closed frames from 8 µs on.
 | l_s | 78 cm (50 at 15 µs) | 38 cm |
 | n̄ inside separatrix | 2.0e21 m⁻³ | 2.2e21 |
 | Te+Ti | 320 eV | 120 eV |
-| Trapped flux | 2.3 mWb (e-folding 47 µs over 8–15 µs) | Δφ 0.4 mWb (definition unclear) |
-| Lifetime | (runs to 60 µs in progress) | 50 µs |
+| Trapped flux | 2.3 mWb (e-folding 47 µs over 8–15 µs) | not published (Δφ_s = 0.4 mWb is contraction strength) |
+| Lifetime (closed FRC exists; open-line conduction f = 0.1) | ~41 µs | 50 µs |
 
 **Case 1** (mirror 1.10, bias −0.06 T): no axial contraction within 10 µs.
 The separatrix fills the tube and shortens only from 11 µs, to 1.0 m by 15 µs.
@@ -449,6 +495,42 @@ The separatrix fills the tube and shortens only from 11 µs, to 1.0 m by 15 µs.
 | n̄ | 2.0–2.5e21 m⁻³ | 2.2e21 |
 | Te+Ti | ~200 eV | 120 eV |
 | Flux e-folding | 38–42 µs | lifetime 65 µs |
+
+**Lifetime runs** (open-line conduction f = 0.1, 16×128):
+- **Case 6:**
+  - from 18 to 23 µs it sits at r_s 8.1 cm, l_s 47–56 cm, n̄ 1.3–1.6e21,
+    T ≈ 315 eV;
+  - its flux decays 2.4 → 1.75 mWb by 20 µs, then collapses: the last closed
+    frame is at 41 µs.
+  - Published: lifetime 50 µs, n=2 onset 22 µs. The n=2 mode is not in an
+    axisymmetric model.
+- **Case 1:**
+  - from 20 to 30 µs it sits at r_s 3.7–5.2 cm, l_s 41–53 cm, n̄ 2.3–2.7e21,
+    **T 126–140 eV**, close to the published 120 eV;
+  - its last closed frame is at 38 µs. Published lifetime: 65 µs.
+- **Conduction affects only open lines,** so T inside the separatrix in case 6
+  is unchanged by it.
+- **Dissipation sources in the case-6 run, by 40 µs:**
+  - Spitzer + Chodura heat: 1.08 kJ.
+  - Interface numerical resistivity heat: 2.03 kJ.
+  - The UCT dissipative field is net **anti**-dissipative: ΣE_diss·J =
+    −1.34 kJ. With second-order reconstruction its sign is not definite.
+- **Consequence:** the simulated flux decay, and so the lifetime, is a mix of
+  physical and numerical terms. The 50 µs 32×256 case-6 run measures how much
+  of it converges.
+
+**Bias bracket** (case 6, 0.4 T peak, values at about 10 µs; the per-case bias
+is not published):
+
+| Bias | r_s(0) | l_s | n̄ (m⁻³) | Te+Ti (eV) | φ (mWb) | Flux e-folding |
+|---|---|---|---|---|---|---|
+| −0.09 T | 7.2 cm | 78 cm | 2.0e21 | 323 | 2.3 | 47 µs |
+| −0.06 T | 5.8 cm | 72 cm | 2.5e21 | 248 | 1.4 | 30 µs |
+| −0.04 T | 6.5 cm | 53 cm (28–34 at 7–8 µs) | 3.2e21 | 191 | 0.6 | 13 µs |
+
+Less bias means less annihilated flux, so a cooler, shorter, denser FRC that
+contracts faster. At −0.04 T it reaches the published 38 cm by 7–8 µs, but its
+flux decays 4× faster.
 
 **Peak-field bracket** (case 6, the drive amplitude per case is not published):
 

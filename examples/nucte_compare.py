@@ -6,19 +6,43 @@ import numpy as np
 from scipy.constants import mu_0 as MU0, e as QE, atomic_mass as AMU
 
 D_MASS = 2.01410*AMU
-# Takahashi et al. 2000, Table 1 (case 1, mirror ratio 1.10) and text; units SI.
-NUCTE_CASE1 = dict(separatrix_mid_m=.062, separatrix_length_m=.62, axial_contraction_time_s=6.5e-6,
-                   axial_speed_m_s=3.8e4, lifetime_s=65e-6, n2_onset_s=28e-6, density_m3=2.2e21, total_temperature_ev=120.)
-# Case 6 (mirror ratio 1.8): Table 1 plus the Fig. 2 sequence (reconnection by 3 us, contraction
-# front at the midplane at 6 us, equilibrium at 10 us).
-NUCTE_CASE6 = dict(separatrix_mid_m=.080, separatrix_length_m=.38, axial_contraction_time_s=3.0e-6,
-                   axial_speed_m_s=8.5e4, lifetime_s=50e-6, n2_onset_s=22e-6, density_m3=2.2e21, total_temperature_ev=120.)
+# Takahashi et al. 2000, Table 1 (experiments on six coil configurations) and text; units SI.
+# tau_ax: onset of axial contraction; tau_Max: contraction peak at the midplane; tau_eq: equilibrium.
+# n is the interferometer line average over the separatrix, int(n dl)/(2 r_s(0)); T = Te+Ti is from
+# pressure balance with <beta> = 1 - x_s^2/2 (x_s = r_s/r_coil). Lifetime is limited by the n=2 mode.
+NUCTE_CASE1 = dict(separatrix_mid_m=.062, separatrix_length_m=.62, contraction_onset_s=6.5e-6, axial_speed_m_s=3.8e4,
+                   contraction_peak_s=12.5e-6, equilibrium_s=30e-6, lifetime_s=65e-6, n2_onset_s=28e-6,
+                   density_m3=2.2e21, total_temperature_ev=120., mirror_ratio=1.10, field_index=.03)
+# Case 6 text: reconnection complete by 3 us, contraction front at the midplane at 6 us, equilibrium
+# at 10 us with r_s ~ 8 cm and l_s ~ 40 cm.
+NUCTE_CASE6 = dict(separatrix_mid_m=.080, separatrix_length_m=.38, contraction_onset_s=3.0e-6, axial_speed_m_s=8.5e4,
+                   contraction_peak_s=7.0e-6, equilibrium_s=12e-6, lifetime_s=50e-6, n2_onset_s=22e-6,
+                   density_m3=2.2e21, total_temperature_ev=120., mirror_ratio=1.80, field_index=.30)
 
 
 def reference(setup):
     """Case 6 for strong-mirror coils (end straps well inside the centre straps), else case 1."""
     case = setup["case"]
     return ("case 6", NUCTE_CASE6) if (case["coil_radius"]/case["end_radius"])**2 > 1.4 else ("case 1", NUCTE_CASE1)
+
+
+def coil_profile(case, points=1001):
+    """Axial vacuum field of the modeled coil: mirror ratio B_max/B(0) and NUCTE's field index
+    n_z = (z/B) dB/dz averaged between the mirror points (Takahashi 2000)."""
+    from dataclasses import fields
+    from examples.nucte_formation import Nucte, equal_flux_currents
+    from plasma_bench.electromagnetics import loop_field
+    c = Nucte(**{f.name: case[f.name] for f in fields(Nucte) if f.name in case})
+    fil, cur = equal_flux_currents(c)
+    z = np.linspace(0, c.half_length, points)
+    b = np.zeros_like(z)
+    for f, i in zip(fil, cur):
+        for rr, zz in f:
+            b += i*loop_field(np.zeros_like(z), z, rr, zz)[2]/len(f)
+    k = int(np.argmax(b))
+    nz = z[:k+1]*np.gradient(b, z)[:k+1]/b[:k+1]
+    return dict(mirror_ratio=float(b[k]/b[0]), mirror_point_m=float(z[k]),
+                field_index=float(np.trapezoid(nz, z[:k+1])/z[k]))
 
 
 def load(run):
@@ -140,8 +164,12 @@ def main(run, out=None):
             None if r.get("total_temperature_ev") is None else round(r["total_temperature_ev"], 1), r["chord_density_m2"]))
     label, ref = reference(setup)
     lifetime = decay(rows)
+    coil = coil_profile(setup["case"])
     print("flux decay:", lifetime)
-    (Path(out or run)/"comparison.json").write_text(json.dumps(dict(reference=label, targets=ref, decay=lifetime, rows=rows), indent=1))
+    print("coil: mirror ratio %.2f (published %.2f), field index %.3f (published %.2f)" % (
+        coil["mirror_ratio"], ref["mirror_ratio"], coil["field_index"], ref["field_index"]))
+    (Path(out or run)/"comparison.json").write_text(json.dumps(dict(reference=label, targets=ref, decay=lifetime, coil=coil,
+                                                                    rows=rows), indent=1))
     return rows
 
 
