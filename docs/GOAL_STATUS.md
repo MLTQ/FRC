@@ -67,7 +67,10 @@ Lab envelope:
 
 ## Repository state
 - Simulation outputs are no longer tracked; they regenerate from `examples/`.
-  The local `outputs/` directory still holds the old data (~17 GB).
+  On 2026-10-18 the user had the old local outputs (~17 GB) deleted. Only
+  `outputs/frc_design_window` and the user's `outputs/frc_showcase/poster.png`
+  remain. Earlier figures linked from older docs must be regenerated with their
+  example drivers.
 - Outputs were purged from all history on 2026-10-18 at the user's request.
   The purge used git-filter-repo, which rewrites every commit hash; `.git` went
   from 10 GB to 9 MB. Codex's two turn-diff checkpoint refs were deleted, and
