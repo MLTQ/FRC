@@ -35,12 +35,17 @@ def entropy_rate(mesh, q, entropy, heating, gamma):
     return -divergence+(gamma-1)*rho**(1-gamma)*heating
 
 
-def cold_cells(mesh, conserved, psi, gamma, threshold, energy_quadrature="cell", shock_threshold=None):
+def cold_cells(mesh, conserved, psi, gamma, threshold, energy_quadrature="cell", shock_threshold=None,
+               shock_min_fraction=.01):
     """Cold = internal/total energy below threshold and NOT a compressive shock cell.
 
     Optional shock detector (shock_threshold not None): D = -div(v) * min(dr, dz) / c_f
-    above it, with positive total-energy internal energy, keeps the total-energy
-    pressure. Negative internal energy is always cold.
+    above it, with positive total-energy internal energy of at least
+    shock_min_fraction of the cell MAGNETIC energy, keeps the total-energy pressure.
+    Kinetic energy is recovered exactly from mass and momentum, so cold hypersonic
+    shocks stay on total energy; where magnetic energy dominates (low-beta
+    compression) its discretization error swamps the internal energy, so the cell
+    stays cold. Negative internal energy is always cold.
     """
     rho = conserved[..., 0]
     vr, vz = conserved[..., 1]/rho, conserved[..., 2]/rho
@@ -54,7 +59,8 @@ def cold_cells(mesh, conserved, psi, gamma, threshold, energy_quadrature="cell",
     vzp = np.pad(vz, ((0, 0), (1, 1)))
     vzp[:, 0], vzp[:, -1] = -vzp[:, 1], -vzp[:, -2]
     div = (rvr[2:]-rvr[:-2])/(2*mesh.dr*mesh.r[:, None])+(vzp[:, 2:]-vzp[:, :-2])/(2*mesh.dz)
-    shock = (-div*min(mesh.dr, mesh.dz)/_speeds(mesh, rho, vr, vz, internal, psi, gamma) > shock_threshold) & (internal > 0)
+    shock = ((-div*min(mesh.dr, mesh.dz)/_speeds(mesh, rho, vr, vz, internal, psi, gamma) > shock_threshold)
+             & (internal > 0) & (internal >= shock_min_fraction*magnetic))
     return (internal < threshold*conserved[..., 3]) & ~shock, internal, kinetic, magnetic
 
 
@@ -69,11 +75,12 @@ class Selection:
     disagreements: int        # cold cells whose entropy thermal exceeds 10*threshold of total
 
 
-def select(mesh, conserved, psi, entropy, gamma, threshold, energy_quadrature="cell", shock_threshold=None):
+def select(mesh, conserved, psi, entropy, gamma, threshold, energy_quadrature="cell", shock_threshold=None,
+           shock_min_fraction=.01):
     """Cold cells take p = rho*A*rho^(gamma-1); `conserved` returns the reset total energy (used only in
     reset mode). Other cells resynchronize rho*A from total energy, so shock heating enters the entropy."""
     cold, internal, kinetic, magnetic = cold_cells(mesh, conserved, psi, gamma, threshold, energy_quadrature,
-                                                   shock_threshold)
+                                                   shock_threshold, shock_min_fraction)
     rho, total = conserved[..., 0], conserved[..., 3]
     thermal = entropy*rho**(gamma-1)/(gamma-1)
     result = conserved.copy()

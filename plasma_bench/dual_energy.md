@@ -46,3 +46,20 @@ variant failed the standing-shock fixture and was rejected.
   cold-cell discrepancy.
 - **Low-β adiabatic invariant:** error 3%. This is the mismatch between
   first-order entropy transport and second-order density.
+
+## Shock-override guard (2026-10-19)
+The detector keeps the total-energy pressure only where the total-energy
+internal energy is positive and at least `shock_min_fraction` (0.01) of the
+cell's magnetic energy.
+- **Why magnetic energy:** kinetic energy is recovered exactly from mass and
+  momentum, so cold hypersonic shocks (kinetic-dominated) stay on total energy.
+  Magnetic energy carries the discretization error, so magnetically dominated
+  compression stays cold.
+- **Failure it fixes:** in NUCTE-III with pre-ionization only under the coil,
+  axis cells at z = ±0.80 m held β ≈ 1e-4 floor plasma under magnetic
+  compression. The plain detector put them on total energy, and they went
+  negative at 1.14 µs.
+- **Rejected alternative:** a guard of 0.01 of the *total* energy disabled the
+  detector at the standing shock (pressure L1 3.03 instead of 2.59).
+- **Effect of the magnetic guard:** the shock fixture is restored to 2.5866,
+  and detector 0.05 no longer causes spurious low-β heating.

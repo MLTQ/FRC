@@ -41,6 +41,14 @@ Run: `python -m examples.nucte_formation [OUTPUT] [field=value ...]`, e.g.
 - `local_trace_bounds=True`: neighbour-minimum bounds on reconstructed
   density and pressure. Without them a wall-corner density of 1e-16 kg/m³
   produced a faster-than-light "fast speed" and a blow-up near 1.28 µs.
+- `floor_fraction=0.01`: the declared gap closure, as a fraction of the fill
+  density (see `plasma_bench/density_floor.md`).
+- `resistivity_model`: "uniform" (`resistivity`) or "spitzer".
+- `pi_half_length`: if > 0, the plasma is pre-ionized only for |z| below it,
+  with a tanh edge of width `pi_edge_width`. This mimics a θ pre-ionizer
+  under the coil; beyond it the plasma sits at the closure level.
+- `end_cells`: vacuum cells beyond each tube end before the fixed
+  induced-flux boundary.
 - Boolean CLI values must be written `True` or `False`.
 
 ## Outputs
@@ -57,4 +65,5 @@ Run: `python -m examples.nucte_formation [OUTPUT] [field=value ...]`, e.g.
     disagreements and step retries.
 - `failure.json`: the accepted time and step count plus the error, if the run
   stops.
-- `snapshots.npz`: total flux, density and pressure every 1 µs.
+- `snapshots.npz` and `velocity.npz`: total flux, density, pressure and
+  velocity, rewritten every 1 µs so runs can be inspected while in progress.

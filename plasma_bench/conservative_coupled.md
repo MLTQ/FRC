@@ -117,3 +117,18 @@ for density and thermal pressure (see `mhd_reconstruction.md`). Off by default.
 `minimum_density` (kg/m³; default None) enables the declared gap closure in
 `density_floor.md`, with `floor_temperature_ev` and `floor_ion_mass`. It runs
 after the MHD step and before commit, inside the same atomic step attempt.
+
+`resistivity_model="spitzer"` replaces the uniform `resistivity` with the NRL
+perpendicular Spitzer value, 1.03e-4 lnΛ T_e^-1.5 Ω·m.
+- **Inputs:** T_e = p/(2 n e), with n = ρ/`spitzer_ion_mass` (Z = 1, T_e = T_i),
+  lnΛ = `spitzer_coulomb_log` (default 10), and T_e floored at
+  `spitzer_min_te_ev` for evaluating η only.
+- **Placement:** cell values are averaged to nodes with the coupling mesh's
+  cell→node weights.
+- **Consistency:** the same node η enters the electric field, the Ohmic power,
+  the dual-energy heating source and the diffusion time-step limit, so the
+  energy accounting stays exact.
+- **Plumbing check:** with an ion mass chosen so the Spitzer value equals the
+  coil-pulse fixture's uniform η at its initial temperature, states agree to
+  2e-6 at t = 0.01 and then drift only as heating changes T. The fluid energy
+  residual stays at roundoff.

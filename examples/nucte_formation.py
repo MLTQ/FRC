@@ -31,14 +31,18 @@ class Nucte:
     fill_pa: float = 1.33             # D2
     gas_k: float = 300.
     pi_temperature_ev: float = 2.     # ASSUMED complete pre-ionization, Te = Ti
+    pi_half_length: float = 0.        # >0: ionized only for |z| < this (theta-PI under the coil); beyond, floor-level plasma
+    pi_edge_width: float = .03        # tanh transition width of the pre-ionized region [m]
     bias_t: float = -.06              # ASSUMED; published maximum is 0.09 T
     peak_t: float = .4                # ASSUMED vacuum centre field at end of rise
     quarter_period_s: float = 4e-6    # published rise time
     crowbar_decay_s: float = 100e-6   # ASSUMED L/R after crowbar
-    resistivity: float = 1e-5         # ASSUMED uniform, Ohm m (Spitzer at ~13 eV)
+    resistivity: float = 1e-5         # ASSUMED uniform, Ohm m (Spitzer at ~13 eV); used when resistivity_model="uniform"
+    resistivity_model: str = "uniform"  # or "spitzer": NRL eta_perp of local Te (Te=Ti, lnL=10, Te>=1 eV for eta)
     nr: int = 16
     nz: int = 128
     exterior_cells: int = 6           # fixed induced-flux boundary just inside the coil
+    end_cells: int = 2                # vacuum field cells beyond each tube end before the fixed boundary
     end_s: float = 15e-6
     cfl: float = .2
     dual_energy: bool = True          # entropy pressure in cold/low-beta cells (pressure mode, energy exact)
@@ -92,8 +96,8 @@ def centre_field(c):
 
 def build(c):
     fluid = MHDMesh(c.wall_radius, c.half_length, c.nr, c.nz)
-    grid = Grid(c.wall_radius+c.exterior_cells*fluid.dr, c.half_length+2*fluid.dz,
-                c.nr+c.exterior_cells+1, c.nz+5)
+    grid = Grid(c.wall_radius+c.exterior_cells*fluid.dr, c.half_length+c.end_cells*fluid.dz,
+                c.nr+c.exterior_cells+1, c.nz+2*c.end_cells+1)
     fil, current = equal_flux_currents(c)
     wave = centre_field(c)
     coils = tuple(Coil(r, z, wave, turns=float(i)/c.filaments, name=f"strap{k}")
@@ -101,7 +105,15 @@ def build(c):
     sources = VacuumField(grid, coils)
     n_d = 2*c.fill_pa/(KB*c.gas_k)
     rho, p = n_d*D_MASS, 2*n_d*c.pi_temperature_ev*QE
-    params = ConservativeParameters(resistivity=c.resistivity, vacuum_boundary="fixed", cfl=c.cfl,
+    if c.pi_half_length > 0:
+        # ASSUMED theta-PI profile: full ionization under the coil, residual (floor-level) plasma beyond
+        z = fluid.z[None, :]
+        shape = .5*(1-np.tanh((abs(z)-c.pi_half_length)/c.pi_edge_width))
+        residual = max(c.floor_fraction, 1e-3)
+        fraction = residual+(1-residual)*shape
+        rho, p = rho*fraction*np.ones((c.nr, 1)), p*fraction*np.ones((c.nr, 1))
+    params = ConservativeParameters(resistivity=c.resistivity, resistivity_model=c.resistivity_model,
+                                    spitzer_ion_mass=D_MASS, vacuum_boundary="fixed", cfl=c.cfl,
                                     dual_energy=c.dual_energy, max_step_halvings=c.max_step_halvings,
                                     interface_diffusion=c.interface_diffusion,
                                     local_trace_bounds=c.local_trace_bounds,
@@ -109,10 +121,10 @@ def build(c):
                                     floor_temperature_ev=c.pi_temperature_ev, floor_ion_mass=D_MASS)
     # Initial plasma is current-free in the bias: induced flux zero, total flux = source flux.
     probe = ConservativeState(np.zeros((c.nr, c.nz, 4)), np.zeros((grid.nr, grid.nz)))
-    total = sources.at(0.).psi[:c.nr+1, 2:2+c.nz+1]
+    total = sources.at(0.).psi[:c.nr+1, c.end_cells:c.end_cells+c.nz+1]
     state = from_primitive(fluid, total, rho, p)
     model = ConservativeVacuumMHD(fluid, sources, ConservativeState(state.conserved, probe.induced_psi), params)
-    return model, dict(fill_deuterons_m3=n_d, density_kg_m3=rho, pressure_pa=p,
+    return model, dict(fill_deuterons_m3=n_d, density_kg_m3=n_d*D_MASS, pressure_pa=2*n_d*c.pi_temperature_ev*QE,
                        strap_currents_a_per_t=current.tolist(),
                        centre_strap_share=float(current[:c.centre_straps].sum()/current.sum()))
 
@@ -165,7 +177,7 @@ def main(out=Path("outputs/nucte_formation"), **overrides):
     out.mkdir(parents=True, exist_ok=True)
     model, setup = build(c)
     (out/"setup.json").write_text(json.dumps(dict(case=asdict(c), **setup), indent=1))
-    history, snapshots, start = [observe(model)], {}, time.time()
+    history, snapshots, velocity, start = [observe(model)], {}, {}, time.time()
     marks = list(np.arange(1e-6, c.end_s+1e-12, 1e-6))
     failure = None
     while model.time < c.end_s:
@@ -189,9 +201,11 @@ def main(out=Path("outputs/nucte_formation"), **overrides):
         z, rs, psi = separatrix(model)
         q = model._primitive(model.state, model.time)
         snapshots[f"t{len(history)-1:02d}"] = np.concatenate((psi.ravel(), q[..., 0].ravel(), q[..., 3].ravel()))
+        velocity[f"t{len(history)-1:02d}"] = np.concatenate((q[..., 1].ravel(), q[..., 2].ravel()))
         print(json.dumps({k: (round(v, 6) if isinstance(v, float) else v) for k, v in row.items()}), flush=True)
         (out/"history.json").write_text(json.dumps(history, indent=1))
-    np.savez_compressed(out/"snapshots.npz", rf=model.mesh.rf, zf=model.mesh.zf, **snapshots)
+        np.savez_compressed(out/"snapshots.npz", rf=model.mesh.rf, zf=model.mesh.zf, **snapshots)
+        np.savez_compressed(out/"velocity.npz", **velocity)
     return history
 
 

@@ -19,6 +19,10 @@ from .density_floor import apply_floor
 class ConservativeParameters:
     gamma: float = 5/3
     resistivity: float = 0.
+    resistivity_model: str = "uniform"  # "uniform" (scalar above) or "spitzer" (NRL eta_perp of local Te)
+    spitzer_coulomb_log: float = 10.
+    spitzer_min_te_ev: float = 1.       # Te floor for evaluating Spitzer eta only (no state change)
+    spitzer_ion_mass: float = 2.01410*1.66053906660e-27  # kg per ion (Z=1, Te=Ti)
     cfl: float = .2
     max_timestep: float | None = None
     vacuum_boundary: str = "multipole"
@@ -34,6 +38,7 @@ class ConservativeParameters:
     dual_energy_threshold: float = .1   # internal/total energy below which a cell is cold
     dual_energy_mode: str = "pressure"  # entropy pressure only (energy exact) or "reset" total energy
     dual_energy_shock_threshold: float | None = .2  # compression detector keeps shocks on total energy
+    dual_energy_shock_min_fraction: float = .01  # detector needs internal >= this * magnetic energy (low beta stays cold)
     max_step_halvings: int = 0          # retry an inadmissible step from the accepted state with dt/2
     local_trace_bounds: bool = False    # reconstructed density/pressure >= 3x3 neighbour minimum
     minimum_density: float | None = None  # DECLARED gap closure [kg/m^3]; added mass/energy are counted
@@ -45,6 +50,10 @@ class ConservativeParameters:
             raise ValueError("gamma must be finite and greater than one")
         if not np.isfinite(self.resistivity) or self.resistivity < 0:
             raise ValueError("Physical resistivity must be finite and nonnegative")
+        if self.resistivity_model not in ("uniform", "spitzer"):
+            raise ValueError("Resistivity model must be uniform or spitzer")
+        if not (self.spitzer_coulomb_log > 0 and self.spitzer_min_te_ev > 0 and self.spitzer_ion_mass > 0):
+            raise ValueError("Spitzer parameters must be positive")
         if not np.isfinite(self.cfl) or not 0 < self.cfl <= .3:
             raise ValueError("Use 0 < CFL <= 0.3")
         if self.max_timestep is not None and (not np.isfinite(self.max_timestep) or self.max_timestep <= 0):
@@ -150,7 +159,7 @@ class ConservativeVacuumMHD:
         override = None
         if p.dual_energy and p.dual_energy_mode == "pressure" and state.entropy is not None:
             cold = cold_cells(self.mesh, state.conserved, flux, p.gamma, p.dual_energy_threshold, p.energy_quadrature,
-                              p.dual_energy_shock_threshold)[0]
+                              p.dual_energy_shock_threshold, p.dual_energy_shock_min_fraction)[0]
             override = (cold, state.entropy*state.conserved[..., 0]**(p.gamma-1))
         return primitive(self.mesh, MHDState(state.conserved, flux), p.gamma,
                          energy_quadrature=p.energy_quadrature, pressure_override=override)
@@ -176,9 +185,21 @@ class ConservativeVacuumMHD:
         waves = np.max((abs(q[..., 1])+fast_speed(q, 0, p.gamma))/mesh.dr+
                        (abs(q[..., 2])+fast_speed(q, 1, p.gamma))/mesh.dz)
         eta = interface_resistivity(self.mapping, q, p.gamma) if p.interface_diffusion else np.zeros(1)
-        diffusion = 2*(p.resistivity+float(eta.max()))/MU0*(1/mesh.dr**2+1/mesh.dz**2)
+        physical = float(np.max(self._node_resistivity(q)))
+        diffusion = 2*(physical+float(eta.max()))/MU0*(1/mesh.dr**2+1/mesh.dz**2)
         limit = float(p.cfl/(waves+diffusion))
         return limit if p.max_timestep is None else min(limit, p.max_timestep)
+
+    def _node_resistivity(self, q):
+        """Physical resistivity at mapping nodes: uniform scalar, or NRL perpendicular Spitzer
+        1.03e-4 lnL Te^-1.5 ohm m with Te = p/(2 n e) (Z=1, Te=Ti), cell values averaged to nodes."""
+        p = self.parameters
+        if p.resistivity_model == "uniform":
+            return p.resistivity
+        from scipy.constants import e as QE
+        te = np.maximum(q[..., 3]/(2*q[..., 0]/p.spitzer_ion_mass*QE), p.spitzer_min_te_ev)
+        cell = 1.03e-4*p.spitzer_coulomb_log*te**-1.5
+        return np.asarray(self.mapping.heat_to_cells.T@cell.ravel())
 
     def _node_current(self, state):
         m = self.mapping
@@ -189,7 +210,7 @@ class ConservativeVacuumMHD:
         """Advected rho*A with physical Ohmic heating only (numerical interface heat excluded)."""
         m, p = self.mapping, self.parameters
         q = self._primitive(state, time)
-        joule = p.resistivity*m.fluid_flux(m.full(self._node_current(state)[1]))**2
+        joule = m.fluid_flux(m.full(self._node_resistivity(q)*self._node_current(state)[1]**2))
         heating = .25*(joule[:-1, :-1]+joule[1:, :-1]+joule[:-1, 1:]+joule[1:, 1:])
         return entropy_rate(self.mesh, q, state.entropy, heating, p.gamma)
 
@@ -197,7 +218,8 @@ class ConservativeVacuumMHD:
         m, p = self.mapping, self.parameters
         q = self._primitive(state, time)
         ku, current = self._node_current(state)
-        electric = m.fluid_flux(m.full(p.resistivity*current))
+        node_eta = self._node_resistivity(q)
+        electric = m.fluid_flux(m.full(node_eta*current))
         full_total = self.total_flux(state, time)
         total = m.fluid_flux(full_total)
         numerical_eta = interface_resistivity(m, q, p.gamma) if p.interface_diffusion else np.zeros(m.node_count)
@@ -210,7 +232,7 @@ class ConservativeVacuumMHD:
         fluxes.boundary_poynting = boundary
         source_derivative = m.grid_vector(self.sources.at(time).dpsi_dt)
         source_power = -float((2*np.pi/MU0)*ku[m.active]@source_derivative[m.active])
-        ohmic_power = float(2*np.pi*np.sum(p.resistivity*current**2*m.node_radius*m.node_area))
+        ohmic_power = float(2*np.pi*np.sum(node_eta*current**2*m.node_radius*m.node_area))
         numerical_power = float(2*np.pi*np.sum(numerical_eta*current**2*m.node_radius*m.node_area))
         return fluxes, (source_power, ohmic_power, numerical_power)
 
@@ -220,7 +242,7 @@ class ConservativeVacuumMHD:
         p = self.parameters
         mode = p.flux_limiter if p.positivity_flux_limiting and p.spatial_order == 2 else "off"
         exempt = cold_cells(self.mesh, state.conserved, total, p.gamma, p.dual_energy_threshold,
-                            p.energy_quadrature, p.dual_energy_shock_threshold)[0] if p.dual_energy else None
+                            p.energy_quadrature, p.dual_energy_shock_threshold, p.dual_energy_shock_min_fraction)[0] if p.dual_energy else None
         rhs, report = admissible_update(self.mesh, state.conserved, total, dt, high,
                                         lambda: self._fluxes(state, time, spatial_order=1)[0], mode=mode,
                                         energy_quadrature=p.energy_quadrature, exempt=exempt)
@@ -238,7 +260,7 @@ class ConservativeVacuumMHD:
             if np.any(conserved[..., 0] <= 0) or not np.all(np.isfinite(entropy)) or np.any(entropy <= 0):
                 raise NonphysicalState("Dual-energy stage has nonpositive density or entropy; no repair")
             chosen = select(mesh, conserved, fluid_total_flux, entropy, p.gamma, p.dual_energy_threshold,
-                            p.energy_quadrature, p.dual_energy_shock_threshold)
+                            p.energy_quadrature, p.dual_energy_shock_threshold, p.dual_energy_shock_min_fraction)
             entropy = chosen.entropy
             if p.dual_energy_mode == "reset":
                 conserved = chosen.conserved
@@ -268,7 +290,7 @@ class ConservativeVacuumMHD:
         flux = self.mapping.fluid_flux(self.total_flux(state, time))
         if p.dual_energy:
             cold = cold_cells(self.mesh, state.conserved, flux, p.gamma, p.dual_energy_threshold, p.energy_quadrature,
-                              p.dual_energy_shock_threshold)[0]
+                              p.dual_energy_shock_threshold, p.dual_energy_shock_min_fraction)[0]
         else:
             cold = np.zeros(state.conserved.shape[:2], dtype=bool)
         floor = apply_floor(self.mesh, state.conserved, state.entropy, selected_energy(self.mesh, flux, p.energy_quadrature),
