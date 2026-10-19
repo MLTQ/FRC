@@ -23,14 +23,18 @@ def tangential_field(mapping, total_flux):
     return bz_wall, br_ends[0], br_ends[1]
 
 
-def interface_resistivity(mapping, q, gamma):
+def interface_resistivity(mapping, q, gamma, speed_cap=None):
     """Positive LLF-scale numerical resistance on plasma interface nodes only.
 
     A half-cell dual area gives E_num approximately a*jump(B_t)/2 for a
     surface current: D_num=a*h/4. The stiffness current supplies its sign.
+    `speed_cap` (optional) bounds the local signal speed a; in near-vacuum wall
+    cells a -> v_A grows without bound and so would this numerical dissipation.
     """
     mesh, grid = mapping.fluid, mapping.field
     speed = np.hypot(q[..., 1], q[..., 2])+np.sqrt(gamma*q[..., 3]/q[..., 0]+(q[..., 4]**2+q[..., 5]**2)/(MU0*q[..., 0]))
+    if speed_cap is not None:
+        speed = np.minimum(speed, speed_cap)
     mask = np.zeros(grid.shape)
     lo, hi = mapping.z_offset, mapping.z_offset+mesh.nz
     mask[mesh.nr, lo:hi+1] = 1

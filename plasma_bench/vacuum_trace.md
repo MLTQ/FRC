@@ -18,3 +18,13 @@ current, avoiding indefinite one-sided derivative-jump diffusion. It is zero
 at all interior plasma nodes, vacuum nodes and modes. Its electric field also
 enters all adjacent Poynting fluxes, with separately diagnosed positive numerical
 Joule work. This is numerical interface diffusion, not physical conductivity.
+
+`interface_resistivity(..., speed_cap=None)` optionally bounds the local signal
+speed in the LLF-scale interface resistance.
+- **Why:** in near-vacuum wall cells (density-closure plasma) the fast speed
+  reaches ~1e6 m/s. The resulting numerical dissipation then exceeded the coil
+  work in NUCTE-III formation runs.
+- **Effect with a cap of 2.4e5 m/s** (the fill Alfvén speed): the formation
+  phase is unchanged, and the numerical heat falls from 85% to 29% of the work
+  at 5 µs.
+- The default is unchanged.

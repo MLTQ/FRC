@@ -143,3 +143,6 @@ by theta-pinch formation codes: η_ch = c m_e ω_pi/(n e²) [1 − exp(−v_d/(f
 - **Status:** a declared model, not a fit, with c ≈ 0.1 from the literature.
 - **Check:** recomputing it by hand at the node of largest current reproduces
   the solver's value exactly, and energy closes to roundoff.
+
+`interface_speed_cap` (m/s; default None) passes that bound to the interface
+numerical resistivity (see `vacuum_trace.md`).

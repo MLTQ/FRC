@@ -49,6 +49,7 @@ class Nucte:
     dual_energy: bool = True          # entropy pressure in cold/low-beta cells (pressure mode, energy exact)
     max_step_halvings: int = 6        # timestep control: retry inadmissible steps with dt/2
     interface_diffusion: bool = True  # solver's declared numerical resistivity at the chamber boundary
+    interface_speed_cap: float = 0.   # >0 caps the signal speed in that numerical resistivity [m/s]
     local_trace_bounds: bool = True   # reconstructed density/pressure bounded by neighbour minima
     floor_fraction: float = .01       # DECLARED gap closure: minimum density as a fraction of the fill (0 disables)
 
@@ -117,6 +118,7 @@ def build(c):
                                     spitzer_ion_mass=D_MASS, vacuum_boundary="fixed", cfl=c.cfl,
                                     dual_energy=c.dual_energy, max_step_halvings=c.max_step_halvings,
                                     interface_diffusion=c.interface_diffusion,
+                                    interface_speed_cap=c.interface_speed_cap if c.interface_speed_cap > 0 else None,
                                     local_trace_bounds=c.local_trace_bounds,
                                     minimum_density=c.floor_fraction*2*c.fill_pa/(KB*c.gas_k)*D_MASS if c.floor_fraction > 0 else None,
                                     floor_temperature_ev=c.pi_temperature_ev, floor_ion_mass=D_MASS)

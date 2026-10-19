@@ -43,6 +43,7 @@ class ConservativeParameters:
     dual_energy_shock_min_fraction: float = .01  # detector needs internal >= this * magnetic energy (low beta stays cold)
     max_step_halvings: int = 0          # retry an inadmissible step from the accepted state with dt/2
     local_trace_bounds: bool = False    # reconstructed density/pressure >= 3x3 neighbour minimum
+    interface_speed_cap: float | None = None  # bound on the signal speed in the interface numerical resistivity
     minimum_density: float | None = None  # DECLARED gap closure [kg/m^3]; added mass/energy are counted
     floor_temperature_ev: float = 1.     # temperature of particles added by the closure
     floor_ion_mass: float = 2.01410*1.66053906660e-27  # kg per ion for the closure's thermal energy
@@ -188,7 +189,7 @@ class ConservativeVacuumMHD:
         mesh, p = self.mesh, self.parameters
         waves = np.max((abs(q[..., 1])+fast_speed(q, 0, p.gamma))/mesh.dr+
                        (abs(q[..., 2])+fast_speed(q, 1, p.gamma))/mesh.dz)
-        eta = interface_resistivity(self.mapping, q, p.gamma) if p.interface_diffusion else np.zeros(1)
+        eta = interface_resistivity(self.mapping, q, p.gamma, p.interface_speed_cap) if p.interface_diffusion else np.zeros(1)
         physical = float(np.max(self._node_resistivity(q, self._node_current(self.state)[1])))
         diffusion = 2*(physical+float(eta.max()))/MU0*(1/mesh.dr**2+1/mesh.dz**2)
         limit = float(p.cfl/(waves+diffusion))
@@ -244,7 +245,7 @@ class ConservativeVacuumMHD:
         electric = m.fluid_flux(m.full(node_eta*current))
         full_total = self.total_flux(state, time)
         total = m.fluid_flux(full_total)
-        numerical_eta = interface_resistivity(m, q, p.gamma) if p.interface_diffusion else np.zeros(m.node_count)
+        numerical_eta = interface_resistivity(m, q, p.gamma, p.interface_speed_cap) if p.interface_diffusion else np.zeros(m.node_count)
         numerical_electric = m.fluid_flux(m.full(numerical_eta*current))
         boundary = variational_trace(m, full_total, ku) if p.boundary_poynting == "variational" else None
         traces = boundary.face_fields(self.mesh) if boundary is not None else tangential_field(m, full_total)

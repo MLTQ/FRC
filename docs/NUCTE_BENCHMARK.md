@@ -211,3 +211,122 @@ frc-ibl.2.7:
 3. Compare the wall-node E_θ with the vacuum −(1/r)∂ψ/∂t.
 
 Then run the resolution study frc-ibl.2.1.
+
+## frc-ibl.2.7 investigation (2026-10-19): root cause, fixes and wall E_θ check
+
+### Root cause of the second-stage blow-up
+The accepted state before step 753 was saved and replayed.
+- The wall current is bounded (2–6e7 A/m²) for about 500 steps. Then, within
+  two steps, the wall E_θ jumps from −5e4 to −7.9e8 V/m and then to 1.6e13 V/m.
+- The second stage reconstructs the wall corner (16,11), at z = −0.83 m, with
+  ρ = 1.14e-16 kg/m³, beside cells at about 1.1e-6. That is exactly the 1e-10
+  relative trace margin of `mhd_positivity`.
+- The resulting "fast speed" is 6.2e9 m/s, faster than light. The LLF UCT
+  dissipation −½ a ΔB then gives E ≈ 7.8e7 V/m.
+- The cell states themselves change by only about 0.1% from the accepted step.
+  The CFL from cell averages cannot see trace speeds, and halving dt to dt/64
+  does not help.
+
+**Fix:** opt-in `local_trace_bounds`, which bounds reconstructed density and
+thermal pressure below by the 3×3 neighbour minimum.
+- Standing-shock accuracy is unchanged within 0.15%.
+- On the coil pulse against a 64-cell reference, the density L1 error is 1.22%
+  vs 0.74% at 16 cells and 0.49% vs 0.47% at 32: smooth-extremum clipping,
+  vanishing with resolution.
+- The step-753 blow-up disappears.
+
+### Wall-node E_θ against the vacuum flux change (at step 752)
+| Measure | Unbounded traces | Local bounds |
+|---|---|---|
+| Median \|E_wall − extrapolation from the vacuum nodes\| (fields ~1.55e4 V/m) | 88 V/m (0.6%) | 88 V/m |
+| Midplane: E_wall vs first vacuum node vs coil alone | −1.60e4 vs −1.52e4 vs −9.1e3 V/m | same |
+| Largest mismatch, just beyond the coil ends (\|z\| ≈ 0.78–0.83 m) | 9.9 kV/m, with sign flips | 3.9 kV/m, no sign flips |
+
+- The difference from the coil-alone value is the plasma's flux compression.
+- The wall coupling itself is consistent. It was corrupted locally by the
+  unbounded corner traces.
+
+### Second limit: gap evacuation stalls the time step
+With bounded traces, the runs stall instead of blowing up.
+- The rising external field drives an E×B drift of about 6.6e4 m/s away from
+  the glass, in the wall cells beside the coil-end transition.
+- With nothing to replenish them, their density halves every ~75 ns
+  (8e19 → 8e17 m⁻³ in 0.5 µs), and dt ∝ √ρ.
+- In ideal MHD this is a real vacuum gap between wall and piston, which a fixed
+  fluid grid inside the tube cannot hold.
+
+What physically fills the gap is ionization of residual neutrals, at a rate of
+about n_n·S(T_e): roughly 2e6–8e6 s⁻¹ at 10–50 eV for half of a 10 mTorr fill.
+That depends on the gap electron temperature, which this model lacks.
+Charge-exchange friction cannot stop the drift: with low resistivity, the
+frozen-in plasma moves at E×B, and the friction-to-slip factor
+ηνρ/B² ≈ 5e-5.
+
+**Closure:** `density_floor`, a declared minimum ionized density, added at rest
+at the pre-ionization temperature. Its mass and energy are counted and excluded
+from the residuals; the exterior stays exact vacuum. Runs use 1% and 5% of the
+fill to measure sensitivity. A full neutral-ionization model is frc-ibl.4.
+
+### Performance
+`VacuumField` was 74% of the runtime: 16 evaluations per step, each looping
+over 112 filaments. Grouping coils by waveform plus a time cache cut the step
+cost from 75 to 14.7 ms, with fields equal to 1e-15.
+
+## Formation campaign (2026-10-19, 16×128 unless noted)
+Common settings for every run in this section:
+- dual energy, local trace bounds, step halving;
+- D2 at 1.33 Pa, 2 eV pre-ionization;
+- 0.4 T peak with a 4 µs rise;
+- the declared density closure (1% of the fill unless noted).
+
+Comparison quantities come from `examples/nucte_compare.py`.
+
+| Configuration | End reconnection | Axial contraction | Outcome |
+|---|---|---|---|
+| Whole tube pre-ionized, uniform η = 1e-5, closure 5% / 1% | none for ~10 µs | none | Reversed flux fills the ~2 m tube. Density 2.0–2.7e21 (5%) vs 1.3–1.9e21 (1%); T 150–290 eV vs 420–580 eV: closure-sensitive. Flux e-folds in ~8 µs. |
+| Whole tube, Spitzer η (± vacuum extended 31 cm past the tube ends) | none | none | The end boundary is not the cause. Temperature averages are polluted by hot, near-empty reversed tails. |
+| Pre-ionized under the coil only (\|z\| < 0.7 m), uniform or Spitzer | weak / none | none | Even 1%-level plasma beyond the coil freezes the fringe bias flux. |
+| Coil-only pre-ionization + Spitzer + **Chodura** (c = 0.1), case-1 coil (mirror 1.10) | ~3 µs, but at \|z\| ≈ 0.85 m, beyond the coil | none: the FRC lengthens to fill the tube | The FRC ends sit in the weak fringe field. |
+| Same physics, **case-6 coil** (mirror 1.8; end straps at r = 12.7 cm, 12 filaments each) | ~3 µs at the mirror points | yes: 1.38 → 0.88 → 0.50 → 0.31 m at 3–6 µs | At 6 µs: r_s(0) = 9.0 cm, l_s = 31 cm. Then collapses by 10–11 µs; flux 2.4 → 0.9 mWb by 6 µs. Bias −0.06 T. |
+| Case 6, **bias −0.09 T** (the published maximum) | closed by 2 µs | 1.25 → 0.44 m by 5 µs | 5–10 µs: r_s(0) 10.5 → 6.8 cm, l_s 44 → 22 cm, flux steady at 1.9–2.6 mWb, n 3.6–5.7e21. Collapses at 11–14 µs. |
+| Case 6, peak field 0.5 T | as base | as base | Smaller, decays like the −0.06 T base. Bias, not peak field, controls size. |
+
+**NUCTE-III case 6 (published):**
+- reconnection complete by 3 µs;
+- contraction front at the midplane at 6 µs;
+- equilibrium by 10 µs, with r_s(0) = 8.0 cm and l_s = 38 cm;
+- n̄ = 2.2e21 m⁻³, Te+Ti ≈ 120 eV;
+- lifetime 50 µs, n=2 onset 22 µs.
+
+**What matches at 16×128:**
+- the sequence and timing: reconnection at the mirror points by 2–3 µs, axial contraction reaching the midplane at about 5–6 µs;
+- the equilibrium size, for bias −0.09 T: r_s 7–10 cm and l_s 22–44 cm at 5–10 µs.
+
+**What does not match:**
+- density, 2–3× high;
+- temperature, 3–4× high at 6 µs, which is the dynamic over-compression at contraction;
+- lifetime, ~12 µs vs 50 µs.
+
+### Numerical caveats that bound these results
+1. **Wall numerical dissipation dominates the energy budget.**
+   - The solver's interface numerical resistivity scales with the local signal
+     speed, which reaches ~1e6 m/s in closure-density wall cells.
+   - Its heat reaches 2× the coil's work by 12 µs in the bias −0.09 T run
+     (12.7 kJ vs 5.5 kJ). It is 64% of the work by 3 µs with a 0.1% closure.
+   - With it off, or with its speed capped at 2.4e5 m/s (the fill Alfvén
+     speed), the formation phase is unchanged through 5–6 µs (r_s ≈ 10–11 cm,
+     l_s ≈ 34 cm at 5 µs). The capped run's heat is ~29% of the work.
+2. **End reconnection is partly numerical.**
+   - At 32×256 (bias −0.06 and −0.09 T), the end reconnection has not
+     happened by 3 µs, whereas at 16×128 it is complete by 2–3 µs.
+   - The wall numerical heat falls to 5% of the work at 32×256.
+   - The Chodura term (c = 0.1) does not yet dominate grid diffusion in the
+     reconnection layer, so formation timing is not converged.
+3. **The density closure matters.**
+   - Particles added to keep the gap above 1% of the fill are 2–3% of the
+     plasma mass.
+   - Closure level changes density and temperature in the whole-tube runs.
+   - In case 6 at bias −0.09 T, 0.1% and 1% agree at 2–3 µs.
+4. **Physical resistivity inside the FRC is small:** about 1e-6 Ω·m (Spitzer
+   plus Chodura, with v_d/c_s ≈ 0.05). The classical flux decay time is about
+   0.4 ms. The observed decay is numerical or dynamic, not resistive.
