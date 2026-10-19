@@ -1,4 +1,4 @@
-"""Dual-energy checks on the existing conservative fixtures: inert in warm flow, shock-accurate, adiabatic at low beta."""
+"""Dual-energy and trace-bound checks on the existing conservative fixtures: warm flow, shock accuracy, low-beta adiabaticity."""
 import json
 import sys
 import time
@@ -19,7 +19,9 @@ CONFIGS = (("off", dict(dual_energy=False)), ("default", dict(dual_energy=True))
            ("no_detector", dict(dual_energy=True, dual_energy_shock_threshold=None)),
            ("detector_0.05", dict(dual_energy=True, dual_energy_shock_threshold=.05)),
            ("reset_mode", dict(dual_energy=True, dual_energy_mode="reset")),
-           ("threshold_1e-3", dict(dual_energy=True, dual_energy_threshold=1e-3)))
+           ("threshold_1e-3", dict(dual_energy=True, dual_energy_threshold=1e-3)),
+           ("bounded_traces", dict(local_trace_bounds=True)),
+           ("dual_bounded", dict(dual_energy=True, local_trace_bounds=True)))
 
 
 def run(solver, end, every):

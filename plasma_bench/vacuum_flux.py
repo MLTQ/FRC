@@ -8,7 +8,8 @@ from .mhd_induction import uct_electric
 from .flux_update import FluxUpdate
 
 
-def flux_components(mesh, q, psi, gamma, resistive_electric, boundary_field, interface_electric, spatial_order=2):
+def flux_components(mesh, q, psi, gamma, resistive_electric, boundary_field, interface_electric, spatial_order=2,
+                    local_bounds=False):
     """Shared reconstructed states for fluid fluxes and constrained induction.
 
     The reflected gas traces are boundary data, not exterior fluid unknowns.
@@ -18,7 +19,7 @@ def flux_components(mesh, q, psi, gamma, resistive_electric, boundary_field, int
     lo[..., 2] *= -1; hi[..., 2] *= -1
     extended = np.concatenate((lo, q, hi), axis=1)
     ghost_mesh = MHDMesh(mesh.radius, mesh.half_length+2*mesh.dz, mesh.nr, mesh.nz+4)
-    reconstruction = Reconstruction(ghost_mesh, extended) if spatial_order == 2 else None
+    reconstruction = Reconstruction(ghost_mesh, extended, local_bounds=local_bounds) if spatial_order == 2 else None
     if reconstruction is not None:
         left, right, down, up = reconstruction.faces()
         corners = list(reconstruction.corners())

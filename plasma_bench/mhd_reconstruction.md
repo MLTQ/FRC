@@ -30,3 +30,22 @@ states still raise, with no cell floor, energy repair or hidden fallback.
 retaining the independent two-state magnetic jumps needed by full LLF UCT.
 Cell traces and staggered traces must both use reconstruction; reconstructing
 fluid quantities alone leaves the induction update first order.
+
+## Optional local trace bounds (2026-10-19)
+`Reconstruction(..., local_bounds=True)` replaces the 1e-10 relative trace
+margin for density and thermal pressure with the minimum of the 3×3
+neighbouring cell averages, using edge replication at array edges. Slopes
+contract about the cell mean, and the pressure blend uses the same bound.
+
+**Why:** with the default margin, a face or corner density can legally fall
+to 1e-10 of its cell value. In the NUCTE-III formation such a wall-corner
+state (1.1e-16 kg/m³ beside cells at 1.1e-6) gave a fast speed of 6.2e9 m/s.
+The LLF UCT dissipation then produced E_θ ≈ 7.8e7 V/m in one stage, and the
+run blew up within two steps. The time step, set from cell averages, cannot
+see trace speeds.
+
+**Cost:** min-bound limiters clip smooth extrema. On the coil pulse against a
+64-cell reference, the relative L1 density error is 1.22% bounded vs 0.74%
+unbounded at 16 cells, and 0.487% vs 0.474% at 32. The standing-shock
+pressure error changes by 0.15%. The default (`local_bounds=False`) is
+unchanged.

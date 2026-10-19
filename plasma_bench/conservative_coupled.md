@@ -110,3 +110,6 @@ validates atomically.
 Both options default off. With them off, results are bit-identical to the
 previous code on the standing-shock and coil-pulse fixtures (2026-10-19
 comparison against commit ee9621b).
+
+`local_trace_bounds=True` passes the reconstruction's neighbour-minimum bounds
+for density and thermal pressure (see `mhd_reconstruction.md`). Off by default.

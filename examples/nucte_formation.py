@@ -44,6 +44,7 @@ class Nucte:
     dual_energy: bool = True          # entropy pressure in cold/low-beta cells (pressure mode, energy exact)
     max_step_halvings: int = 6        # timestep control: retry inadmissible steps with dt/2
     interface_diffusion: bool = True  # solver's declared numerical resistivity at the chamber boundary
+    local_trace_bounds: bool = True   # reconstructed density/pressure bounded by neighbour minima
 
 
 def strap_layout(c):
@@ -101,7 +102,8 @@ def build(c):
     rho, p = n_d*D_MASS, 2*n_d*c.pi_temperature_ev*QE
     params = ConservativeParameters(resistivity=c.resistivity, vacuum_boundary="fixed", cfl=c.cfl,
                                     dual_energy=c.dual_energy, max_step_halvings=c.max_step_halvings,
-                                    interface_diffusion=c.interface_diffusion)
+                                    interface_diffusion=c.interface_diffusion,
+                                    local_trace_bounds=c.local_trace_bounds)
     # Initial plasma is current-free in the bias: induced flux zero, total flux = source flux.
     probe = ConservativeState(np.zeros((c.nr, c.nz, 4)), np.zeros((grid.nr, grid.nz)))
     total = sources.at(0.).psi[:c.nr+1, 2:2+c.nz+1]

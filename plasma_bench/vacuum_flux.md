@@ -32,3 +32,6 @@ actual plasma-node areas. Its Poynting flux enters total energy, with no separat
 Joule source or energy correction. Returned outward total-energy flux supplies
 an independent fluid-domain conservation diagnostic. Global response energy
 also depends on the exterior field and is checked separately, not forced exact.
+
+`flux_components(..., local_bounds=False)` forwards the optional neighbour-minimum
+trace bounds to `Reconstruction`.

@@ -34,6 +34,7 @@ class ConservativeParameters:
     dual_energy_mode: str = "pressure"  # entropy pressure only (energy exact) or "reset" total energy
     dual_energy_shock_threshold: float | None = .2  # compression detector keeps shocks on total energy
     max_step_halvings: int = 0          # retry an inadmissible step from the accepted state with dt/2
+    local_trace_bounds: bool = False    # reconstructed density/pressure >= 3x3 neighbour minimum
 
     def __post_init__(self):
         if not np.isfinite(self.gamma) or self.gamma <= 1:
@@ -58,6 +59,8 @@ class ConservativeParameters:
             raise ValueError("Boundary Poynting flux must be riemann or variational")
         if isinstance(self.time_order, bool) or self.time_order not in (2, 3):
             raise ValueError("Time order must be 2 or 3")
+        if not isinstance(self.local_trace_bounds, bool):
+            raise ValueError("Local trace-bound switch must be boolean")
         if not isinstance(self.dual_energy, bool):
             raise ValueError("Dual-energy switch must be boolean")
         if not np.isfinite(self.dual_energy_threshold) or not 0 < self.dual_energy_threshold < .5:
@@ -192,7 +195,8 @@ class ConservativeVacuumMHD:
         boundary = variational_trace(m, full_total, ku) if p.boundary_poynting == "variational" else None
         traces = boundary.face_fields(self.mesh) if boundary is not None else tangential_field(m, full_total)
         fluxes = flux_components(self.mesh, q, total, p.gamma, electric, traces,
-                                  numerical_electric, p.spatial_order if spatial_order is None else spatial_order)
+                                  numerical_electric, p.spatial_order if spatial_order is None else spatial_order,
+                                  p.local_trace_bounds)
         fluxes.boundary_poynting = boundary
         source_derivative = m.grid_vector(self.sources.at(time).dpsi_dt)
         source_power = -float((2*np.pi/MU0)*ku[m.active]@source_derivative[m.active])

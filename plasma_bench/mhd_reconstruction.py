@@ -2,7 +2,7 @@
 import numpy as np
 from scipy.constants import mu_0 as MU0
 from .mhd_state import NonphysicalState
-from .mhd_positivity import positive_scale, positive_blend, limiter_statistics
+from .mhd_positivity import positive_scale, positive_blend, limiter_statistics, neighbour_minimum
 
 _GAUSS_NODES, _GAUSS_WEIGHTS = np.polynomial.legendre.leggauss(4)
 
@@ -50,7 +50,7 @@ class Reconstruction:
     constant-total-pressure straight-field equilibria without a force repair.
     No cell energy, density or pressure is changed by reconstruction.
     """
-    def __init__(self, mesh, q, *, positivity=True):
+    def __init__(self, mesh, q, *, positivity=True, local_bounds=False):
         self.mesh = mesh
         self.values = q.copy()
         self.values[..., 3] += (q[..., 4]**2+q[..., 5]**2)/(2*MU0)
@@ -68,11 +68,17 @@ class Reconstruction:
         self.pressure_axial = axial_increments(self.pressure)
         density_scale = np.ones_like(self.pressure)
         thermal_scale = np.ones_like(self.pressure)
+        # Optional local bounds: density/thermal-pressure traces stay >= the 3x3 neighbour minimum,
+        # so trace wave speeds cannot exceed the cell speeds that set the time step by a large factor.
+        density_bound = neighbour_minimum(q[..., 0]) if positivity and local_bounds else None
+        pressure_bound = neighbour_minimum(q[..., 3]) if positivity and local_bounds else None
         if positivity:
-            density_scale = positive_scale(q[..., 0], self._linear_minimum(q[..., 0], self.radial[..., 0], self.axial[..., 0]))
+            density_scale = positive_scale(q[..., 0], self._linear_minimum(q[..., 0], self.radial[..., 0], self.axial[..., 0]),
+                                           density_bound)
             self.radial[..., 0] *= density_scale
             self.axial[..., 0] *= density_scale
-            thermal_scale = positive_scale(self.pressure, self._linear_minimum(self.pressure, self.pressure_radial, self.pressure_axial))
+            thermal_scale = positive_scale(self.pressure, self._linear_minimum(self.pressure, self.pressure_radial, self.pressure_axial),
+                                           pressure_bound)
             self.pressure_radial *= thermal_scale
             self.pressure_axial *= thermal_scale
         self.pressure_weight = np.ones_like(self.pressure)
@@ -84,7 +90,8 @@ class Reconstruction:
         if positivity:
             for raw, auxiliary in (*radial.values(), *axial.values()):
                 proposed = raw[..., 3]-(raw[..., 4]**2+raw[..., 5]**2)/(2*MU0)
-                self.pressure_weight = np.minimum(self.pressure_weight, positive_blend(auxiliary, proposed, self.pressure))
+                self.pressure_weight = np.minimum(self.pressure_weight, positive_blend(auxiliary, proposed, self.pressure,
+                                                                                         pressure_bound))
         self.statistics = limiter_statistics(density_scale, thermal_scale, self.pressure_weight)
         self._radial_states = {key: self.primitive(*value) for key, value in radial.items()}
         self._axial_states = {key: self.primitive(*value) for key, value in axial.items()}

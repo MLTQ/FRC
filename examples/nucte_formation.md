@@ -38,6 +38,9 @@ Run: `python -m examples.nucte_formation [OUTPUT] [field=value ...]`, e.g.
 - `max_step_halvings=6`: timestep control.
 - `interface_diffusion=True`: the solver's declared wall numerical
   resistivity. The run fails at 0.79 µs without it.
+- `local_trace_bounds=True`: neighbour-minimum bounds on reconstructed
+  density and pressure. Without them a wall-corner density of 1e-16 kg/m³
+  produced a faster-than-light "fast speed" and a blow-up near 1.28 µs.
 - Boolean CLI values must be written `True` or `False`.
 
 ## Outputs

@@ -2,7 +2,8 @@
 
 `python -m examples.dual_energy_verification [OUTPUT]` (about 10 s; 16 cells).
 For each configuration (off, default, no detector, detector 0.05, reset mode,
-threshold 1e-3) it runs three fixtures:
+threshold 1e-3, bounded traces, dual energy plus bounded traces) it runs three
+fixtures:
 - **Standing cylindrical magnetic shock** (`standing_shock`, to t = 0.02). The
   independent reference is the exact steady jump, using `shock_errors` from
   `conservative_measurements`.

@@ -16,3 +16,8 @@ positivity of the full multidimensional MHD time update, whose magnetic-energy
 and discrete-divergence constraints require additional analysis. Invalid cell
 states still raise. The accompanying method is independently derived, not a
 claim to implement a published globally positivity-preserving CT theorem.
+
+`positive_scale` and `positive_blend` accept an optional per-cell `bound`
+(at most the cell value) that replaces the relative margin. `neighbour_minimum`
+returns the 3×3 neighbourhood minimum used by the reconstruction's optional
+local bounds.
