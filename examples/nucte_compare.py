@@ -115,6 +115,20 @@ def summarize(run):
     return setup, rf, zf, rows
 
 
+def decay(rows, start_s=8e-6):
+    """Trapped-flux decay after formation: least-squares e-folding time of ln(phi) over closed frames
+    with t >= start_s, the last time a closed FRC exists, and the flux there. None if too few frames."""
+    good = [(r["time_s"], r["trapped_flux_wb"]) for r in rows
+            if r.get("closed") and r.get("trapped_flux_wb", 0) > 0 and r["time_s"] >= start_s]
+    last = max((r["time_s"] for r in rows if r.get("closed")), default=None)
+    if len(good) < 3:
+        return dict(flux_efold_s=None, last_closed_s=last)
+    t, phi = np.array(good).T
+    slope = np.polyfit(t, np.log(phi), 1)[0]
+    return dict(flux_efold_s=float(-1/slope) if slope < 0 else None, last_closed_s=last,
+                fit_window_s=[float(t[0]), float(t[-1])])
+
+
 def main(run, out=None):
     setup, rf, zf, rows = summarize(run)
     for r in rows:
@@ -125,7 +139,9 @@ def main(run, out=None):
             None if r.get("density_m3") is None else "%.2e" % r["density_m3"],
             None if r.get("total_temperature_ev") is None else round(r["total_temperature_ev"], 1), r["chord_density_m2"]))
     label, ref = reference(setup)
-    (Path(out or run)/"comparison.json").write_text(json.dumps(dict(reference=label, targets=ref, rows=rows), indent=1))
+    lifetime = decay(rows)
+    print("flux decay:", lifetime)
+    (Path(out or run)/"comparison.json").write_text(json.dumps(dict(reference=label, targets=ref, decay=lifetime, rows=rows), indent=1))
     return rows
 
 

@@ -1,4 +1,7 @@
-"""Coarse NUCTE-III field-reversed theta-pinch formation on the fixed-chamber conservative MHD path."""
+"""Coarse NUCTE-III field-reversed theta-pinch formation on the fixed-chamber conservative MHD path.
+
+Defaults are the benchmark configuration of docs/NUCTE_BENCHMARK.md (case-1 coil); case 6 is
+end_radius=0.1267 filaments=12 bias_t=-0.09."""
 import json
 import sys
 import time
@@ -33,15 +36,15 @@ class Nucte:
     fill_pa: float = 1.33             # D2
     gas_k: float = 300.
     pi_temperature_ev: float = 2.     # ASSUMED complete pre-ionization, Te = Ti
-    pi_half_length: float = 0.        # >0: ionized only for |z| < this (theta-PI under the coil); beyond, floor-level plasma
+    pi_half_length: float = .7        # >0: ionized only for |z| < this (theta-PI under the coil); beyond, floor-level plasma
     pi_edge_width: float = .03        # tanh transition width of the pre-ionized region [m]
     bias_t: float = -.06              # ASSUMED; published maximum is 0.09 T
     peak_t: float = .4                # ASSUMED vacuum centre field at end of rise
     quarter_period_s: float = 4e-6    # published rise time
     crowbar_decay_s: float = 100e-6   # ASSUMED L/R after crowbar
     resistivity: float = 1e-5         # ASSUMED uniform, Ohm m (Spitzer at ~13 eV); used when resistivity_model="uniform"
-    resistivity_model: str = "uniform"  # or "spitzer": NRL eta_perp of local Te (Te=Ti, lnL=10, Te>=1 eV for eta)
-    chodura: float = 0.               # Chodura anomalous-resistivity coefficient (standard ~0.1; 0 disables)
+    resistivity_model: str = "spitzer"  # or "uniform": NRL eta_perp of local Te (Te=Ti, lnL=10, Te>=1 eV for eta)
+    chodura: float = .1               # Chodura anomalous-resistivity coefficient (standard ~0.1; 0 disables)
     nr: int = 16
     nz: int = 128
     exterior_cells: int = 6           # fixed induced-flux boundary just inside the coil
@@ -49,17 +52,18 @@ class Nucte:
     end_s: float = 15e-6
     cfl: float = .2
     dual_energy: bool = True          # entropy pressure in cold/low-beta cells (pressure mode, energy exact)
-    dual_energy_mode: str = "pressure"  # or "reset": cold-cell total energy reset to the entropy value (counted)
-    dual_energy_criterion: str = "total"  # cold test on E-K-M ("total") or on the entropy thermal energy ("entropy")
+    dual_energy_mode: str = "reset"   # cold-cell total energy reset to the entropy value (counted); or "pressure"
+    dual_energy_criterion: str = "entropy"  # cold test on the entropy thermal energy; "total" (E-K-M) can make
+                                            # hot cells unbounded reservoirs in pressure mode (dual_energy.md)
     max_step_halvings: int = 6        # timestep control: retry inadmissible steps with dt/2
     interface_diffusion: bool = True  # solver's declared numerical resistivity at the chamber boundary
     interface_speed_cap: float = 0.   # >0 caps the signal speed in that numerical resistivity [m/s]
     open_ends: bool = False           # outflow-only tube ends (open field-line end losses) instead of reflecting
     conduction_limit: float = 0.      # >0: flux-limited parallel conduction loss on open lines (f ~ 0.1)
-    energy_quadrature: str = "cell"   # "staggered" + boundary_poynting "variational" + time_order 3 = the
-    boundary_poynting: str = "riemann"  # compatible magnetic-energy path (docs/COMPATIBLE_ENERGY.md)
-    time_order: int = 2
-    magnetic_energy_flux: str = "face"  # "dissipative" or "ct": magnetic energy moved by the CT field's Poynting flux
+    energy_quadrature: str = "staggered"  # with variational boundary Poynting flux and RK3: the compatible
+    boundary_poynting: str = "variational"  # magnetic-energy path (docs/COMPATIBLE_ENERGY.md); closes the
+    time_order: int = 3                     # response energy to ~1e-4 (historical: cell/riemann/2)
+    magnetic_energy_flux: str = "ct"  # magnetic energy moved by the CT field's Poynting flux; historical "face"
     analytic_traces: bool = True      # wall traces: differenced induced flux + analytic coil field (needed when
                                       # coil filaments sit within two field cells of the wall, e.g. case 6)
     local_trace_bounds: bool = True   # reconstructed density/pressure bounded by neighbour minima

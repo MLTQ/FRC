@@ -35,18 +35,32 @@ Lab envelope:
    empirical formation efficiencies are the main uncertainty.
 2. **In progress: benchmark (frc-ibl.2).** See
    [NUCTE_BENCHMARK.md](NUCTE_BENCHMARK.md).
-   - Chosen experiment: NUCTE-III, with coil radius 0.17 m (vs 0.165 m in the
-     12" design), D2 at 10 mTorr and published r_s(z,t).
-   - Selected solver path: fixed-chamber `ConservativeVacuumMHD`.
-   - First coarse run: reversal and early implosion, then failure at 1.6 µs
-     from low-β positivity at the wall.
-   - Fixed: opt-in dual-energy pressure (frc-ibl.2.6), verified on the
-     shock, coil-pulse and low-β fixtures.
-   - Formation still fails at 0.7–1.3 µs in every variant, in a
-     second-stage blow-up at a wall/interface current sheet under the mirror
-     straps (frc-ibl.2.7).
-   - **Next action:** frc-ibl.2.7, checking the wall-node E_θ against the
-     vacuum flux change; then the resolution study frc-ibl.2.1.
+   - **Experiment and solver.** NUCTE-III (coil r = 0.17 m, D2 at 10 mTorr)
+     on `ConservativeVacuumMHD`. The driver defaults are now the benchmark
+     configuration: Spitzer + Chodura η, entropy-criterion reset dual energy,
+     the compatible energy path, CT-Poynting magnetic energy flux and a 1%
+     gap floor.
+   - **Fixed in this pass:**
+     - a dual-energy fault that created 4–5× the coil work as spurious heat
+       (frc-ibl.2.8);
+     - a response-energy error of up to 1.4× the coil work, removed by the
+       compatible path (now ~1e-4; frc-ibl.2.9).
+   - **What the model reproduces** (case 6, mirror 1.8):
+     - the formation sequence: reconnection by 3 µs, contraction to about
+       0.5 m by 6 µs;
+     - r_s(0) 7–9 cm (published 8.0);
+     - n̄ 2.0e21 (2.2e21);
+     - trapped-flux e-folding about 47 µs (lifetime 50 µs).
+   - **What it does not:** Te+Ti is 1.7–2.7× high, and l_s is 2× long at
+     10 µs. A peak-field bracket shows this is not only the unpublished drive
+     amplitude.
+   - **Robustness:** the FRC is insensitive (≤13%) to the gap closure. The
+     remaining counted energy corrections live in the gap (frc-ibl.2.10).
+   - **Running:** 60–70 µs lifetime runs with end conduction loss, and the
+     32×256 case 6 (frc-ibl.2.1).
+   - **Next action:** finish those runs. Then pick the T/l_s gap to close
+     first; candidates are radiation/ionization loss, pre-ionization
+     (frc-ibl.4) and the stepped mirror coil geometry.
 3. Fill only the gaps the benchmark exposes:
    - hydrogenic plasma in the driven solver (frc-ibl.3);
    - pre-ionization and bias-flux trapping (frc-ibl.4);

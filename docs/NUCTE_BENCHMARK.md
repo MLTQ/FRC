@@ -335,3 +335,146 @@ Comparison quantities come from `examples/nucte_compare.py`.
 4. **Physical resistivity inside the FRC is small:** about 1e-6 Ω·m (Spitzer
    plus Chodura, with v_d/c_s ≈ 0.05). The classical flux decay time is about
    0.4 ms. The observed decay is numerical or dynamic, not resistive.
+
+## Energy audit, fixes and corrected formation runs (2026-10-19)
+
+### 1. Spurious heating from the dual-energy cold test (frc-ibl.2.8)
+A cell-by-cell partition of NUCTE-III case 1 (16×128, Spitzer + Chodura)
+exposed the problem.
+
+**At 3 µs:**
+- Cold cells held E − K − M = −14.8 kJ and warm cells +15.0 kJ.
+- The coils had delivered only 3.1 kJ, yet the plasma's physical thermal
+  energy was 19.9 kJ.
+- The global budget closed, so the response residual could not see this.
+
+**Mechanism** (single-step decomposition at 2.2 µs):
+- A hot, weakly magnetized cell had E − K − M < 0 and stayed "cold" by the
+  total-energy test. One example: r = 7.5 cm, z = ±0.57 m, 4e19 m⁻³, about
+  12 keV, B ≈ 0.02 T.
+- In pressure mode its fluxes come from the entropy pressure. Its conserved E
+  then paid the enthalpy outflow without limit (−6e8 W per cell), and the warm
+  neighbours received that energy.
+- Removing physical η, interface η or the LLF dissipation does not change this.
+
+**Fix** (`dual_energy_criterion="entropy"` with reset mode; `plasma_bench/dual_energy.md`):
+- The cold test uses the entropy thermal energy, so a hot cell is never cold.
+- Cold-cell E is reset to the entropy value each step. The corrections are
+  counted in both residuals.
+- The standing-shock, coil-pulse and low-β fixtures are unchanged.
+- Case 1 at 3 µs: physical thermal energy 1.91 kJ, down from 19.9 kJ.
+
+### 2. Field/exterior energy closure: use the compatible path (frc-ibl.2.9)
+On the historical cell / Riemann / RK2 path the response residual grows:
+- **Case 6:** 1.4 × the coil work by 4 µs, roughly 10× smaller per grid
+  doubling.
+- **Case 1:** 15% of the coil work by 15 µs.
+
+The repository's compatible path (staggered magnetic energy, variational wall
+Poynting flux, RK3; `docs/COMPATIBLE_ENERGY.md`) closes it:
+- 2.4e-4 for case 6 at 4–15 µs;
+- 6e-5 for case 1 at 15 µs.
+
+The graded-coil test (end filaments moved outside the field grid) changed
+nothing on the historical path. That shows the error is the semi-discrete
+boundary mismatch, not filament placement.
+
+### 3. Remaining counted reset corrections (frc-ibl.2.10)
+**Where they occur:**
+- 88% of the reset corrections are in cells below 3× the floor density (the
+  wall–piston gap). The FRC core gets none.
+- They shrink about 3× per grid doubling.
+
+**Effect of `magnetic_energy_flux="ct"`** (all magnetic energy transport as the
+Poynting flux of the CT field, `vacuum_flux.md`): cold-cell drift falls 8×,
+and 30× at the wall row.
+
+**What remains:**
+- Kinetic energy that discrete Maxwell-stress forces give the light gap gas
+  without a matching E·J.
+- First-order entropy diffusion from warm neighbours.
+- Net size: +0.8 to +2.0 kJ by 15 µs in case 1 (floors 5% to 0.3%), against
+  2.8 kJ of coil work.
+- With open-line conduction on, the resets track the line loss (+3.6 vs
+  5.0 kJ by 16 µs). The numerical gap heat is then carried out of the ends.
+
+**The FRC is insensitive to all of this.** Case 1 at 15 µs across a 17×
+range of floor density:
+
+| Floor (fraction of fill) | r_s(0) | l_s | n̄ (m⁻³) | Te+Ti (eV) | φ (mWb) | Net reset (J) |
+|---|---|---|---|---|---|---|
+| 0.3% | 5.31 cm | 94 cm | 2.53e21 | 203 | 0.55 | +2035 |
+| 1% | 5.10 cm | 100 cm | 2.54e21 | 198 | 0.52 | +1495 |
+| 5% | 4.64 cm | 97 cm | 2.69e21 | 183 | 0.52 | +798 |
+
+### Configuration used from here on
+`examples/nucte_formation.py` with:
+- Spitzer + Chodura (c = 0.1) resistivity;
+- θ-PI under the coil only (|z| < 0.7 m);
+- dual energy in reset mode with the entropy criterion;
+- staggered quadrature, variational wall Poynting flux, RK3;
+- `magnetic_energy_flux="ct"`;
+- local trace bounds;
+- 1% floor;
+- 16×128 grid.
+
+Comparison quantities come from `examples/nucte_compare.py`. Its flux e-folding
+time is a least-squares fit of ln φ over the closed frames from 8 µs on.
+
+### Results against NUCTE-III (Takahashi 2000)
+**Case 6** (mirror 1.8, bias −0.09 T, assumed 0.4 T peak with a 4 µs rise):
+- **Sequence:** reconnection at the mirror throats by 3 µs; the separatrix
+  shortens 1.97 → 1.19 → 0.81 → 0.59 m at 2–5 µs, reaching about 0.5 m at
+  6–7 µs.
+- **Published sequence:** reconnection by 3 µs; contraction front at the
+  midplane at 6 µs.
+- **Then:** an axial bounce, with l_s back to 0.78 m at 9–10 µs and 0.50 m at
+  15 µs.
+
+| Quantity at 10 µs (equilibrium) | Simulation | NUCTE-III case 6 |
+|---|---|---|
+| r_s(0) | 7.2 cm (8.9 at 15 µs) | 8.0 cm |
+| l_s | 78 cm (50 at 15 µs) | 38 cm |
+| n̄ inside separatrix | 2.0e21 m⁻³ | 2.2e21 |
+| Te+Ti | 320 eV | 120 eV |
+| Trapped flux | 2.3 mWb (e-folding 47 µs over 8–15 µs) | Δφ 0.4 mWb (definition unclear) |
+| Lifetime | (runs to 60 µs in progress) | 50 µs |
+
+**Case 1** (mirror 1.10, bias −0.06 T): no axial contraction within 10 µs.
+The separatrix fills the tube and shortens only from 11 µs, to 1.0 m by 15 µs.
+
+| Quantity | Simulation | NUCTE-III case 1 |
+|---|---|---|
+| r_s(0) | 5.1–5.4 cm | 6.2 cm |
+| n̄ | 2.0–2.5e21 m⁻³ | 2.2e21 |
+| Te+Ti | ~200 eV | 120 eV |
+| Flux e-folding | 38–42 µs | lifetime 65 µs |
+
+**Peak-field bracket** (case 6, the drive amplitude per case is not published):
+
+| Peak vacuum field | r_s(0) at 10 µs | l_s | n̄ (m⁻³) | Te+Ti (eV) |
+|---|---|---|---|---|
+| 0.40 T | 7.2 cm | 78 cm | 2.0e21 | 323 |
+| 0.30 T | 7.6 cm | 84 cm | 1.6e21 | 253 |
+| 0.25 T | 8.0 cm | 88 cm | 1.4e21 | 214 |
+
+n̄T scales as B^1.7, i.e. pressure balance. No single drive amplitude matches
+both n̄ and T: at NUCTE's n̄T (2.6e23 eV/m³) the simulated FRC holds about
+40% fewer particles and runs about 1.8× hotter. The excess in T and l_s is
+therefore a model discrepancy, not only the unknown waveform. Candidates, in
+order:
+1. Missing particle and energy loss physics: no radiation or ionization, a
+   single temperature, no perpendicular conduction, and reflecting ends.
+2. The assumed pre-ionization (fully ionized, 2 eV, under the coil only).
+3. Coarse resolution: 32×256 is in progress.
+4. The idealized mirror geometry: two coil radii instead of NUCTE's stepped
+   elements.
+
+**What is benchmarked and what is not:**
+- **Robust:** the formation sequence and timing, r_s to 10–20%, n̄ to 10–20%,
+  and a trapped-flux e-folding time of the same order as the measured
+  lifetimes.
+- **Not reproduced:** T (1.7–2.7× high) and the equilibrium length in case 6
+  (2× long at 10 µs).
+- **For design use:** take T from the NUCTE-anchored empirical scaling in
+  `frc_scaling`, not from this model.
