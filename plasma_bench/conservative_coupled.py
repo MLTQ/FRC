@@ -12,6 +12,7 @@ from .vacuum_energy import variational_trace
 from .magnetic_quadrature import selected_energy
 from .dual_energy import entropy_density, entropy_rate, cold_cells, select
 from .mhd_state import NonphysicalState
+from .density_floor import apply_floor
 
 
 @dataclass(frozen=True)
@@ -35,6 +36,9 @@ class ConservativeParameters:
     dual_energy_shock_threshold: float | None = .2  # compression detector keeps shocks on total energy
     max_step_halvings: int = 0          # retry an inadmissible step from the accepted state with dt/2
     local_trace_bounds: bool = False    # reconstructed density/pressure >= 3x3 neighbour minimum
+    minimum_density: float | None = None  # DECLARED gap closure [kg/m^3]; added mass/energy are counted
+    floor_temperature_ev: float = 1.     # temperature of particles added by the closure
+    floor_ion_mass: float = 2.01410*1.66053906660e-27  # kg per ion for the closure's thermal energy
 
     def __post_init__(self):
         if not np.isfinite(self.gamma) or self.gamma <= 1:
@@ -59,6 +63,10 @@ class ConservativeParameters:
             raise ValueError("Boundary Poynting flux must be riemann or variational")
         if isinstance(self.time_order, bool) or self.time_order not in (2, 3):
             raise ValueError("Time order must be 2 or 3")
+        if self.minimum_density is not None and not (np.isfinite(self.minimum_density) and self.minimum_density > 0):
+            raise ValueError("Minimum density must be positive or None")
+        if not (np.isfinite(self.floor_temperature_ev) and self.floor_temperature_ev > 0 and self.floor_ion_mass > 0):
+            raise ValueError("Floor temperature and ion mass must be positive")
         if not isinstance(self.local_trace_bounds, bool):
             raise ValueError("Local trace-bound switch must be boolean")
         if not isinstance(self.dual_energy, bool):
@@ -114,6 +122,8 @@ class ConservativeVacuumMHD:
         self.dual_energy_max_cold_ratio = 0.
         self.dual_energy_discrepancy = 0.  # pressure mode: sum over cold cells of (E-K-M) - entropy thermal
         self.step_retries = 0
+        self.floor_mass = self.floor_energy = 0.
+        self.floor_cell_steps = 0
         q0 = self._primitive(self.state, 0.)
         if p.dual_energy and self.state.entropy is None:
             self.state.entropy = entropy_density(q0[..., 0], q0[..., 3], p.gamma)
@@ -252,6 +262,21 @@ class ConservativeVacuumMHD:
                 dt *= .5
                 self.step_retries += 1
 
+    def _floored(self, state, time):
+        """Apply the declared minimum-density closure (Lie split after the MHD step) and revalidate."""
+        p = self.parameters
+        flux = self.mapping.fluid_flux(self.total_flux(state, time))
+        if p.dual_energy:
+            cold = cold_cells(self.mesh, state.conserved, flux, p.gamma, p.dual_energy_threshold, p.energy_quadrature,
+                              p.dual_energy_shock_threshold)[0]
+        else:
+            cold = np.zeros(state.conserved.shape[:2], dtype=bool)
+        floor = apply_floor(self.mesh, state.conserved, state.entropy, selected_energy(self.mesh, flux, p.energy_quadrature),
+                            cold, p.minimum_density, p.floor_temperature_ev, p.floor_ion_mass, p.gamma)
+        result = ConservativeState(floor.conserved, state.induced_psi, floor.entropy)
+        self._primitive(result, time)
+        return result, floor
+
     def _attempt(self, dt):
         """One SSP step from the accepted state; nothing is committed unless every stage validates."""
         old = self.state
@@ -278,8 +303,15 @@ class ConservativeVacuumMHD:
                                     combine((1/6, a), (1/6, b), (2/3, c)), final=True)
             weighted = ((1/6, a), (1/6, b), (2/3, c))
             reports = (report_a, report_b, report_c)
+        floor = None
+        if self.parameters.minimum_density is not None:
+            final, floor = self._floored(final, self.time+dt)
         # Every Euler proposal and exact vacuum completion validates atomically.
         self.state = final
+        if floor is not None:
+            self.floor_mass += floor.mass_kg
+            self.floor_energy += floor.energy_j
+            self.floor_cell_steps += floor.cells
         if self.parameters.dual_energy:
             chosen, p = self._pending_dual, self.parameters
             if p.dual_energy_mode == "reset":
@@ -323,8 +355,8 @@ class ConservativeVacuumMHD:
 
     def diagnostics(self):
         result = self._integrals(self.state, self.time)
-        response_residual = result["response_energy_j"]-self.initial["response_energy_j"]-self.source_work
-        fluid_residual = result["fluid_total_energy_j"]-self.initial["fluid_total_energy_j"]+self.outward_energy
+        response_residual = result["response_energy_j"]-self.initial["response_energy_j"]-self.source_work-self.floor_energy
+        fluid_residual = result["fluid_total_energy_j"]-self.initial["fluid_total_energy_j"]+self.outward_energy-self.floor_energy
         ku = self.mapping.k@self.mapping.interior(self.state.induced_psi)
         result.update(time_s=self.time, steps=self.steps, euler_stages=self.euler_stages,
                       source_work_j=self.source_work, ohmic_heat_j=self.ohmic_heat,
@@ -344,7 +376,8 @@ class ConservativeVacuumMHD:
                       response_energy_balance_residual_j=response_residual,
                       response_residual_over_source_work=response_residual/abs(self.source_work) if self.source_work else None,
                       response_energy_balance_relative=response_residual/max(abs(self.initial["response_energy_j"]), abs(self.source_work), 1e-30),
-                      mass_relative_change=(result["mass_kg"]-self.initial["mass_kg"])/self.initial["mass_kg"],
+                      mass_relative_change=(result["mass_kg"]-self.initial["mass_kg"]-self.floor_mass)/self.initial["mass_kg"],
+                      floor_mass_kg=self.floor_mass, floor_energy_j=self.floor_energy, floor_cell_steps=self.floor_cell_steps,
                       vacuum_relative_residual=float(np.linalg.norm(ku[self.mapping.vacuum])/max(np.linalg.norm(ku), 1e-30)),
                       max_face_divergence_t_m=float(abs(self.mesh.divergence(self.mapping.fluid_flux(self.total_flux()))).max()))
         return result

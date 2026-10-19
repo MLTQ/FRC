@@ -1,0 +1,122 @@
+"""Post-process a nucte_formation run into the quantities NUCTE-III published (Takahashi 2000)."""
+import json
+import sys
+from pathlib import Path
+import numpy as np
+from scipy.constants import mu_0 as MU0, e as QE, atomic_mass as AMU
+
+D_MASS = 2.01410*AMU
+# Takahashi et al. 2000, Table 1 (case 1, mirror ratio 1.10) and text; units SI.
+NUCTE_CASE1 = dict(separatrix_mid_m=.062, separatrix_length_m=.62, axial_contraction_time_s=6.5e-6,
+                   axial_speed_m_s=3.8e4, lifetime_s=65e-6, n2_onset_s=28e-6, density_m3=2.2e21, total_temperature_ev=120.)
+
+
+def load(run):
+    run = Path(run)
+    setup = json.loads((run/"setup.json").read_text())
+    data = np.load(run/"snapshots.npz")
+    rf, zf = data["rf"], data["zf"]
+    nr, nz = len(rf)-1, len(zf)-1
+    frames = []
+    for key in sorted(k for k in data.files if k.startswith("t")):
+        v = data[key]
+        n_psi = (nr+1)*(nz+1)
+        psi = v[:n_psi].reshape(nr+1, nz+1)
+        rho = v[n_psi:n_psi+nr*nz].reshape(nr, nz)
+        p = v[n_psi+nr*nz:].reshape(nr, nz)
+        frames.append((int(key[1:]), psi, rho, p))
+    history = json.loads((run/"history.json").read_text())
+    return setup, rf, zf, frames, history
+
+
+def separatrix_profile(rf, psi):
+    """r_s at every axial node: zero of total flux outward from a reversed axis; nan if unreversed."""
+    rs = np.full(psi.shape[1], np.nan)
+    for j in range(psi.shape[1]):
+        col = psi[:, j]
+        if col[1] < 0:
+            k = np.nonzero(col[1:] >= 0)[0]
+            if k.size:
+                i = k[0]+1
+                rs[j] = rf[i-1]+(rf[i]-rf[i-1])*(-col[i-1])/(col[i]-col[i-1])
+            else:
+                rs[j] = np.inf
+    return rs
+
+
+def closed_region(rf, zf, psi):
+    """Closed poloidal flux: reversed-axis segment whose separatrix stays off the wall, bounded by unreversed ends."""
+    rs = separatrix_profile(rf, psi)
+    reversed_ = np.isfinite(rs) & (rs < rf[-1])
+    if not reversed_.any():
+        return None
+    mid = len(zf)//2
+    # contiguous reversed segment containing (or nearest to) the midplane
+    idx = np.nonzero(reversed_)[0]
+    centre = idx[np.argmin(abs(idx-mid))]
+    lo = hi = centre
+    while lo > 0 and reversed_[lo-1]:
+        lo -= 1
+    while hi < len(zf)-1 and reversed_[hi+1]:
+        hi += 1
+    ends_open = (lo == 0) or (hi == len(zf)-1) or np.isinf(rs[max(lo-1, 0)]) or np.isinf(rs[min(hi+1, len(zf)-1)])
+    o_point = float(-psi[:, lo:hi+1].min())
+    return dict(lo=int(lo), hi=int(hi), length_m=float(zf[hi]-zf[lo]), closed=not ends_open,
+                separatrix_mid_m=float(rs[mid]) if np.isfinite(rs[mid]) else None,
+                max_separatrix_m=float(np.nanmax(np.where(np.isfinite(rs[lo:hi+1]), rs[lo:hi+1], np.nan))),
+                trapped_flux_wb=2*np.pi*o_point, profile=rs)
+
+
+def plasma_inside(rf, zf, rho, p, rs, lo, hi):
+    """Volume-average density and total temperature (Te+Ti = p/(n e)) inside r < r_s(z)."""
+    rc = .5*(rf[:-1]+rf[1:])
+    dz = zf[1]-zf[0]
+    vol = np.pi*np.diff(rf**2)[:, None]*np.full(len(zf)-1, dz)[None, :]
+    inside = np.zeros_like(rho, dtype=bool)
+    for j in range(lo, hi):
+        r_s = np.nanmin([rs[j], rs[j+1]])
+        inside[:, j] = rc < r_s
+    if not inside.any():
+        return None, None
+    n = rho/D_MASS
+    nbar = float(np.sum(n*vol*inside)/np.sum(vol*inside))
+    temperature = float(np.sum(p*vol*inside)/np.sum(n*vol*inside)/QE)  # p = n_i k(Ti+Te), Z=1
+    return nbar, temperature
+
+
+def chord_density(rf, rho, j):
+    """Side-on chord through the axis at axial cell j: integral n dl = 2 * integral_0^rw n dr."""
+    return float(2*np.sum(rho[:, j]/D_MASS*np.diff(rf)))
+
+
+def summarize(run):
+    setup, rf, zf, frames, history = load(run)
+    rows = []
+    for k, psi, rho, p in frames:
+        t = history[k]["time_s"] if k < len(history) else np.nan
+        region = closed_region(rf, zf, psi)
+        mid_cell = rho.shape[1]//2
+        row = dict(time_s=t, chord_density_m2=chord_density(rf, rho, mid_cell))
+        if region:
+            nbar, temp = plasma_inside(rf, zf, rho, p, region["profile"], region["lo"], region["hi"])
+            row.update({k2: v for k2, v in region.items() if k2 != "profile"}, density_m3=nbar, total_temperature_ev=temp)
+            row["profile"] = [None if not np.isfinite(x) else float(x) for x in region["profile"]]
+        rows.append(row)
+    return setup, rf, zf, rows
+
+
+def main(run, out=None):
+    setup, rf, zf, rows = summarize(run)
+    for r in rows:
+        print("t=%5.1f us closed=%s rs(0)=%s length=%s phi=%s n=%s T=%s chord=%.3g" % (
+            r["time_s"]*1e6, r.get("closed"), None if r.get("separatrix_mid_m") is None else round(r["separatrix_mid_m"]*100, 2),
+            None if "length_m" not in r else round(r["length_m"]*100, 1),
+            None if "trapped_flux_wb" not in r else round(r["trapped_flux_wb"]*1e3, 3),
+            None if r.get("density_m3") is None else "%.2e" % r["density_m3"],
+            None if r.get("total_temperature_ev") is None else round(r["total_temperature_ev"], 1), r["chord_density_m2"]))
+    (Path(out or run)/"comparison.json").write_text(json.dumps(dict(nucte_case1=NUCTE_CASE1, rows=rows), indent=1))
+    return rows
+
+
+if __name__ == "__main__":
+    main(sys.argv[1], *(sys.argv[2:3]))

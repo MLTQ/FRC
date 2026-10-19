@@ -113,3 +113,7 @@ comparison against commit ee9621b).
 
 `local_trace_bounds=True` passes the reconstruction's neighbour-minimum bounds
 for density and thermal pressure (see `mhd_reconstruction.md`). Off by default.
+
+`minimum_density` (kg/m³; default None) enables the declared gap closure in
+`density_floor.md`, with `floor_temperature_ev` and `floor_ion_mass`. It runs
+after the MHD step and before commit, inside the same atomic step attempt.

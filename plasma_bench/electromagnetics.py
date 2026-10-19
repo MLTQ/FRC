@@ -53,27 +53,49 @@ def loop_field(r, z, radius: float, z0: float = 0.0):
 
 
 class VacuumField:
+    """Prescribed coil and bias fields. Coils sharing one waveform object are summed once:
+    a coil's current is turns*polarity*waveform(t), so each waveform group's field is
+    waveform(t) times a precomputed weighted basis. Recent times are cached; returned
+    arrays are read-only so a caller cannot corrupt the cache."""
+    _CACHE = 8
+
     def __init__(self, grid: Grid, coils: tuple[Coil, ...], bias: float = 0.0):
         if not np.isfinite(bias):
             raise ValueError("Bias field must be finite")
         self.grid, self.coils, self.bias = grid, tuple(coils), bias
         self.r, self.z = grid.mesh
         self.bases = [loop_field(self.r, self.z, c.radius, c.z) for c in coils]
+        groups = {}
+        for coil, basis in zip(self.coils, self.bases):
+            group = groups.setdefault(id(coil.waveform), [coil.waveform, None])
+            weighted = tuple(coil.turns*coil.polarity*b for b in basis)
+            group[1] = weighted if group[1] is None else tuple(a+b for a, b in zip(group[1], weighted))
+        self._groups = list(groups.values())
+        self._cache = {}
 
     def at(self, t: float):
         if not np.isfinite(t):
             raise ValueError("Time must be finite")
+        cached = self._cache.get(t)
+        if cached is not None:
+            return cached
         psi = self.bias*self.r**2/2
         br = np.zeros(self.grid.shape)
         bz = np.full(self.grid.shape, self.bias, dtype=float)
         rate = np.zeros(self.grid.shape)
-        for coil, (p, b_r, b_z) in zip(self.coils, self.bases):
-            current, derivative = coil.current(t), coil.rate(t)
-            if not np.all(np.isfinite([current, derivative])):
+        for wave, (p, b_r, b_z) in self._groups:
+            value, derivative = float(wave.value(t)), float(wave.derivative(t))
+            if not np.all(np.isfinite([value, derivative])):
                 raise ValueError("Waveform returned nonfinite source data")
-            psi = psi + current*p
-            br += current*b_r
-            bz += current*b_z
+            psi = psi + value*p
+            br += value*b_r
+            bz += value*b_z
             rate += derivative*p
         electric = np.divide(-rate, self.r, out=np.zeros_like(rate), where=self.r > 0)
-        return Field(psi, br, bz, rate, electric)
+        for array in (psi, br, bz, rate, electric):
+            array.setflags(write=False)
+        field = Field(psi, br, bz, rate, electric)
+        if len(self._cache) >= self._CACHE:
+            self._cache.pop(next(iter(self._cache)))
+        self._cache[t] = field
+        return field

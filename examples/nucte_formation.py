@@ -45,6 +45,7 @@ class Nucte:
     max_step_halvings: int = 6        # timestep control: retry inadmissible steps with dt/2
     interface_diffusion: bool = True  # solver's declared numerical resistivity at the chamber boundary
     local_trace_bounds: bool = True   # reconstructed density/pressure bounded by neighbour minima
+    floor_fraction: float = .01       # DECLARED gap closure: minimum density as a fraction of the fill (0 disables)
 
 
 def strap_layout(c):
@@ -103,7 +104,9 @@ def build(c):
     params = ConservativeParameters(resistivity=c.resistivity, vacuum_boundary="fixed", cfl=c.cfl,
                                     dual_energy=c.dual_energy, max_step_halvings=c.max_step_halvings,
                                     interface_diffusion=c.interface_diffusion,
-                                    local_trace_bounds=c.local_trace_bounds)
+                                    local_trace_bounds=c.local_trace_bounds,
+                                    minimum_density=c.floor_fraction*2*c.fill_pa/(KB*c.gas_k)*D_MASS if c.floor_fraction > 0 else None,
+                                    floor_temperature_ev=c.pi_temperature_ev, floor_ion_mass=D_MASS)
     # Initial plasma is current-free in the bias: induced flux zero, total flux = source flux.
     probe = ConservativeState(np.zeros((c.nr, c.nz, 4)), np.zeros((grid.nr, grid.nz)))
     total = sources.at(0.).psi[:c.nr+1, 2:2+c.nz+1]
@@ -180,7 +183,8 @@ def main(out=Path("outputs/nucte_formation"), **overrides):
                                                          "source_work_j", "ohmic_heat_j", "numerical_interface_heat_j",
                                                          "minimum_high_order_weight", "fluid_energy_balance_residual_j",
                                                          "dual_energy_cold_cell_steps", "dual_energy_cold_discrepancy_j",
-                                                         "dual_energy_disagreement_cell_steps", "step_retries")})
+                                                         "dual_energy_disagreement_cell_steps", "step_retries",
+                                                         "floor_mass_kg", "floor_energy_j", "floor_cell_steps", "mass_kg")})
         history.append(row)
         z, rs, psi = separatrix(model)
         q = model._primitive(model.state, model.time)

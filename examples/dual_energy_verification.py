@@ -89,5 +89,28 @@ def main(out=Path("outputs/dual_energy_verification"), cells=16):
               f"cold discrepancy={lb['dual_energy_cold_discrepancy_j']:.2g} J")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__" and "--floor" not in sys.argv:
     main(*(sys.argv[1:2] and [Path(sys.argv[1])]))
+
+
+def floor_accounting(cells=16):
+    """Declared minimum-density closure: inactive -> bit-identical; active -> balances close with its counted terms."""
+    out = {}
+    base = from_split_initial(coil_pulse(cells, vacuum_boundary="multipole"), dual_energy=True)
+    base.advance(.05)
+    for label, floor in (("inactive", 1e-6), ("active", 1.05)):
+        s = from_split_initial(coil_pulse(cells, vacuum_boundary="multipole"), dual_energy=True, minimum_density=floor,
+                               floor_temperature_ev=1e-3, floor_ion_mass=1.)
+        s.advance(.05)
+        d = s.diagnostics()
+        q = s._primitive(s.state, s.time)
+        out[label] = dict(max_abs_difference_from_no_floor=float(abs(s.state.conserved-base.state.conserved).max()),
+                          minimum_density=float(q[..., 0].min()), floor_mass_kg=d["floor_mass_kg"],
+                          floor_energy_j=d["floor_energy_j"], floor_cell_steps=d["floor_cell_steps"],
+                          mass_relative_change_excluding_floor=d["mass_relative_change"],
+                          fluid_energy_residual_j=d["fluid_energy_balance_residual_j"])
+    return out
+
+
+if __name__ == "__main__" and "--floor" in sys.argv:
+    print(json.dumps(floor_accounting(), indent=1))
