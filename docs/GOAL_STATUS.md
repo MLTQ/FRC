@@ -33,9 +33,15 @@ Lab envelope:
    total), with a crowbar. The estimates are T_e+T_i ≈ 90 eV,
    s̄ ≈ 2–2.8, r_s ≈ 3.5 cm and a classical τ_φ of at most ~18 µs. The
    empirical formation efficiencies are the main uncertainty.
-2. **Next: benchmark (frc-ibl.2).** Reproduce a documented small FRTP
-   experiment with the most complete coil-driven solver path before trusting
-   any design prediction.
+2. **In progress: benchmark (frc-ibl.2).** See
+   [NUCTE_BENCHMARK.md](NUCTE_BENCHMARK.md).
+   - Chosen experiment: NUCTE-III, with coil radius 0.17 m (vs 0.165 m in the
+     12" design), D2 at 10 mTorr and published r_s(z,t).
+   - Selected solver path: fixed-chamber `ConservativeVacuumMHD`.
+   - First coarse run: reversal and early implosion, then failure at 1.6 µs
+     from low-β positivity at the wall.
+   - **Next action:** frc-ibl.2.6 (dual-energy pressure), then the resolution
+     study frc-ibl.2.1.
 3. Fill only the gaps the benchmark exposes:
    - hydrogenic plasma in the driven solver (frc-ibl.3);
    - pre-ionization and bias-flux trapping (frc-ibl.4);

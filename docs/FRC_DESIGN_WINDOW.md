@@ -186,6 +186,10 @@ The fill is chosen to hold s̄ at 2.5 or 3.5 (`large_bore.csv`).
    Both machines are larger than this bore. Scaling them down by R² suggests
    roughly **50–150 µs** is realistic here. The table's classical values are
    ceilings.
+
+   A closer anchor is NUCTE-III (NUCTE_BENCHMARK.md): coil radius 0.17 m, D2
+   at 10 mTorr. It measured 50–65 µs, which is about 0.5–0.9 of this model's
+   classical estimate for its geometry.
 4. **The n=2 rotational instability** ends theta-pinch FRCs unless suppressed.
    Quadrupole windings are required for this target (beads frc-ibl.8).
 5. **Field hold.** Hold at least 3× the target lifetime: 300 µs with
