@@ -95,7 +95,9 @@ def closed_region(rf, zf, psi):
         hi += 1
     ends_open = (lo == 0) or (hi == len(zf)-1) or np.isinf(rs[max(lo-1, 0)]) or np.isinf(rs[min(hi+1, len(zf)-1)])
     o_point = float(-psi[:, lo:hi+1].min())
+    j_o = lo+int(np.unravel_index(np.argmin(psi[:, lo:hi+1]), psi[:, lo:hi+1].shape)[1])
     return dict(lo=int(lo), hi=int(hi), length_m=float(zf[hi]-zf[lo]), closed=not ends_open,
+                o_point_z_m=float(zf[j_o]), centre_z_m=float(.5*(zf[lo]+zf[hi])),
                 separatrix_mid_m=float(rs[mid]) if np.isfinite(rs[mid]) else None,
                 max_separatrix_m=float(np.nanmax(np.where(np.isfinite(rs[lo:hi+1]), rs[lo:hi+1], np.nan))),
                 trapped_flux_wb=2*np.pi*o_point, profile=rs)

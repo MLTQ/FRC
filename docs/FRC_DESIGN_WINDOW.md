@@ -197,13 +197,18 @@ The fill is chosen to hold s̄ at 2.5 or 3.5 (`large_bore.csv`).
 
 **Recommended 12" baseline:**
 - **Gas and fill:** D2 at about 3.5 mTorr, s̄ ≈ 2.5.
-- **Modules:** eight, each about 6 µF and rated to at least 15 kV.
-- **First light:** charge to 8.3 kV for 0.2 T (1.6 kJ). This meets the rise
-  criterion; classical τ_φ ≈ 113 µs.
-- **Upgrade:** charge the same capacitors to 12.5 kV for 0.3 T (3.7 kJ).
-  Field scales with charge voltage at fixed capacitance, but the quarter period
-  stays at 3.1 µs, which is 4.5 snowplow times instead of 3. Whether that
-  slower relative rise still forms well is for frc-ibl.6 to determine.
+- **Modules:** eight, each about 6 µF and rated to at least 20 kV. The circuit
+  model below supersedes the earlier 15 kV figure.
+- **First light:** charge to 11.6 kV for 0.2 T, starting from a −0.05 T bias
+  (3.2 kJ; circuit model below). This meets the rise criterion; classical
+  τ_φ ≈ 113 µs.
+- **Upgrade:** charge the same capacitors to 16.2 kV for 0.3 T (6.3 kJ).
+  - The lossless single-turn estimate gave 8.3 kV and 12.5 kV. It omitted three
+    things: the field must swing up from the bias, the bias circuit diverts some
+    current, and the equal-flux coil is 77 nH.
+  - The quarter period stays at 3.1 µs, which is 4.5 snowplow times instead of
+    3. Whether that slower relative rise still forms well is for frc-ibl.6 to
+    determine.
 - **Gas use:** D2 consumption is negligible. A static fill of a
   12" × 2.2 m tube at 7 mTorr is about 1.4 mL at STP per shot.
 - **Vacuum:** base pressure of about 1e-6 Torr, which keeps base-gas
@@ -211,6 +216,114 @@ The fill is chosen to hold s̄ at 2.5 or 3.5 (`large_bore.csv`).
   are required.
 - **Radiation:** D2 at a few hundred eV will produce some D-D neutrons; this is
   for the radiation consultant.
+
+## Bank, crowbar, timing and mirror for the 12" baseline (circuit model, frc-ibl.5)
+Computed with `plasma_bench/coil_circuit.py` (verified in its companion doc) by
+`python -m examples.frc_bank_design`.
+
+**Assumed hardware:**
+- **Coil:** single turn, r = 16.5 cm, 1.2 m long, 24 straps of 5 cm on one
+  collector.
+- **Main bank:** eight modules of 6 µF with 30 nH stray each, fired together.
+- **Bias bank:** NUCTE-like, 2000 µF, 2.4 µH, 8 mΩ, fired so it peaks at main
+  fire.
+- **Charge voltages** are set so the vacuum field at the coil centre is the bias
+  value at t = 0 and the stated peak at crowbar.
+
+**Coil:**
+- Equal-flux inductance 77.3 nH; centre field 0.903 mT per kA.
+- A uniform single-turn coil has no mirror: its field is maximal at the
+  midplane.
+
+| Peak (from bias) | Main charge | Bank energy | Bias charge | Peak per switch | dI/dt per switch | Crowbar |
+|---|---|---|---|---|---|---|
+| 0.2 T (−0.05 T) | 11.6 kV | 3.2 kJ | −2.3 kV | 36 kA | 18 kA/µs | 3.05 µs |
+| 0.3 T (−0.05 T) | 16.2 kV | 6.3 kJ | −2.3 kV | 50 kA | 26 kA/µs | 3.05 µs |
+| 0.3 T (−0.07 T) | 17.1 kV | 7.0 kJ | −3.2 kV | 53 kA | 27 kA/µs | 3.05 µs |
+
+### Crowbar and start switches
+**Use unidirectional start switches** (ignitrons, or spark gaps with a series
+diode stack). Without them, the 6 µF capacitors keep ringing through the crowbar
+after it fires and pull the held field down. The circuit shows the same effect
+on NUCTE's bank: −20% within 6 µs.
+
+**Keep the crowbar loop inductance small next to the 77 nH coil.** When the
+crowbar fires, the coil keeps only L_coil/(L_coil + L_crowbar) of its current.
+
+| Crowbar L per module (8 in parallel) | Field held after 2 µs | After 10 µs | After 25 µs | Capacitor reversal |
+|---|---|---|---|---|
+| 8 nH | 98% | 95% | 89% | 25% of charge |
+| 20 nH | 96% | 93% | 87% | 28% |
+| 40 nH | 92% | 89% | 84% | 33% |
+
+- **Hold time:** a 300 µs L/R hold needs about 2.1 mΩ per module crowbar loop,
+  switch and joints included.
+- **Capacitor rating:** rate the capacitors for about 30% voltage reversal.
+
+### Timing
+**Common collector (all eight modules on one coil):**
+- The coil's equal-flux current distribution fixes the field shape, so skew only
+  reshapes the total current.
+- One module firing 50, 200 or 500 ns late changes the centre field by 0.16%,
+  0.6% or 1.8% during the rise.
+- It moves that switch's peak current by up to about ±7%.
+
+**Separate axial sections (one module each):** skew becomes axial asymmetry.
+With the four modules on z > 0 late:
+
+| Skew | Asymmetry at 0.5 µs | Asymmetry at 1 µs |
+|---|---|---|
+| 10 ns | 3.6% | 1.1% |
+| 50 ns | 18% | 5.5% |
+| 200 ns | 72% | 23% |
+
+**What the asymmetry does to an FRC** (NUCTE-III case 6, two halves fired 100 or
+300 ns apart, formation runs):
+- trapped-flux centroid displacement ≤ 0.5 or 1.5 cm;
+- left/right flux asymmetry ≤ 2.4% or 6%;
+- both small against the 40–60 cm FRC.
+
+**Recommendation:** a common collector with a single trigger fanned out to the
+eight switches over matched cables. ±100–200 ns of jitter is tolerable, so no
+phase-locked timing is needed.
+
+### End mirror
+NUCTE-III makes its mirror by stepping the coil radius down at the ends. Its
+case 6 (R_M 1.8, field index 0.3) contracts by 6–7 µs. Its case 1 (R_M 1.1)
+contracts only by 15–25 µs, yet lived longer (65 vs 50 µs, n=2 onset 28 vs
+22 µs).
+
+**Option 1: graded single-turn coil.** The radius widens from 16.5 cm at the
+ends to r0 at |z| ≤ 0.1 m; values for 0.3 T at the centre on the same 8 × 6 µF
+bank:
+
+| r0 | R_M | Field index | Coil | Charge | Energy |
+|---|---|---|---|---|---|
+| 0.20 m | 1.27 | 0.13 | 93 nH | 21 kV | 11 kJ |
+| 0.22 m | 1.44 | 0.20 | 102 nH | 24 kV | 14 kJ |
+| 0.24 m | 1.61 | 0.27 | 110 nH | 28 kV | 18 kJ |
+
+**Option 2: separate mirror coil pairs.** N-turn coils just beyond the coil
+ends, as one series circuit. For R_M 1.3–1.5 they need 10–15% of the main
+current per turn in 2–4 turns. That is a 4–13 µH circuit, needing more than
+100 kV for a µs rise, so it is impractical.
+
+**Decision:** whether the mirror is worth up to 3× the bank energy is a
+formation question for frc-ibl.6. NUCTE's data suggest a weak mirror forms more
+slowly but is not worse for lifetime.
+
+### Plasma loading of the bank
+**For the 12" baseline:** the bank's stray inductance (30 nH / 8 = 3.75 nH) is
+5% of the coil's, so the plasma's flux exclusion barely loads it. The early
+field drops by ≲ 2–3%.
+
+**For NUCTE-III** (27 nH stray against a 58–69 nH coil), the effect is large:
+- the coupled formation run holds the coil's vacuum current 22% below the
+  prescribed waveform at 1 µs;
+- the gap is 5–8% at 2–3 µs.
+
+Keep strays small. That is what lets the circuit, rather than the plasma, set
+the field.
 
 ## Sensitivity at the nominal point (D2, 10 mTorr, 0.3 T)
 | Varied input | T_e+T_i (eV) | s̄ | classical τ_φ (µs) | bias (mT) | E (J) / V (kV) |
