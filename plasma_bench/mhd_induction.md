@@ -14,3 +14,5 @@ Axial arrays include the duplicate periodic endpoint. All outputs use SI.
 the vacuum-coupled conservative solver applies its own reflecting-gas,
 magnetically transparent boundary contract. `ideal_emf` retains its periodic
 ends and perfectly conducting radial wall exactly.
+`uct_electric(..., parts=True)` returns (central, dissipative) separately; their
+sum is the unchanged UCT field.

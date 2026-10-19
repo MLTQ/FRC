@@ -3,14 +3,25 @@ import numpy as np
 from scipy.constants import mu_0 as MU0
 
 
-def tangential_field(mapping, total_flux):
+def tangential_field(mapping, total_flux, source=None):
     """Second-order vacuum-side derivatives at the actual gas interface.
 
     Surface-current force/work must use the exterior Maxwell traction; merely
     reflecting the interior tangential field silently loses interface work.
+    With `source` (the analytic coil Field on the grid), `total_flux` must be the
+    INDUCED flux only: its smooth harmonic exterior is differenced and the coil
+    field is added analytically, so a coil filament inside the one-sided stencil
+    cannot corrupt the trace.
     """
     m, mesh, grid = mapping, mapping.fluid, mapping.field
     i, lo, hi = mesh.nr, m.z_offset, m.z_offset+mesh.nz
+    if source is not None:
+        bz_wall, br_bottom, br_top = tangential_field(mapping, total_flux)
+        bz_nodes = source.bz[i, lo:hi+1]
+        bz_wall = bz_wall+.5*(bz_nodes[:-1]+bz_nodes[1:])
+        w = (mesh.radial_centroid-mesh.rf[:-1])/mesh.dr
+        ends = [(1-w)*source.br[:i+1, j][:-1]+w*source.br[:i+1, j][1:] for j in (lo, hi)]
+        return bz_wall, br_bottom+ends[0], br_top+ends[1]
     dr = (-3*total_flux[i]+4*total_flux[i+1]-total_flux[i+2])/(2*grid.dr)
     bz_nodes = dr[lo:hi+1]/mesh.radius
     bz_wall = .5*(bz_nodes[:-1]+bz_nodes[1:])

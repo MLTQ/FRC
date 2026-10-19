@@ -24,6 +24,8 @@ class Nucte:
     half_length: float = 1.0
     coil_radius: float = .17          # 18 single-turn straps, 5 cm wide
     end_radius: float = .162          # 5 straps each end; (0.17/0.162)^2 = 1.10, case 1 mirror ratio
+    taper_start: float = 0.           # >0: graded coil, radius linear from coil_radius at |z|=taper_start to
+                                      # end_radius at the coil end (NUCTE-III stepped 36..26 cm elements)
     strap_width: float = .05
     centre_straps: int = 18
     end_straps: int = 5
@@ -47,11 +49,19 @@ class Nucte:
     end_s: float = 15e-6
     cfl: float = .2
     dual_energy: bool = True          # entropy pressure in cold/low-beta cells (pressure mode, energy exact)
+    dual_energy_mode: str = "pressure"  # or "reset": cold-cell total energy reset to the entropy value (counted)
+    dual_energy_criterion: str = "total"  # cold test on E-K-M ("total") or on the entropy thermal energy ("entropy")
     max_step_halvings: int = 6        # timestep control: retry inadmissible steps with dt/2
     interface_diffusion: bool = True  # solver's declared numerical resistivity at the chamber boundary
     interface_speed_cap: float = 0.   # >0 caps the signal speed in that numerical resistivity [m/s]
     open_ends: bool = False           # outflow-only tube ends (open field-line end losses) instead of reflecting
     conduction_limit: float = 0.      # >0: flux-limited parallel conduction loss on open lines (f ~ 0.1)
+    energy_quadrature: str = "cell"   # "staggered" + boundary_poynting "variational" + time_order 3 = the
+    boundary_poynting: str = "riemann"  # compatible magnetic-energy path (docs/COMPATIBLE_ENERGY.md)
+    time_order: int = 2
+    magnetic_energy_flux: str = "face"  # "dissipative" or "ct": magnetic energy moved by the CT field's Poynting flux
+    analytic_traces: bool = True      # wall traces: differenced induced flux + analytic coil field (needed when
+                                      # coil filaments sit within two field cells of the wall, e.g. case 6)
     local_trace_bounds: bool = True   # reconstructed density/pressure bounded by neighbour minima
     floor_fraction: float = .01       # DECLARED gap closure: minimum density as a fraction of the fill (0 disables)
 
@@ -60,7 +70,14 @@ def strap_layout(c):
     w = c.strap_width
     centre = [(c.coil_radius, (k-(c.centre_straps-1)/2)*w) for k in range(c.centre_straps)]
     edge = c.centre_straps*w/2
-    return centre+[(c.end_radius, s*(edge+(k+.5)*w)) for s in (-1, 1) for k in range(c.end_straps)]
+    straps = centre+[(c.end_radius, s*(edge+(k+.5)*w)) for s in (-1, 1) for k in range(c.end_straps)]
+    if c.taper_start > 0:
+        coil_end = edge+c.end_straps*w
+        def radius(z):
+            frac = np.clip((abs(z)-c.taper_start)/(coil_end-c.taper_start), 0, 1)
+            return c.coil_radius+(c.end_radius-c.coil_radius)*frac
+        straps = [(radius(z), z) for _, z in straps]
+    return straps
 
 
 def filaments(c, strap):
@@ -119,9 +136,13 @@ def build(c):
     params = ConservativeParameters(resistivity=c.resistivity, resistivity_model=c.resistivity_model, chodura_coefficient=c.chodura,
                                     spitzer_ion_mass=D_MASS, vacuum_boundary="fixed", cfl=c.cfl,
                                     dual_energy=c.dual_energy, max_step_halvings=c.max_step_halvings,
+                                    dual_energy_mode=c.dual_energy_mode, dual_energy_criterion=c.dual_energy_criterion,
+                                    energy_quadrature=c.energy_quadrature, boundary_poynting=c.boundary_poynting,
+                                    time_order=c.time_order,
                                     interface_diffusion=c.interface_diffusion,
                                     interface_speed_cap=c.interface_speed_cap if c.interface_speed_cap > 0 else None,
                                     open_ends=c.open_ends, open_line_flux_limit=c.conduction_limit,
+                                    analytic_source_traces=c.analytic_traces, magnetic_energy_flux=c.magnetic_energy_flux,
                                     open_line_wall_temperature_ev=c.pi_temperature_ev,
                                     local_trace_bounds=c.local_trace_bounds,
                                     minimum_density=c.floor_fraction*2*c.fill_pa/(KB*c.gas_k)*D_MASS if c.floor_fraction > 0 else None,
@@ -129,7 +150,7 @@ def build(c):
     # Initial plasma is current-free in the bias: induced flux zero, total flux = source flux.
     probe = ConservativeState(np.zeros((c.nr, c.nz, 4)), np.zeros((grid.nr, grid.nz)))
     total = sources.at(0.).psi[:c.nr+1, c.end_cells:c.end_cells+c.nz+1]
-    state = from_primitive(fluid, total, rho, p)
+    state = from_primitive(fluid, total, rho, p, energy_quadrature=c.energy_quadrature)
     model = ConservativeVacuumMHD(fluid, sources, ConservativeState(state.conserved, probe.induced_psi), params)
     return model, dict(fill_deuterons_m3=n_d, density_kg_m3=n_d*D_MASS, pressure_pa=2*n_d*c.pi_temperature_ev*QE,
                        strap_currents_a_per_t=current.tolist(),
@@ -201,10 +222,14 @@ def main(out=Path("outputs/nucte_formation"), **overrides):
                                                 if k in ("mass_relative_change", "response_energy_balance_relative",
                                                          "source_work_j", "ohmic_heat_j", "numerical_interface_heat_j",
                                                          "minimum_high_order_weight", "fluid_energy_balance_residual_j",
+                                                         "ct_dissipation_heat_j", "response_energy_balance_residual_j", "dual_energy_change_j",
+                                                         "dual_energy_absolute_change_j", "internal_energy_j",
+                                                         "gas_energy_j", "induced_field_energy_j",
                                                          "dual_energy_cold_cell_steps", "dual_energy_cold_discrepancy_j",
                                                          "dual_energy_disagreement_cell_steps", "step_retries",
                                                          "floor_mass_kg", "floor_energy_j", "floor_cell_steps", "mass_kg",
-                                                         "outflow_mass_kg", "outward_fluid_energy_j", "open_line_loss_j")})
+                                                         "outflow_mass_kg", "outward_fluid_energy_j", "open_line_loss_j",
+                                                         "response_energy_balance_relative")})
         history.append(row)
         z, rs, psi = separatrix(model)
         q = model._primitive(model.state, model.time)

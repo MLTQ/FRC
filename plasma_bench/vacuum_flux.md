@@ -47,3 +47,35 @@ at 0.5 stays exactly uniform downstream of the upstream rarefaction head, and
 mass and energy close exactly with outflow counted. The total outflow is 1–1.5%
 above the downstream-only value, because the stalled blocked end
 back-flows slightly.
+
+`flux_components(..., magnetic_energy_flux="face")` selects the magnetic part
+of the total-energy flux.
+- **`"face"`:** the historical form. It uses the reconstructed face states:
+  central (B²/μ0)v_n − (v·B)B_n/μ0, plus the LLF jump of B_t²/2μ0.
+- **`"dissipative"`:** that LLF jump becomes the Poynting flux of the UCT
+  dissipative field (`uct_electric(..., parts=True)`), paired like
+  resistivity. In 1-D with a common speed the two forms are equal,
+  ½a ΔB_t·B̄_t/μ0 = ½a Δ(B_t²/2μ0); in 2-D they differ by the
+  corner-versus-face stencils.
+- **`"ct"`:** all magnetic energy transport becomes E_θ×B_t/μ0. E_θ is the full
+  CT field (ideal, dissipative, resistive and interface), averaged from the two
+  face nodes. B_t is the mean of the two reconstructed tangential traces, or the
+  wall/end trace on boundary faces.
+  - The gas energy then changes by −∇·S_CT − dM/dt ≈ E·J, which is small where
+    J ≈ 0. Near-vacuum gap cells no longer exchange large spurious energy with
+    their gas.
+  - Uniform states keep E = −v×B, so the flux and the jump conditions are
+    unchanged.
+
+The result carries `dissipative_electric` for the heating estimate.
+
+**Fixtures** (`examples/dual_energy_verification.py`, `ct_flux` against
+`entropy_reset`):
+
+| Fixture | ct_flux | entropy_reset |
+|---|---|---|
+| Standing shock, ρ L1 | 0.39917 | 0.39917 |
+| Standing shock, p L1 | 2.5859 | 2.5867 |
+| Coil pulse, max difference from off | 0.0015 | — |
+| Low-β adiabatic-invariant error | 0.0305 | 0.0305 |
+| Fluid residual | 3e-16 J | — |

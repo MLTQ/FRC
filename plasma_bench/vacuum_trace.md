@@ -28,3 +28,13 @@ speed in the LLF-scale interface resistance.
   phase is unchanged, and the numerical heat falls from 85% to 29% of the work
   at 5 µs.
 - The default is unchanged.
+
+`tangential_field(mapping, flux, source=None)`: with the analytic coil `Field`,
+`flux` must be the *induced* flux only. Its smooth harmonic exterior is
+differenced and the coil B is added analytically: bz at the wall nodes, and br
+at the end rows on the radial centroids.
+- **Why:** in NUCTE-III case 6 the end-strap filaments (r = 0.1267 m) lie inside
+  the two-interval wall stencil (wall + 2dr = 0.129 m at 16×128).
+- **Effect:** the 1 µs response residual fell from 2.9e-2 to 1.0e-3.
+- **What it did not fix:** the later growth of the case-6 residual, which
+  converges with resolution (see `docs/NUCTE_BENCHMARK.md`).

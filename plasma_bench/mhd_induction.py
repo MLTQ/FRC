@@ -22,15 +22,19 @@ def ideal_emf(mesh, ghost, br_faces, bz_faces, gamma, reconstruction=None):
     return electric
 
 
-def uct_electric(corners, fields, gamma):
-    """Four-state LLF UCT electric field before imposing a boundary contract."""
+def uct_electric(corners, fields, gamma, parts=False):
+    """Four-state LLF UCT electric field before imposing a boundary contract.
+
+    parts=True returns (central, dissipative) separately; their sum is the UCT field.
+    """
     sw, se, nw, ne = corners
     bz_left, bz_right, br_down, br_up = fields
     ar = np.maximum.reduce([np.abs(q[..., 1])+fast_speed(q, 0, gamma) for q in corners])
     az = np.maximum.reduce([np.abs(q[..., 2])+fast_speed(q, 1, gamma) for q in corners])
     electric = .25*((sw[..., 1]+nw[..., 1])*bz_left+(se[..., 1]+ne[..., 1])*bz_right
                      -(sw[..., 2]+se[..., 2])*br_down-(nw[..., 2]+ne[..., 2])*br_up)
-    return electric-.5*ar*(bz_right-bz_left)+.5*az*(br_up-br_down)
+    dissipative = -.5*ar*(bz_right-bz_left)+.5*az*(br_up-br_down)
+    return (electric, dissipative) if parts else electric+dissipative
 
 
 def resistive_emf(mesh, psi, resistivity):

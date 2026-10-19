@@ -9,11 +9,18 @@ from .flux_update import FluxUpdate
 
 
 def flux_components(mesh, q, psi, gamma, resistive_electric, boundary_field, interface_electric, spatial_order=2,
-                    local_bounds=False, open_ends=False):
+                    local_bounds=False, open_ends=False, magnetic_energy_flux="face"):
     """Shared reconstructed states for fluid fluxes and constrained induction.
 
     The reflected gas traces are boundary data, not exterior fluid unknowns.
     Normal velocity reflects; magnetic normal field remains the shared CT field.
+    magnetic_energy_flux: "face" (historical) transports magnetic energy with the face states:
+    central (B^2/mu0)v_n - (v.B)B_n/mu0 plus the LLF jump of B_t^2/2mu0. "dissipative" replaces
+    that LLF jump by the Poynting flux of the UCT dissipative electric field (the one that changes
+    psi), paired exactly like resistivity. "ct" carries ALL magnetic energy transport as the
+    Poynting flux E_theta x B_t/mu0 of the full CT electric field (ideal, dissipative, resistive,
+    interface), so a current-free cell exchanges no spurious energy with its gas. The returned
+    FluxUpdate has `dissipative_electric` set unless the mode is "face".
     """
     if open_ends:
         # Outflow-only ends, per radial row: zero-gradient ghosts where the end cell flows
@@ -52,8 +59,9 @@ def flux_components(mesh, q, psi, gamma, resistive_electric, boundary_field, int
     down[:, 0, 4] = up[:, 0, 4] = br_bottom
     down[:, -1, 4] = up[:, -1, 4] = br_top
     brf, bzf = mesh.face_fields(psi)
-    fr, _ = rusanov(left, right, brf, 0, gamma)
-    fz, _ = rusanov(down, up, bzf, 1, gamma)
+    mode = magnetic_energy_flux
+    fr, _ = rusanov(left, right, brf, 0, gamma, mode == "face", mode != "ct")
+    fz, _ = rusanov(down, up, bzf, 1, gamma, mode == "face", mode != "ct")
     corners = [value[:, 2:-2] for value in corners]
     br_extended = np.pad(brf, ((0, 0), (2, 2)), mode="symmetric")
     bz_extended = np.pad(bzf, ((0, 0), (2, 2)), mode="reflect")
@@ -64,12 +72,21 @@ def flux_components(mesh, q, psi, gamma, resistive_electric, boundary_field, int
         br_pad = np.concatenate((br_extended[:, -1:], br_extended, br_extended[:, :1]), axis=1)
         fields = (bz_pad[:-1], bz_pad[1:], br_pad[:, :-1], br_pad[:, 1:])
     fields = [value[:, 2:-2] for value in fields]
-    electric = uct_electric(corners, fields, gamma)+resistive_electric+interface_electric
+    central, dissipative = uct_electric(corners, fields, gamma, parts=True)
+    electric = central+dissipative+resistive_electric+interface_electric
     electric[0] = 0  # Regular axis; no artificial zero at the chamber wall/ends.
+    dissipative[0] = 0
+    central[0] = 0
     nonideal = resistive_electric+interface_electric
+    if mode in ("dissipative", "ct"):
+        nonideal = nonideal+dissipative
+    if mode == "ct":
+        nonideal = nonideal+central
     fr[..., 3] += .5*(nonideal[:, :-1]+nonideal[:, 1:])*.5*(left[..., 5]+right[..., 5])/MU0
     fz[..., 3] -= .5*(nonideal[:-1]+nonideal[1:])*.5*(down[..., 4]+up[..., 4])/MU0
-    return FluxUpdate(fr, fz, electric, source[:, 2:-2])
+    result = FluxUpdate(fr, fz, electric, source[:, 2:-2])
+    result.dissipative_electric = dissipative if mode != "face" else None
+    return result
 
 
 def flux_rhs(mesh, q, psi, gamma, resistive_electric, boundary_field, interface_electric, spatial_order=2):

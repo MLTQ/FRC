@@ -272,7 +272,12 @@ fill to measure sensitivity. A full neutral-ionization model is frc-ibl.4.
 over 112 filaments. Grouping coils by waveform plus a time cache cut the step
 cost from 75 to 14.7 ms, with fields equal to 1e-15.
 
-## Formation campaign (2026-10-19, 16×128 unless noted)
+## Formation campaign (2026-10-19, 16×128 unless noted) — SUPERSEDED
+These runs used pressure-mode dual energy with the total-energy cold test.
+The energy audit below shows that this combination created 4–5× the coil
+work as spurious heat. The sequence and timing in the table may still be
+qualitatively right, but their n, T, pressure balance, lifetime and energy
+caveats are not valid. They are kept only for the record.
 Common settings for every run in this section:
 - dual energy, local trace bounds, step halving;
 - D2 at 1.33 Pa, 2 eV pre-ionization;

@@ -38,8 +38,14 @@ def entropy_rate(mesh, q, entropy, heating, gamma, open_ends=False):
 
 
 def cold_cells(mesh, conserved, psi, gamma, threshold, energy_quadrature="cell", shock_threshold=None,
-               shock_min_fraction=.01):
+               shock_min_fraction=.01, entropy=None, criterion="total"):
     """Cold = internal/total energy below threshold and NOT a compressive shock cell.
+
+    criterion="total" measures internal energy as E-K-M (the conserved total energy).
+    criterion="entropy" measures it from the advected entropy, rho*A*rho^(gamma-1)/(gamma-1),
+    against (that + K + M): a hot high-beta cell then stays warm even if its conserved E has
+    drifted, so a cold cell can never be a high-beta energy reservoir. Use it with reset mode,
+    which keeps the conserved E of cold cells equal to the entropy value (corrections counted).
 
     Optional shock detector (shock_threshold not None): D = -div(v) * min(dr, dz) / c_f
     above it, with positive total-energy internal energy of at least
@@ -54,8 +60,13 @@ def cold_cells(mesh, conserved, psi, gamma, threshold, energy_quadrature="cell",
     kinetic = .5*rho*(vr*vr+vz*vz)
     magnetic = selected_energy(mesh, psi, energy_quadrature)
     internal = conserved[..., 3]-kinetic-magnetic
+    if criterion == "entropy":
+        thermal = entropy*rho**(gamma-1)/(gamma-1)
+        low = thermal < threshold*(thermal+kinetic+magnetic)
+    else:
+        low = internal < threshold*conserved[..., 3]
     if shock_threshold is None:
-        return internal < threshold*conserved[..., 3], internal, kinetic, magnetic
+        return low, internal, kinetic, magnetic
     rvr = np.pad(mesh.r[:, None]*vr, ((1, 1), (0, 0)))
     rvr[0], rvr[-1] = -rvr[1], 0.  # axis mirror; wall normal velocity zero at face (approximate ghost)
     vzp = np.pad(vz, ((0, 0), (1, 1)))
@@ -63,7 +74,7 @@ def cold_cells(mesh, conserved, psi, gamma, threshold, energy_quadrature="cell",
     div = (rvr[2:]-rvr[:-2])/(2*mesh.dr*mesh.r[:, None])+(vzp[:, 2:]-vzp[:, :-2])/(2*mesh.dz)
     shock = ((-div*min(mesh.dr, mesh.dz)/_speeds(mesh, rho, vr, vz, internal, psi, gamma) > shock_threshold)
              & (internal > 0) & (internal >= shock_min_fraction*magnetic))
-    return (internal < threshold*conserved[..., 3]) & ~shock, internal, kinetic, magnetic
+    return low & ~shock, internal, kinetic, magnetic
 
 
 @dataclass
@@ -78,11 +89,11 @@ class Selection:
 
 
 def select(mesh, conserved, psi, entropy, gamma, threshold, energy_quadrature="cell", shock_threshold=None,
-           shock_min_fraction=.01):
+           shock_min_fraction=.01, criterion="total"):
     """Cold cells take p = rho*A*rho^(gamma-1); `conserved` returns the reset total energy (used only in
     reset mode). Other cells resynchronize rho*A from total energy, so shock heating enters the entropy."""
     cold, internal, kinetic, magnetic = cold_cells(mesh, conserved, psi, gamma, threshold, energy_quadrature,
-                                                   shock_threshold, shock_min_fraction)
+                                                   shock_threshold, shock_min_fraction, entropy, criterion)
     rho, total = conserved[..., 0], conserved[..., 3]
     thermal = entropy*rho**(gamma-1)/(gamma-1)
     result = conserved.copy()

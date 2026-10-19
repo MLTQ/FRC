@@ -155,3 +155,37 @@ fluxes telescope.
 `open_line_flux_limit=f > 0` enables the declared conduction loss in
 `open_line_loss.md`, applied after the closure step and counted in both
 residuals.
+
+`dual_energy_criterion="entropy"` (default `"total"`) selects the cold-cell test
+described in `dual_energy.md`. Use it with `dual_energy_mode="reset"`: the
+pressure-mode/total-criterion pair can turn a hot, weakly magnetized cell into
+an unbounded energy reservoir.
+
+Reset-mode corrections (`dual_energy_change_j`) are now a declared source in
+both the fluid and the response energy residuals. In pressure mode they are
+zero. Before this change, the reset-mode fluid residual equalled the reset sum.
+
+`analytic_source_traces=True` builds the wall and end tangential traces from
+the differenced *induced* flux plus the analytic coil field (`vacuum_trace.md`).
+A coil filament inside the one-sided trace stencil then cannot corrupt them.
+
+`magnetic_energy_flux` (default `"face"`, the historical scheme) selects how
+magnetic energy is transported in the total-energy flux (`vacuum_flux.md`):
+- `"dissipative"`: the LLF magnetic dissipation is carried as the Poynting flux
+  of the UCT dissipative field.
+- `"ct"`: all magnetic energy is carried as the Poynting flux of the full CT
+  electric field, which is the field that changes ψ.
+- `ct_dissipation_heat_j` estimates ΣE_diss·J from the high-order fluxes.
+
+**Measured in NUCTE-III case 6** on the compatible path, by single-step
+decomposition of the drift between cold-cell total and entropy energies (the
+drift reset mode corrects), at 2.5 and 3.5 µs:
+
+| Mode | Drift magnitude at 2.5 µs (W) | Drift magnitude at 3.5 µs (W) | Wall-row drift |
+|---|---|---|---|
+| `face` | 8.3e9 | 1.1e10 | 4.2e9 |
+| `dissipative` | 4.4e9 | 4.0e9 | — |
+| `ct` | 2.9e9 | 1.4e9 | 1.4e8 (30× smaller) |
+
+On the historical cell/Riemann path, `dissipative` made no difference to the
+reservoir failure. That failure was a criterion error, not a flux error.

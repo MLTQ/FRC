@@ -42,10 +42,15 @@ class ConservativeParameters:
     dual_energy_mode: str = "pressure"  # entropy pressure only (energy exact) or "reset" total energy
     dual_energy_shock_threshold: float | None = .2  # compression detector keeps shocks on total energy
     dual_energy_shock_min_fraction: float = .01  # detector needs internal >= this * magnetic energy (low beta stays cold)
+    dual_energy_criterion: str = "total"  # cold test on E-K-M ("total") or on the entropy thermal energy ("entropy")
     max_step_halvings: int = 0          # retry an inadmissible step from the accepted state with dt/2
     local_trace_bounds: bool = False    # reconstructed density/pressure >= 3x3 neighbour minimum
     interface_speed_cap: float | None = None  # bound on the signal speed in the interface numerical resistivity
     open_ends: bool = False             # outflow (zero-gradient, no inflow) gas ends instead of reflecting ends
+    analytic_source_traces: bool = False  # wall/end traces: differenced induced flux + analytic coil field
+    magnetic_energy_flux: str = "face"  # "dissipative": LLF magnetic dissipation as the Poynting flux of the
+                                        # UCT dissipative field; "ct": all magnetic energy transport as the
+                                        # Poynting flux of the full CT electric field (vacuum_flux.md)
     open_line_flux_limit: float = 0.    # >0: DECLARED flux-limited parallel conduction loss on open lines (f, ~0.1)
     open_line_wall_temperature_ev: float = 2.  # end-wall temperature the open-line plasma relaxes toward
     minimum_density: float | None = None  # DECLARED gap closure [kg/m^3]; added mass/energy are counted
@@ -77,6 +82,8 @@ class ConservativeParameters:
             raise ValueError("Flux limiter must be local or global")
         if self.energy_quadrature not in ("cell", "staggered"):
             raise ValueError("Energy quadrature must be cell or staggered")
+        if self.magnetic_energy_flux not in ("face", "dissipative", "ct"):
+            raise ValueError("Magnetic energy flux must be face, dissipative or ct")
         if self.boundary_poynting not in ("riemann", "variational"):
             raise ValueError("Boundary Poynting flux must be riemann or variational")
         if isinstance(self.time_order, bool) or self.time_order not in (2, 3):
@@ -93,6 +100,8 @@ class ConservativeParameters:
             raise ValueError("Dual-energy switch must be boolean")
         if not np.isfinite(self.dual_energy_threshold) or not 0 < self.dual_energy_threshold < .5:
             raise ValueError("Use 0 < dual-energy threshold < 0.5")
+        if self.dual_energy_criterion not in ("total", "entropy"):
+            raise ValueError("Dual-energy criterion must be total or entropy")
         if self.dual_energy_mode not in ("reset", "pressure"):
             raise ValueError("Dual-energy mode must be reset or pressure")
         if isinstance(self.max_step_halvings, bool) or not isinstance(self.max_step_halvings, int) or self.max_step_halvings < 0:
@@ -132,6 +141,7 @@ class ConservativeVacuumMHD:
         self.euler_stages = 0
         self.source_work = self.ohmic_heat = self.outward_energy = 0.
         self.numerical_interface_heat = 0.
+        self.ct_dissipation_heat = 0.  # poynting mode: estimate of sum E_diss*J (high-order fluxes)
         self.limited_euler_stages, self.minimum_high_order_weight = 0, 1.
         self.limiter_cell_counts = np.zeros((mesh.nr, mesh.nz), dtype=np.int64)
         self.limiter_troubled_counts = np.zeros_like(self.limiter_cell_counts)
@@ -172,11 +182,16 @@ class ConservativeVacuumMHD:
         flux = self.mapping.fluid_flux(self.total_flux(state, time))
         override = None
         if p.dual_energy and p.dual_energy_mode == "pressure" and state.entropy is not None:
-            cold = cold_cells(self.mesh, state.conserved, flux, p.gamma, p.dual_energy_threshold, p.energy_quadrature,
-                              p.dual_energy_shock_threshold, p.dual_energy_shock_min_fraction)[0]
+            cold = self._cold(state.conserved, flux, state.entropy)
             override = (cold, state.entropy*state.conserved[..., 0]**(p.gamma-1))
         return primitive(self.mesh, MHDState(state.conserved, flux), p.gamma,
                          energy_quadrature=p.energy_quadrature, pressure_override=override)
+
+    def _cold(self, conserved, flux, entropy):
+        p = self.parameters
+        return cold_cells(self.mesh, conserved, flux, p.gamma, p.dual_energy_threshold, p.energy_quadrature,
+                          p.dual_energy_shock_threshold, p.dual_energy_shock_min_fraction, entropy,
+                          p.dual_energy_criterion)[0]
 
     def _integrals(self, state, time):
         q = self._primitive(state, time)
@@ -257,15 +272,24 @@ class ConservativeVacuumMHD:
         numerical_eta = interface_resistivity(m, q, p.gamma, p.interface_speed_cap) if p.interface_diffusion else np.zeros(m.node_count)
         numerical_electric = m.fluid_flux(m.full(numerical_eta*current))
         boundary = variational_trace(m, full_total, ku) if p.boundary_poynting == "variational" else None
-        traces = boundary.face_fields(self.mesh) if boundary is not None else tangential_field(m, full_total)
+        if boundary is not None:
+            traces = boundary.face_fields(self.mesh)
+        elif p.analytic_source_traces:
+            traces = tangential_field(m, state.induced_psi, self.sources.at(time))
+        else:
+            traces = tangential_field(m, full_total)
         fluxes = flux_components(self.mesh, q, total, p.gamma, electric, traces,
                                   numerical_electric, p.spatial_order if spatial_order is None else spatial_order,
-                                  p.local_trace_bounds, p.open_ends)
+                                  p.local_trace_bounds, p.open_ends, p.magnetic_energy_flux)
         fluxes.boundary_poynting = boundary
         source_derivative = m.grid_vector(self.sources.at(time).dpsi_dt)
         source_power = -float((2*np.pi/MU0)*ku[m.active]@source_derivative[m.active])
         ohmic_power = float(2*np.pi*np.sum(node_eta*current**2*m.node_radius*m.node_area))
         numerical_power = float(2*np.pi*np.sum(numerical_eta*current**2*m.node_radius*m.node_area))
+        fluxes.ct_power = 0.
+        if fluxes.dissipative_electric is not None:
+            weight = m.fluid_flux(m.full(current*m.node_radius*m.node_area))
+            fluxes.ct_power = float(2*np.pi*np.sum(fluxes.dissipative_electric*weight))
         return fluxes, (source_power, ohmic_power, numerical_power)
 
     def _forward_euler(self, state, time, total, dt):
@@ -273,8 +297,7 @@ class ConservativeVacuumMHD:
         high, powers = self._fluxes(state, time)
         p = self.parameters
         mode = p.flux_limiter if p.positivity_flux_limiting and p.spatial_order == 2 else "off"
-        exempt = cold_cells(self.mesh, state.conserved, total, p.gamma, p.dual_energy_threshold,
-                            p.energy_quadrature, p.dual_energy_shock_threshold, p.dual_energy_shock_min_fraction)[0] if p.dual_energy else None
+        exempt = self._cold(state.conserved, total, state.entropy) if p.dual_energy else None
         rhs, report = admissible_update(self.mesh, state.conserved, total, dt, high,
                                         lambda: self._fluxes(state, time, spatial_order=1)[0], mode=mode,
                                         energy_quadrature=p.energy_quadrature, exempt=exempt)
@@ -282,7 +305,7 @@ class ConservativeVacuumMHD:
         outflow_mass = -float(np.sum(rhs[0][..., 0]*self.mesh.volumes))  # interior fluxes telescope
         # Current, physical/interface eta and analytic source power are independent
         # of reconstruction order at this state; only outward flux is selected.
-        return (*rhs, *powers, outflow_mass, entropy), report
+        return (*rhs, *powers, outflow_mass, entropy, high.ct_power), report
 
     def _new_state(self, conserved, fluid_total_flux, time, entropy=None, final=False):
         m, mesh, p = self.mapping, self.mesh, self.parameters
@@ -293,7 +316,8 @@ class ConservativeVacuumMHD:
             if np.any(conserved[..., 0] <= 0) or not np.all(np.isfinite(entropy)) or np.any(entropy <= 0):
                 raise NonphysicalState("Dual-energy stage has nonpositive density or entropy; no repair")
             chosen = select(mesh, conserved, fluid_total_flux, entropy, p.gamma, p.dual_energy_threshold,
-                            p.energy_quadrature, p.dual_energy_shock_threshold, p.dual_energy_shock_min_fraction)
+                            p.energy_quadrature, p.dual_energy_shock_threshold, p.dual_energy_shock_min_fraction,
+                            p.dual_energy_criterion)
             entropy = chosen.entropy
             if p.dual_energy_mode == "reset":
                 conserved = chosen.conserved
@@ -322,8 +346,7 @@ class ConservativeVacuumMHD:
         p = self.parameters
         flux = self.mapping.fluid_flux(self.total_flux(state, time))
         if p.dual_energy:
-            cold = cold_cells(self.mesh, state.conserved, flux, p.gamma, p.dual_energy_threshold, p.energy_quadrature,
-                              p.dual_energy_shock_threshold, p.dual_energy_shock_min_fraction)[0]
+            cold = self._cold(state.conserved, flux, state.entropy)
         else:
             cold = np.zeros(state.conserved.shape[:2], dtype=bool)
         floor = apply_floor(self.mesh, state.conserved, state.entropy, selected_energy(self.mesh, flux, p.energy_quadrature),
@@ -337,8 +360,7 @@ class ConservativeVacuumMHD:
         p = self.parameters
         flux = self.mapping.fluid_flux(self.total_flux(state, time))
         if p.dual_energy:
-            cold = cold_cells(self.mesh, state.conserved, flux, p.gamma, p.dual_energy_threshold, p.energy_quadrature,
-                              p.dual_energy_shock_threshold, p.dual_energy_shock_min_fraction)[0]
+            cold = self._cold(state.conserved, flux, state.entropy)
         else:
             cold = np.zeros(state.conserved.shape[:2], dtype=bool)
         psi_cells = .25*(flux[:-1, :-1]+flux[1:, :-1]+flux[:-1, 1:]+flux[1:, 1:])
@@ -405,6 +427,7 @@ class ConservativeVacuumMHD:
         self.source_work += dt*sum(w*rates[3] for w, rates in weighted)
         self.ohmic_heat += dt*sum(w*rates[4] for w, rates in weighted)
         self.numerical_interface_heat += dt*sum(w*rates[5] for w, rates in weighted)
+        self.ct_dissipation_heat += dt*sum(w*rates[8] for w, rates in weighted)
         self.outflow_mass += dt*sum(w*rates[6] for w, rates in weighted)
         for report in reports:
             self.limited_euler_stages += int(report.minimum_weight < 1)
@@ -433,14 +456,16 @@ class ConservativeVacuumMHD:
 
     def diagnostics(self):
         result = self._integrals(self.state, self.time)
+        # Reset-mode dual-energy corrections (zero in pressure mode) are a declared, counted source.
         response_residual = (result["response_energy_j"]-self.initial["response_energy_j"]-self.source_work-self.floor_energy
-                             +self.open_line_energy)
+                             +self.open_line_energy-self.dual_energy_change)
         fluid_residual = (result["fluid_total_energy_j"]-self.initial["fluid_total_energy_j"]+self.outward_energy-self.floor_energy
-                          +self.open_line_energy)
+                          +self.open_line_energy-self.dual_energy_change)
         ku = self.mapping.k@self.mapping.interior(self.state.induced_psi)
         result.update(time_s=self.time, steps=self.steps, euler_stages=self.euler_stages,
                       source_work_j=self.source_work, ohmic_heat_j=self.ohmic_heat,
                       numerical_interface_heat_j=self.numerical_interface_heat,
+                      ct_dissipation_heat_j=self.ct_dissipation_heat,
                       limited_euler_stages=self.limited_euler_stages, minimum_high_order_weight=self.minimum_high_order_weight,
                       affected_euler_cell_stages=int(self.limiter_cell_counts.sum()),
                       troubled_euler_cell_stages=int(self.limiter_troubled_counts.sum()),

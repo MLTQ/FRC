@@ -25,7 +25,14 @@ def physical_flux(q, axis, gamma):
     return u, flux
 
 
-def rusanov(left, right, normal_field, axis, gamma):
+def rusanov(left, right, normal_field, axis, gamma, magnetic_dissipation=True, magnetic_energy=True):
+    """LLF face flux.
+
+    magnetic_dissipation=False drops the tangential magnetic-energy jump from the energy
+    dissipation; magnetic_energy=False also drops the magnetic part of the central energy flux,
+    (B^2/mu0) v_n - (v.B) B_n/mu0. In either case the caller must carry the omitted magnetic
+    energy transport as the Poynting flux of the constrained-transport electric field.
+    """
     left, right = left.copy(), right.copy()
     left[..., 4+axis] = normal_field
     right[..., 4+axis] = normal_field
@@ -33,7 +40,14 @@ def rusanov(left, right, normal_field, axis, gamma):
     ur, fr = physical_flux(right, axis, gamma)
     speed = np.maximum(np.abs(left[..., 1+axis])+fast_speed(left, axis, gamma),
                        np.abs(right[..., 1+axis])+fast_speed(right, axis, gamma))
-    return .5*(fl+fr)-.5*speed[..., None]*(ur-ul), speed
+    jump = ur-ul
+    if not (magnetic_dissipation and magnetic_energy):
+        jump[..., 3] -= ((right[..., 4]**2+right[..., 5]**2)-(left[..., 4]**2+left[..., 5]**2))/(2*MU0)
+    if not magnetic_energy:
+        for q, f in ((left, fl), (right, fr)):
+            vn, bn = q[..., 1+axis], q[..., 4+axis]
+            f[..., 3] -= ((q[..., 4]**2+q[..., 5]**2)*vn-(q[..., 1]*q[..., 4]+q[..., 2]*q[..., 5])*bn)/MU0
+    return .5*(fl+fr)-.5*speed[..., None]*jump, speed
 
 
 def ghost_cells(q):

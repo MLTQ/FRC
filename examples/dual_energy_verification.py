@@ -21,7 +21,15 @@ CONFIGS = (("off", dict(dual_energy=False)), ("default", dict(dual_energy=True))
            ("reset_mode", dict(dual_energy=True, dual_energy_mode="reset")),
            ("threshold_1e-3", dict(dual_energy=True, dual_energy_threshold=1e-3)),
            ("bounded_traces", dict(local_trace_bounds=True)),
-           ("dual_bounded", dict(dual_energy=True, local_trace_bounds=True)))
+           ("dual_bounded", dict(dual_energy=True, local_trace_bounds=True)),
+           ("entropy_reset", dict(dual_energy=True, dual_energy_mode="reset", dual_energy_criterion="entropy")),
+           ("ct_flux", dict(dual_energy=True, dual_energy_mode="reset", dual_energy_criterion="entropy",
+                            magnetic_energy_flux="ct")),
+           ("ct_compatible", dict(dual_energy=True, dual_energy_mode="reset", dual_energy_criterion="entropy",
+                                  magnetic_energy_flux="ct", energy_quadrature="staggered",
+                                  boundary_poynting="variational", time_order=3)),
+           ("compatible", dict(dual_energy=True, dual_energy_mode="reset", dual_energy_criterion="entropy",
+                               energy_quadrature="staggered", boundary_poynting="variational", time_order=3)))
 
 
 def run(solver, end, every):
