@@ -10,6 +10,8 @@ from examples.nucte_compare import summarize, reference
 INK, MUTED, GRID = "#0b0b0b", "#52514e", "#e4e3df"
 RAMP = ["#86b6ef", "#5598e7", "#2a78d6", "#1c5cab", "#104281", "#0d366b"]  # ordinal blue, step 250 -> 700
 REFERENCE = "#eb6834"  # categorical slot 2 marks the published value
+CATEGORICAL = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"]  # design runs (no reference line): slots 1-4, fixed order
+MARKERS = ["o", "s", "^", "D"]
 
 
 def style(ax, title, ylabel, xlabel="time (µs)"):
@@ -29,11 +31,12 @@ def main(runs, out):
         setup, rf, zf, rows = summarize(run)
         if k == 0:
             case_label, target = reference(setup)
+            nucte = abs(setup["case"]["wall_radius"]-.115) < 1e-9   # NUCTE-III geometry: draw its published values
         label = Path(run).name
         labels.append(label)
         t = np.array([r["time_s"] for r in rows])*1e6
         get = lambda key, scale=1.: np.array([np.nan if r.get(key) is None else r[key]*scale for r in rows])
-        marker = "o" if k == 0 else "s"
+        marker = MARKERS[k % len(MARKERS)]
         if k == 0:
             ax = axes[0, 0]
             picks = [i for i, ti in enumerate(t) if round(ti) in (2, 4, 6, 8, 10, 15)]
@@ -53,14 +56,17 @@ def main(runs, out):
                   (axes[1, 1], get("total_temperature_ev"), target["total_temperature_ev"], "Te+Ti inside separatrix", "eV"),
                   (axes[1, 2], get("trapped_flux_wb", 1e3), None, "Trapped poloidal flux", "mWb")]
         for ax, y, ref, title, unit in series:
-            ax.plot(t, y, color=RAMP[2+2*k], linewidth=2, marker=marker, markersize=4, label=label)
-            if k == 0 and ref is not None:
+            ax.plot(t, y, color=RAMP[2+2*k] if nucte else CATEGORICAL[k], linewidth=2, marker=marker, markersize=4, label=label)
+            if k == 0 and ref is not None and nucte:
                 ax.axhline(ref, color=REFERENCE, linewidth=2, linestyle="--", label=f"NUCTE-III {case_label} (equilibrium)")
             style(ax, title, unit)
     for ax in (axes[0, 1], axes[0, 2], axes[1, 0], axes[1, 1], axes[1, 2]):
         ax.legend(frameon=False, fontsize=8, labelcolor=INK)
-    fig.suptitle(f"NUCTE-III formation: coarse single-fluid simulation vs published {case_label} (Takahashi 2000)",
-                 x=.01, ha="left", color=INK, fontsize=12)
+    if not nucte:
+        axes[0, 0].axhline(rf[-1]*100, color=MUTED, linewidth=1, linestyle=":")
+    title = (f"NUCTE-III formation: coarse single-fluid simulation vs published {case_label} (Takahashi 2000)" if nucte
+             else "Design formation runs (single-fluid MHD, coupled bank circuit)")
+    fig.suptitle(title, x=.01, ha="left", color=INK, fontsize=12)
     fig.savefig(out, dpi=140, facecolor="#fcfcfb")
     print(out)
 

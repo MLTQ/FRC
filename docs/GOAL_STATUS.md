@@ -33,68 +33,70 @@ Lab envelope:
    total), with a crowbar. The estimates are T_e+T_i ≈ 90 eV,
    s̄ ≈ 2–2.8, r_s ≈ 3.5 cm and a classical τ_φ of at most ~18 µs. The
    empirical formation efficiencies are the main uncertainty.
-2. **In progress: benchmark (frc-ibl.2).** See
-   [NUCTE_BENCHMARK.md](NUCTE_BENCHMARK.md).
-   - **Experiment and solver.** NUCTE-III (coil r = 0.17 m, D2 at 10 mTorr)
-     on `ConservativeVacuumMHD`. The driver defaults are now the benchmark
-     configuration: Spitzer + Chodura η, entropy-criterion reset dual energy,
-     the compatible energy path, CT-Poynting magnetic energy flux and a 1%
-     gap floor.
-   - **Fixed in this pass:**
-     - a dual-energy fault that created 4–5× the coil work as spurious heat
-       (frc-ibl.2.8);
-     - a response-energy error of up to 1.4× the coil work, removed by the
-       compatible path (now ~1e-4; frc-ibl.2.9).
-   - **What the model reproduces.** Case 6 (mirror 1.8) with a graded coil
-     that matches NUCTE's R_M and field index, and drive values fixed from
-     NUCTE's own numbers (bias −0.05 T, 0.3 T peak):
-     - the sequence, with contraction to l_s 44 cm by 8 µs;
-     - r_s 8.5 cm (published 8.0), l_s 44 cm (38), n̄ 2.6e21 (2.2e21) and
-       T 162 eV (120) at 10 µs;
-     - T 126–142 eV and n̄ 1.7–2.3e21 at 20–30 µs;
-     - trapped flux 1.0 mWb (the paper's estimate is 1.1).
-   - **Resolution:** formation quantities agree to about 10% between 16×128
-     and 32×256.
-   - **Lifetime is not predicted by this 2D model.** The 16×128 collapse at
-     about 41 µs is numerical. At 32×256 the FRC's flux e-folds in about
-     250 µs, while NUCTE's 50 µs lifetime is set by the n=2 rotational mode.
-   - **Robustness:** the FRC is insensitive (≤13%) to the gap closure. The
-     remaining counted energy corrections live in the gap (frc-ibl.2.10).
-   - **Next action:** frc-ibl.2 is complete enough for formation design.
-     Remaining gaps:
-     - the circuit model (frc-ibl.5);
-     - pre-ionization (frc-ibl.4);
-     - an empirical/stability lifetime model, with quadrupole
-       stabilization (frc-ibl.8).
-     After those comes the design scan (frc-ibl.6).
-3. Fill only the gaps the benchmark exposes:
-   - hydrogenic plasma in the driven solver (frc-ibl.3);
-   - pre-ionization and bias-flux trapping (frc-ibl.4);
-   - the coil circuit with crowbar and end mirrors (frc-ibl.5).
-4. Design scan and independent cross-check for the user's geometry (frc-ibl.6).
-   WarpX is already installed on the user's GPU host; see ENGINE_COMPARISON.md.
-5. N2 commissioning expectations (frc-ibl.7).
-6. Quadrupole stabilization of the n=2 rotational mode (frc-ibl.8).
+2. **Done: benchmark (frc-ibl.2)**, in [NUCTE_BENCHMARK.md](NUCTE_BENCHMARK.md).
+   - NUCTE-III case 6 is reproduced with a coil matching its mirror ratio and
+     field index, driven by its banks through the circuit model with plasma
+     loading: r_s 8.8 cm, l_s 41–44 cm, Te+Ti 100–105 eV and flux 1.1 mWb at
+     25–30 µs, against the published 8.0 cm, 38 cm, 120 eV and 1.1 mWb.
+     Density is 35–40% low.
+   - Formation converges between 16×128 and 32×256.
+   - The 2D model does not predict lifetime, which is set by the n=2 mode.
+3. **Done: coil circuit (frc-ibl.5)**, in `plasma_bench/coil_circuit.py` and
+   FRC_DESIGN_WINDOW.md.
+   - **Model:** equal-flux coil inductances (NUCTE coil 68.7 nH against the
+     published 70 nH), banks, unidirectional switches, crowbars, and
+     self-consistent plasma loading.
+   - **12" bank:** 0.3 T from a −0.05 T bias needs 16.2 kV and 6.3 kJ on
+     8 × 6 µF. 0.2 T needs 11.6 kV and 3.2 kJ.
+   - **Crowbar:** ≤ 8–20 nH and about 2 mΩ per module.
+   - **Timing:** a common collector tolerates 100–200 ns of skew.
+   - **Pre-ionization bank:** about 10 µF at 3.5 kV, ringing at 150 kHz.
+   - **Quadrupole for n=2:** about 7% of B_e, i.e. 8–15 kA in four bars
+     (literature-based).
+4. **In progress: design scan (frc-ibl.6)**, in [DESIGN_SCAN.md](DESIGN_SCAN.md).
+   - **First result:** without a mirror, D2 forms slowly or not at all.
+   - **H2 on the 3.2 kJ bank** forms a closed FRC by 2 µs: r_s 11 cm, l_s
+     0.9–1.2 m, 160 eV, 2 mWb.
+   - **A graded coil (R_M 1.6)** forms a compact, hot D2 FRC for about 3× the
+     energy.
+   - **Running:** the gap-floor sensitivity at the design fill, H2 at 0.3 T, and
+     graded coils at 0.2 and 0.3 T.
+5. **Remaining gaps:**
+   - pre-ionization and ionization fraction (frc-ibl.4);
+   - N2 commissioning expectations (frc-ibl.7);
+   - reset corrections at low fill (frc-ibl.2.10).
 
 **Target geometry (user, 2026-10-18): 12" bore to maximize lifetime.**
 - Tube about 2.2 m long; 1.2 m single-turn coil fed by eight modules.
-- Baseline D2 at about 3.5 mTorr. First light at 0.2 T (8.3 kV, 1.6 kJ),
-  upgrade to 0.3 T (12.5 kV, 3.7 kJ) on the same capacitors.
+- Baseline fill about 3.5 mTorr. The design scan now favours H2 on a uniform
+  coil, or D2 with a graded coil.
+- Bank charge, superseding the earlier lossless estimate: first light at 0.2 T
+  is 11.6 kV and 3.2 kJ; the upgrade to 0.3 T is 16.2 kV and 6.3 kJ, both from
+  a −0.05 T bias on 8 × 6 µF.
 - Classical τ_φ is 113–354 µs. LSX/FRX-C scaling suggests about 50–150 µs is
   realistic with quadrupole stabilization.
 - See FRC_DESIGN_WINDOW.md. The 6" nominal point above is kept for comparison.
 
 ## Solver state (honest summary)
-- Several separate research paths exist, not one validated formation solver.
-  See [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md).
-- Mapping which path can run a full FRTP formation is the first part of
-  frc-ibl.2.
-- The configured metre-scale coil experiments
-  ([MATERIAL_EXPERIMENT.md](MATERIAL_EXPERIMENT.md)) used 0.1–20 mT fields on a
-  4×16 mesh with argon. That is far below an FRC-forming regime, and the current
-  was unconverged between grids (30–60% differences).
-- The argon reaction/transport slab and Vlasov work are paused
-  (beads frc-transport.*, P3). Resume only if the benchmark needs them.
+**The formation path** is `ConservativeVacuumMHD`, driven by
+`examples/nucte_formation.py` with `drive="coupled"`:
+- 2D axisymmetric single-fluid MHD with exact vacuum outside the tube;
+- Spitzer + Chodura resistivity;
+- energy-consistent dual energy and the compatible energy path;
+- coil banks coupled self-consistently.
+
+It is benchmarked against NUCTE-III for formation, and formation converges
+between 16×128 and 32×256.
+
+**What it lacks:**
+- Hall/two-fluid physics, so the end reconnection rate in weak mirrors is
+  uncertain;
+- neutrals and ionization, so pre-ionization is assumed;
+- 3D modes (n=2), so it cannot predict lifetime.
+
+**Other repository paths** (PROJECT_OVERVIEW.md):
+- The finite-cylinder and Lagrangian paths are not used for formation.
+- The argon slab and Vlasov work are paused (frc-transport.*, P3).
 
 ## Repository state
 - Simulation outputs are no longer tracked; they regenerate from `examples/`.

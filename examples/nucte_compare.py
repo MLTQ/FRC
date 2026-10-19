@@ -43,7 +43,7 @@ def coil_profile(case, points=1001):
     k = int(np.argmax(b))
     nz = z[:k+1]*np.gradient(b, z)[:k+1]/b[:k+1]
     return dict(mirror_ratio=float(b[k]/b[0]), mirror_point_m=float(z[k]),
-                field_index=float(np.trapezoid(nz, z[:k+1])/z[k]))
+                field_index=float(np.trapezoid(nz, z[:k+1])/z[k]) if k > 0 else 0.)
 
 
 def load(run):
