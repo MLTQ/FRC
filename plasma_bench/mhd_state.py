@@ -17,7 +17,9 @@ class MHDState:
         return MHDState(self.conserved.copy(), self.psi.copy())
 
 
-def primitive(mesh, state, gamma, *, energy_quadrature="cell"):
+def primitive(mesh, state, gamma, *, energy_quadrature="cell", pressure_override=None):
+    """Primitive variables; `pressure_override=(mask, pressure)` substitutes declared cell pressures
+    (dual-energy cold cells) before the positivity check."""
     u = state.conserved
     if u.shape != (mesh.nr, mesh.nz, 4) or not np.all(np.isfinite(u)) or not np.all(np.isfinite(state.psi)):
         raise NonphysicalState("Conserved state/flux must be finite with the declared mesh shapes")
@@ -28,6 +30,8 @@ def primitive(mesh, state, gamma, *, energy_quadrature="cell"):
     br, bz = mesh.cell_fields(state.psi)
     magnetic = selected_energy(mesh, state.psi, energy_quadrature)
     pressure = (gamma-1)*(u[..., 3]-.5*rho*(vr*vr+vz*vz)-magnetic)
+    if pressure_override is not None:
+        pressure = np.where(pressure_override[0], pressure_override[1], pressure)
     if not np.all(np.isfinite(pressure)) or np.any(pressure <= 0):
         raise NonphysicalState(f"Nonpositive pressure: minimum {pressure.min():.6g} Pa; no pressure floor applied")
     return np.stack((rho, vr, vz, pressure, br, bz), axis=-1)

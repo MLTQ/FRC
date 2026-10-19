@@ -32,6 +32,14 @@ Run: `python -m examples.nucte_formation [OUTPUT] [field=value ...]`, e.g.
   (6 cells beyond the wall) and two cells beyond each end. This acts as a
   flux-conserving coil and conducting end planes.
 
+## Solver options (Nucte fields)
+- `dual_energy=True`: entropy pressure in cold cells, pressure mode, so energy
+  is exact.
+- `max_step_halvings=6`: timestep control.
+- `interface_diffusion=True`: the solver's declared wall numerical
+  resistivity. The run fails at 0.79 µs without it.
+- Boolean CLI values must be written `True` or `False`.
+
 ## Outputs
 - `setup.json`: case parameters and the computed strap current distribution.
 - `history.json`, written every 1 µs:
@@ -41,5 +49,9 @@ Run: `python -m examples.nucte_formation [OUTPUT] [field=value ...]`, e.g.
   - excluded-flux radius (r_w² − flux_loop/(π B_wall));
   - axis, maximum and minimum density, maximum pressure and speed;
   - mass change, response-energy residual, source work, Ohmic heat and the
-    solver's declared numerical interface heat.
+    solver's declared numerical interface heat;
+  - fluid energy residual, dual-energy cold cell-steps, cold-cell discrepancy,
+    disagreements and step retries.
+- `failure.json`: the accepted time and step count plus the error, if the run
+  stops.
 - `snapshots.npz`: total flux, density and pressure every 1 µs.

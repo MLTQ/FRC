@@ -13,17 +13,24 @@ class LimiterReport:
     minimum_weight: float = 1.
 
 
-def invalid_cells(mesh, conserved, psi, energy_quadrature="cell"):
-    """Strict positive density and gas internal energy, with no absolute floor."""
+def invalid_cells(mesh, conserved, psi, energy_quadrature="cell", exempt=None):
+    """Strict positive density and gas internal energy, with no absolute floor.
+
+    `exempt` cells (dual-energy cold cells) need positive density only; their
+    pressure comes from the separately advected entropy.
+    """
     rho = conserved[..., 0]
     with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
         vr, vz = conserved[..., 1]/rho, conserved[..., 2]/rho
         internal = conserved[..., 3]-.5*rho*(vr*vr+vz*vz)-selected_energy(mesh, psi, energy_quadrature)
-    return (~np.all(np.isfinite(conserved), axis=-1) | ~np.isfinite(internal) |
-            (rho <= 0) | (internal <= 0))
+    thermal_bad = ~np.isfinite(internal) | (internal <= 0)
+    if exempt is not None:
+        thermal_bad &= ~exempt
+    return ~np.all(np.isfinite(conserved), axis=-1) | thermal_bad | (rho <= 0)
 
 
-def admissible_update(mesh, conserved, psi, dt, high, low_factory, *, mode="local", energy_quadrature="cell"):
+def admissible_update(mesh, conserved, psi, dt, high, low_factory, *, mode="local", energy_quadrature="cell",
+                      exempt=None):
     """Return an admissible RHS and report; call baseline factory only if needed.
 
     Off checks but never limits. Global retains the earlier convex blend as an
@@ -34,7 +41,7 @@ def admissible_update(mesh, conserved, psi, dt, high, low_factory, *, mode="loca
         raise ValueError("Flux limiter must be local, global or off")
     high_rhs = high.rhs(mesh)
     def bad(rhs):
-        return invalid_cells(mesh, conserved+dt*rhs[0], psi+dt*rhs[1], energy_quadrature)
+        return invalid_cells(mesh, conserved+dt*rhs[0], psi+dt*rhs[1], energy_quadrature, exempt)
     troubled = bad(high_rhs)
     if not np.any(troubled):
         return high_rhs, LimiterReport(troubled, troubled.copy())

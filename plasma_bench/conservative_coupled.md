@@ -79,3 +79,34 @@ Neither method preserves a general quadratic magnetic-energy invariant exactly.
 `advance(..., on_step=callback)` optionally observes each accepted step for
 long-run progress; the callback must not mutate the solver. It is not invoked
 for rejected proposals and does not alter timestep selection.
+
+## Opt-in dual energy and timestep halving (2026-10-19)
+`dual_energy=True` adds an advected entropy density ρA, with A = p/ρ^γ (see
+`dual_energy.md`). It addresses the low-β positivity limit: in cells where the
+gas energy is a tiny fraction of the magnetic energy, pressure recovered from
+total energy carries a relative error of roughly 1/β.
+
+**Defaults:**
+- `dual_energy_mode="pressure"`: the conserved total energy is never changed.
+- `dual_energy_threshold=0.1`.
+- `dual_energy_shock_threshold=0.2`.
+
+**How it works:**
+- Cold cells take their pressure from ρA.
+- The limiter exempts cold cells from the internal-energy check only.
+- Warm cells resynchronize ρA from total energy after every step.
+- ρA advances by one first-order forward-Euler step per time step. Its physical
+  Ohmic heating source is included; the numerical interface heat is not.
+- `reset` mode instead sets the total energy of cold cells to the entropy
+  pressure and counts the injected energy (`dual_energy_change_j`).
+- In pressure mode, `dual_energy_cold_discrepancy_j` reports the current
+  (E − K − M) minus the entropy thermal energy summed over cold cells.
+
+`max_step_halvings=N` (default 0) retries an inadmissible step from the
+accepted state with dt/2, up to N times, and counts the retries in
+`step_retries`. It is timestep control, not a state repair; every stage still
+validates atomically.
+
+Both options default off. With them off, results are bit-identical to the
+previous code on the standing-shock and coil-pulse fixtures (2026-10-19
+comparison against commit ee9621b).

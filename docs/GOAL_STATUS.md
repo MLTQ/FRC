@@ -40,8 +40,13 @@ Lab envelope:
    - Selected solver path: fixed-chamber `ConservativeVacuumMHD`.
    - First coarse run: reversal and early implosion, then failure at 1.6 µs
      from low-β positivity at the wall.
-   - **Next action:** frc-ibl.2.6 (dual-energy pressure), then the resolution
-     study frc-ibl.2.1.
+   - Fixed: opt-in dual-energy pressure (frc-ibl.2.6), verified on the
+     shock, coil-pulse and low-β fixtures.
+   - Formation still fails at 0.7–1.3 µs in every variant, in a
+     second-stage blow-up at a wall/interface current sheet under the mirror
+     straps (frc-ibl.2.7).
+   - **Next action:** frc-ibl.2.7, checking the wall-node E_θ against the
+     vacuum flux change; then the resolution study frc-ibl.2.1.
 3. Fill only the gaps the benchmark exposes:
    - hydrogenic plasma in the driven solver (frc-ibl.3);
    - pre-ionization and bias-flux trapping (frc-ibl.4);

@@ -16,3 +16,8 @@ evolution; pressure recovery only subtracts the declared magnetic energy.
 Nonfinite recovered pressure is also invalid. Existing bounded solvers retain
 their default cell convention.
 The shared quadrature helper owns the magnetic-energy unit conversion.
+
+`primitive(..., pressure_override=(mask, pressure))` substitutes declared cell
+pressures before the positivity check. Only the dual-energy option of
+`ConservativeVacuumMHD` uses it, for cold cells whose pressure comes from the
+advected entropy. The conserved state itself is not changed.

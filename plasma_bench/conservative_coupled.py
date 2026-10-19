@@ -10,6 +10,8 @@ from .flux_limiting import admissible_update
 from .vacuum_trace import tangential_field, interface_resistivity
 from .vacuum_energy import variational_trace
 from .magnetic_quadrature import selected_energy
+from .dual_energy import entropy_density, entropy_rate, cold_cells, select
+from .mhd_state import NonphysicalState
 
 
 @dataclass(frozen=True)
@@ -27,6 +29,11 @@ class ConservativeParameters:
     energy_quadrature: str = "cell"
     boundary_poynting: str = "riemann"
     time_order: int = 2
+    dual_energy: bool = False           # opt-in entropy pressure in cold/low-beta cells
+    dual_energy_threshold: float = .1   # internal/total energy below which a cell is cold
+    dual_energy_mode: str = "pressure"  # entropy pressure only (energy exact) or "reset" total energy
+    dual_energy_shock_threshold: float | None = .2  # compression detector keeps shocks on total energy
+    max_step_halvings: int = 0          # retry an inadmissible step from the accepted state with dt/2
 
     def __post_init__(self):
         if not np.isfinite(self.gamma) or self.gamma <= 1:
@@ -51,15 +58,28 @@ class ConservativeParameters:
             raise ValueError("Boundary Poynting flux must be riemann or variational")
         if isinstance(self.time_order, bool) or self.time_order not in (2, 3):
             raise ValueError("Time order must be 2 or 3")
+        if not isinstance(self.dual_energy, bool):
+            raise ValueError("Dual-energy switch must be boolean")
+        if not np.isfinite(self.dual_energy_threshold) or not 0 < self.dual_energy_threshold < .5:
+            raise ValueError("Use 0 < dual-energy threshold < 0.5")
+        if self.dual_energy_mode not in ("reset", "pressure"):
+            raise ValueError("Dual-energy mode must be reset or pressure")
+        if isinstance(self.max_step_halvings, bool) or not isinstance(self.max_step_halvings, int) or self.max_step_halvings < 0:
+            raise ValueError("Step halvings must be a nonnegative integer")
+        if self.dual_energy_shock_threshold is not None and not (np.isfinite(self.dual_energy_shock_threshold)
+                                                                 and self.dual_energy_shock_threshold > 0):
+            raise ValueError("Dual-energy shock threshold must be positive or None")
 
 
 @dataclass
 class ConservativeState:
     conserved: np.ndarray  # rho, rho vr, rho vz, total fluid-cell MHD energy
     induced_psi: np.ndarray  # full induced magnetic field grid, including vacuum
+    entropy: np.ndarray | None = None  # rho*p/rho^gamma; only with dual energy
 
     def copy(self):
-        return ConservativeState(self.conserved.copy(), self.induced_psi.copy())
+        return ConservativeState(self.conserved.copy(), self.induced_psi.copy(),
+                                 None if self.entropy is None else self.entropy.copy())
 
 
 class ConservativeVacuumMHD:
@@ -86,7 +106,16 @@ class ConservativeVacuumMHD:
         self.limiter_troubled_counts = np.zeros_like(self.limiter_cell_counts)
         self.maximum_limiter_cell_fraction = 0.
         self.limiter_iterations = self.maximum_limiter_iterations = 0
-        self._primitive(self.state, 0.)
+        self.dual_energy_change = self.dual_energy_absolute_change = 0.
+        self.dual_energy_cold_cell_steps = self.dual_energy_disagreements = 0
+        self.dual_energy_max_cold_ratio = 0.
+        self.dual_energy_discrepancy = 0.  # pressure mode: sum over cold cells of (E-K-M) - entropy thermal
+        self.step_retries = 0
+        q0 = self._primitive(self.state, 0.)
+        if p.dual_energy and self.state.entropy is None:
+            self.state.entropy = entropy_density(q0[..., 0], q0[..., 3], p.gamma)
+        elif not p.dual_energy:
+            self.state.entropy = None
         u = self.mapping.interior(initial.induced_psi)
         ku = self.mapping.k@u
         if np.linalg.norm(ku[self.mapping.vacuum]) > 1e-10*max(np.linalg.norm(ku), 1e-30):
@@ -103,9 +132,15 @@ class ConservativeVacuumMHD:
         return state.induced_psi+self.sources.at(time).psi
 
     def _primitive(self, state, time):
+        p = self.parameters
         flux = self.mapping.fluid_flux(self.total_flux(state, time))
-        return primitive(self.mesh, MHDState(state.conserved, flux), self.parameters.gamma,
-                         energy_quadrature=self.parameters.energy_quadrature)
+        override = None
+        if p.dual_energy and p.dual_energy_mode == "pressure" and state.entropy is not None:
+            cold = cold_cells(self.mesh, state.conserved, flux, p.gamma, p.dual_energy_threshold, p.energy_quadrature,
+                              p.dual_energy_shock_threshold)[0]
+            override = (cold, state.entropy*state.conserved[..., 0]**(p.gamma-1))
+        return primitive(self.mesh, MHDState(state.conserved, flux), p.gamma,
+                         energy_quadrature=p.energy_quadrature, pressure_override=override)
 
     def _integrals(self, state, time):
         q = self._primitive(state, time)
@@ -132,11 +167,23 @@ class ConservativeVacuumMHD:
         limit = float(p.cfl/(waves+diffusion))
         return limit if p.max_timestep is None else min(limit, p.max_timestep)
 
+    def _node_current(self, state):
+        m = self.mapping
+        ku = m.k@m.interior(state.induced_psi)
+        return ku, np.divide(ku, MU0*m.node_area, out=np.zeros(m.node_count), where=m.active)
+
+    def _entropy_rate(self, state, time):
+        """Advected rho*A with physical Ohmic heating only (numerical interface heat excluded)."""
+        m, p = self.mapping, self.parameters
+        q = self._primitive(state, time)
+        joule = p.resistivity*m.fluid_flux(m.full(self._node_current(state)[1]))**2
+        heating = .25*(joule[:-1, :-1]+joule[1:, :-1]+joule[:-1, 1:]+joule[1:, 1:])
+        return entropy_rate(self.mesh, q, state.entropy, heating, p.gamma)
+
     def _fluxes(self, state, time, spatial_order=None):
         m, p = self.mapping, self.parameters
         q = self._primitive(state, time)
-        ku = m.k@m.interior(state.induced_psi)
-        current = np.divide(ku, MU0*m.node_area, out=np.zeros(m.node_count), where=m.active)
+        ku, current = self._node_current(state)
         electric = m.fluid_flux(m.full(p.resistivity*current))
         full_total = self.total_flux(state, time)
         total = m.fluid_flux(full_total)
@@ -158,20 +205,33 @@ class ConservativeVacuumMHD:
         high, powers = self._fluxes(state, time)
         p = self.parameters
         mode = p.flux_limiter if p.positivity_flux_limiting and p.spatial_order == 2 else "off"
+        exempt = cold_cells(self.mesh, state.conserved, total, p.gamma, p.dual_energy_threshold,
+                            p.energy_quadrature, p.dual_energy_shock_threshold)[0] if p.dual_energy else None
         rhs, report = admissible_update(self.mesh, state.conserved, total, dt, high,
                                         lambda: self._fluxes(state, time, spatial_order=1)[0], mode=mode,
-                                        energy_quadrature=p.energy_quadrature)
+                                        energy_quadrature=p.energy_quadrature, exempt=exempt)
+        entropy = self._entropy_rate(state, time) if p.dual_energy else None
         # Current, physical/interface eta and analytic source power are independent
         # of reconstruction order at this state; only outward flux is selected.
-        return (*rhs, *powers), report
+        return (*rhs, *powers, entropy), report
 
-    def _new_state(self, conserved, fluid_total_flux, time):
-        m, mesh = self.mapping, self.mesh
+    def _new_state(self, conserved, fluid_total_flux, time, entropy=None, final=False):
+        m, mesh, p = self.mapping, self.mesh, self.parameters
         data = np.zeros(m.field.shape)
         external = self.sources.at(time).psi
         data[:mesh.nr+1, m.z_offset:m.z_offset+mesh.nz+1] = fluid_total_flux-m.fluid_flux(external)
-        result = ConservativeState(conserved, m.harmonic_extension(data))
+        if p.dual_energy:
+            if np.any(conserved[..., 0] <= 0) or not np.all(np.isfinite(entropy)) or np.any(entropy <= 0):
+                raise NonphysicalState("Dual-energy stage has nonpositive density or entropy; no repair")
+            chosen = select(mesh, conserved, fluid_total_flux, entropy, p.gamma, p.dual_energy_threshold,
+                            p.energy_quadrature, p.dual_energy_shock_threshold)
+            entropy = chosen.entropy
+            if p.dual_energy_mode == "reset":
+                conserved = chosen.conserved
+        result = ConservativeState(conserved, m.harmonic_extension(data), entropy)
         self._primitive(result, time)
+        if p.dual_energy and final:
+            self._pending_dual = chosen
         return result
 
     def step(self, dt=None):
@@ -179,25 +239,53 @@ class ConservativeVacuumMHD:
         dt = limit if dt is None else dt
         if not np.isfinite(dt) or dt <= 0 or dt > limit*(1+1e-12):
             raise ValueError(f"Time step must be positive and <= {limit:.6g} s")
+        for attempt in range(self.parameters.max_step_halvings+1):
+            try:
+                return self._attempt(dt)
+            except NonphysicalState:
+                if attempt == self.parameters.max_step_halvings:
+                    raise
+                dt *= .5
+                self.step_retries += 1
+
+    def _attempt(self, dt):
+        """One SSP step from the accepted state; nothing is committed unless every stage validates."""
         old = self.state
         total = self.mapping.fluid_flux(self.total_flux())
+        s0 = old.entropy
+        # Entropy uses one forward-Euler first-order step from the start state (positive under CFL);
+        # every stage sees the same advanced rho*A. Warm cells resynchronize it from total energy.
+        combine = (lambda *terms: s0+dt*a[6]) if s0 is not None else (lambda *terms: None)
         a, report_a = self._forward_euler(old, self.time, total, dt)
-        predictor = self._new_state(old.conserved+dt*a[0], total+dt*a[1], self.time+dt)
+        predictor = self._new_state(old.conserved+dt*a[0], total+dt*a[1], self.time+dt, combine((1, a)))
         b, report_b = self._forward_euler(predictor, self.time+dt, total+dt*a[1], dt)
         if self.parameters.time_order == 2:
-            final = self._new_state(old.conserved+.5*dt*(a[0]+b[0]), total+.5*dt*(a[1]+b[1]), self.time+dt)
+            final = self._new_state(old.conserved+.5*dt*(a[0]+b[0]), total+.5*dt*(a[1]+b[1]), self.time+dt,
+                                    combine((.5, a), (.5, b)), final=True)
             weighted = ((.5, a), (.5, b))
             reports = (report_a, report_b)
         else:
             half_flux = total+.25*dt*(a[1]+b[1])
-            half = self._new_state(old.conserved+.25*dt*(a[0]+b[0]), half_flux, self.time+.5*dt)
+            half = self._new_state(old.conserved+.25*dt*(a[0]+b[0]), half_flux, self.time+.5*dt,
+                                   combine((.25, a), (.25, b)))
             c, report_c = self._forward_euler(half, self.time+.5*dt, half_flux, dt)
             final = self._new_state(old.conserved+dt*((a[0]+b[0])/6+2*c[0]/3),
-                                    total+dt*((a[1]+b[1])/6+2*c[1]/3), self.time+dt)
+                                    total+dt*((a[1]+b[1])/6+2*c[1]/3), self.time+dt,
+                                    combine((1/6, a), (1/6, b), (2/3, c)), final=True)
             weighted = ((1/6, a), (1/6, b), (2/3, c))
             reports = (report_a, report_b, report_c)
         # Every Euler proposal and exact vacuum completion validates atomically.
         self.state = final
+        if self.parameters.dual_energy:
+            chosen, p = self._pending_dual, self.parameters
+            if p.dual_energy_mode == "reset":
+                self.dual_energy_change += chosen.energy_change_j
+                self.dual_energy_absolute_change += chosen.absolute_change_j
+            else:  # total energy untouched; current (E-K-M) minus entropy thermal energy over cold cells
+                self.dual_energy_discrepancy = -chosen.energy_change_j
+            self.dual_energy_cold_cell_steps += int(chosen.cold.sum())
+            self.dual_energy_disagreements += chosen.disagreements
+            self.dual_energy_max_cold_ratio = max(self.dual_energy_max_cold_ratio, chosen.max_cold_ratio)
         self.time += dt; self.steps += 1
         self.euler_stages += len(reports)
         self.outward_energy += dt*sum(w*rates[2] for w, rates in weighted)
@@ -242,6 +330,12 @@ class ConservativeVacuumMHD:
                       troubled_euler_cell_stages=int(self.limiter_troubled_counts.sum()),
                       maximum_limiter_cell_fraction=self.maximum_limiter_cell_fraction,
                       limiter_iterations=self.limiter_iterations, maximum_limiter_iterations=self.maximum_limiter_iterations,
+                      dual_energy_change_j=self.dual_energy_change,
+                      dual_energy_absolute_change_j=self.dual_energy_absolute_change,
+                      dual_energy_cold_cell_steps=self.dual_energy_cold_cell_steps,
+                      dual_energy_disagreement_cell_steps=self.dual_energy_disagreements,
+                      dual_energy_max_cold_ratio=self.dual_energy_max_cold_ratio,
+                      dual_energy_cold_discrepancy_j=self.dual_energy_discrepancy, step_retries=self.step_retries,
                       outward_fluid_energy_j=self.outward_energy, fluid_energy_balance_residual_j=fluid_residual,
                       response_energy_balance_residual_j=response_residual,
                       response_residual_over_source_work=response_residual/abs(self.source_work) if self.source_work else None,

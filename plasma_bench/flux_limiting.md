@@ -38,3 +38,8 @@ magnetic energies of linear flux-derived fields, so the same SSP/convexity
 argument applies. Selected boundary Poynting flux is reassembled from the
 chosen corners by `FluxUpdate`, including all neighbor rechecks.
 Magnetic units and quadrature reside in the shared energy helper.
+
+`exempt` (optional cell mask) removes the internal-energy positivity requirement
+for dual-energy cold cells, whose pressure comes from the advected entropy.
+Density positivity and finiteness are still required everywhere. With
+`exempt=None` the check is unchanged.

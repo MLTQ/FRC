@@ -146,3 +146,68 @@ Driver: `examples/nucte_formation.py` with defaults: 16×128 cells, bias
   subtraction, but it is the formulation the conservative path replaced.
 - A physical particle source at the wall (ionization of neutrals and wall
   material). It is more realistic, but it is a separate model.
+
+## Dual-energy fix and rerun (2026-10-19)
+
+### What was added
+`ConservativeVacuumMHD` gained an opt-in dual-energy pressure (`dual_energy=True`;
+see `plasma_bench/dual_energy.md`):
+- pressure mode, so total energy is never changed;
+- cold threshold 0.1;
+- shock detector 0.2.
+
+It also gained opt-in timestep halving (`max_step_halvings`).
+
+### Verification (`examples/dual_energy_verification.py`)
+- **Off path:** bit-identical to the pre-change commit on the standing-shock
+  and coil-pulse fixtures.
+- **Standing shock:** pressure L1 2.5866 with dual energy, 2.5853 off.
+- **Coil pulse:** identical to off.
+- **Low-β coil pulse (β ≈ 2e-6):** off fails at t = 0.004. Dual energy
+  completes, with fluid energy exact to 1e-16 J and an adiabatic-invariant
+  error of 3%.
+
+### NUCTE-III reruns
+The low-β positivity failure is no longer what stops the run, but formation
+still does not complete. Every variant fails with a first-order inadmissible
+proposal:
+
+| Variant | Fails at | Steps |
+|---|---|---|
+| Off: 16×128, η = 1e-5 (the original low-β wall cell) | 1.614 µs | ~3,350 |
+| Dual energy, 16×128 | 1.277 µs | 755 |
+| Dual energy + 6 step halvings | 1.277 µs | 755 |
+| Dual energy, no interface diffusion | 0.786 µs | 52 |
+| Dual energy, 32×256 | 0.686 µs | 187 |
+| Dual energy, uniform η = 2.5e-4 (diagnostic) | 0.794 µs | 146 |
+
+### Diagnosis of the dual-energy failure
+- **Timestep.** The failing step is at about 1.24 µs with dt = 1.9e-11 s. The
+  step is diffusion-limited by the declared interface numerical resistivity,
+  which peaks at 0.082 Ω·m.
+- **The accepted state is fine.** From it, both the high- and first-order
+  single-stage updates of the failing cells change by only ~1e-4. Step halving
+  to dt/64 does not help. The blow-up arises in the second stage, from the
+  predictor state.
+- **Current sheet.** Peak |J| is 2.75e10 A/m², a current sheet at the
+  plasma–vacuum interface.
+- **Failing cells.** They sit at r = 0.097–0.111 m, z = 0.63–0.68 m, under the
+  mirror end straps. Their density is 2e19–6e19 m⁻³, and they are warm, not
+  dual-energy cold. Their wave CFL is about 0.002.
+- **What rules out simple causes.** Finer grids, removing the interface
+  diffusion, and higher resistivity all fail earlier. That rules out simple
+  under-resolution and the missing cold-edge resistivity as the cause.
+
+### Leading hypothesis
+The transparent-wall coupling is inconsistent under a fast external drive.
+The CT electric field at the wall nodes, computed from face states, must match
+the change the vacuum region imposes through the coil's flux. A mismatch
+concentrates current at the interface nodes.
+
+### Next action
+frc-ibl.2.7:
+1. Dump the predictor state of the failing step.
+2. Locate the growing term.
+3. Compare the wall-node E_θ with the vacuum −(1/r)∂ψ/∂t.
+
+Then run the resolution study frc-ibl.2.1.

@@ -41,6 +41,9 @@ class Nucte:
     exterior_cells: int = 6           # fixed induced-flux boundary just inside the coil
     end_s: float = 15e-6
     cfl: float = .2
+    dual_energy: bool = True          # entropy pressure in cold/low-beta cells (pressure mode, energy exact)
+    max_step_halvings: int = 6        # timestep control: retry inadmissible steps with dt/2
+    interface_diffusion: bool = True  # solver's declared numerical resistivity at the chamber boundary
 
 
 def strap_layout(c):
@@ -96,7 +99,9 @@ def build(c):
     sources = VacuumField(grid, coils)
     n_d = 2*c.fill_pa/(KB*c.gas_k)
     rho, p = n_d*D_MASS, 2*n_d*c.pi_temperature_ev*QE
-    params = ConservativeParameters(resistivity=c.resistivity, vacuum_boundary="fixed", cfl=c.cfl)
+    params = ConservativeParameters(resistivity=c.resistivity, vacuum_boundary="fixed", cfl=c.cfl,
+                                    dual_energy=c.dual_energy, max_step_halvings=c.max_step_halvings,
+                                    interface_diffusion=c.interface_diffusion)
     # Initial plasma is current-free in the bias: induced flux zero, total flux = source flux.
     probe = ConservativeState(np.zeros((c.nr, c.nz, 4)), np.zeros((grid.nr, grid.nz)))
     total = sources.at(0.).psi[:c.nr+1, 2:2+c.nz+1]
@@ -157,14 +162,23 @@ def main(out=Path("outputs/nucte_formation"), **overrides):
     (out/"setup.json").write_text(json.dumps(dict(case=asdict(c), **setup), indent=1))
     history, snapshots, start = [observe(model)], {}, time.time()
     marks = list(np.arange(1e-6, c.end_s+1e-12, 1e-6))
+    failure = None
     while model.time < c.end_s:
         target = marks.pop(0) if marks else c.end_s
-        model.advance(target)
+        try:
+            model.advance(target)
+        except Exception as error:  # record the accepted state and the failure; never repaired
+            failure = dict(time_s=model.time, steps=model.steps, error=f"{type(error).__name__}: {error}")
+            (out/"failure.json").write_text(json.dumps(failure, indent=1))
+            print(json.dumps(failure), flush=True)
+            break
         row = observe(model)
         row.update(wall_s=time.time()-start, **{k: v for k, v in model.diagnostics().items()
                                                 if k in ("mass_relative_change", "response_energy_balance_relative",
                                                          "source_work_j", "ohmic_heat_j", "numerical_interface_heat_j",
-                                                         "minimum_high_order_weight")})
+                                                         "minimum_high_order_weight", "fluid_energy_balance_residual_j",
+                                                         "dual_energy_cold_cell_steps", "dual_energy_cold_discrepancy_j",
+                                                         "dual_energy_disagreement_cell_steps", "step_retries")})
         history.append(row)
         z, rs, psi = separatrix(model)
         q = model._primitive(model.state, model.time)
@@ -175,7 +189,16 @@ def main(out=Path("outputs/nucte_formation"), **overrides):
     return history
 
 
+def parse(field, text):
+    kind = type(getattr(Nucte(), field))
+    if kind is bool:
+        if text not in ("True", "False"):
+            raise ValueError(f"{field} must be True or False")
+        return text == "True"
+    return kind(text)
+
+
 if __name__ == "__main__":
     args = dict(a.split("=") for a in sys.argv[2:])
     main(Path(sys.argv[1]) if len(sys.argv) > 1 else Path("outputs/nucte_formation"),
-         **{k: type(getattr(Nucte(), k))(v) for k, v in args.items()})
+         **{k: parse(k, v) for k, v in args.items()})
