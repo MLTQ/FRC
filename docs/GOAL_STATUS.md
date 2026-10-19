@@ -53,16 +53,22 @@ Lab envelope:
    - **Pre-ionization bank:** about 10 µF at 3.5 kV, ringing at 150 kHz.
    - **Quadrupole for n=2:** about 7% of B_e, i.e. 8–15 kA in four bars
      (literature-based).
-4. **In progress: design scan (frc-ibl.6)**, in [DESIGN_SCAN.md](DESIGN_SCAN.md).
-   - **First result:** without a mirror, D2 forms slowly or not at all.
-   - **H2 on the 3.2 kJ bank** forms a closed FRC by 2 µs: r_s 11 cm, l_s
-     0.9–1.2 m, 160 eV, 2 mWb.
-   - **A graded coil (R_M 1.6)** forms a compact, hot D2 FRC for about 3× the
-     energy.
-   - **Running:** the gap-floor sensitivity at the design fill, H2 at 0.3 T, and
-     graded coils at 0.2 and 0.3 T.
+4. **First pass done: design scan (frc-ibl.6)**, in [DESIGN_SCAN.md](DESIGN_SCAN.md).
+   Eleven coupled-bank formation runs in the 12" geometry.
+   - **Option A (start here):** uniform coil, H2 at 3.4 mTorr, 11.6 kV
+     (3.2 kJ) for 0.2 T. A closed FRC forms by 2–6 µs: 11 cm × 0.8–1.1 m,
+     150 eV, 2 mWb.
+   - **Option B:** mild graded coil (20 cm centre, 16.5 cm ends), D2. At 0.2 T,
+     15.2 kV and 5.6 kJ give 11.5 cm × 0.6–0.7 m, 220 eV, 2.2–2.5 mWb.
+   - **D2 on a uniform coil** forms late or not at all.
+   - **Robustness:** results are insensitive to the gap floor and to
+     pre-ionization temperature (1–5 eV).
+   - **Expected diagnostic signals** are tabulated in the scan doc.
+   - **Next:** a convergence run of option A, then the coil-shape decision with
+     the user.
 5. **Remaining gaps:**
-   - pre-ionization and ionization fraction (frc-ibl.4);
+   - pre-ionization ionization fraction (frc-ibl.4); temperature is now known
+     not to matter;
    - N2 commissioning expectations (frc-ibl.7);
    - reset corrections at low fill (frc-ibl.2.10).
 
