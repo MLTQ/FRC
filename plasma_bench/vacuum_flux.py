@@ -9,14 +9,23 @@ from .flux_update import FluxUpdate
 
 
 def flux_components(mesh, q, psi, gamma, resistive_electric, boundary_field, interface_electric, spatial_order=2,
-                    local_bounds=False):
+                    local_bounds=False, open_ends=False):
     """Shared reconstructed states for fluid fluxes and constrained induction.
 
     The reflected gas traces are boundary data, not exterior fluid unknowns.
     Normal velocity reflects; magnetic normal field remains the shared CT field.
     """
-    lo, hi = q[:, 1::-1].copy(), q[:, :-3:-1].copy()
-    lo[..., 2] *= -1; hi[..., 2] *= -1
+    if open_ends:
+        # Outflow-only ends, per radial row: zero-gradient ghosts where the end cell flows
+        # outward; the exact mirrored reflecting ghosts where it flows inward (no inflow).
+        lo_wall, hi_wall = q[:, 1::-1].copy(), q[:, :-3:-1].copy()
+        lo_wall[..., 2] *= -1; hi_wall[..., 2] *= -1
+        lo_out, hi_out = np.repeat(q[:, :1], 2, axis=1), np.repeat(q[:, -1:], 2, axis=1)
+        lo = np.where((q[:, 0, 2] < 0)[:, None, None], lo_out, lo_wall)
+        hi = np.where((q[:, -1, 2] > 0)[:, None, None], hi_out, hi_wall)
+    else:
+        lo, hi = q[:, 1::-1].copy(), q[:, :-3:-1].copy()
+        lo[..., 2] *= -1; hi[..., 2] *= -1
     extended = np.concatenate((lo, q, hi), axis=1)
     ghost_mesh = MHDMesh(mesh.radius, mesh.half_length+2*mesh.dz, mesh.nr, mesh.nz+4)
     reconstruction = Reconstruction(ghost_mesh, extended, local_bounds=local_bounds) if spatial_order == 2 else None

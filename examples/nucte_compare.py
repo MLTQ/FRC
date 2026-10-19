@@ -9,6 +9,16 @@ D_MASS = 2.01410*AMU
 # Takahashi et al. 2000, Table 1 (case 1, mirror ratio 1.10) and text; units SI.
 NUCTE_CASE1 = dict(separatrix_mid_m=.062, separatrix_length_m=.62, axial_contraction_time_s=6.5e-6,
                    axial_speed_m_s=3.8e4, lifetime_s=65e-6, n2_onset_s=28e-6, density_m3=2.2e21, total_temperature_ev=120.)
+# Case 6 (mirror ratio 1.8): Table 1 plus the Fig. 2 sequence (reconnection by 3 us, contraction
+# front at the midplane at 6 us, equilibrium at 10 us).
+NUCTE_CASE6 = dict(separatrix_mid_m=.080, separatrix_length_m=.38, axial_contraction_time_s=3.0e-6,
+                   axial_speed_m_s=8.5e4, lifetime_s=50e-6, n2_onset_s=22e-6, density_m3=2.2e21, total_temperature_ev=120.)
+
+
+def reference(setup):
+    """Case 6 for strong-mirror coils (end straps well inside the centre straps), else case 1."""
+    case = setup["case"]
+    return ("case 6", NUCTE_CASE6) if (case["coil_radius"]/case["end_radius"])**2 > 1.4 else ("case 1", NUCTE_CASE1)
 
 
 def load(run):
@@ -114,7 +124,8 @@ def main(run, out=None):
             None if "trapped_flux_wb" not in r else round(r["trapped_flux_wb"]*1e3, 3),
             None if r.get("density_m3") is None else "%.2e" % r["density_m3"],
             None if r.get("total_temperature_ev") is None else round(r["total_temperature_ev"], 1), r["chord_density_m2"]))
-    (Path(out or run)/"comparison.json").write_text(json.dumps(dict(nucte_case1=NUCTE_CASE1, rows=rows), indent=1))
+    label, ref = reference(setup)
+    (Path(out or run)/"comparison.json").write_text(json.dumps(dict(reference=label, targets=ref, rows=rows), indent=1))
     return rows
 
 

@@ -35,3 +35,15 @@ also depends on the exterior field and is checked separately, not forced exact.
 
 `flux_components(..., local_bounds=False)` forwards the optional neighbour-minimum
 trace bounds to `Reconstruction`.
+
+`open_ends=True` sets the axial gas boundary per radial row:
+- **Outflow rows** (end-cell velocity pointing out of the domain) use
+  zero-gradient ghosts.
+- **Inflow rows** use the exact mirrored reflecting ghosts, so nothing flows in.
+- The magnetic boundary is unchanged.
+
+Verification (`examples/open_ends_verification.py`): a uniform magnetized flow
+at 0.5 stays exactly uniform downstream of the upstream rarefaction head, and
+mass and energy close exactly with outflow counted. The total outflow is 1–1.5%
+above the downstream-only value, because the stalled blocked end
+back-flows slightly.

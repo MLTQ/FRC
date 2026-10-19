@@ -16,7 +16,7 @@ def _speeds(mesh, rho, vr, vz, internal, psi, gamma):
     return np.sqrt(gamma*(gamma-1)*np.maximum(internal, 0)/rho+(br*br+bz*bz)/(MU0*rho))
 
 
-def entropy_rate(mesh, q, entropy, heating, gamma):
+def entropy_rate(mesh, q, entropy, heating, gamma, open_ends=False):
     """First-order Rusanov transport of rho*A plus the physical heating source (gamma-1) rho^(1-gamma) q.
 
     Faces use the larger adjacent |v_n|+c_f. Reflecting wall, ends and axis carry
@@ -31,6 +31,8 @@ def entropy_rate(mesh, q, entropy, heating, gamma):
     fz = np.zeros((mesh.nr, mesh.nz+1))
     fr[1:-1] = .5*(entropy[:-1]*vr[:-1]+entropy[1:]*vr[1:])-.5*lr*(entropy[1:]-entropy[:-1])
     fz[:, 1:-1] = .5*(entropy[:, :-1]*vz[:, :-1]+entropy[:, 1:]*vz[:, 1:])-.5*lz*(entropy[:, 1:]-entropy[:, :-1])
+    if open_ends:  # upwind outflow only
+        fz[:, 0], fz[:, -1] = entropy[:, 0]*np.minimum(vz[:, 0], 0.), entropy[:, -1]*np.maximum(vz[:, -1], 0.)
     divergence = np.diff(mesh.rf[:, None]*fr, axis=0)/mesh.radial_measure[:, None]+np.diff(fz, axis=1)/mesh.dz
     return -divergence+(gamma-1)*rho**(1-gamma)*heating
 

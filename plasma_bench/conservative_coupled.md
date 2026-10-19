@@ -146,3 +146,12 @@ by theta-pinch formation codes: η_ch = c m_e ω_pi/(n e²) [1 − exp(−v_d/(f
 
 `interface_speed_cap` (m/s; default None) passes that bound to the interface
 numerical resistivity (see `vacuum_trace.md`).
+
+`open_ends=True` makes the gas ends outflow-only (see `vacuum_flux.md`). The
+mass leaving is tracked as `outflow_mass_kg` and included in
+`mass_relative_change`. It is computed exactly from the update, since interior
+fluxes telescope.
+
+`open_line_flux_limit=f > 0` enables the declared conduction loss in
+`open_line_loss.md`, applied after the closure step and counted in both
+residuals.

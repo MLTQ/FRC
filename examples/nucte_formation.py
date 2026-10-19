@@ -50,6 +50,8 @@ class Nucte:
     max_step_halvings: int = 6        # timestep control: retry inadmissible steps with dt/2
     interface_diffusion: bool = True  # solver's declared numerical resistivity at the chamber boundary
     interface_speed_cap: float = 0.   # >0 caps the signal speed in that numerical resistivity [m/s]
+    open_ends: bool = False           # outflow-only tube ends (open field-line end losses) instead of reflecting
+    conduction_limit: float = 0.      # >0: flux-limited parallel conduction loss on open lines (f ~ 0.1)
     local_trace_bounds: bool = True   # reconstructed density/pressure bounded by neighbour minima
     floor_fraction: float = .01       # DECLARED gap closure: minimum density as a fraction of the fill (0 disables)
 
@@ -119,6 +121,8 @@ def build(c):
                                     dual_energy=c.dual_energy, max_step_halvings=c.max_step_halvings,
                                     interface_diffusion=c.interface_diffusion,
                                     interface_speed_cap=c.interface_speed_cap if c.interface_speed_cap > 0 else None,
+                                    open_ends=c.open_ends, open_line_flux_limit=c.conduction_limit,
+                                    open_line_wall_temperature_ev=c.pi_temperature_ev,
                                     local_trace_bounds=c.local_trace_bounds,
                                     minimum_density=c.floor_fraction*2*c.fill_pa/(KB*c.gas_k)*D_MASS if c.floor_fraction > 0 else None,
                                     floor_temperature_ev=c.pi_temperature_ev, floor_ion_mass=D_MASS)
@@ -199,7 +203,8 @@ def main(out=Path("outputs/nucte_formation"), **overrides):
                                                          "minimum_high_order_weight", "fluid_energy_balance_residual_j",
                                                          "dual_energy_cold_cell_steps", "dual_energy_cold_discrepancy_j",
                                                          "dual_energy_disagreement_cell_steps", "step_retries",
-                                                         "floor_mass_kg", "floor_energy_j", "floor_cell_steps", "mass_kg")})
+                                                         "floor_mass_kg", "floor_energy_j", "floor_cell_steps", "mass_kg",
+                                                         "outflow_mass_kg", "outward_fluid_energy_j", "open_line_loss_j")})
         history.append(row)
         z, rs, psi = separatrix(model)
         q = model._primitive(model.state, model.time)
