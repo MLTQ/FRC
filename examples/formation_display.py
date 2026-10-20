@@ -1,9 +1,9 @@
 """Interactive 3D display of formation runs (examples/nucte_formation.py) in the saved-field viewer.
 
-`python -m examples.formation_display OUT RUN[::Label] ...` writes one self-contained page per run,
-OUT/<run>.html, built from visualizations/material_fields (volume.html + viewer.js + volume.js), plus
-OUT/index.html: trapped flux, separatrix length and radius against time for all runs (at most six), a table
-and links to each 3D page.
+`python -m examples.formation_display OUT RUN[::Label] ...` writes OUT/viewer.html, one 3D viewer for all
+runs with a run selector (visualizations/material_fields volume.html + viewer.js + volume.js), the per-run
+manifests and saved-state frames under OUT/<run>/, and OUT/index.html: trapped flux, separatrix length and
+radius against time for all runs (at most six), a table and links into the viewer. Serve OUT over HTTP.
 
 Read-only: every frame is a saved 1 µs snapshot; nothing is evolved or interpolated in time.
 - **Full poloidal flux.** The snapshot keeps the total flux on the gas nodes only. The induced part,
@@ -22,7 +22,6 @@ import json
 import sys
 import time
 from dataclasses import replace
-from html import escape
 from pathlib import Path
 import numpy as np
 import contourpy
@@ -98,7 +97,9 @@ def azimuthal_current(grid, psi):
     return j
 
 
-def run_display(run, out, label=None, description="", inline_limit=60):
+def run_display(run, out, label=None, description=""):
+    """Write OUT/<run>/frame_NNNN.json (one per saved state) and OUT/<run>/manifest.json (the viewer DATA for this
+    run, frames by url); return the run summary for the overview."""
     run = Path(run)
     setup, rf, zf, frames, history = load(run)
     if not setup.get("circuit") or not history[0].get("circuit"):
@@ -116,9 +117,7 @@ def run_display(run, out, label=None, description="", inline_limit=60):
     display_r = grid.r <= c.wall_radius+1.01*fluid.dr                   # keep line colours off the coil filaments
     names = ["Main coil"]*c.sections+[a.name for a in c.aux_coils]
     data_frames, peak_b, peak_j, worst = [], 0., 0., 0.
-    external = len(frames) > inline_limit   # many saved states: one JSON file per frame, loaded on demand (serve OUT over HTTP)
-    if external:
-        (Path(out)/run.name).mkdir(parents=True, exist_ok=True)
+    (Path(out)/run.name).mkdir(parents=True, exist_ok=True)
     for (k, psi_gas, rho, p), row in zip(frames, rows):
         h = history[k]
         vac = np.asarray(h["circuit"]["vacuum_current_a"]); img = np.asarray(h["circuit"]["image_current_a"])
@@ -190,12 +189,10 @@ def run_display(run, out, label=None, description="", inline_limit=60):
                                  b64=base64.b64encode(texture.tobytes()).decode()))
         if region.get("separatrix_mid_m"):
             frame.update(midplane_radius_m=region["separatrix_mid_m"], maximum_radius_m=region.get("max_separatrix_m"))
-        if external:
-            heavy = ("lines", "current", "outline", "separatrix", "volume")
-            name = f"{run.name}/frame_{k:04d}.json"
-            (Path(out)/name).write_text(json.dumps({key: frame[key] for key in heavy}, separators=(",", ":")))
-            frame = dict({key: v for key, v in frame.items() if key not in heavy}, url=name)
-        data_frames.append(frame)
+        heavy = ("lines", "current", "outline", "separatrix", "volume")      # loaded on demand by the viewer
+        name = f"{run.name}/frame_{k:04d}.json"
+        (Path(out)/name).write_text(json.dumps({key: frame[key] for key in heavy}, separators=(",", ":")))
+        data_frames.append(dict({key: v for key, v in frame.items() if key not in heavy}, url=name))
         peak_b, peak_j = max(peak_b, gas_b), max(peak_j, jmax)
     chamber = [ring(c.wall_radius, z, extent) for z in (-c.half_length, 0., c.half_length)]
     chamber += [(np.array([[-c.half_length, c.wall_radius*np.cos(a), c.wall_radius*np.sin(a)],
@@ -216,7 +213,7 @@ def run_display(run, out, label=None, description="", inline_limit=60):
              f"{setup['circuit']['main_voltage_v']/1e3:.1f} kV ({setup['circuit']['main_energy_j']/1e3:.1f} kJ). "
              + "".join(f"Extra bank {b['name']}: {b['voltage_v']/1e3:g} kV, {b['energy_j']:.0f} J, fired at {b['fire_time_s']*1e6:g} µs. "
                        for b in setup["circuit"].get("extra_banks", []))
-             + f"{len(data_frames)} saved states, one per µs. Flux outside the gas is the run's own vacuum solve from the saved "
+             + f"{len(data_frames)} saved states, every {np.median(np.diff([f['time_us'] for f in data_frames])):.2g} µs. Flux outside the gas is the run's own vacuum solve from the saved "
              f"gas-node flux and section currents (gas-node flux reproduced to {worst:.0e}). Field lines are flux contours "
              "(equal flux between open lines, closed surfaces inside the gold separatrix), coloured by |B|, with the colour "
              "scale set by the field in the gas. Current is J_θ = −Δ*ψ/(μ0 r); J_r and J_z are zero because the model has no "
@@ -224,34 +221,45 @@ def run_display(run, out, label=None, description="", inline_limit=60):
              "beyond the simulated window is not predicted."
              + (f" Trapped-flux e-fold time fitted from 8 µs: {d['flux_efold_s']*1e6:.0f} µs." if d.get("flux_efold_s") else ""))
     data = dict(frames=data_frames, detailed=True, bmax=peak_b, jmax=[peak_j, 0., peak_j, 0.],
-                initial_frame=len(data_frames)-1, playback_fps=20 if external else 5, initial_yaw=-.35, initial_pitch=.28, initial_zoom=3.,
+                initial_frame=len(data_frames)-1, playback_fps=20, initial_yaw=-.35, initial_pitch=.28, initial_zoom=3.,
+                title=title, description=f"{description or 'Saved FRC formation run'}. Gold: separatrix. Copper and coloured rings: coils.",
                 chamber=chamber, coils=[], coil_groups=coil_groups, physical_scale_m=extent,
                 status_note=f"{title} · saved formation states", scope=scope, temperature_digits=3,
                 drive_label="Vacuum Bz of the coil currents at the tube wall, midplane", motion_label="Separatrix radius — midplane",
                 solver_steps=int(history[-1].get("steps", 0)))
-    html = (ASSETS/"volume.html").read_text()
-    html = html.replace("<title>FRC sandbox · Plasma volume</title>", f"<title>{escape(title)} · FRC formation</title>")
-    html = html.replace("<h1>Inside the plasma</h1>", f"<h1>{escape(title)}</h1>")
-    html = html.replace("<p>Current density in volume. Magnetic structure in motion. Two views of the same saved state.</p>",
-                        f"<p>{escape(description) or 'Saved FRC formation run'}. Gold: separatrix. Copper and coloured rings: coils.</p>")
-    html = html.replace("Axisymmetric · 3D rendering", "2D axisymmetric run · 3D rendering")
-    html = html.replace("<p id=\"motion\"></p>", "<p id=\"motion\"></p><p id=\"frame-summary\"></p>")
-    html = html.replace('<label><input type="checkbox" id="geometry"> Tube & coils</label>',
-                        '<label><input type="checkbox" id="geometry"> Tube & coils</label>'
-                        '<label><input type="checkbox" id="separatrix" checked> Separatrix</label>')
-    html = html.replace("Mean electron / ion temperature", "Te / Ti inside separatrix (Te = Ti)")
-    html = html.replace(">96<", ">×1<").replace(">192<", ">×2<").replace(">384<", ">×4<")
-    html = html.replace("Exploratory pre-ionized plasma model. More rendering detail does not add simulation resolution or establish FRC formation, stability or confinement.",
-                        "Assumed complete pre-ionization; 2D axisymmetric MHD. Rendering detail adds no simulation resolution; the n = 2 mode and lifetime are not modelled.")
-    html = html.replace("/* DATA */", "const DATA="+json.dumps(data, separators=(",", ":"))+";")
-    html = html.replace("/* VOLUME */", (ASSETS/"volume.js").read_text()).replace("/* VIEWER */", (ASSETS/"viewer.js").read_text())
-    page = Path(out)/f"{run.name}.html"
-    page.write_text(html)
-    return dict(run=run.name, label=title, description=description, page=page.name, frames=len(data_frames), flux_reproduction=worst,
+    (Path(out)/run.name/"manifest.json").write_text(json.dumps(data, separators=(",", ":")))
+    return dict(run=run.name, label=title, description=description, manifest=f"{run.name}/manifest.json", frames=len(data_frames), flux_reproduction=worst,
                 inner_radius_m=r_in, gas=gas, banks=scope,
                 rows=[dict({k: r.get(k) for k in ("time_s", "closed", "separatrix_mid_m", "length_m", "trapped_flux_wb", "density_m3",
                                                   "total_temperature_ev")}, formed=formed(r, 2*c.half_length)) for r in rows],
                 flux_efold_s=d.get("flux_efold_s"), fit_span_s=(d.get("last_closed_s") or 0.)-8e-6)
+
+
+def viewer_page(out, summaries):
+    """OUT/viewer.html: one viewer for all runs. It embeds the first run's manifest and a run selector; switching
+    fetches the other manifests and keeps the camera and the simulated time (viewer.js switchRun; ?run=NAME opens one)."""
+    first = json.loads((Path(out)/summaries[0]["manifest"]).read_text())
+    data = dict(first, runs=[dict(name=s["run"], label=s["label"], manifest=s["manifest"]) for s in summaries], run=summaries[0]["run"])
+    html = (ASSETS/"volume.html").read_text()
+    reps = [("<title>FRC sandbox · Plasma volume</title>", "<title>FRC formation runs</title>"),
+            ("<h1>Inside the plasma</h1>", '<h1 id="run-title"></h1>'),
+            ("<p>Current density in volume. Magnetic structure in motion. Two views of the same saved state.</p>", '<p id="run-description"></p>'),
+            ('<div class="toolbar">', '<div class="toolbar"><label for="run">Run</label><select id="run" aria-label="Run"></select>'),
+            ("Axisymmetric · 3D rendering", "2D axisymmetric runs · 3D rendering"),
+            ('<p id="motion"></p>', '<p id="motion"></p><p id="frame-summary"></p>'),
+            ('<label><input type="checkbox" id="geometry"> Tube & coils</label>',
+             '<label><input type="checkbox" id="geometry"> Tube & coils</label><label><input type="checkbox" id="separatrix" checked> Separatrix</label>'),
+            ("Mean electron / ion temperature", "Te / Ti inside separatrix (Te = Ti)"),
+            (">96<", ">×1<"), (">192<", ">×2<"), (">384<", ">×4<"),
+            ("Exploratory pre-ionized plasma model. More rendering detail does not add simulation resolution or establish FRC formation, stability or confinement.",
+             "Assumed complete pre-ionization; 2D axisymmetric MHD. Rendering detail adds no simulation resolution; the n = 2 mode and lifetime are not modelled.")]
+    for a, b in reps:
+        if a not in html:
+            raise ValueError(f"volume.html no longer contains {a!r}")
+        html = html.replace(a, b, 1)
+    html = html.replace("/* DATA */", "const DATA="+json.dumps(data, separators=(",", ":"))+";")
+    html = html.replace("/* VOLUME */", (ASSETS/"volume.js").read_text()).replace("/* VIEWER */", (ASSETS/"viewer.js").read_text())
+    (Path(out)/"viewer.html").write_text(html)
 
 
 def describe(setup):
@@ -291,7 +299,7 @@ td{color:var(--text-secondary)}td.name{color:var(--text-primary);white-space:now
 .note{font-size:12px;color:var(--text-muted)}@media(max-width:900px){.charts{grid-template-columns:1fr}table{display:block;overflow-x:auto}}
 </style>
 <main><div class="eyebrow">FRC experiment playground · 12-inch device</div><h1>Formation runs compared</h1>
-<p>Each line is one simulated experiment. Values are drawn only while a formed FRC exists: closed flux that touches no wall and is shorter than 80% of the tube (the design-scan criterion); a gap means it is not. Solid lines: no inner tube; dashed: 3" inner tube. Hover a chart for exact values; open a run's 3D view from the table.</p>
+<p><a href=\"viewer.html\">Open the 3D viewer</a> (choose a run in it). Each line is one simulated experiment. Values are drawn only while a formed FRC exists: closed flux that touches no wall and is shorter than 80% of the tube (the design-scan criterion); a gap means it is not. Solid lines: no inner tube; dashed: 3" inner tube. Hover a chart for exact values; open a run's 3D view from the table.</p>
 <div class="legend" id="legend"></div>
 <div class="charts" id="charts"></div>
 <table id="table"></table>
@@ -336,7 +344,7 @@ document.getElementById('scope').textContent=DATA.scope;draw();table();
 
 def overview(out, summaries):
     build = int(time.time())             # version tag on links, so a rebuilt page is not served from the browser cache
-    data = dict(runs=[dict(label=s["label"], description=s["description"], page=f"{s['page']}?v={build}", dashed=s["inner_radius_m"] > 0,
+    data = dict(runs=[dict(label=s["label"], description=s["description"], page=f"viewer.html?run={s['run']}&v={build}", dashed=s["inner_radius_m"] > 0,
                            rows=s["rows"], flux_efold_s=s["flux_efold_s"] if s["fit_span_s"] >= 15e-6 else None) for s in summaries],
                 scope="2D axisymmetric single-fluid MHD with coupled capacitor banks; assumed complete pre-ionization. "
                       "The n = 2 rotational mode is not modelled, so lifetime beyond the simulated window is not predicted. "
@@ -348,15 +356,19 @@ def overview(out, summaries):
 
 
 def main(out, runs):
-    """runs: RUN or RUN::Label. Writes OUT/<run>.html per run and OUT/index.html."""
+    """runs: RUN or RUN::Label. Writes OUT/viewer.html (all runs, run selector), OUT/<run>/ (manifest and frames)
+    and OUT/index.html (overview)."""
     out = Path(out); out.mkdir(parents=True, exist_ok=True)
     summaries = []
     for spec in runs:
         run, _, label = spec.partition("::")
         setup = json.loads((Path(run)/"setup.json").read_text())
         summaries.append(run_display(run, out, label or None, describe(setup)))
-        print(f"display {summaries[-1]['page']}: {summaries[-1]['frames']} frames, gas flux reproduced to {summaries[-1]['flux_reproduction']:.1e}", flush=True)
+        print(f"display {summaries[-1]['run']}: {summaries[-1]['frames']} frames, gas flux reproduced to {summaries[-1]['flux_reproduction']:.1e}", flush=True)
     (out/"runs.json").write_text(json.dumps(summaries, indent=1, default=float))
+    for stale in out.glob("*.html"):           # per-run pages of earlier builds
+        stale.unlink()
+    viewer_page(out, summaries)
     overview(out, summaries)
     return summaries
 

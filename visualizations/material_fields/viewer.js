@@ -2,14 +2,14 @@ const ids=id=>document.getElementById(id), canvases=[ids('field'),ids('current')
 let frame=DATA.initial_frame??DATA.frames.length-1,requestedFrame=frame,component=0,shared=Boolean(DATA.detailed),yaw=DATA.initial_yaw??-.65,pitch=DATA.initial_pitch??.35,zoom=DATA.initial_zoom||1,playing=false,playTimer=null,requestId=0;
 let volumeRenderer=null;
 if(DATA.detailed){try{volumeRenderer=createVolumeRenderer(ids('volume'));}catch(error){ids('render-warning').textContent=error.message;}}
-const frameCache=new Map(),pendingFrames=new Map();
+let frameCache=new Map(),pendingFrames=new Map();
 function decodeVolume(v){const bytes=Uint8Array.from(atob(v.b64),c=>c.charCodeAt(0)),raw=new Float32Array(bytes.buffer),n=v.shape[0]*v.shape[1],k=v.channels||4;if(raw.length!==n*k)throw new Error('Incomplete current volume.');if(k===4)return raw;const out=new Float32Array(4*n),slots=v.slots||[1,3];for(let i=0;i<n;i++)for(let c=0;c<k;c++)out[4*i+slots[c]]=raw[k*i+c];return out;}
-async function loadFrame(index){
+async function loadFrame(index){const cache=frameCache,pending=pendingFrames;   // a run switch replaces the maps; stale loads stay in the old ones
  const entry=DATA.frames[index];if(entry.lines){if(entry.volume&&entry.volume.b64&&!entry.volume_data)entry.volume_data=decodeVolume(entry.volume);return entry;}
- if(frameCache.has(index)){const value=frameCache.get(index);frameCache.delete(index);frameCache.set(index,value);return value;}
- if(pendingFrames.has(index))return pendingFrames.get(index);
- const task=(async()=>{const response=await fetch(entry.url,{cache:'no-store'});if(!response.ok)throw new Error('Frame could not be loaded ('+response.status+').');const value={...await response.json(),...entry};if(value.volume&&value.volume.b64&&!value.volume_data)value.volume_data=decodeVolume(value.volume);if(entry.volume){const raw=await fetch(entry.volume.url);if(!raw.ok)throw new Error('Current volume could not be loaded ('+raw.status+').');value.volume_data=new Float32Array(await raw.arrayBuffer());if(value.volume_data.length!==entry.volume.shape[0]*entry.volume.shape[1]*4)throw new Error('Incomplete current volume.');}frameCache.set(index,value);while(frameCache.size>5){const old=[...frameCache.keys()].find(k=>k!==frame&&k!==requestedFrame);frameCache.delete(old);}return value;})();
- pendingFrames.set(index,task);try{return await task;}finally{pendingFrames.delete(index);}
+ if(cache.has(index)){const value=cache.get(index);cache.delete(index);cache.set(index,value);return value;}
+ if(pending.has(index))return pending.get(index);
+ const task=(async()=>{const response=await fetch(entry.url,{cache:'no-store'});if(!response.ok)throw new Error('Frame could not be loaded ('+response.status+').');const value={...await response.json(),...entry};if(value.volume&&value.volume.b64&&!value.volume_data)value.volume_data=decodeVolume(value.volume);if(entry.volume){const raw=await fetch(entry.volume.url);if(!raw.ok)throw new Error('Current volume could not be loaded ('+raw.status+').');value.volume_data=new Float32Array(await raw.arrayBuffer());if(value.volume_data.length!==entry.volume.shape[0]*entry.volume.shape[1]*4)throw new Error('Incomplete current volume.');}cache.set(index,value);while(cache.size>5){const old=[...cache.keys()].find(k=>k!==frame&&k!==requestedFrame);cache.delete(old);}return value;})();
+ pending.set(index,task);try{return await task;}finally{pending.delete(index);}
 }
 async function showFrame(index){
  requestedFrame=Math.max(0,Math.min(DATA.frames.length-1,index));const target=requestedFrame,request=++requestId;
@@ -56,3 +56,20 @@ if(ids('previous'))ids('previous').onclick=()=>stepFrame(-1);if(ids('next'))ids(
 ids('play').onclick=()=>{if(playing){stopPlayback();requestId++;requestedFrame=frame;draw();}else{clearTimeout(scrubTimer);playing=true;ids('play').textContent='Pause';advance();}};
 canvases.forEach(c=>{let drag=null;c.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY];c.setPointerCapture(e.pointerId);});c.addEventListener('pointermove',e=>{if(!drag)return;yaw+=(e.clientX-drag[0])*.008;pitch=Math.max(-1.45,Math.min(1.45,pitch+(e.clientY-drag[1])*.008));drag=[e.clientX,e.clientY];draw();});c.addEventListener('pointerup',()=>drag=null);c.addEventListener('pointercancel',()=>drag=null);c.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.4,Math.min(DATA.detailed?10:3,zoom*Math.exp(-e.deltaY*.001)));draw();},{passive:false});});
 ids('scope').textContent=DATA.scope;window.addEventListener('resize',draw);showFrame(frame);
+function showRunText(){if(ids('run-title'))ids('run-title').textContent=DATA.title||'';if(ids('run-description'))ids('run-description').textContent=DATA.description||'';if(DATA.title)document.title=DATA.title+' · FRC formation';ids('scope').textContent=DATA.scope||'';}
+async function switchRun(name){
+ const entry=(DATA.runs||[]).find(r=>r.name===name);if(!entry||name===DATA.run)return;
+ const wasPlaying=playing;stopPlayback();clearTimeout(scrubTimer);const request=++requestId,t=DATA.frames[frame]?DATA.frames[frame].time_us:0;
+ ids('status').textContent='Loading '+entry.label+'…';let next;
+ try{const response=await fetch(entry.manifest,{cache:'no-store'});if(!response.ok)throw new Error('Run could not be loaded ('+response.status+').');next=await response.json();}
+ catch(error){if(request===requestId){ids('status').textContent='Unable to load this run. '+error.message;if(ids('run'))ids('run').value=DATA.run;}return;}
+ if(request!==requestId)return;
+ const runs=DATA.runs;for(const k of Object.keys(DATA))delete DATA[k];Object.assign(DATA,next,{runs,run:name});frameCache=new Map();pendingFrames=new Map();
+ let best=0;DATA.frames.forEach((f,i)=>{if(Math.abs(f.time_us-t)<Math.abs(DATA.frames[best].time_us-t))best=i;});   // keep the simulated time; camera untouched
+ ids('time').max=DATA.frames.length-1;frame=requestedFrame=best;showRunText();if(ids('run'))ids('run').value=name;
+ try{history.replaceState(null,'','?run='+encodeURIComponent(name));}catch(e){}
+ await showFrame(best);if(wasPlaying&&request+1===requestId){playing=true;ids('play').textContent='Pause';advance();}
+}
+if(DATA.runs&&ids('run')){const sel=ids('run');DATA.runs.forEach(r=>{const o=document.createElement('option');o.value=r.name;o.textContent=r.label;sel.append(o);});
+ sel.value=DATA.run;sel.addEventListener('change',e=>switchRun(e.target.value));showRunText();
+ const wanted=new URLSearchParams(location.search).get('run');if(wanted&&wanted!==DATA.run)switchRun(wanted);}

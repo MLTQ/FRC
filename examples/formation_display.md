@@ -8,22 +8,24 @@ Interactive 3D pages for formation runs from `examples/nucte_formation.py`
 python -m examples.formation_display OUT RUN[::Label] ...
 ```
 
-It writes three things:
-- `OUT/<run>.html`: one page per run.
-  - At most 60 saved states are embedded in a self-contained page, about
-    4–5 MB for 30 µs at 1 µs spacing.
-  - Finer runs (`snapshot_s=1e-7` in nucte_formation) write one JSON file per
-    state under `OUT/<run>/`. The viewer loads, caches and prefetches these on
-    demand and plays them at up to 20 frames/s. Every frame is still an actual
-    saved state, never an interpolation.
-  - Such pages must be served over HTTP, for example by the
-    `formation-display` entry in `.claude/launch.json`, which serves `outputs/`
-    on 127.0.0.1:8791.
-- `OUT/index.html`: trapped flux, separatrix length and midplane radius against
-  time for up to six runs, plus a table with links to each page.
+It writes four things:
+- `OUT/viewer.html`: one 3D viewer for all runs.
+  - A run selector switches between experiments, keeping the camera and the
+    simulated time (nearest saved state).
+  - `viewer.html?run=NAME` opens a given run.
+- `OUT/<run>/manifest.json` and `OUT/<run>/frame_NNNN.json`: the run's viewer
+  data, plus one file per saved state.
+  - Frames load on demand (cached and prefetched) and play at up to 20
+    frames/s.
+  - Each is an actual saved state, never an interpolation. Use
+    `snapshot_s=1e-7` in nucte_formation for smooth playback.
+- `OUT/index.html`: trapped flux, separatrix length and midplane radius
+  against time for up to six runs, plus a table linking into the viewer.
 - `OUT/runs.json`.
 
-Opening `index.html` and embedded pages directly works.
+Serve `OUT` over HTTP, for example with the `formation-display` entry in
+`.claude/launch.json`, which serves `outputs/` on 127.0.0.1:8791. Then open
+`/formation_display/index.html`.
 
 ## What is shown
 Every frame is a saved 1 µs snapshot; nothing is evolved or interpolated in

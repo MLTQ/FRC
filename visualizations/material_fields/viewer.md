@@ -97,3 +97,17 @@ fields keep the earlier behaviour.
   vacuum-centre field" and "Plasma radius — middle" prefixes.
 - `DATA.temperature_digits` switches temperatures to that many significant
   digits. A null temperature shows "—".
+
+## Several runs in one page
+With `DATA.runs` = [{name, label, manifest}], `DATA.run` and a `#run` select,
+the viewer switches runs in place:
+1. It fetches the run's manifest.
+2. It replaces DATA's fields and starts new frame caches. Loads still in flight
+   finish into the old caches and cannot leak into the new run.
+3. It moves to the saved state nearest the current simulated time and keeps
+   the camera, colour-scale mode and current component.
+4. Playback resumes if it was playing.
+
+`#run-title`, `#run-description`, the document title and the scope note follow
+`DATA.title`, `DATA.description` and `DATA.scope`. The URL becomes `?run=NAME`,
+and loading with that parameter opens that run.
