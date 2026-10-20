@@ -8,3 +8,10 @@ Cell Br uses the exact radial volume centroid in its linear face interpolation,
 so a regular Br proportional to r is averaged correctly even in the axis cell.
 No interpolation from the Stage 1 mesh is implicit; coupling needs an explicit
 verified mapping. The MHD solver depends on these array shapes and measures.
+
+## Annular chamber (`inner_radius > 0`)
+Cells span `inner_radius..radius`, so `dr = (radius-inner_radius)/nr`. All
+measures stay exact annular integrals: `radial_measure`, `radial_centroid` and
+`volumes`. The first radial face is then a wall, not the axis. `face_fields`
+divides by its nonzero radius, and `annular` reports the case. The default 0
+reproduces the axis mesh exactly.

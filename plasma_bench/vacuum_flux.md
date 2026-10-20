@@ -79,3 +79,11 @@ The result carries `dissipative_electric` for the heating estimate.
 | Coil pulse, max difference from off | 0.0015 | — |
 | Low-β adiabatic-invariant error | 0.0305 | 0.0305 |
 | Fluid residual | 3e-16 J | — |
+
+## Annular chamber
+For `mesh.inner_radius > 0`, the inner wall reflects gas: its radial velocity
+ghost is reflected exactly as at the axis. Unlike the axis, it is magnetically
+transparent: the Br reflection that axis regularity needs is undone on the inner
+faces and corners. The tangential Bz there is the inner-vacuum trace, the fourth
+entry of `boundary_field`. The CT electric field on the inner wall row is not
+set to zero: E_θ = 0 holds only on the axis.

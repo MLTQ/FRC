@@ -26,3 +26,16 @@ Local fallback must retain the same boundary load for both reconstruction
 orders and reevaluate its Poynting flux after corner selection. A troubled
 cell's boundary face depends only on its own two corner electric fields,
 preserving the checked-low-update contract.
+
+## Inner wall of an annular chamber
+For an inner wall (`mapping.r_offset > 0`), `variational_trace` also returns
+`bz_inner = load[0]/dz`. The inside vacuum edge contributes +dz Bz to the wall
+node's load: its outward normal is −r, and the sign is the opposite of the outer
+wall. The two inner corners use the same minimum-norm corner split as the outer
+ones, with one-sided stencils into the inner vacuum.
+
+`face_fields` returns four entries. `energy_fluxes` returns a fourth, the +r
+Poynting flux through the inner faces, E_θ B_z,inner/μ0. FluxUpdate puts it on
+radial face 0 and subtracts it from the outward energy. The energy balance
+closes through the inner wall: 6e-10 relative in
+`examples/annulus_verification.py`.

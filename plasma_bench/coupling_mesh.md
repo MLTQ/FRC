@@ -38,3 +38,16 @@ decaying induced trace; prescribed external bias/coils use `grid_vector`.
 `complete_vacuum` works directly on unknown vectors, preserving active plasma
 values and solving cached exterior/mode constraints. Its fixed factorization
 and cross-block support fast midpoint iterations without changing the equations.
+
+## Annular chamber (coaxial inner tube)
+For `fluid.inner_radius > 0`, the field grid still starts on the axis. The inner
+wall must lie on a field node row, `r_offset` = inner radius/dr, with at least two
+vacuum intervals inside it; otherwise a ValueError is raised. The rows inside are
+vacuum unknowns of K u = 0, like the exterior. The induced flux is fixed only on
+the axis and the outer boundary.
+
+The inner wall row is an active, current-bearing row with half dual area. It is
+impermeable: no radial velocity is interpolated there. It is magnetically
+transparent, with no conductor and no fixed flux. An insulating tube is
+therefore modelled exactly. A metal tube, which would act as a flux conserver,
+is not. `fluid_flux` returns rows `r_offset..r_offset+nr`.

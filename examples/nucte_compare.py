@@ -104,15 +104,65 @@ def closed_region(rf, zf, psi):
                 trapped_flux_wb=2*np.pi*o_point, profile=rs)
 
 
-def plasma_inside(rf, zf, rho, p, rs, lo, hi, mass=D_MASS):
-    """Volume-average density and total temperature (Te+Ti = p/(n e)) inside r < r_s(z)."""
+def annular_closed_region(rf, zf, psi):
+    """Closed flux in an annular chamber (rf[0] > 0: an inner tube). Field lines are psi contours, and a line
+    that reaches any wall node (inner tube, outer wall, ends) is open. The O-point is the interior minimum of
+    psi; the separatrix level psi_s is the largest level whose 4-connected sublevel component {psi < psi_s}
+    around the O-point touches no wall node (bisection over the node values). Returns the dict of
+    closed_region (closed=True; profile = outer separatrix radius per axial node) plus inner_profile, or
+    None when the minimum lies on a wall (no flux is closed)."""
+    from scipy import ndimage
+    nr, nz = psi.shape
+    wall = np.zeros(psi.shape, bool); wall[[0, -1], :] = True; wall[:, [0, -1]] = True
+    o = np.unravel_index(np.argmin(psi), psi.shape)
+    if wall[o]:
+        return None
+
+    def component(level):
+        labels, _ = ndimage.label(psi < level)
+        return labels == labels[o]
+    levels = np.unique(psi[psi > psi[o]])
+    lo_k, hi_k = -1, len(levels)-1             # component(levels[k]) is closed for k <= lo_k
+    while hi_k-lo_k > 1:
+        k = (lo_k+hi_k)//2
+        if (component(levels[k]) & wall).any():
+            hi_k = k
+        else:
+            lo_k = k
+    if lo_k < 0:
+        return None
+    level = levels[lo_k]
+    inside = component(level)
+    cols = np.nonzero(inside.any(axis=0))[0]
+    outer, inner = np.full(nz, np.nan), np.full(nz, np.nan)
+    for j in cols:
+        rows = np.nonzero(inside[:, j])[0]
+        a, b = rows[-1], rows[-1]+1          # crossing outward (b is not inside, b <= nr-1 since walls are open)
+        outer[j] = rf[a]+(rf[b]-rf[a])*(level-psi[a, j])/(psi[b, j]-psi[a, j])
+        a, b = rows[0], rows[0]-1
+        inner[j] = rf[a]+(rf[b]-rf[a])*(level-psi[a, j])/(psi[b, j]-psi[a, j])
+    lo, hi = int(cols[0]), int(cols[-1])        # outermost closed nodes, as in closed_region
+    mid = len(zf)//2
+    return dict(lo=lo, hi=hi, length_m=float(zf[hi]-zf[lo]), closed=True, o_point_z_m=float(zf[o[1]]),
+                o_point_r_m=float(rf[o[0]]), centre_z_m=float(.5*(zf[lo]+zf[hi])),
+                separatrix_mid_m=float(outer[mid]) if np.isfinite(outer[mid]) else None,
+                inner_separatrix_mid_m=float(inner[mid]) if np.isfinite(inner[mid]) else None,
+                max_separatrix_m=float(np.nanmax(outer)), separatrix_flux_wb=2*np.pi*float(level),
+                trapped_flux_wb=2*np.pi*float(level-psi[o]), profile=outer, inner_profile=inner)
+
+
+def plasma_inside(rf, zf, rho, p, rs, lo, hi, mass=D_MASS, inner=None):
+    """Volume-average density and total temperature (Te+Ti = p/(n e)) inside r < r_s(z) (and r > the inner
+    separatrix of an annular chamber)."""
     rc = .5*(rf[:-1]+rf[1:])
     dz = zf[1]-zf[0]
     vol = np.pi*np.diff(rf**2)[:, None]*np.full(len(zf)-1, dz)[None, :]
     inside = np.zeros_like(rho, dtype=bool)
-    for j in range(lo, hi):
+    for j in range(max(lo, 0), min(hi, len(zf)-1)):
         r_s = np.nanmin([rs[j], rs[j+1]])
         inside[:, j] = rc < r_s
+        if inner is not None:
+            inside[:, j] &= rc > np.nanmax([inner[j], inner[j+1]])
     if not inside.any():
         return None, None
     n = rho/mass
@@ -132,12 +182,14 @@ def summarize(run):
     rows = []
     for k, psi, rho, p in frames:
         t = history[k]["time_s"] if k < len(history) else np.nan
-        region = closed_region(rf, zf, psi)
+        region = annular_closed_region(rf, zf, psi) if rf[0] > 0 else closed_region(rf, zf, psi)
         mid_cell = rho.shape[1]//2
         row = dict(time_s=t, chord_density_m2=chord_density(rf, rho, mid_cell, mass))
         if region:
-            nbar, temp = plasma_inside(rf, zf, rho, p, region["profile"], region["lo"], region["hi"], mass)
-            row.update({k2: v for k2, v in region.items() if k2 != "profile"}, density_m3=nbar, total_temperature_ev=temp)
+            nbar, temp = plasma_inside(rf, zf, rho, p, region["profile"], region["lo"], region["hi"], mass,
+                                       region.get("inner_profile"))
+            row.update({k2: v for k2, v in region.items() if k2 not in ("profile", "inner_profile")},
+                       density_m3=nbar, total_temperature_ev=temp)
             row["profile"] = [None if not np.isfinite(x) else float(x) for x in region["profile"]]
         rows.append(row)
     return setup, rf, zf, rows

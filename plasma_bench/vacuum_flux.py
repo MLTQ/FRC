@@ -21,6 +21,8 @@ def flux_components(mesh, q, psi, gamma, resistive_electric, boundary_field, int
     Poynting flux E_theta x B_t/mu0 of the full CT electric field (ideal, dissipative, resistive,
     interface), so a current-free cell exchanges no spurious energy with its gas. The returned
     FluxUpdate has `dissipative_electric` set unless the mode is "face".
+    An annular mesh (inner_radius > 0) has a second reflecting, magnetically transparent wall at the inner
+    radius: boundary_field then carries a fourth entry, the inner-vacuum tangential Bz on the inner faces.
     """
     if open_ends:
         # Outflow-only ends, per radial row: zero-gradient ghosts where the end cell flows
@@ -34,17 +36,23 @@ def flux_components(mesh, q, psi, gamma, resistive_electric, boundary_field, int
         lo, hi = q[:, 1::-1].copy(), q[:, :-3:-1].copy()
         lo[..., 2] *= -1; hi[..., 2] *= -1
     extended = np.concatenate((lo, q, hi), axis=1)
-    ghost_mesh = MHDMesh(mesh.radius, mesh.half_length+2*mesh.dz, mesh.nr, mesh.nz+4)
+    ghost_mesh = MHDMesh(mesh.radius, mesh.half_length+2*mesh.dz, mesh.nr, mesh.nz+4, mesh.inner_radius)
+    annular = mesh.inner_radius > 0
     reconstruction = Reconstruction(ghost_mesh, extended, local_bounds=local_bounds) if spatial_order == 2 else None
     if reconstruction is not None:
         left, right, down, up = reconstruction.faces()
         corners = list(reconstruction.corners())
         for index in (1, 3):
             corners[index][-1, :, 4] *= -1
+        if annular:                     # the inner wall is a transparent wall, not the regular axis
+            for index in (0, 2):
+                corners[index][0, :, 4] *= -1
         source = reconstruction.radial_source()
     else:
         ghost = ghost_cells(extended)
         ghost[-1, :, 4] *= -1
+        if annular:
+            ghost[0, :, 4] *= -1
         left, right = ghost[:-1, 1:-1].copy(), ghost[1:, 1:-1].copy()
         down, up = ghost[1:-1, :-1].copy(), ghost[1:-1, 1:].copy()
         corners = [ghost[:-1, :-1], ghost[1:, :-1], ghost[:-1, 1:], ghost[1:, 1:]]
@@ -53,9 +61,13 @@ def flux_components(mesh, q, psi, gamma, resistive_electric, boundary_field, int
     # Here the field is continuous through a magnetically transparent gas wall.
     if reconstruction is not None:
         right[-1, :, 4] *= -1
+        if annular:
+            left[0, :, 4] *= -1
     left, right, down, up = [value[:, 2:-2] for value in (left, right, down, up)]
-    bz_wall, br_bottom, br_top = boundary_field
+    bz_wall, br_bottom, br_top = boundary_field[:3]
     left[-1, :, 5] = right[-1, :, 5] = bz_wall
+    if annular:
+        left[0, :, 5] = right[0, :, 5] = boundary_field[3]
     down[:, 0, 4] = up[:, 0, 4] = br_bottom
     down[:, -1, 4] = up[:, -1, 4] = br_top
     brf, bzf = mesh.face_fields(psi)
@@ -74,9 +86,10 @@ def flux_components(mesh, q, psi, gamma, resistive_electric, boundary_field, int
     fields = [value[:, 2:-2] for value in fields]
     central, dissipative = uct_electric(corners, fields, gamma, parts=True)
     electric = central+dissipative+resistive_electric+interface_electric
-    electric[0] = 0  # Regular axis; no artificial zero at the chamber wall/ends.
-    dissipative[0] = 0
-    central[0] = 0
+    if not annular:
+        electric[0] = 0  # Regular axis; no artificial zero at the chamber walls/ends.
+        dissipative[0] = 0
+        central[0] = 0
     nonideal = resistive_electric+interface_electric
     if mode in ("dissipative", "ct"):
         nonideal = nonideal+dissipative

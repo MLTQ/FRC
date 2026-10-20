@@ -22,3 +22,7 @@ the selected corner electric field and a fixed variational magnetic trace.
 divergence; it does not change a state or apply a cell-energy residual. Local
 fallback keeps the boundary object and reevaluates its flux after selecting
 corners. Both orders must refer to the same initial magnetic boundary load.
+
+An annular mesh adds the inner-wall Poynting flux from
+`BoundaryPoynting.energy_fluxes` on radial face 0. Its outward energy rate
+includes −2π r_in dz Σ F_r(0), the energy leaving toward the axis.

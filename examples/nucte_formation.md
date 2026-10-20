@@ -67,3 +67,47 @@ Run: `python -m examples.nucte_formation [OUTPUT] [field=value ...]`, e.g.
   stops.
 - `snapshots.npz` and `velocity.npz`: total flux, density, pressure and
   velocity, rewritten every 1 µs so runs can be inspected while in progress.
+
+## Drives, extra coils and the inner tube (playground)
+Named experiments live in `examples/experiments.py`. Run one with
+`python -m examples.nucte_formation OUT preset=NAME [field=value ...]`;
+explicit fields override the preset. See `docs/EXPERIMENT_PLAYGROUND.md`.
+
+**`drive`**
+- `"ideal"`: the prescribed centre-field waveform.
+- `"circuit"`: capacitor banks through `plasma_bench/coil_circuit.py`.
+- `"coupled"`: the same banks, loaded each step by the plasma's flux linkage.
+
+Under `"circuit"`, the bias and main charge voltages are set on the main coil
+alone, in vacuum: the centre field is `bias_t` at t = 0 and peaks at `peak_t`.
+
+**Coupled loading.** Each section's image current changes as
+dI_img = −L_cc⁻¹ dΦ_p, over the sections whose circuit is closed (a conducting
+module or a closed crowbar).
+- An open section's image is frozen. It therefore stays continuous when a
+  section fires or opens.
+- The vacuum current I_vac = branch − I_img stays continuous with it.
+
+**`extra_main_banks`.** A tuple of `Bank`s on the main coil. Each has its own
+capacitance, voltage, stray inductance, fire time, module count and crowbar
+(one-way by default, so a later bank is not shorted by an earlier crowbar).
+
+**`aux_coils`.** A tuple of `AuxCoil`s. Each is its own circuit section with
+its own `Bank`: `turns` series turns filling `length` at `radius`, centred at
+`z_center`. `pair=True` adds the mirror image at −z_center in series. A
+negative bank voltage gives a field opposing the main field.
+
+**Mutual coupling.** All coils are mutually coupled. A crowbarred main coil
+keeps its flux linkage, so it answers an aux coil's flux by changing its own
+current.
+
+**`inner_radius`.** A coaxial insulating tube on the axis; the gas fills only
+the annulus.
+- The radius is snapped so the tube lies on a field row (`inner_rows`):
+  r_in = i0 r_w/(nr + i0) with i0 ≥ 2. `setup.json` records the snapped radius.
+- Coils inside the tube are `AuxCoil`s with radius ≤ r_in − 2 dr.
+
+**Diagnostics.** An annular run reports `separatrix_mid_m` (outer separatrix),
+`inner_separatrix_mid_m`, `trapped_flux_wb` and `inner_wall_bz_min_t`. Closed
+flux is found by `nucte_compare.annular_closed_region`: the ψ pocket around the
+O-point that touches no wall.

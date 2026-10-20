@@ -34,6 +34,8 @@ def stiffness_action(mesh, psi):
     axial = np.divide(mesh.dr*np.diff(psi, axis=1), mesh.rf[:, None]*mesh.dz,
                       out=np.zeros((mesh.nr+1, mesh.nz)), where=mesh.rf[:, None] > 0)
     axial[-1] *= .5
+    if mesh.inner_radius > 0:      # an inner wall row also has half dual area (the axis row is zero above)
+        axial[0] *= .5
     result = np.zeros_like(psi)
     result[:-1] -= radial; result[1:] += radial
     result[:, :-1] -= axial; result[:, 1:] += axial

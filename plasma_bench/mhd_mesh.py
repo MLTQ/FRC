@@ -5,20 +5,28 @@ import numpy as np
 
 @dataclass(frozen=True)
 class MHDMesh:
+    """Cells between inner_radius (0: the axis; > 0: an inner wall, e.g. a coaxial tube) and radius."""
     radius: float
     half_length: float
     nr: int
     nz: int
+    inner_radius: float = 0.
 
     def __post_init__(self):
         if not all(np.isfinite(v) and v > 0 for v in (self.radius, self.half_length)):
             raise ValueError("Mesh dimensions must be finite and positive")
+        if not (np.isfinite(self.inner_radius) and 0 <= self.inner_radius < self.radius):
+            raise ValueError("Inner radius must be finite, nonnegative and below the outer radius")
         if any(not isinstance(n, int) or isinstance(n, bool) or n < 4 for n in (self.nr, self.nz)):
             raise ValueError("MHD mesh needs at least four cells per direction")
 
     @property
     def dr(self):
-        return self.radius/self.nr
+        return (self.radius-self.inner_radius)/self.nr
+
+    @property
+    def annular(self):
+        return self.inner_radius > 0
 
     @property
     def dz(self):
@@ -26,7 +34,7 @@ class MHDMesh:
 
     @property
     def rf(self):
-        return np.linspace(0, self.radius, self.nr+1)
+        return np.linspace(self.inner_radius, self.radius, self.nr+1)
 
     @property
     def zf(self):

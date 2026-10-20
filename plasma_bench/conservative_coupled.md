@@ -214,3 +214,23 @@ unchanged.
 - Making 15 cm transparent within a 3 µs rise needs η_gap ≳ 0.05 Ω·m, which
   shrinks the explicit time step about 5×.
 - 1e-2 Ω·m clears a few-cm gap in about 0.3 µs.
+
+## Annular chamber (coaxial inner tube)
+An `MHDMesh` with `inner_radius > 0` gives a gas annulus between an insulating
+inner tube and the outer wall. The inside of the tube is field-only vacuum on the
+coupling grid, which still starts at the axis.
+- Source filaments may lie inside the tube (r < inner_radius) or outside the
+  wall, but not in the gas.
+- The induced state is stored at field rows `r_offset..`.
+- The inner wall reflects gas and is magnetically transparent.
+- Traces, Poynting flux and quadrature are described in vacuum_trace.md,
+  vacuum_energy.md, vacuum_flux.md and magnetic_quadrature.md.
+
+**Verification** (`examples/annulus_verification.py`):
+- **Static equilibrium:** a uniform plasma in a uniform field stays at rest,
+  with max speed 6e-10 m/s against v_A 9e4 m/s and density change 6e-14.
+- **Resistive flux penetration:** flux enters the inner vacuum only through a
+  resistive annulus. This is compared with an independent 1D solution in
+  x = r²/2.
+- **Axis case unchanged:** `inner_radius = 0` reproduces the axis runs bit for
+  bit (a NUCTE formation snapshot checked against the previous commit).

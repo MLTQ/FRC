@@ -20,3 +20,6 @@ pressure recovery, Euler admissibility and diagnostics must use the same choice.
 The explicit `compatible` selector delegates to compatible_magnetic's positive
 flux-interpolant energy. It does not change the historical defaults or silently
 convert the total energy of an existing state.
+
+For an annular mesh, the inner wall row of axial edges also has half dual
+measure on the fluid side (`axial[0] *= .5`). On the axis this row is zero anyway.

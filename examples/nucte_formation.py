@@ -20,6 +20,38 @@ from plasma_bench.coil_circuit import Strap, section_coil, Module, Crowbar, simu
 from scipy.constants import mu_0 as MU0
 
 D_MASS = 2.01410*AMU
+
+
+@dataclass(frozen=True)
+class Bank:
+    """A capacitor bank on one coil: `modules` identical modules in parallel, fired together.
+    Totals are given for the whole bank; the voltage sign sets the field direction (negative opposes the
+    main field). Crowbar resistance follows from the coil + crowbar L/R decay `crowbar_decay_s`."""
+    capacitance: float = 6e-6        # total [F]
+    voltage: float = 10e3            # charge [V]
+    stray: float = 30e-9             # stray inductance of the whole bank seen by the coil [H]
+    resistance: float = 0.           # series resistance of the whole bank [ohm]
+    fire_time: float = 0.            # [s], relative to the main bank (t = 0); may be negative
+    modules: int = 1
+    crowbar: bool = True
+    crowbar_inductance: float = 5e-9  # all crowbars in parallel [H]
+    crowbar_decay_s: float = 1e-4    # L/R of coil + crowbar loop
+    crowbar_one_way: bool = True     # crowbar conducts only the freewheeling current (ignitron/diode)
+    unidirectional: bool = True      # start switches open at their first current zero
+
+
+@dataclass(frozen=True)
+class AuxCoil:
+    """An extra coil with its own bank: staggered/sustaining coils, end plugs, compression coils or a
+    solenoid inside an inner tube (radius < inner_radius). `turns` series turns of equal width fill
+    `length` at `radius`; `pair` adds the mirror image at -z_center wired in series (symmetric)."""
+    name: str = "aux"
+    z_center: float = 0.
+    length: float = .1
+    radius: float = .17
+    turns: int = 1
+    pair: bool = False
+    bank: Bank = Bank()
 ION_MASS = {"D2": D_MASS, "H2": 1.00784*AMU}   # dissociated, fully ionized (Z = 1)
 
 
@@ -28,6 +60,9 @@ class Nucte:
     """Published NUCTE-III geometry/fill (Takahashi 2000; Kuroyanagi 2014) plus explicit assumptions."""
     wall_radius: float = .115         # quartz tube, 23 cm ID, 2.0 m long
     half_length: float = 1.0
+    inner_radius: float = 0.          # >0: coaxial inner tube; gas between its outer surface and the wall. The tube is
+                                      # insulating (reflecting for gas, transparent to field), snapped so the wall lies
+                                      # on a field node row at least 2 cells off the axis; coils inside it are AuxCoils
     coil_radius: float = .17          # 18 single-turn straps, 5 cm wide
     end_radius: float = .162          # 5 straps each end; (0.17/0.162)^2 = 1.10, case 1 mirror ratio
     taper_start: float = 0.           # >0: graded coil, radius linear from coil_radius at |z|=taper_start to
@@ -84,10 +119,13 @@ class Nucte:
     main_resistance: float = 0.       # circuit: main-bank series resistance, all modules in parallel [ohm]
     crowbar_inductance: float = 5e-9  # circuit: crowbar branch inductance, all crowbars in parallel [H]
     unidirectional_start: bool = True  # circuit: main start switches open at their first current zero (ignitron-like)
+    crowbar_one_way: bool = True      # circuit: main crowbars conduct only the freewheeling current (ignitron/diode)
     section_skew_s: float = 0.        # circuit: sections centred at z > 0 fire this much later [s]
     bias_capacitance: float = 2000e-6  # circuit: bias bank (NUCTE-III, Kuroyanagi 2014)
     bias_inductance: float = 2.4e-6
     bias_resistance: float = 8e-3
+    extra_main_banks: tuple = ()      # circuit: further Banks on the main coil (e.g. a later re-boost)
+    aux_coils: tuple = ()             # circuit: AuxCoils, each its own section and bank
 
 
 def strap_layout(c):
@@ -140,10 +178,32 @@ def centre_field(c):
 
 
 def coil_sections(c):
-    """Main-coil straps assigned to `sections` contiguous axial groups (one collector each)."""
+    """Main-coil straps on `sections` contiguous axial groups (one collector each), then one section per
+    AuxCoil: its turns are series straps of width length/turns (both sides for a pair)."""
     layout = sorted(strap_layout(c), key=lambda s: s[1])
     per = int(np.ceil(len(layout)/c.sections))
-    return section_coil([Strap(r, z, c.strap_width, section=k//per) for k, (r, z) in enumerate(layout)], c.filaments)
+    straps = [Strap(r, z, c.strap_width, section=k//per) for k, (r, z) in enumerate(layout)]
+    for k, aux in enumerate(c.aux_coils):
+        width = aux.length/aux.turns
+        centres = [aux.z_center]+([-aux.z_center] if aux.pair else [])
+        turn = 0
+        for zc in centres:
+            for j in range(aux.turns):
+                straps.append(Strap(aux.radius, zc-aux.length/2+(j+.5)*width, width, section=c.sections+k, turn=turn))
+                turn += 1
+    return section_coil(straps, c.filaments)
+
+
+def bank_modules(bank, section, inductance, name):
+    """Modules of one Bank on a section whose self inductance is `inductance` (crowbar R from its L/R)."""
+    n = bank.modules
+    crowbar = None
+    if bank.crowbar:
+        r_cb = (inductance+bank.crowbar_inductance)/bank.crowbar_decay_s
+        crowbar = Crowbar(bank.crowbar_inductance*n, r_cb*n, unidirectional=bank.crowbar_one_way)
+    return [Module(bank.capacitance/n, bank.voltage, bank.stray*n, bank.resistance*n, section=section,
+                   fire_time=bank.fire_time, crowbar=crowbar, unidirectional=bank.unidirectional, name=f"{name}.{j}")
+            for j in range(n)]
 
 
 def circuit_drive(c, coil):
@@ -151,10 +211,12 @@ def circuit_drive(c, coil):
     voltages: bias so the vacuum centre field is bias_t at t=0, main so the total centre field peaks at
     peak_t (no-skew design values; skew then only shifts sections in time). Crowbars close at each main
     capacitor's voltage zero; their resistance gives the L/R decay crowbar_decay_s."""
-    bz = np.array([f[2] for f in coil.field(0., 0.)], dtype=float)
-    n_s = coil.sections
+    bz_all = np.array([f[2] for f in coil.field(0., 0.)], dtype=float)
+    n_s = c.sections                                           # main-coil sections; AuxCoils follow
+    bz = bz_all[:n_s]
     n_mod = n_s*c.main_modules
-    l_coil = float(1/np.linalg.inv(coil.inductance).sum())   # all sections in parallel
+    l_main = coil.inductance[:n_s, :n_s]
+    l_coil = float(1/np.linalg.inv(l_main).sum())             # all main sections in parallel
     r_cb = (l_coil+c.crowbar_inductance)/c.crowbar_decay_s
     centres = [np.mean([s.z for s in coil.straps if s.section == k]) for k in range(n_s)]
 
@@ -163,28 +225,37 @@ def circuit_drive(c, coil):
                        fire_time=-lead, name=f"bias{k}") for k in range(n_s)]
         mods += [Module(c.main_capacitance/n_mod, v_main, c.main_stray*n_mod, c.main_resistance*n_mod, section=k,
                         fire_time=c.section_skew_s if centres[k] > 0 else 0.,
-                        crowbar=Crowbar(c.crowbar_inductance*n_mod, r_cb*n_mod), unidirectional=c.unidirectional_start,
+                        crowbar=Crowbar(c.crowbar_inductance*n_mod, r_cb*n_mod, unidirectional=c.crowbar_one_way),
+                        unidirectional=c.unidirectional_start,
                         name=f"main{k}.{j}")
                  for k in range(n_s) for j in range(c.main_modules)]
         return mods
 
     times = lambda lead: np.concatenate((np.linspace(-lead, 0, 401)[:-1], np.arange(0, c.end_s+1e-9, 2e-9)))
-    centre = lambda res: res.section_current@bz
+    centre = lambda res: res.section_current[:, :n_s]@bz
     # Bias alone at 1 V: lead time to its current peak, then the voltage for bias_t at t = 0.
-    probe = simulate(coil.inductance, [m for m in banks(0., 1., 0.) if m.name.startswith("bias")], 400e-6, samples=8001)
+    probe = simulate(l_main, [m for m in banks(0., 1., 0.) if m.name.startswith("bias")], 400e-6, samples=8001)
     lead = float(probe.time[np.argmax(np.abs(probe.section_current).sum(axis=1))])
     v_bias = c.bias_t/float(np.interp(lead, probe.time, centre(probe)))
-    v_main = (c.peak_t-c.bias_t)/float(centre(simulate(coil.inductance, [m for m in banks(1., 0., 0.) if m.name.startswith("main")],
+    v_main = (c.peak_t-c.bias_t)/float(centre(simulate(l_main, [m for m in banks(1., 0., 0.) if m.name.startswith("main")],
                                                           2*c.quarter_period_s, samples=2001)).max())
+    # Charge voltages are set on the main coil alone (vacuum); extra banks and AuxCoils then use their own.
     for _ in range(3):
-        res = simulate(coil.inductance, banks(v_main, v_bias, lead), c.end_s, samples=times(lead))
+        res = simulate(l_main, banks(v_main, v_bias, lead), c.end_s, samples=times(lead))
         peak = float(centre(res)[res.time >= 0].max())
         v_main *= (c.peak_t-np.interp(0., res.time, centre(res)))/(peak-np.interp(0., res.time, centre(res)))
-    res = simulate(coil.inductance, banks(v_main, v_bias, lead), c.end_s, samples=times(lead))
+    extra = [m for k, bank in enumerate(c.extra_main_banks) for m in bank_modules(bank, 0, l_coil, f"extra{k}")]
+    extra += [m for k, aux in enumerate(c.aux_coils)
+              for m in bank_modules(aux.bank, n_s+k, float(coil.inductance[n_s+k, n_s+k]), f"aux{k}:{aux.name}")]
+    res = simulate(coil.inductance, banks(v_main, v_bias, lead)+extra, c.end_s, samples=times(lead))
     mods = res.modules
     main = [k for k, m in enumerate(mods) if m.name.startswith("main")]
     summary = dict(section_inductance_nh=(coil.inductance*1e9).tolist(), coil_parallel_nh=l_coil*1e9,
-                   centre_field_t_per_ka=(bz*1e3).tolist(), main_voltage_v=v_main, bias_voltage_v=v_bias,
+                   centre_field_t_per_ka=(bz_all*1e3).tolist(), main_voltage_v=v_main, bias_voltage_v=v_bias,
+                   extra_banks=[dict(name=m.name, voltage_v=m.voltage, fire_time_s=m.fire_time,
+                                     peak_current_a=float(np.abs(res.module_current[:, k]).max()),
+                                     energy_j=.5*m.capacitance*m.voltage**2)
+                                for k, m in enumerate(mods) if m.name.startswith(("extra", "aux"))],
                    bias_lead_s=lead, crowbar_resistance_per_module_ohm=r_cb*n_mod,
                    crowbar_times_s=[res.crowbar_times[k] for k in main],
                    main_peak_current_per_module_a=[float(np.abs(res.module_current[:, k]).max()) for k in main],
@@ -197,11 +268,26 @@ def circuit_drive(c, coil):
     return res, summary
 
 
+def inner_rows(c):
+    """Field rows inside the inner tube (0 without one) and the snapped tube radius: r_in = i0 r_w/(nr+i0)."""
+    if c.inner_radius <= 0:
+        return 0, 0.
+    i0 = max(2, int(round(c.inner_radius*c.nr/(c.wall_radius-c.inner_radius))))
+    return i0, i0*c.wall_radius/(c.nr+i0)
+
+
 def build(c):
-    fluid = MHDMesh(c.wall_radius, c.half_length, c.nr, c.nz)
+    i0, r_in = inner_rows(c)
+    fluid = MHDMesh(c.wall_radius, c.half_length, c.nr, c.nz, r_in)
     grid = Grid(c.wall_radius+c.exterior_cells*fluid.dr, c.half_length+c.end_cells*fluid.dz,
-                c.nr+c.exterior_cells+1, c.nz+2*c.end_cells+1)
+                i0+c.nr+c.exterior_cells+1, c.nz+2*c.end_cells+1)
+    for aux in c.aux_coils:
+        if aux.radius < c.wall_radius and not (r_in > 0 and aux.radius <= r_in-2*fluid.dr):
+            raise ValueError(f"AuxCoil {aux.name}: radius {aux.radius} m must be outside the wall or at least two "
+                             f"cells ({2*fluid.dr:.4f} m) inside the inner tube (snapped radius {r_in:.4f} m)")
     stepper = None
+    if (c.aux_coils or c.extra_main_banks) and c.drive == "ideal":
+        raise ValueError("AuxCoils and extra main banks need drive=circuit or drive=coupled")
     if c.drive in ("circuit", "coupled"):
         coil = coil_sections(c)
         circuit, drive = circuit_drive(c, coil)
@@ -247,7 +333,7 @@ def build(c):
                                     gap_density=c.gap_density_fraction*n_d*mass if c.gap_resistivity > 0 else None)
     # Initial plasma is current-free in the bias: induced flux zero, total flux = source flux.
     probe = ConservativeState(np.zeros((c.nr, c.nz, 4)), np.zeros((grid.nr, grid.nz)))
-    total = sources.at(0.).psi[:c.nr+1, c.end_cells:c.end_cells+c.nz+1]
+    total = sources.at(0.).psi[i0:i0+c.nr+1, c.end_cells:c.end_cells+c.nz+1]
     state = from_primitive(fluid, total, rho, p, energy_quadrature=c.energy_quadrature)
     model = ConservativeVacuumMHD(fluid, sources, ConservativeState(state.conserved, probe.induced_psi), params)
     model.coil_half_length = (c.centre_straps/2+c.end_straps)*c.strap_width
@@ -256,6 +342,7 @@ def build(c):
     if stepper is not None:
         model.coupler = coupler(model, coil, stepper, sources)
     return model, dict(fill_ions_m3=n_d, density_kg_m3=n_d*mass, pressure_pa=2*n_d*c.pi_temperature_ev*QE,
+                       inner_radius_m=r_in,
                        strap_currents_a_per_t=current.tolist(),
                        centre_strap_share=float(current[:c.centre_straps].sum()/current.sum()) if c.drive == "ideal" else None,
                        circuit=drive)
@@ -311,12 +398,21 @@ def coupler(model, coil, stepper, sources):
     deliver through it, L dI_vac/dt . I_img = -dI_vac/dt . Phi_p, is exactly the solver's source work."""
     m = model.mapping
     units = [m.grid_vector(np.asarray(group[1][0])) for group in sources._groups]
-    l_inv = np.linalg.inv(coil.inductance)
+    last = {"phi": np.zeros(coil.sections)}   # the initial plasma carries no induced current
 
     def update(mm):
         ku = mm._node_current(mm.state)[0]
         phi = np.array([2*np.pi/MU0*float(ku[m.active]@unit[m.active]) for unit in units])
-        stepper.advance(mm.time, -l_inv@phi)
+        # Only sections with a closed circuit carry net current, so only they answer a linkage change:
+        # dI_img,c = -L_cc^-1 dPhi_p,c over the connected sections c (those connected at the step start).
+        # An open section's image is frozen. The image is thus continuous when a section connects or opens
+        # (its branch current is zero then), and I_vac = branch - I_img stays continuous with it.
+        conn = stepper.connected()
+        image = stepper.image.copy()
+        if conn.any():
+            image[conn] -= np.linalg.solve(coil.inductance[np.ix_(conn, conn)], (phi-last["phi"])[conn])
+        last["phi"] = phi
+        stepper.advance(mm.time, image)
         sources._cache.clear()
     update.stepper = stepper
     return update
@@ -333,6 +429,8 @@ def image_current(model, coil_half_length):
 
 
 def observe(model):
+    if model.mesh.annular:
+        return observe_annular(model)
     z, rs, psi = separatrix(model)
     q = model._primitive(model.state, model.time)
     finite = np.isfinite(rs)
@@ -344,6 +442,30 @@ def observe(model):
                 reversed_length_m=float(np.ptp(z[finite])) if finite.sum() > 1 else 0.,
                 separated_length_m=float(np.ptp(z[closed])) if closed.sum() > 1 else 0.,
                 excluded_radius_mid_m=float(rdphi[mid]),
+                axis_density_m3=float(q[0, q.shape[1]//2, 0]/model.ion_mass),
+                max_density_m3=float(q[..., 0].max()/model.ion_mass), min_density_m3=float(q[..., 0].min()/model.ion_mass),
+                max_pressure_pa=float(q[..., 3].max()), max_speed_m_s=float(np.hypot(q[..., 1], q[..., 2]).max()),
+                image_current_a=image_current(model, model.coil_half_length),
+                circuit=model.coupler.stepper.snapshot() if model.coupler else None)
+
+
+def observe_annular(model):
+    """observe() for an annular chamber: the closed region is the flux pocket around the O-point that touches
+    no wall (examples.nucte_compare.annular_closed_region); r_s is its outer separatrix at the midplane."""
+    from examples.nucte_compare import annular_closed_region
+    m = model.mesh
+    psi = model.mapping.fluid_flux(model.total_flux())
+    q = model._primitive(model.state, model.time)
+    region = annular_closed_region(m.rf, m.zf, psi)
+    rdphi = excluded_flux_radius(model, psi)
+    inner_bz = (psi[1]-psi[0])/(.5*(m.rf[1]**2-m.rf[0]**2))
+    length = region["length_m"] if region else 0.
+    return dict(time_s=model.time, steps=model.steps, inner_wall_bz_min_t=float(inner_bz.min()),
+                separatrix_mid_m=region["separatrix_mid_m"] if region else None,
+                inner_separatrix_mid_m=region["inner_separatrix_mid_m"] if region else None,
+                reversed_length_m=length, separated_length_m=length,
+                trapped_flux_wb=region["trapped_flux_wb"] if region else 0.,
+                excluded_radius_mid_m=float(rdphi[len(m.zf)//2]),
                 axis_density_m3=float(q[0, q.shape[1]//2, 0]/model.ion_mass),
                 max_density_m3=float(q[..., 0].max()/model.ion_mass), min_density_m3=float(q[..., 0].min()/model.ion_mass),
                 max_pressure_pa=float(q[..., 3].max()), max_speed_m_s=float(np.hypot(q[..., 1], q[..., 2]).max()),
@@ -393,7 +515,18 @@ def main(out=Path("outputs/nucte_formation"), **overrides):
     return history
 
 
+def _from_dict(kind, data):
+    if kind is AuxCoil:
+        data = dict(data)
+        data["bank"] = Bank(**data.get("bank", {}))
+    return kind(**data)
+
+
 def parse(field, text):
+    """CLI value for a Nucte field. Tuple fields (aux_coils, extra_main_banks) take JSON text or a JSON file."""
+    if field in ("aux_coils", "extra_main_banks"):
+        data = json.loads(text if text.lstrip().startswith("[") else Path(text).read_text())
+        return tuple(_from_dict(AuxCoil if field == "aux_coils" else Bank, d) for d in data)
     kind = type(getattr(Nucte(), field))
     if kind is bool:
         if text not in ("True", "False"):
@@ -403,6 +536,10 @@ def parse(field, text):
 
 
 if __name__ == "__main__":
-    args = dict(a.split("=") for a in sys.argv[2:])
+    args = dict(a.split("=", 1) for a in sys.argv[2:])
+    preset = {}
+    if "preset" in args:   # named experiment from examples/experiments.py; explicit arguments override it
+        from examples.experiments import PRESETS
+        preset = dict(PRESETS[args.pop("preset")])
     main(Path(sys.argv[1]) if len(sys.argv) > 1 else Path("outputs/nucte_formation"),
-         **{k: parse(k, v) for k, v in args.items()})
+         **{**preset, **{k: parse(k, v) for k, v in args.items()}})

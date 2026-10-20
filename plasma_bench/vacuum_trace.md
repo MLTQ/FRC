@@ -38,3 +38,13 @@ at the end rows on the radial centroids.
 - **Effect:** the 1 µs response residual fell from 2.9e-2 to 1.0e-3.
 - **What it did not fix:** the later growth of the case-6 residual, which
   converges with resolution (see `docs/NUCTE_BENCHMARK.md`).
+
+## Inner wall of an annular chamber
+`tangential_field` returns a 4-tuple `(bz_wall, br_bottom, br_top, bz_inner)`.
+`bz_inner` is the vacuum-side Bz on the inner wall faces, from the one-sided
+second-order derivative toward the axis, (3ψ_i0 − 4ψ_i0−1 + ψ_i0−2)/(2 dr r_in).
+It is None without an inner wall. With an analytic source, the coil Bz at the
+inner wall nodes is added, as at the outer wall.
+
+`interface_resistivity` also marks the inner wall row. End-row marks start at
+row max(i0, 1).

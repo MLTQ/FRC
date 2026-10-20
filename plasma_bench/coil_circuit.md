@@ -47,6 +47,17 @@ section's total stays fixed.
   (ignitron-like). After a crowbar this isolates the ringing capacitor.
 - **Crowbar:** L_c and R_c across the section terminals. It closes `delay` after
   the capacitor voltage first crosses zero (≈ current peak), or at a set time.
+- **One-way crowbar (`unidirectional=True`, ignitron/diode):** needs L_c > 0.
+  - Once armed it conducts only freewheeling current. It releases when its
+    current reverses, and re-closes when the section voltage forward-biases it
+    again.
+  - Without this, a later bank on the same coil (a re-boost) would be shorted
+    by the first bank's crowbar.
+  - A plug coil pushing flux back through the main coil would otherwise open
+    the main crowbar for good.
+- **Switch events:** start, crowbar arming, gate opening, release and re-close
+  form one state machine. Every event whose quantity reaches zero together is
+  applied together, and the transitions are logged (`crowbar_log`).
 
 **Branch equations** (s = the branch's section):
 - module: L_m İ_m + R_m I_m = V_C − V_s, with C V̇_C = −I_m;
@@ -73,11 +84,23 @@ The stepper makes the coil's flux follow the banks instead. Each accepted solver
 step:
 1. The plasma's flux linkage with each section is computed,
    Φ_p,s = Σ_j (2π/μ0)(Ku)_j ψ_s(j).
-2. It enters as an image load, I_img = −L⁻¹Φ_p, so that
-   V_s = d(L I_coil + Φ_p)/dt with I_coil = I_vac + I_img.
+2. It enters as an image load, so that V_s = d(L I_coil + Φ_p)/dt with
+   I_coil = I_vac + I_img.
+   - Only sections with a closed circuit (`connected()`: a conducting module or
+     a closed crowbar) answer a linkage change:
+     dI_img,c = −L_cc⁻¹ dΦ_p,c (the driver's `coupler`).
+   - An open section carries no net current. Its image is frozen, so the image
+     and I_vac stay continuous when a section fires or opens.
+   - The earlier forms both failed. Loading open sections algebraically was
+     unstable. An offset formula I_img = −L_cc⁻¹(Φ − Φ_connect) made the
+     already-connected images jump when a new section connected: the plug coil
+     then fired and immediately opened.
 3. RK4 advances the banks, with switch events located inside the step.
-4. The per-section vacuum-current waveforms (value and slope) used by the next
-   step are refreshed.
+4. The per-section vacuum-current waveforms used by the next step are
+   refreshed. They stay continuous: each keeps its own value at the step start
+   and catches up with the circuit over one further step, with
+   slope = circuit slope + (circuit − held)/step. A source that jumped at a step
+   boundary would change the field with no matching work.
 
 Power through the load, L İ_vac·I_img = −İ_vac·Φ_p, equals the solver's source
 work exactly. The driver option is `drive="coupled"`.

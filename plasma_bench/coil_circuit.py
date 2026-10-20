@@ -160,12 +160,16 @@ def section_coil(straps, filaments_per_strap=8):
 
 @dataclass(frozen=True)
 class Crowbar:
-    """Switch across the section terminals: closes `delay` after the module capacitor voltage first crosses
-    zero (close to current peak), or at absolute `time` if given."""
+    """Switch across the section terminals: armed `delay` after the module capacitor voltage first crosses
+    zero (close to current peak), or at absolute `time` if given, and closed then.
+    unidirectional (diode-stack crowbar, needs inductance > 0): conducts only the coil's freewheeling current;
+    it opens when that current falls to zero (e.g. a later bank drives the coil harder, or a neighbouring
+    coil's flux pushes back) and re-closes whenever the section voltage turns forward-biased again."""
     inductance: float = 0.
     resistance: float = 0.
     delay: float = 0.
     time: float | None = None
+    unidirectional: bool = False
 
 
 @dataclass(frozen=True)
@@ -202,6 +206,8 @@ class CircuitResult:
     crowbar_times: tuple             # closing time per module (None if never)
     modules: tuple
     open_times: tuple = ()           # unidirectional start switches: time each opened (None if never)
+    release_times: tuple = ()        # one-way crowbars: first time each opened (None if never)
+    crowbar_log: tuple = ()          # per module: crowbar transitions (time, closed)
 
     def energy_residual(self, inductance):
         """Initial capacitor energy minus (capacitor + magnetic + dissipated + plasma work), per time [J]."""
@@ -247,11 +253,15 @@ def simulate(inductance, modules, t_end, coil_resistance=0., plasma_flux=None, s
     cm = np.array([m.capacitance for m in modules])
     lc = np.array([m.crowbar.inductance if m.crowbar else 0. for m in modules])
     rc = np.array([m.crowbar.resistance if m.crowbar else 0. for m in modules])
+    if any(m.crowbar and m.crowbar.unidirectional and m.crowbar.inductance <= 0 for m in modules):
+        raise ValueError("A one-way crowbar needs inductance > 0")
     fired = np.zeros(n_m, bool); shorted = np.zeros(n_m, bool); opened = np.zeros(n_m, bool)
-    trigger = [None]*n_m
+    armed = np.zeros(n_m, bool)
     open_at = [None]*n_m
     closing = [m.crowbar.time if (m.crowbar and m.crowbar.time is not None) else None for m in modules]
+    log = [[] for _ in range(n_m)]        # crowbar transitions (time, closed)
     plasma = plasma_flux or (lambda t: (np.zeros(n_s), np.zeros(n_s)))
+    sign = np.array([np.sign(m.voltage) or 1. for m in modules])
 
     def section_currents(y):
         i_m, i_c = y[:n_m]*(fired & ~opened), y[2*n_m:3*n_m]*shorted
@@ -289,38 +299,72 @@ def simulate(inductance, modules, t_end, coil_resistance=0., plasma_flux=None, s
         dy[3*n_m+1] = (i_s*dphi).sum()
         return dy, v_s
 
+    # Switch quantities that act at a zero crossing (from + to -): crowbar trigger (capacitor voltage), start
+    # switch opening (module current), one-way crowbar release (freewheeling current) and re-close (voltage).
+    def quantity(kind, k, tt, yy):
+        if kind == "trigger":
+            return yy[n_m+k]*sign[k]
+        if kind == "gate":
+            return yy[k]*sign[k]
+        if kind == "release":
+            return -yy[2*n_m+k]*sign[k]
+        return rhs(tt, yy)[1][sec[k]]*sign[k]   # reclose: section voltage forward-biases the crowbar
+
+    def watched():
+        out = []
+        for k, m in enumerate(modules):
+            if m.crowbar and m.crowbar.time is None and fired[k] and closing[k] is None:
+                out.append(("trigger", k))
+            if m.unidirectional and fired[k] and not opened[k]:
+                out.append(("gate", k))
+            if m.crowbar and m.crowbar.unidirectional and shorted[k]:
+                out.append(("release", k))
+            if m.crowbar and m.crowbar.unidirectional and armed[k] and not shorted[k]:
+                out.append(("reclose", k))
+        return out
+
+    def tolerance(kind, k, yy):
+        if kind == "trigger" or kind == "reclose":
+            return 1e-9*abs(modules[k].voltage)
+        return 1e-9*max(1., np.abs(yy[:3*n_m]).max())
+
+    def apply(kind, k, tt, yy):
+        if kind == "trigger":
+            closing[k] = tt+modules[k].crowbar.delay
+        elif kind == "gate":
+            opened[k] = True; open_at[k] = tt; yy[k] = 0.
+        elif kind == "release":
+            shorted[k] = False; yy[2*n_m+k] = 0.; log[k].append((tt, False))
+        else:
+            shorted[k] = True; yy[2*n_m+k] = 0.; log[k].append((tt, True))
+
     y = np.zeros(3*n_m+2)
     y[n_m:2*n_m] = [m.voltage for m in modules]
     t = min(m.fire_time for m in modules)
 
     def schedule():
         pending = [m.fire_time for k, m in enumerate(modules) if not fired[k] and m.fire_time > t]
-        pending += [c for k, c in enumerate(closing) if c is not None and not shorted[k] and c > t]
+        pending += [c for k, c in enumerate(closing) if c is not None and not armed[k] and c > t]
         return min(pending+[t_end])
 
-    def switch(now):
+    def switch(now, yy):
         for k, m in enumerate(modules):
             if not fired[k] and m.fire_time <= now:
                 fired[k] = True
-            if closing[k] is not None and not shorted[k] and closing[k] <= now and fired[k]:
-                shorted[k] = True
+            if closing[k] is not None and not armed[k] and closing[k] <= now and fired[k]:
+                armed[k] = True; shorted[k] = True; yy[2*n_m+k] = 0.; log[k].append((now, True))
 
-    switch(t)
+    switch(t, y)
     t_start, segments = t, []
     while t < t_end:
         stop = schedule()
-        events, kinds = [], []
-        for k, m in enumerate(modules):
-            if m.crowbar and m.crowbar.time is None and fired[k] and trigger[k] is None:
-                def zero(tt, yy, k=k):       # crowbar trigger: capacitor voltage crosses zero
-                    return yy[n_m+k]*np.sign(modules[k].voltage)
-                zero.terminal, zero.direction = True, -1
-                events.append(zero); kinds.append(("crowbar", k))
-            if m.unidirectional and fired[k] and not opened[k]:
-                def gate(tt, yy, k=k):       # start switch: module current crosses zero
-                    return yy[k]*np.sign(modules[k].voltage)
-                gate.terminal, gate.direction = True, -1
-                events.append(gate); kinds.append(("gate", k))
+        kinds = watched()
+        events = []
+        for kind, k in kinds:
+            def event(tt, yy, kind=kind, k=k):
+                return quantity(kind, k, tt, yy)
+            event.terminal, event.direction = True, -1
+            events.append(event)
         scale = max(1., np.abs(y[:3*n_m]).max(), max(abs(m.voltage) for m in modules))
         sol = solve_ivp(lambda tt, yy: rhs(tt, yy)[0], (t, stop), y, method="DOP853", rtol=rtol,
                         atol=1e-13*scale, events=events or None, dense_output=True)
@@ -329,26 +373,19 @@ def simulate(inductance, modules, t_end, coil_resistance=0., plasma_flux=None, s
         segments.append((sol.t[0], sol.t[-1], sol.sol))
         t, y = sol.t[-1], sol.y[:, -1].copy()
         if sol.status == 1:
-            # Apply every trigger that has reached zero at the stop time, not only the one that stopped
+            # Apply every switch quantity that has reached zero at the stop time, not only the one that stopped
             # the integration: symmetric modules cross together and would otherwise be missed for good.
-            for (kind, k), hits in zip(kinds, sol.t_events):
-                sign = np.sign(modules[k].voltage)
-                if kind == "crowbar":
-                    reached = hits.size or y[n_m+k]*sign <= 1e-9*abs(modules[k].voltage)
-                    if reached:
-                        trigger[k] = t
-                        closing[k] = t+modules[k].crowbar.delay
-                else:
-                    reached = hits.size or y[k]*sign <= 1e-9*max(1., np.abs(y[:n_m]).max())
-                    if reached:
-                        opened[k] = True; open_at[k] = t; y[k] = 0.
-        switch(t)
+            due = [(kind, k) for (kind, k), hits in zip(kinds, sol.t_events)
+                   if hits.size or quantity(kind, k, t, y) <= tolerance(kind, k, y)]
+            for kind, k in due:
+                apply(kind, k, t, y)
+        switch(t, y)
     if np.ndim(samples):
         grid = np.asarray(samples, dtype=float)
         grid = grid[(grid >= t_start) & (grid <= t_end)]
     else:
         grid = np.linspace(t_start, t_end, samples)
-    grid = np.union1d(grid, [c for c in closing if c is not None and t_start <= c <= t_end])
+    grid = np.union1d(grid, [tt for entries in log for tt, _ in entries if t_start <= tt <= t_end])
     y_grid = np.empty((grid.size, y.size))
     for n, tt in enumerate(grid):
         a, b, dense = next(s for s in segments if s[0] <= tt <= s[1]) if tt < segments[-1][1] else segments[-1]
@@ -358,13 +395,15 @@ def simulate(inductance, modules, t_end, coil_resistance=0., plasma_flux=None, s
     v_s = np.zeros((grid.size, n_s))
     for n, tt in enumerate(grid):
         fired[:] = [m.fire_time <= tt for m in modules]
-        shorted[:] = [closing[k] is not None and closing[k] <= tt and fired[k] for k in range(n_m)]
+        shorted[:] = [bool([closed for when, closed in log[k] if when <= tt][-1:] == [True]) for k in range(n_m)]
         opened[:] = [open_at[k] is not None and open_at[k] <= tt for k in range(n_m)]
-        i_m[n] = y_grid[n, :n_m]*fired; i_c[n] = y_grid[n, 2*n_m:3*n_m]*shorted
+        i_m[n] = y_grid[n, :n_m]*(fired & ~opened); i_c[n] = y_grid[n, 2*n_m:3*n_m]*shorted
         i_s[n] = section_currents(y_grid[n])
         v_s[n] = rhs(tt, y_grid[n])[1]
+    first_close = tuple(next((when for when, closed in log[k] if closed), None) for k in range(n_m))
+    releases = tuple(next((when for when, closed in log[k] if not closed), None) for k in range(n_m))
     return CircuitResult(grid, i_m, y_grid[:, n_m:2*n_m], i_c, i_s, v_s, y_grid[:, 3*n_m], y_grid[:, 3*n_m+1],
-                         tuple(closing), modules, tuple(open_at))
+                         first_close, modules, tuple(open_at), releases, tuple(tuple(e) for e in log))
 
 
 class LinearWaveform:
@@ -385,30 +424,35 @@ class CircuitStepper:
     The solver's coil boundary carries an image current I_img,s per section on top of the prescribed
     vacuum current I_vac,s, and the coil links the vacuum flux L I_vac only. KCL at each section node:
     I_vac,s = sum(I_m) - sum(I_c) - I_img,s, so the image current is a load the banks must supply and the
-    stray inductances limit. Each solver step: RK4 over [t, t+dt] with I_img linear in time, then switch
-    events (fire, crowbar at capacitor-voltage zero, unidirectional opening) at the step end."""
+    stray inductances limit. Each solver step: RK4 over [t, t+dt] with I_img linear in time; switch events
+    (fire, crowbar arming at the capacitor-voltage zero, start-switch opening, one-way crowbar release and
+    re-close) are located inside the step, as in `simulate`."""
     def __init__(self, inductance, modules, coil_resistance=0., start=None):
         self.l = np.atleast_2d(np.asarray(inductance, dtype=float))
         self.modules = tuple(modules)
         n_s, n_m = self.l.shape[0], len(self.modules)
         self.n_s, self.n_m = n_s, n_m
+        if any(m.crowbar and m.crowbar.unidirectional and m.crowbar.inductance <= 0 for m in self.modules):
+            raise ValueError("A one-way crowbar needs inductance > 0")
         self.r_coil = np.broadcast_to(np.asarray(coil_resistance, dtype=float), (n_s,))
         self.sec = np.array([m.section for m in self.modules])
         self.lm = np.array([m.inductance for m in self.modules]); self.rm = np.array([m.resistance for m in self.modules])
         self.cm = np.array([m.capacitance for m in self.modules])
         self.lc = np.array([m.crowbar.inductance if m.crowbar else 0. for m in self.modules])
         self.rc = np.array([m.crowbar.resistance if m.crowbar else 0. for m in self.modules])
+        self.sign = np.array([np.sign(m.voltage) or 1. for m in self.modules])
         self.t = min(m.fire_time for m in self.modules) if start is None else start
         self.y = np.zeros(3*n_m+2)
         self.y[n_m:2*n_m] = [m.voltage for m in self.modules]
         self.fired = np.array([m.fire_time <= self.t for m in self.modules])
-        self.shorted = np.zeros(n_m, bool); self.opened = np.zeros(n_m, bool)
+        self.shorted = np.zeros(n_m, bool); self.opened = np.zeros(n_m, bool); self.armed = np.zeros(n_m, bool)
         self.closing = [m.crowbar.time if (m.crowbar and m.crowbar.time is not None) else None for m in self.modules]
         self.open_at = [None]*n_m
+        self.log = [[] for _ in range(n_m)]   # crowbar transitions (time, closed)
         self.image = np.zeros(n_s)
         self.waveforms = [LinearWaveform(start=self.t) for _ in range(n_s)]
 
-    def _rhs(self, t, y, image_rate):
+    def _solve(self, t, y, image_rate):
         n_m, n_s = self.n_m, self.n_s
         active = self.fired & ~self.opened
         am, ac = np.nonzero(active)[0], np.nonzero(self.shorted)[0]
@@ -430,6 +474,14 @@ class CircuitStepper:
                 a[row, na+k] += self.l[s, self.sec[m]]
             b[row] = self.r_coil[s]*i_vac[s]-self.l[s]@image_rate
         x = np.linalg.solve(a, b) if a.size else np.zeros(0)
+        return am, ac, x, i_vac
+
+    def _rhs(self, t, y, image_rate):
+        n_m, n_s = self.n_m, self.n_s
+        am, ac, x, i_vac = self._solve(t, y, image_rate)
+        na, nc = am.size, ac.size
+        active = self.fired & ~self.opened
+        i_m, i_c = y[:n_m], y[2*n_m:3*n_m]
         dy = np.zeros_like(y)
         dy[am] = x[:na]; dy[n_m+am] = -i_m[am]/self.cm[am]; dy[2*n_m+ac] = x[na:na+nc]
         dy[3*n_m] = (self.rm*i_m**2*active).sum()+(self.rc*i_c**2*self.shorted).sum()+(self.r_coil*i_vac**2).sum()
@@ -445,57 +497,101 @@ class CircuitStepper:
                              minlength=self.n_s)
         return branch-image
 
+    def connected(self):
+        """Sections with a closed path for net current: a conducting module or a closed crowbar."""
+        active = self.fired & ~self.opened
+        out = np.zeros(self.n_s, bool)
+        out[self.sec[active | self.shorted]] = True
+        return out
+
     def vacuum_rate(self, image_rate):
         return self._rhs(self.t, self.y, image_rate)[:self.n_m]
 
+    def _watched(self):
+        out = []
+        for k, m in enumerate(self.modules):
+            if m.crowbar and m.crowbar.time is None and self.fired[k] and self.closing[k] is None:
+                out.append(("trigger", k))
+            if m.unidirectional and self.fired[k] and not self.opened[k]:
+                out.append(("gate", k))
+            if m.crowbar and m.crowbar.unidirectional and self.shorted[k]:
+                out.append(("release", k))
+            if m.crowbar and m.crowbar.unidirectional and self.armed[k] and not self.shorted[k]:
+                out.append(("reclose", k))
+        return out
+
+    def _quantity(self, kind, k, t, y, image, image_rate):
+        """Switch quantity that acts on a + to - zero crossing (see simulate)."""
+        n_m = self.n_m
+        if kind == "trigger":
+            return y[n_m+k]*self.sign[k]
+        if kind == "gate":
+            return y[k]*self.sign[k]
+        if kind == "release":
+            return -y[2*n_m+k]*self.sign[k]
+        saved = self.image
+        self.image = image
+        am, ac, x, _ = self._solve(t, y, image_rate)
+        self.image = saved
+        return x[am.size+ac.size+self.sec[k]]*self.sign[k]
+
+    def _tolerance(self, kind, k, y):
+        if kind in ("trigger", "reclose"):
+            return 1e-9*abs(self.modules[k].voltage)
+        return 1e-9*max(1., np.abs(y[:3*self.n_m]).max())
+
+    def _apply(self, kind, k):
+        n_m = self.n_m
+        if kind == "trigger":
+            self.closing[k] = self.t+self.modules[k].crowbar.delay
+        elif kind == "gate":
+            self.opened[k] = True; self.open_at[k] = self.t; self.y[k] = 0.
+        elif kind == "release":
+            self.shorted[k] = False; self.y[2*n_m+k] = 0.; self.log[k].append((self.t, False))
+        else:
+            self.shorted[k] = True; self.y[2*n_m+k] = 0.; self.log[k].append((self.t, True))
+
     def advance(self, t_new, image_new):
         """Advance from self.t to t_new with the image current linear between its old and new values.
-        Sub-steps (RK4) end at fire times and at switch events located by linear interpolation of the
-        trigger quantity (capacitor voltage for crowbars, module current for unidirectional switches);
-        then the per-section LinearWaveforms are refreshed (value and slope at t_new)."""
+        Sub-steps (RK4) end at fire and crowbar-arming times and at switch events located by linear
+        interpolation of their quantities; every quantity at zero then is applied together. The per-section
+        LinearWaveforms are then refreshed (value and slope at t_new)."""
         if t_new <= self.t:
             return
         image_new = np.asarray(image_new, dtype=float)
         image_rate = (image_new-self.image)/(t_new-self.t)
         n_m = self.n_m
+        start = self.t
         while self.t < t_new:
             fires = [m.fire_time for k, m in enumerate(self.modules) if not self.fired[k] and self.t < m.fire_time < t_new]
-            closes = [c for k, c in enumerate(self.closing) if c is not None and not self.shorted[k] and self.t < c < t_new]
-            t_end = min(fires+closes+[t_new])
+            arms = [c for k, c in enumerate(self.closing) if c is not None and not self.armed[k] and self.t < c < t_new]
+            t_end = min(fires+arms+[t_new])
+            image_end = self.image+image_rate*(t_end-self.t)
             y1 = self._rk4(t_end-self.t, image_rate)
-            first, kind, which = 1., None, None
-            for k, m in enumerate(self.modules):
-                sign = np.sign(m.voltage)
-                if m.crowbar and m.crowbar.time is None and self.closing[k] is None and self.fired[k]:
-                    g0, g1 = self.y[n_m+k]*sign, y1[n_m+k]*sign
-                    if g0 > 0 >= g1 and g0/(g0-g1) < first:
-                        first, kind, which = g0/(g0-g1), "crowbar", k
-                if m.unidirectional and self.fired[k] and not self.opened[k]:
-                    g0, g1 = self.y[k]*sign, y1[k]*sign
-                    if g0 > 0 >= g1 and g0/(g0-g1) < first:
-                        first, kind, which = g0/(g0-g1), "gate", k
-            if kind is not None and first < 1.:
+            watched = self._watched()
+            first = 1.
+            for kind, k in watched:
+                g0 = self._quantity(kind, k, self.t, self.y, self.image, image_rate)
+                g1 = self._quantity(kind, k, t_end, y1, image_end, image_rate)
+                if g0 > 0 >= g1 and g0/(g0-g1) < first:
+                    first = g0/(g0-g1)
+            if first < 1.:
                 t_end = self.t+first*(t_end-self.t)
+                image_end = self.image+image_rate*(t_end-self.t)
                 y1 = self._rk4(t_end-self.t, image_rate)
-            self.image = self.image+image_rate*(t_end-self.t)
-            self.y, self.t = y1, t_end
-            if kind is not None:   # apply every trigger at zero now (simultaneous symmetric modules)
-                scale_i = max(1., np.abs(self.y[:n_m]).max())
-                for k, m in enumerate(self.modules):
-                    sign = np.sign(m.voltage)
-                    if (m.crowbar and m.crowbar.time is None and self.closing[k] is None and self.fired[k]
-                            and (k == which and kind == "crowbar" or self.y[n_m+k]*sign <= 1e-9*abs(m.voltage))):
-                        self.closing[k] = self.t+m.crowbar.delay
-                    if (m.unidirectional and self.fired[k] and not self.opened[k]
-                            and (k == which and kind == "gate" or self.y[k]*sign <= 1e-9*scale_i)):
-                        self.opened[k] = True; self.open_at[k] = self.t; self.y[k] = 0.
+            self.y, self.t, self.image = y1, t_end, image_end
+            if first < 1.:
+                due = [(kind, k) for kind, k in watched
+                       if self._quantity(kind, k, self.t, self.y, self.image, image_rate) <= self._tolerance(kind, k, self.y)]
+                for kind, k in due:
+                    self._apply(kind, k)
             for k, m in enumerate(self.modules):
                 if not self.fired[k] and m.fire_time <= self.t:
                     self.fired[k] = True
-                if self.closing[k] is not None and not self.shorted[k] and self.closing[k] <= self.t and self.fired[k]:
-                    self.shorted[k] = True
+                if self.closing[k] is not None and not self.armed[k] and self.closing[k] <= self.t and self.fired[k]:
+                    self.armed[k] = True; self.shorted[k] = True; self.y[2*n_m+k] = 0.; self.log[k].append((self.t, True))
         self.image = image_new
-        self.refresh(image_rate)
+        self.refresh(image_rate, relax=t_new-start)
 
     def _rk4(self, dt, image_rate):
         y0, image0, t0 = self.y, self.image, self.t
@@ -507,7 +603,13 @@ class CircuitStepper:
         self.image = image0
         return y0+dt/6*(k1+2*k2+2*k3+k4)
 
-    def refresh(self, image_rate=None):
+    def refresh(self, image_rate=None, relax=None):
+        """Set each section's source waveform for the next solver step. Without `relax` the waveform takes the
+        circuit's vacuum current and slope at self.t. With `relax` (the last step length) it stays continuous:
+        it keeps its own value at self.t and catches up with the circuit over one further step,
+        slope = circuit slope + (circuit current - waveform value)/relax. A source that jumped at a step
+        boundary would change the field with no matching work (an open section's current is set algebraically
+        by its image load, so it can appear suddenly)."""
         image_rate = np.zeros(self.n_s) if image_rate is None else image_rate
         current = self.vacuum_current()
         dy = self._rhs(self.t, self.y, image_rate)
@@ -515,12 +617,18 @@ class CircuitStepper:
         rate = np.bincount(self.sec, weights=dy[:self.n_m]*active-dy[2*self.n_m:3*self.n_m]*self.shorted,
                            minlength=self.n_s)-image_rate
         for s, wave in enumerate(self.waveforms):
-            wave.current, wave.rate, wave.start = float(current[s]), float(rate[s]), self.t
+            if relax is None or relax <= 0:
+                wave.current, wave.rate, wave.start = float(current[s]), float(rate[s]), self.t
+            else:
+                held = float(wave.value(self.t))
+                wave.current, wave.rate, wave.start = held, float(rate[s]+(current[s]-held)/relax), self.t
 
     def run_to(self, t_end, dt):
-        """Advance without plasma (image held) in steps of at most dt, e.g. through the bias phase."""
+        """Advance without plasma (image held) in steps of at most dt, e.g. through the bias phase; the
+        waveforms then take the circuit state exactly (no plasma has seen them yet)."""
         while self.t < t_end-1e-15:
             self.advance(min(self.t+dt, t_end), self.image)
+        self.refresh()
 
     def energy_residual(self):
         """Initial capacitor energy minus capacitor, vacuum-coil, stray and crowbar magnetic energy,

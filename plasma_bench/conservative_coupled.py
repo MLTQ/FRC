@@ -139,7 +139,7 @@ class ConservativeVacuumMHD:
         self.mesh, self.sources = mesh, sources
         self.parameters = parameters or ConservativeParameters()
         p = self.parameters
-        if any(coil.radius <= mesh.radius and abs(coil.z) <= mesh.half_length for coil in sources.coils):
+        if any(mesh.inner_radius <= coil.radius <= mesh.radius and abs(coil.z) <= mesh.half_length for coil in sources.coils):
             raise ValueError("Prescribed source filaments must be outside the gas chamber")
         self.mapping = CouplingMesh(mesh, sources.grid, boundary=p.vacuum_boundary, multipole_modes=p.multipole_modes)
         self.state = initial.copy()
@@ -320,7 +320,7 @@ class ConservativeVacuumMHD:
         m, mesh, p = self.mapping, self.mesh, self.parameters
         data = np.zeros(m.field.shape)
         external = self.sources.at(time).psi
-        data[:mesh.nr+1, m.z_offset:m.z_offset+mesh.nz+1] = fluid_total_flux-m.fluid_flux(external)
+        data[m.r_offset:m.r_offset+mesh.nr+1, m.z_offset:m.z_offset+mesh.nz+1] = fluid_total_flux-m.fluid_flux(external)
         if p.dual_energy:
             if np.any(conserved[..., 0] <= 0) or not np.all(np.isfinite(entropy)) or np.any(entropy <= 0):
                 raise NonphysicalState("Dual-energy stage has nonpositive density or entropy; no repair")

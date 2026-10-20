@@ -15,14 +15,18 @@ class FluxUpdate:
         radial, axial = self.radial, self.axial
         if self.boundary_poynting is not None:
             radial, axial = radial.copy(), axial.copy()
-            wall, bottom, top = self.boundary_poynting.energy_fluxes(mesh, self.electric)
+            wall, bottom, top, inner = self.boundary_poynting.energy_fluxes(mesh, self.electric)
             radial[-1, :, 3] = wall
             axial[:, 0, 3], axial[:, -1, 3] = bottom, top
+            if inner is not None:
+                radial[0, :, 3] = inner
         derivative = -np.diff(mesh.rf[:, None, None]*radial, axis=0)/mesh.radial_measure[:, None, None]
         derivative -= np.diff(axial, axis=1)/mesh.dz
         derivative[..., 1] += self.radial_source
         outward = 2*np.pi*(mesh.radius*mesh.dz*np.sum(radial[-1, :, 3])+
                           np.sum(mesh.radial_measure*(axial[:, -1, 3]-axial[:, 0, 3])))
+        if mesh.inner_radius > 0:   # energy leaving through an inner wall (toward the axis)
+            outward -= 2*np.pi*mesh.inner_radius*mesh.dz*np.sum(radial[0, :, 3])
         return derivative, -mesh.rf[:, None]*self.electric, float(outward)
 
     def local_fallback(self, low, troubled):
