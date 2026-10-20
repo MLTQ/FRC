@@ -83,7 +83,10 @@ Lab envelope:
      - A slow flux core inside the tube grows φ to 2.8 × the control by 40 µs,
        but makes the FRC short and fat.
      - A fast core punch splits the FRC.
-6. **Remaining gaps:**
+6. **Build dossier:** [BUILD_DOSSIER.md](BUILD_DOSSIER.md) gathers every coil's
+   voltage, current, energy and timing, plus the pre-ionization, bias,
+   quadrupole and shot sequence.
+7. **Remaining gaps:**
    - pre-ionization ionization fraction (frc-ibl.4); temperature is now known
      not to matter;
    - N2 commissioning expectations (frc-ibl.7);
