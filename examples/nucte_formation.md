@@ -66,7 +66,11 @@ Run: `python -m examples.nucte_formation [OUTPUT] [field=value ...]`, e.g.
 - `failure.json`: the accepted time and step count plus the error, if the run
   stops.
 - `snapshots.npz` and `velocity.npz`: total flux, density, pressure and
-  velocity, rewritten every 1 µs so runs can be inspected while in progress.
+  velocity.
+  - States are saved every `snapshot_s` (default 1 µs; 0.1 µs gives smooth
+    3D playback) under keys `t0001`, `t0002`, …
+  - The files are rewritten once per simulated µs, at the end and on failure,
+    so runs can be inspected while in progress.
 
 ## Drives, extra coils and the inner tube (playground)
 Named experiments live in `examples/experiments.py`. Run one with

@@ -53,7 +53,7 @@ def load(run):
     rf, zf = data["rf"], data["zf"]
     nr, nz = len(rf)-1, len(zf)-1
     frames = []
-    for key in sorted(k for k in data.files if k.startswith("t")):
+    for key in sorted((k for k in data.files if k.startswith("t")), key=lambda k: int(k[1:])):
         v = data[key]
         n_psi = (nr+1)*(nz+1)
         psi = v[:n_psi].reshape(nr+1, nz+1)

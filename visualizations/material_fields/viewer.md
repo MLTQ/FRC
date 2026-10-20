@@ -70,3 +70,28 @@ remain in tesla and A/m²; shared and per-state scales use the same unit convers
 Detailed playback starts with a shared color scale, so the pulse brightens and
 fades against fixed extrema; per-state scaling remains an explicit option.
 The peak-current metric chooses A, kA or MA/m² according to its actual value.
+
+## Inline volumes, separatrix and labels for formation runs
+These optional fields are used by `examples/formation_display.py`. Missing
+fields keep the earlier behaviour.
+
+**`frame.volume.b64`**
+- The current texture is carried inline as base64 little-endian float32, so a
+  single HTML file works offline and over `file://`.
+- With `channels` < 4, each texel holds that many values. `slots` places them in
+  the RGBA texel (Jr, Jθ, Jz, support); the default `[1, 3]` is (Jθ, support).
+  Other slots are zero.
+- A size mismatch raises the same "Incomplete current volume" error as a fetched
+  volume.
+
+**`frame.separatrix`**
+- Paths drawn in gold on both canvases, regardless of the geometry checkbox.
+- The colour can be set with `DATA.separatrix_color`.
+
+**Text fields**
+- `frame.summary`: a text line shown in `#frame-summary` when the page has
+  that element.
+- `DATA.drive_label` and `DATA.motion_label` replace the "Prescribed
+  vacuum-centre field" and "Plasma radius — middle" prefixes.
+- `DATA.temperature_digits` switches temperatures to that many significant
+  digits. A null temperature shows "—".

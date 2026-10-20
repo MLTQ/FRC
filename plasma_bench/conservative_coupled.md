@@ -230,7 +230,19 @@ coupling grid, which still starts at the axis.
 - **Static equilibrium:** a uniform plasma in a uniform field stays at rest,
   with max speed 6e-10 m/s against v_A 9e4 m/s and density change 6e-14.
 - **Resistive flux penetration:** flux enters the inner vacuum only through a
-  resistive annulus. This is compared with an independent 1D solution in
+  resistive annulus (r 4–10 cm, η = 2e-3 Ω m, applied field 0.05 → 0.25 T in
+  2 µs). It is compared at the midplane with an independent 1D solution in
   x = r²/2.
+
+  | nr (annulus) | max ψ error / max induced ψ (1, 2, 3, 4 µs) | inner-tube Bz error at 1 µs | energy residual |
+  |---|---|---|---|
+  | 12 | 2.9e-3, 7.7e-4, 1.5e-3, 1.9e-3 | 1.4e-3 | 2e-8 |
+  | 24 | 7.1e-4, 1.9e-4, 3.8e-4, 5.0e-4 | 3.5e-4 | 6e-10 |
+  | 48 | 1.8e-4, 4.9e-5, 9.8e-5, 1.5e-4 | 8.8e-5 | 2e-11 |
+
+  The error falls by 4.0 per doubling through 3 µs, which is second order. At
+  4 µs it falls by 3.8 and then 3.2, where the induced flux is small and the
+  residual motion of the heavy fixture plasma (0.03 m/s) begins to show. The 1D
+  reference's own discretization error is 8e-8.
 - **Axis case unchanged:** `inner_radius = 0` reproduces the axis runs bit for
   bit (a NUCTE formation snapshot checked against the previous commit).

@@ -89,6 +89,8 @@ class Nucte:
     exterior_cells: int = 6           # fixed induced-flux boundary just inside the coil
     end_cells: int = 2                # vacuum field cells beyond each tube end before the fixed boundary
     end_s: float = 15e-6
+    snapshot_s: float = 1e-6          # interval between saved states (history row + fields); files are rewritten
+                                      # once per simulated microsecond, at the end and on failure
     cfl: float = .2
     dual_energy: bool = True          # entropy pressure in cold/low-beta cells (pressure mode, energy exact)
     dual_energy_mode: str = "reset"   # cold-cell total energy reset to the entropy value (counted); or "pressure"
@@ -479,8 +481,14 @@ def main(out=Path("outputs/nucte_formation"), **overrides):
     model, setup = build(c)
     (out/"setup.json").write_text(json.dumps(dict(case=asdict(c), **setup), indent=1))
     history, snapshots, velocity, start = [observe(model)], {}, {}, time.time()
-    marks = list(np.arange(1e-6, c.end_s+1e-12, 1e-6))
+    marks = list(np.arange(c.snapshot_s, c.end_s+1e-12, c.snapshot_s))
+    every = max(1, int(round(1e-6/c.snapshot_s)))
     failure = None
+
+    def flush():
+        (out/"history.json").write_text(json.dumps(history, indent=1))
+        np.savez_compressed(out/"snapshots.npz", rf=model.mesh.rf, zf=model.mesh.zf, **snapshots)
+        np.savez_compressed(out/"velocity.npz", **velocity)
     while model.time < c.end_s:
         target = marks.pop(0) if marks else c.end_s
         try:
@@ -489,6 +497,7 @@ def main(out=Path("outputs/nucte_formation"), **overrides):
             failure = dict(time_s=model.time, steps=model.steps, error=f"{type(error).__name__}: {error}")
             (out/"failure.json").write_text(json.dumps(failure, indent=1))
             print(json.dumps(failure), flush=True)
+            flush()
             break
         row = observe(model)
         row.update(wall_s=time.time()-start, **{k: v for k, v in model.diagnostics().items()
@@ -506,12 +515,11 @@ def main(out=Path("outputs/nucte_formation"), **overrides):
         history.append(row)
         z, rs, psi = separatrix(model)
         q = model._primitive(model.state, model.time)
-        snapshots[f"t{len(history)-1:02d}"] = np.concatenate((psi.ravel(), q[..., 0].ravel(), q[..., 3].ravel()))
-        velocity[f"t{len(history)-1:02d}"] = np.concatenate((q[..., 1].ravel(), q[..., 2].ravel()))
-        print(json.dumps({k: (round(v, 6) if isinstance(v, float) else v) for k, v in row.items()}), flush=True)
-        (out/"history.json").write_text(json.dumps(history, indent=1))
-        np.savez_compressed(out/"snapshots.npz", rf=model.mesh.rf, zf=model.mesh.zf, **snapshots)
-        np.savez_compressed(out/"velocity.npz", **velocity)
+        snapshots[f"t{len(history)-1:04d}"] = np.concatenate((psi.ravel(), q[..., 0].ravel(), q[..., 3].ravel()))
+        velocity[f"t{len(history)-1:04d}"] = np.concatenate((q[..., 1].ravel(), q[..., 2].ravel()))
+        if (len(history)-1) % every == 0 or model.time >= c.end_s:
+            print(json.dumps({k: (round(v, 6) if isinstance(v, float) else v) for k, v in row.items()}), flush=True)
+            flush()
     return history
 
 
