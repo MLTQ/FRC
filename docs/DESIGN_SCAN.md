@@ -157,6 +157,13 @@ probes are just inside the tube.
   insensitive to them (floor test above).
 - **Lifetime is not predicted:** see the n=2 section of FRC_DESIGN_WINDOW.md.
   Start without multipoles, measure the onset, then add the quadrupole.
-- **Resolution:** 24×144. The benchmark showed formation converged between
-  16×128 and 32×256 for NUCTE. The design geometry has not had its own
-  convergence run.
+- **Resolution** (option A, 24×144 against 36×216; run d12_uniform_h2_p020_r36):
+  - both close by 2 µs;
+  - from 2 to 10 µs r_s agrees within 6%, Te+Ti within 8% and n̄ within 13%;
+  - trapped flux is 7–10% higher on the finer grid (2.16 vs 2.02 mWb at 10 µs),
+    and its 2D e-fold lengthens from 66 to 104 µs, so part of the coarse-grid
+    flux decay is numerical;
+  - after about 10 µs the phase of the axial bounce differs, so l_s at a given
+    time is not converged, though its range (0.65–1.2 m) is.
+  The formation conclusions and FRC size, density and temperature hold to
+  about 10–15%.
