@@ -232,7 +232,7 @@ def run_display(run, out, label=None, description="", inline_limit=60):
     html = html.replace("<title>FRC sandbox · Plasma volume</title>", f"<title>{escape(title)} · FRC formation</title>")
     html = html.replace("<h1>Inside the plasma</h1>", f"<h1>{escape(title)}</h1>")
     html = html.replace("<p>Current density in volume. Magnetic structure in motion. Two views of the same saved state.</p>",
-                        f"<p>{escape(description) or 'Saved FRC formation run.'} Gold: separatrix. Copper and coloured rings: coils.</p>")
+                        f"<p>{escape(description) or 'Saved FRC formation run'}. Gold: separatrix. Copper and coloured rings: coils.</p>")
     html = html.replace("Axisymmetric · 3D rendering", "2D axisymmetric run · 3D rendering")
     html = html.replace("<p id=\"motion\"></p>", "<p id=\"motion\"></p><p id=\"frame-summary\"></p>")
     html = html.replace("Mean electron / ion temperature", "Te / Ti inside separatrix (Te = Ti)")

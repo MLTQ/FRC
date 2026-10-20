@@ -154,8 +154,17 @@ between coils is included throughout.
   - A fast, short inner coil disrupts the FRC rather than adding to it. The
     flux must come from a long, slow core.
 
-The 3D views and the comparison chart come from `examples/formation_display.py`
-(see its companion doc).
+**3D views and comparison chart.** All six runs were repeated with saved states
+every 0.1 µs (`snapshot_s=1e-7`, `outputs/fine_*`) for smooth playback. They
+agree with the 1 µs runs above to within 0.3% in φ and one cell in length.
+
+```bash
+.venv/bin/python -m examples.formation_display outputs/formation_display "outputs/fine_uniform_h2::Option A (baseline)" "outputs/fine_end_plugs::End plugs" "outputs/fine_reboost::Re-boost bank" "outputs/fine_inner_tube::Inner tube (control)" "outputs/fine_flux_core::Inner tube + flux core" "outputs/fine_core_punch::Inner tube + core punch"
+```
+
+This builds an overview page plus one 3D page per run. Serve `outputs/` locally
+(the `formation-display` launch entry) and open
+`http://localhost:8791/formation_display/index.html`.
 
 ## Caveats
 - **2D axisymmetric:** all coils are coaxial loops, and an inner tube or
