@@ -251,6 +251,9 @@ def viewer_page(out, summaries):
              '<label><input type="checkbox" id="geometry"> Tube & coils</label><label><input type="checkbox" id="separatrix" checked> Separatrix</label>'),
             ("Mean electron / ion temperature", "Te / Ti inside separatrix (Te = Ti)"),
             (">96<", ">×1<"), (">192<", ">×2<"), (">384<", ">×4<"),
+            # No toroidal field in the model, so Ampère gives J_r = J_z = 0 exactly: shown, but not selectable.
+            ('<option value="1">Radial Jr</option>', '<option value="1" disabled>Radial Jr (zero: no toroidal field in this model)</option>'),
+            ('<option value="3">Axial Jz</option>', '<option value="3" disabled>Axial Jz (zero: no toroidal field in this model)</option>'),
             ("Exploratory pre-ionized plasma model. More rendering detail does not add simulation resolution or establish FRC formation, stability or confinement.",
              "Assumed complete pre-ionization; 2D axisymmetric MHD. Rendering detail adds no simulation resolution; the n = 2 mode and lifetime are not modelled.")]
     for a, b in reps:
