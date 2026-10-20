@@ -86,6 +86,8 @@ fields keep the earlier behaviour.
 
 **`frame.separatrix`**
 - Paths drawn in gold on both canvases, regardless of the geometry checkbox.
+  An optional `#separatrix` checkbox, added by the formation builder and checked
+  by default, hides or shows them.
 - The colour can be set with `DATA.separatrix_color`.
 
 **Text fields**

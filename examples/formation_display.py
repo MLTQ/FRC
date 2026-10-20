@@ -20,6 +20,7 @@ Read-only: every frame is a saved 1 µs snapshot; nothing is evolved or interpol
 import base64
 import json
 import sys
+import time
 from dataclasses import replace
 from html import escape
 from pathlib import Path
@@ -235,6 +236,9 @@ def run_display(run, out, label=None, description="", inline_limit=60):
                         f"<p>{escape(description) or 'Saved FRC formation run'}. Gold: separatrix. Copper and coloured rings: coils.</p>")
     html = html.replace("Axisymmetric · 3D rendering", "2D axisymmetric run · 3D rendering")
     html = html.replace("<p id=\"motion\"></p>", "<p id=\"motion\"></p><p id=\"frame-summary\"></p>")
+    html = html.replace('<label><input type="checkbox" id="geometry"> Tube & coils</label>',
+                        '<label><input type="checkbox" id="geometry"> Tube & coils</label>'
+                        '<label><input type="checkbox" id="separatrix" checked> Separatrix</label>')
     html = html.replace("Mean electron / ion temperature", "Te / Ti inside separatrix (Te = Ti)")
     html = html.replace(">96<", ">×1<").replace(">192<", ">×2<").replace(">384<", ">×4<")
     html = html.replace("Exploratory pre-ionized plasma model. More rendering detail does not add simulation resolution or establish FRC formation, stability or confinement.",
@@ -331,7 +335,8 @@ document.getElementById('scope').textContent=DATA.scope;draw();table();
 
 
 def overview(out, summaries):
-    data = dict(runs=[dict(label=s["label"], description=s["description"], page=s["page"], dashed=s["inner_radius_m"] > 0,
+    build = int(time.time())             # version tag on links, so a rebuilt page is not served from the browser cache
+    data = dict(runs=[dict(label=s["label"], description=s["description"], page=f"{s['page']}?v={build}", dashed=s["inner_radius_m"] > 0,
                            rows=s["rows"], flux_efold_s=s["flux_efold_s"] if s["fit_span_s"] >= 15e-6 else None) for s in summaries],
                 scope="2D axisymmetric single-fluid MHD with coupled capacitor banks; assumed complete pre-ionization. "
                       "The n = 2 rotational mode is not modelled, so lifetime beyond the simulated window is not predicted. "
