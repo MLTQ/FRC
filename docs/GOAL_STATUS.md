@@ -64,9 +64,26 @@ Lab envelope:
    - **Robustness:** results are insensitive to the gap floor and to
      pre-ionization temperature (1–5 eV).
    - **Expected diagnostic signals** are tabulated in the scan doc.
-   - **Next:** a convergence run of option A, then the coil-shape decision with
-     the user.
-5. **Remaining gaps:**
+   - **Coil shape:** the user chose to keep both options as presets
+     (2026-10-19). A 36×216 check of option A agrees within 10–15%.
+5. **Experiment playground (frc-ibl.9)**, in
+   [EXPERIMENT_PLAYGROUND.md](EXPERIMENT_PLAYGROUND.md).
+   - **Presets:** named experiments (`preset=NAME`), extra banks with their own
+     firing times, aux coils, and a coaxial insulating inner tube with coils
+     inside it.
+   - **Inner-tube solver:** verified against an independent 1D diffusion
+     solution at second order.
+   - **3D viewer and comparison page:** `examples/formation_display.py`.
+   - **Demo results:**
+     - A re-boost compresses but adds no flux.
+     - End plugs barely matter, because the crowbarred main coil conserves its
+       flux.
+     - A 3" inner tube costs ~40% of the flux, and the separatrix ends up on
+       the tube.
+     - A slow flux core inside the tube grows φ to 2.8 × the control by 40 µs,
+       but makes the FRC short and fat.
+     - A fast core punch splits the FRC.
+6. **Remaining gaps:**
    - pre-ionization ionization fraction (frc-ibl.4); temperature is now known
      not to matter;
    - N2 commissioning expectations (frc-ibl.7);
