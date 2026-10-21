@@ -14,7 +14,7 @@ from plasma_bench.geometry import Grid
 from plasma_bench.coils import Coil
 from plasma_bench.waveforms import Callback
 from plasma_bench.electromagnetics import VacuumField, loop_field
-from plasma_bench.mhd_state import from_primitive
+from plasma_bench.mhd_state import from_primitive, with_toroidal
 from plasma_bench.conservative_coupled import ConservativeVacuumMHD, ConservativeParameters, ConservativeState
 from plasma_bench.coil_circuit import Strap, section_coil, Module, Crowbar, simulate, CircuitStepper
 from scipy.constants import mu_0 as MU0
@@ -111,6 +111,10 @@ class Nucte:
     floor_fraction: float = .01       # DECLARED gap closure: minimum density as a fraction of the fill (0 disables)
     gap_resistivity: float = 0.       # >0: DECLARED resistivity [ohm m] of near-floor cells (un-ionized gas, wall gap)
     gap_density_fraction: float = .03  # ... applied below this fraction of the fill density (smooth 1/(1+x^4) weight)
+    toroidal: bool = False            # 2.5D: also evolve v_theta and B_theta (zero initially; insulating tube and ends)
+    hall: bool = False                # DECLARED Hall term E += J x B/(n e) in Ohm's law (implies toroidal)
+    hall_cutoff_fraction: float = .1  # ... switched off below this fraction of the fill density (1/(1+x^-4) weight),
+                                      # so the 1%-of-fill gap floor (d_i 10x the fill value) does not set the step
     drive: str = "ideal"              # "ideal": centre_field waveform; "circuit": capacitor banks through coil_circuit,
                                       # voltages set so the vacuum centre field is bias_t at t=0 and peaks at peak_t;
                                       # "coupled": same banks, but the plasma's image current loads them each step
@@ -332,12 +336,15 @@ def build(c):
                                     minimum_density=c.floor_fraction*2*c.fill_pa/(KB*c.gas_k)*mass if c.floor_fraction > 0 else None,
                                     floor_temperature_ev=c.pi_temperature_ev, floor_ion_mass=mass,
                                     gap_resistivity=c.gap_resistivity,
-                                    gap_density=c.gap_density_fraction*n_d*mass if c.gap_resistivity > 0 else None)
+                                    gap_density=c.gap_density_fraction*n_d*mass if c.gap_resistivity > 0 else None,
+                                    toroidal=c.toroidal or c.hall, hall=c.hall, hall_ion_mass=mass,
+                                    hall_cutoff_density=c.hall_cutoff_fraction*n_d*mass if c.hall and c.hall_cutoff_fraction > 0 else None)
     # Initial plasma is current-free in the bias: induced flux zero, total flux = source flux.
     probe = ConservativeState(np.zeros((c.nr, c.nz, 4)), np.zeros((grid.nr, grid.nz)))
     total = sources.at(0.).psi[i0:i0+c.nr+1, c.end_cells:c.end_cells+c.nz+1]
     state = from_primitive(fluid, total, rho, p, energy_quadrature=c.energy_quadrature)
-    model = ConservativeVacuumMHD(fluid, sources, ConservativeState(state.conserved, probe.induced_psi), params)
+    conserved = with_toroidal(fluid, state.conserved) if params.toroidal else state.conserved   # v_theta = B_theta = 0
+    model = ConservativeVacuumMHD(fluid, sources, ConservativeState(conserved, probe.induced_psi), params)
     model.coil_half_length = (c.centre_straps/2+c.end_straps)*c.strap_width
     model.ion_mass = mass
     model.coupler = None
@@ -430,9 +437,29 @@ def image_current(model, coil_half_length):
     return float(np.trapezoid(np.where(inside, bz, 0.), grid.z)/MU0)
 
 
+TOROIDAL_KEYS = ("hall_work_j", "hall_limited_steps", "hall_cutoff_cell_steps", "toroidal_flux_wb",
+                 "toroidal_magnetic_energy_j", "toroidal_kinetic_energy_j", "angular_momentum_kg_m2_s",
+                 "toroidal_boundary_work_j")   # history keys of 2.5D runs only (2D rows stay as before)
+
+
+def toroidal_observables(model, q):
+    """2.5D: peak |B_theta|, |v_theta| and the mimetic |J_r|, |J_z| (zero in a poloidal-only run)."""
+    if q.shape[-1] != 8:
+        return {}
+    from plasma_bench.toroidal_ohm import currents
+    _, jz, jr = currents(model.mesh, q[..., 7])
+    r = np.sqrt(.5*(model.mesh.rf[:-1]**2+model.mesh.rf[1:]**2))[:, None]
+    return dict(max_btheta_t=float(np.abs(r*q[..., 7]).max()), max_vtheta_m_s=float(np.abs(r*q[..., 6]).max()),
+                max_jz_a_m2=float(np.abs(jz).max()), max_jr_a_m2=float(np.abs(jr).max()))
+
+
 def observe(model):
-    if model.mesh.annular:
-        return observe_annular(model)
+    row = (observe_annular if model.mesh.annular else observe_axis)(model)
+    row.update(toroidal_observables(model, model._primitive(model.state, model.time)))
+    return row
+
+
+def observe_axis(model):
     z, rs, psi = separatrix(model)
     q = model._primitive(model.state, model.time)
     finite = np.isfinite(rs)
@@ -485,10 +512,14 @@ def main(out=Path("outputs/nucte_formation"), **overrides):
     every = max(1, int(round(1e-6/c.snapshot_s)))
     failure = None
 
+    toroidal = {}
+
     def flush():
         (out/"history.json").write_text(json.dumps(history, indent=1))
         np.savez_compressed(out/"snapshots.npz", rf=model.mesh.rf, zf=model.mesh.zf, **snapshots)
         np.savez_compressed(out/"velocity.npz", **velocity)
+        if toroidal:   # 2.5D: cell Omega = v_theta/r and g = B_theta/r (v_theta, B_theta at sqrt(<r^2>))
+            np.savez_compressed(out/"toroidal.npz", **toroidal)
     while model.time < c.end_s:
         target = marks.pop(0) if marks else c.end_s
         try:
@@ -511,12 +542,19 @@ def main(out=Path("outputs/nucte_formation"), **overrides):
                                                          "dual_energy_disagreement_cell_steps", "step_retries",
                                                          "floor_mass_kg", "floor_energy_j", "floor_cell_steps", "mass_kg",
                                                          "outflow_mass_kg", "outward_fluid_energy_j", "open_line_loss_j",
-                                                         "response_energy_balance_relative")})
+                                                         "response_energy_balance_relative")
+                                                or (model.parameters.toroidal and k in TOROIDAL_KEYS)})
         history.append(row)
         z, rs, psi = separatrix(model)
         q = model._primitive(model.state, model.time)
         snapshots[f"t{len(history)-1:04d}"] = np.concatenate((psi.ravel(), q[..., 0].ravel(), q[..., 3].ravel()))
         velocity[f"t{len(history)-1:04d}"] = np.concatenate((q[..., 1].ravel(), q[..., 2].ravel()))
+        if q.shape[-1] == 8:   # Omega, g in toroidal.npz; cell B_theta and v_theta (at sqrt(<r^2>)) beside psi, rho, p, v
+            key = f"t{len(history)-1:04d}"
+            toroidal[key] = np.concatenate((q[..., 6].ravel(), q[..., 7].ravel()))
+            radius = np.sqrt(.5*(model.mesh.rf[:-1]**2+model.mesh.rf[1:]**2))[:, None]
+            snapshots["btheta_"+key] = (radius*q[..., 7]).ravel()
+            velocity["vtheta_"+key] = (radius*q[..., 6]).ravel()
         if (len(history)-1) % every == 0 or model.time >= c.end_s:
             print(json.dumps({k: (round(v, 6) if isinstance(v, float) else v) for k, v in row.items()}), flush=True)
             flush()

@@ -12,8 +12,10 @@ Read-only: every frame is a saved 1 µs snapshot; nothing is evolved or interpol
   then added back with the same saved section currents, so the gas-node flux is reproduced exactly.
 - **Field lines** are ψ contours (equal flux between open lines; closed surfaces inside the separatrix)
   in four meridional planes, coloured by |B| from the same flux.
-- **Current** is J_θ = −Δ*ψ/(μ0 r) from second differences of that flux on the gas nodes.
-  J_r = J_z = 0: the model has no toroidal field.
+- **Current** is J_θ = −Δ*ψ/(μ0 r) from second differences of that flux on the gas nodes. A 2.5D run
+  (toroidal=True or hall=True, which saves toroidal.npz) adds J_r = −∂B_θ/∂z/μ0 and J_z = (1/r)∂(rB_θ)/∂r/μ0
+  from the solver's own discrete currents (toroidal_ohm.currents), and |B| in the line colour includes B_θ.
+  A poloidal-only run has J_r = J_z = 0.
 - **The separatrix** (gold) and FRC quantities come from examples.nucte_compare (closed_region, or
   annular_closed_region for an inner tube).
 """
@@ -33,6 +35,7 @@ from plasma_bench.coupling_mesh import CouplingMesh
 from examples.nucte_formation import Nucte, AuxCoil, Bank, coil_sections, inner_rows, _from_dict
 from examples.nucte_compare import load, summarize, decay
 from examples.design_scan_summary import formed
+from plasma_bench.toroidal_ohm import currents, node_currents
 
 ASSETS = Path(__file__).resolve().parents[1]/"visualizations/material_fields"
 GROUP_COLORS = ("#db9160", "#96b5ef", "#c6a5d8", "#8fd19e", "#e8c46b")   # main coil first, then each AuxCoil
@@ -97,6 +100,27 @@ def azimuthal_current(grid, psi):
     return j
 
 
+def toroidal_frames(run, fluid):
+    """2.5D run: {snapshot index: (B_theta at the gas nodes, J_r and J_z at the gas nodes)}; {} for a 2D run.
+    B_theta = r g with g = B_theta/r averaged to the nodes, zero on the insulating gas boundary."""
+    path = Path(run)/"toroidal.npz"
+    if not path.exists():
+        return {}
+    data, out, n = np.load(path), {}, fluid.nr*fluid.nz
+    for key in data.files:
+        g = data[key][n:].reshape(fluid.nr, fluid.nz)
+        _, jz, jr = currents(fluid, g)
+        zn, rn = node_currents(jz, jr)
+        pad = np.pad(g, 1, mode="edge")
+        gn = .25*(pad[:-1, :-1]+pad[1:, :-1]+pad[:-1, 1:]+pad[1:, 1:])
+        bt = fluid.rf[:, None]*gn
+        bt[-1] = 0.; bt[:, [0, -1]] = 0.
+        if fluid.annular:
+            bt[0] = 0.
+        out[int(key[1:])] = (bt, rn, zn)
+    return out
+
+
 def run_display(run, out, label=None, description=""):
     """Write OUT/<run>/frame_NNNN.json (one per saved state) and OUT/<run>/manifest.json (the viewer DATA for this
     run, frames by url); return the run summary for the overview."""
@@ -116,7 +140,8 @@ def run_display(run, out, label=None, description=""):
     fluid_rows, fluid_cols = slice(i0, i0+c.nr+1), slice(z0, z0+c.nz+1)
     display_r = grid.r <= c.wall_radius+1.01*fluid.dr                   # keep line colours off the coil filaments
     names = ["Main coil"]*c.sections+[a.name for a in c.aux_coils]
-    data_frames, peak_b, peak_j, worst = [], 0., 0., 0.
+    toroidal = toroidal_frames(run, fluid)
+    data_frames, peak_b, peak_j, worst = [], 0., np.zeros(4), 0.
     (Path(out)/run.name).mkdir(parents=True, exist_ok=True)
     for (k, psi_gas, rho, p), row in zip(frames, rows):
         h = history[k]
@@ -128,6 +153,10 @@ def run_display(run, out, label=None, description=""):
         worst = max(worst, float(abs(psi[fluid_rows, fluid_cols]-psi_gas).max()/max(abs(psi_gas).max(), 1e-30)))
         br, bz = fields(grid, psi)
         bmag = np.hypot(br, bz)
+        if k in toroidal:   # |B| includes B_theta inside the gas (none exists outside it)
+            bt_grid = np.zeros(grid.shape)
+            bt_grid[fluid_rows, fluid_cols] = toroidal[k][0]
+            bmag = np.sqrt(bmag**2+bt_grid**2)
         b_at = RegularGridInterpolator((grid.r, grid.z), bmag, bounds_error=False, fill_value=0.)
         gas_b = float(bmag[fluid_rows, fluid_cols].max())
         # Field lines: open flux in equal steps, closed surfaces inside the separatrix.
@@ -159,19 +188,27 @@ def run_display(run, out, label=None, description=""):
         j = azimuthal_current(grid, psi)[:i0+c.nr+1, fluid_cols]
         support = np.zeros_like(j); support[i0:] = 1.
         j *= support
-        texture = np.zeros(j.shape+(2,), dtype="<f4")          # (J_theta, support); the viewer expands to RGBA
-        texture[..., 0], texture[..., 1] = j, support
-        jmax = float(abs(j).max())
+        jr, jz = np.zeros_like(j), np.zeros_like(j)
+        if k in toroidal:
+            jr[i0:], jz[i0:] = toroidal[k][1], toroidal[k][2]
+            texture = np.zeros(j.shape+(4,), dtype="<f4")      # RGBA = (Jr, Jtheta, Jz, support)
+            texture[..., 0], texture[..., 1], texture[..., 2], texture[..., 3] = jr, j, jz, support
+        else:
+            texture = np.zeros(j.shape+(2,), dtype="<f4")      # (J_theta, support); the viewer expands to RGBA
+            texture[..., 0], texture[..., 1] = j, support
+        magnitude = np.sqrt(j**2+jr**2+jz**2)
+        jmaxes = np.array([magnitude.max(), abs(jr).max(), abs(j).max(), abs(jz).max()])
+        jmax = float(jmaxes[0])
         cloud = []
         sub_r, sub_z = np.arange(i0, i0+c.nr+1, 3), np.arange(0, c.nz+1, 6)   # sparse fallback without WebGL2
         for a in np.arange(6)*np.pi/3:
             for i in sub_r:
                 for jj in sub_z:
-                    value = float(j[i, jj])
-                    if abs(value) > .03*jmax:
+                    value = float(magnitude[i, jj])
+                    if value > .03*jmax:
                         r = grid.r[i]
-                        v = float(f"{value:.3g}")
-                        cloud.append([round(zf[jj]/extent, 4), round(r*np.cos(a)/extent, 4), round(r*np.sin(a)/extent, 4), abs(v), 0, v, 0])
+                        cloud.append([round(zf[jj]/extent, 4), round(r*np.cos(a)/extent, 4), round(r*np.sin(a)/extent, 4)]
+                                     +[float(f"{x:.3g}") for x in (value, jr[i, jj], j[i, jj], jz[i, jj])])
         branch = vac+img
         groups = [dict(name=f"{names[s]} {branch[s]/1e3:.1f} kA", center_t=float(branch[s]*wall_bz[s])) for s in range(len(branch))]
         t = float(h["time_s"])
@@ -180,12 +217,14 @@ def run_display(run, out, label=None, description=""):
                    f"{'Closed' if closed else 'Reversed, open at the ends'}: length {100*region['length_m']:.0f} cm · "
                    f"trapped flux {1e3*region['trapped_flux_wb']:.2f} mWb · "
                    + (f"⟨n⟩ {region['density_m3']:.2g} m⁻³ · Te+Ti {region['total_temperature_ev']:.0f} eV" if region.get("density_m3") else ""))
+        if k in toroidal:
+            summary += f" · max |B_θ| {1e3*float(abs(toroidal[k][0]).max()):.1f} mT"
         frame = dict(step=int(h.get("steps", k)), time_us=t*1e6, lines=lines, current=cloud, outline=[], separatrix=sep_paths,
-                     bmax=gas_b, jmax=[jmax, 0., jmax, 0.],
+                     bmax=gas_b, jmax=[float(x) for x in jmaxes],
                      temperature=[region["total_temperature_ev"]/2]*2 if region.get("total_temperature_ev") else [None, None],
                      drive_center_t=float(sum(g["center_t"] for g in groups)), drive_groups=groups, summary=summary,
                      volume=dict(shape=[texture.shape[1], texture.shape[0]], bounds=[0., c.wall_radius/extent, zf[0]/extent, zf[-1]/extent],
-                                 channels=2, slots=[1, 3],    # RGBA = (Jr, Jtheta, Jz, support)
+                                 channels=texture.shape[-1], slots=[1, 3],    # RGBA = (Jr, Jtheta, Jz, support)
                                  b64=base64.b64encode(texture.tobytes()).decode()))
         if region.get("separatrix_mid_m"):
             frame.update(midplane_radius_m=region["separatrix_mid_m"], maximum_radius_m=region.get("max_separatrix_m"))
@@ -193,7 +232,7 @@ def run_display(run, out, label=None, description=""):
         name = f"{run.name}/frame_{k:04d}.json"
         (Path(out)/name).write_text(json.dumps({key: frame[key] for key in heavy}, separators=(",", ":")))
         data_frames.append(dict({key: v for key, v in frame.items() if key not in heavy}, url=name))
-        peak_b, peak_j = max(peak_b, gas_b), max(peak_j, jmax)
+        peak_b, peak_j = max(peak_b, gas_b), np.maximum(peak_j, jmaxes)
     chamber = [ring(c.wall_radius, z, extent) for z in (-c.half_length, 0., c.half_length)]
     chamber += [(np.array([[-c.half_length, c.wall_radius*np.cos(a), c.wall_radius*np.sin(a)],
                            [c.half_length, c.wall_radius*np.cos(a), c.wall_radius*np.sin(a)]])/extent).round(5).tolist()
@@ -216,11 +255,13 @@ def run_display(run, out, label=None, description=""):
              + f"{len(data_frames)} saved states, every {np.median(np.diff([f['time_us'] for f in data_frames])):.2g} µs. Flux outside the gas is the run's own vacuum solve from the saved "
              f"gas-node flux and section currents (gas-node flux reproduced to {worst:.0e}). Field lines are flux contours "
              "(equal flux between open lines, closed surfaces inside the gold separatrix), coloured by |B|, with the colour "
-             "scale set by the field in the gas. Current is J_θ = −Δ*ψ/(μ0 r); J_r and J_z are zero because the model has no "
-             "toroidal field. 2D axisymmetric single-fluid MHD: it does not model the n = 2 rotational mode, so FRC lifetime "
-             "beyond the simulated window is not predicted."
+             "scale set by the field in the gas. Current is J_θ = −Δ*ψ/(μ0 r)"
+             + ("; J_r and J_z come from the evolved toroidal field B_θ, which also enters the |B| colour. 2.5D axisymmetric "
+                f"single-fluid MHD{' with the Hall term (cut off below ' + format(c.hall_cutoff_fraction, 'g') + ' of the fill density)' if c.hall else ''}"
+                if toroidal else "; J_r and J_z are zero because the model has no toroidal field. 2D axisymmetric single-fluid MHD")
+             + ": it does not model the n = 2 rotational mode, so FRC lifetime beyond the simulated window is not predicted."
              + (f" Trapped-flux e-fold time fitted from 8 µs: {d['flux_efold_s']*1e6:.0f} µs." if d.get("flux_efold_s") else ""))
-    data = dict(frames=data_frames, detailed=True, bmax=peak_b, jmax=[peak_j, 0., peak_j, 0.],
+    data = dict(frames=data_frames, detailed=True, bmax=peak_b, jmax=[float(x) for x in peak_j],
                 initial_frame=len(data_frames)-1, playback_fps=20, initial_yaw=-.35, initial_pitch=.28, initial_zoom=3.,
                 title=title, description=f"{description or 'Saved FRC formation run'}. Gold: separatrix. Copper and coloured rings: coils.",
                 chamber=chamber, coils=[], coil_groups=coil_groups, physical_scale_m=extent,
@@ -229,6 +270,7 @@ def run_display(run, out, label=None, description=""):
                 solver_steps=int(history[-1].get("steps", 0)))
     (Path(out)/run.name/"manifest.json").write_text(json.dumps(data, separators=(",", ":")))
     return dict(run=run.name, label=title, description=description, manifest=f"{run.name}/manifest.json", frames=len(data_frames), flux_reproduction=worst,
+                toroidal=bool(toroidal),
                 inner_radius_m=r_in, gas=gas, banks=scope,
                 rows=[dict({k: r.get(k) for k in ("time_s", "closed", "separatrix_mid_m", "length_m", "trapped_flux_wb", "density_m3",
                                                   "total_temperature_ev")}, formed=formed(r, 2*c.half_length)) for r in rows],
@@ -245,15 +287,19 @@ def viewer_page(out, summaries):
             ("<h1>Inside the plasma</h1>", '<h1 id="run-title"></h1>'),
             ("<p>Current density in volume. Magnetic structure in motion. Two views of the same saved state.</p>", '<p id="run-description"></p>'),
             ('<div class="toolbar">', '<div class="toolbar"><label for="run">Run</label><select id="run" aria-label="Run"></select>'),
-            ("Axisymmetric · 3D rendering", "2D axisymmetric runs · 3D rendering"),
+            ("Axisymmetric · 3D rendering", "Axisymmetric runs · 3D rendering" if any(s.get("toroidal") for s in summaries)
+             else "2D axisymmetric runs · 3D rendering"),
             ('<p id="motion"></p>', '<p id="motion"></p><p id="frame-summary"></p>'),
             ('<label><input type="checkbox" id="geometry"> Tube & coils</label>',
              '<label><input type="checkbox" id="geometry"> Tube & coils</label><label><input type="checkbox" id="separatrix" checked> Separatrix</label>'),
             ("Mean electron / ion temperature", "Te / Ti inside separatrix (Te = Ti)"),
             (">96<", ">×1<"), (">192<", ">×2<"), (">384<", ">×4<"),
-            # No toroidal field in the model, so Ampère gives J_r = J_z = 0 exactly: shown, but not selectable.
-            ('<option value="1">Radial Jr</option>', '<option value="1" disabled>Radial Jr (zero: no toroidal field in this model)</option>'),
-            ('<option value="3">Axial Jz</option>', '<option value="3" disabled>Axial Jz (zero: no toroidal field in this model)</option>'),
+            # J_r and J_z come only from B_theta (Ampere): selectable when some run is 2.5D, zero in its 2D runs.
+            *((('<option value="1">Radial Jr</option>', '<option value="1">Radial Jr (zero in 2D runs)</option>'),
+               ('<option value="3">Axial Jz</option>', '<option value="3">Axial Jz (zero in 2D runs)</option>'))
+              if any(s.get("toroidal") for s in summaries) else
+              (('<option value="1">Radial Jr</option>', '<option value="1" disabled>Radial Jr (zero: no toroidal field in this model)</option>'),
+               ('<option value="3">Axial Jz</option>', '<option value="3" disabled>Axial Jz (zero: no toroidal field in this model)</option>'))),
             ("Exploratory pre-ionized plasma model. More rendering detail does not add simulation resolution or establish FRC formation, stability or confinement.",
              "Assumed complete pre-ionization; 2D axisymmetric MHD. Rendering detail adds no simulation resolution; the n = 2 mode and lifetime are not modelled.")]
     for a, b in reps:
@@ -272,6 +318,10 @@ def describe(setup):
     text = [f"{c.gas} {c.fill_pa/0.133322:.1f} mTorr, {coil} coil, bias {c.bias_t:+.2f} T, peak {c.peak_t:.2f} T "
             f"({setup['circuit']['main_voltage_v']/1e3:.1f} kV, {setup['circuit']['main_energy_j']/1e3:.1f} kJ)"]
     i0, r_in = inner_rows(c)
+    if c.hall:
+        text.append(f"Hall term (2.5D), cut off below {c.hall_cutoff_fraction:g} of the fill density")
+    elif c.toroidal:
+        text.append("2.5D (v_θ, B_θ), no Hall term")
     if r_in > 0:
         text.append(f"inner tube r {100*r_in:.2f} cm")
     for b in c.extra_main_banks:

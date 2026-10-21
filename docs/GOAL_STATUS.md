@@ -100,7 +100,9 @@ Lab envelope:
    - pre-ionization ionization fraction (frc-ibl.4); temperature is now known
      not to matter;
    - N2 commissioning expectations (frc-ibl.7);
-   - reset corrections at low fill (frc-ibl.2.10).
+   - reset corrections at low fill (frc-ibl.2.10);
+   - Hall-cutoff sensitivity and a resolution check of the Hall run
+     (frc-ibl.13).
 
 **Target geometry (user, 2026-10-18): 12" bore to maximize lifetime.**
 - Tube about 2.2 m long; 1.2 m single-turn coil fed by eight modules.
@@ -119,14 +121,23 @@ Lab envelope:
 - 2D axisymmetric single-fluid MHD with exact vacuum outside the tube;
 - Spitzer + Chodura resistivity;
 - energy-consistent dual energy and the compatible energy path;
-- coil banks coupled self-consistently.
+- coil banks coupled self-consistently;
+- optional 2.5D (v_θ, B_θ), a declared Hall term with a density cutoff, and a
+  threading-current boundary for a rod in the inner tube (frc-ibl.10,
+  2026-10-20). Off by default and bit-identical when off.
 
 It is benchmarked against NUCTE-III for formation, and formation converges
 between 16×128 and 32×256.
 
+**Hall result (option A, frc-ibl.10).** With Hall on, the FRC forms at the
+same time but contracts axially 0.6–1.8 µs sooner, to the same 64 cm length.
+r_s stays within 3% and trapped flux within 4% of the 2D run. B_θ reaches
+85 mT, and J_z reaches 65% of peak J_θ. The rebound near 15 µs is larger (see
+NUCTE_BENCHMARK gap 5). The cost is about 2.2× the 2D wall time.
+
 **What it lacks:**
-- Hall/two-fluid physics, so the end reconnection rate in weak mirrors is
-  uncertain;
+- two-fluid physics beyond the Hall term: the ∇p_e (battery) term, electron
+  inertia and two temperatures;
 - neutrals and ionization, so pre-ionization is assumed;
 - 3D modes (n=2), so it cannot predict lifetime.
 

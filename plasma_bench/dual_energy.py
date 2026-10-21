@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.constants import mu_0 as MU0
 from .magnetic_quadrature import selected_energy
+from .mhd_state import toroidal_energies
 
 
 def entropy_density(rho, pressure, gamma):
@@ -59,6 +60,9 @@ def cold_cells(mesh, conserved, psi, gamma, threshold, energy_quadrature="cell",
     vr, vz = conserved[..., 1]/rho, conserved[..., 2]/rho
     kinetic = .5*rho*(vr*vr+vz*vz)
     magnetic = selected_energy(mesh, psi, energy_quadrature)
+    if conserved.shape[-1] == 6:   # 2.5D: v_theta and B_theta energy join kinetic and magnetic
+        kinetic_t, magnetic_t = toroidal_energies(mesh, conserved)
+        kinetic, magnetic = kinetic+kinetic_t, magnetic+magnetic_t
     internal = conserved[..., 3]-kinetic-magnetic
     if criterion == "entropy":
         thermal = entropy*rho**(gamma-1)/(gamma-1)

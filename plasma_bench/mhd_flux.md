@@ -15,3 +15,10 @@ magnetic part of the energy flux:
 
 In either case the caller must supply the omitted transport through the CT
 electric field's Poynting flux.
+
+**2.5D face states (2026-10-20).** Eight-column states (…, Ω = v_θ/r,
+g = B_θ/r) passed with a face `radius` use `toroidal_flux.physical_flux`:
+conservative angular-momentum flux r(ρ v_θ v_n − B_θ B_n/μ0) and B_θ/r flux
+g v_n − Ω B_n, with the fast speed including B_θ. Both magnetic-energy switches
+then remove the full B² (including B_θ²) and v·B (including v_θ B_θ).
+Six-column states follow the unchanged poloidal path.

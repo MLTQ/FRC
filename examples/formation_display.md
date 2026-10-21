@@ -51,8 +51,16 @@ for ×2 and ×4.
   gas, which keeps line colours off the coil filaments.
 
 **Current.** J_θ = −Δ*ψ/(μ0 r) from second differences, shown on gas nodes
-only and rendered as a WebGL volume. J_r = J_z = 0, since the model has no
-toroidal field.
+only and rendered as a WebGL volume.
+- **2.5D runs** (`toroidal` or `hall`, which save `toroidal.npz`) add J_r and
+  J_z from the saved B_θ/r, using the solver's own discrete currents
+  (`toroidal_ohm.currents`, averaged to the nodes). The Radial Jr and Axial Jz
+  options are then enabled.
+- **|B| in the line colour** includes B_θ inside the gas. B_θ is zero on the
+  insulating boundary and outside the gas.
+- **Frame summary** adds the peak |B_θ|.
+- **2D runs** have J_r = J_z = 0. When no run in the page is 2.5D, those
+  options stay disabled.
 
 **Separatrix and FRC numbers** come from `nucte_compare.summarize`
 (`closed_region` or `annular_closed_region`). A run counts as formed while it

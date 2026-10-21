@@ -24,6 +24,8 @@ def open_line_loss(mesh, conserved, entropy, magnetic, cold, psi_cells, dt, ion_
     """
     rho = conserved[..., 0]
     kinetic = .5*(conserved[..., 1]**2+conserved[..., 2]**2)/rho
+    if conserved.shape[-1] == 6:   # 2.5D: v_theta energy (the caller's `magnetic` includes B_theta energy)
+        kinetic = kinetic+.5*conserved[..., 4]**2/(rho*.5*(mesh.rf[:-1]**2+mesh.rf[1:]**2)[:, None])
     thermal = np.where(cold, (entropy*rho**(gamma-1)/(gamma-1)) if entropy is not None else 0.,
                        conserved[..., 3]-kinetic-magnetic)
     n = rho/ion_mass

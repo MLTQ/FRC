@@ -1,7 +1,7 @@
 """A posteriori local conservative/CT fallback with a checked baseline."""
 from dataclasses import dataclass
 import numpy as np
-from .mhd_state import NonphysicalState
+from .mhd_state import NonphysicalState, toroidal_energies
 from .magnetic_quadrature import selected_energy
 
 
@@ -23,6 +23,8 @@ def invalid_cells(mesh, conserved, psi, energy_quadrature="cell", exempt=None):
     with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
         vr, vz = conserved[..., 1]/rho, conserved[..., 2]/rho
         internal = conserved[..., 3]-.5*rho*(vr*vr+vz*vz)-selected_energy(mesh, psi, energy_quadrature)
+        if conserved.shape[-1] == 6:   # 2.5D: v_theta and B_theta energy
+            internal = internal-sum(toroidal_energies(mesh, conserved))
     thermal_bad = ~np.isfinite(internal) | (internal <= 0)
     if exempt is not None:
         thermal_bad &= ~exempt

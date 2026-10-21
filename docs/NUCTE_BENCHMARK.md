@@ -120,7 +120,7 @@ glass wall. The model needs:
 
 | Path | Modules | Fit |
 |---|---|---|
-| **Fixed-chamber conservative MHD** | `conservative_coupled` (`ConservativeVacuumMHD`) | **Selected.** Eulerian r–z gas filling a reflecting, magnetically transparent tube. Shock-capturing finite volumes with positivity-preserving flux limiting and no floors. Analytic coils, and an elliptic magnetic-only exterior (fixed or multipole boundary). Single fluid and single temperature, with uniform resistivity, no Hall term and no toroidal field. |
+| **Fixed-chamber conservative MHD** | `conservative_coupled` (`ConservativeVacuumMHD`) | **Selected.** Eulerian r–z gas filling a reflecting, magnetically transparent tube. Shock-capturing finite volumes with positivity-preserving flux limiting and no floors. Analytic coils, and an elliptic magnetic-only exterior (fixed or multipole boundary). Single fluid and single temperature. Since 2026-10-20 it has optional 2.5D (v_θ, B_θ) and a declared Hall term (`toroidal`, `hall`; see gap 5). |
 | Split fixed-chamber MHD | `coupled` (`VacuumCoupledMHD`) | Same geometry with split hydro/magnetic steps. Superseded by the conservative path. |
 | Finite cylinder (SBP, high-order) | `finite_cylinder_*`, `finite_coil_*` | Richer physics: two species, Hall, current inertia, Coulomb exchange, sealed ends. However, it has no shock capturing and has only run µT pulses. Not suitable for the implosion; a candidate later for post-formation equilibrium and decay. |
 | Moving material (Lagrangian, free surface) | `material_*`, `material_experiment` | Full vector B/J, Hall, two temperatures. The plasma must be separated from the wall by vacuum, and runs stop at wall contact. A theta-pinch plasma starts at the wall, and the Lagrangian mesh cannot follow reconnection and contraction. Not suitable. |
@@ -142,6 +142,32 @@ glass wall. The model needs:
    comparison.
 5. **Hall physics and toroidal field.** r_s/d_i ≈ 5 is marginal. It affects the
    reconnection rate and the toroidal field generated during formation.
+   **Status (2026-10-20, frc-ibl.10).** `ConservativeVacuumMHD` now has
+   optional 2.5D (v_θ, B_θ), a declared Hall term and a threading-current
+   boundary input (`plasma_bench/conservative_coupled.md`).
+
+   **First Hall run.** Option A (`frc12_uniform_h2 hall=True`, Hall cut off
+   below 0.1 of the fill) to 20 µs against `outputs/fine_uniform_h2`
+   (`examples/hall_formation_compare.py`):
+   - **Formation and contraction.** The FRC forms at 2.2 µs (2D: 2.0). It
+     contracts axially sooner: l_s falls below 60% of the tube at 3.4 µs
+     (2D: 5.2) and below 40% at 5.6 µs (6.2). The minimum length is the same,
+     64 cm, at 7.6 µs (7.8).
+   - **FRC state.** r_s stays within 3%. Trapped flux is 0–4% lower (1.74 vs
+     1.75 mWb at 20 µs). Te+Ti is 2–5% lower.
+   - **Late rebound.** Larger: l_s 177 cm at 15.5 µs (2D: 104), back to
+     92 cm (83) by 20 µs.
+   - **Toroidal field and currents.** B_θ peaks at 85 mT (8.4 µs), the Hall
+     quadrupole at the ends of the pre-ionized column. J_z peaks at
+     10 MA/m² and J_r at 2.6 MA/m², against a peak J_θ of 15.5 MA/m². v_θ
+     stays ≤ 72 km/s in the FRC plasma and ≤ 120 km/s in tenuous gas.
+     Total angular momentum stays zero, so there is no net spin-up.
+   - **Cost.** 1.68× the steps and 1.31× per step, about 2.2× the wall time.
+
+   **Still missing.** The electron-pressure (Biermann) term, two
+   temperatures, and end shorting or particle loss for net ion spin-up. Not yet
+   measured: the late rebound's sensitivity to the Hall cutoff, and a
+   resolution check (frc-ibl.13).
 6. **Pre-ionization (frc-ibl.4).** The initial state is assumed: uniform, fully
    ionized and frozen in the bias.
 7. **Circuit (frc-ibl.5).** Coil currents are prescribed. The coil acts as a

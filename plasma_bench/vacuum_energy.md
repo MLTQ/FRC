@@ -39,3 +39,8 @@ Poynting flux through the inner faces, E_θ B_z,inner/μ0. FluxUpdate puts it on
 radial face 0 and subtracts it from the outward energy. The energy balance
 closes through the inner wall: 6e-10 relative in
 `examples/annulus_verification.py`.
+
+2.5D: no change. The variational boundary Poynting flux stays purely
+poloidal. Without a threading current the fluid's toroidal Poynting flux is
+zero on boundary faces by construction (`toroidal_ohm`). With one,
+`FluxUpdate.rhs` adds the boundary B_θ part to this flux.

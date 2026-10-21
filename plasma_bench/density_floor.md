@@ -39,3 +39,7 @@ Cells with ρ < ρ_min receive Δρ = ρ_min − ρ of ions and electrons at res
 - **Inactive floor:** bit-identical to running without a floor.
 - **Active floor** (every cell raised, ρ 1 → 1.05): mass change excluding the
   counted floor mass is 5e-17, and the fluid energy residual is 2e-16 J.
+
+2.5D: particles are added at rest, so L and B_θ/r are unchanged. The v_θ
+kinetic-energy drop from mass loading becomes heat, like the poloidal part.
+The caller's `magnetic` includes the B_θ energy.

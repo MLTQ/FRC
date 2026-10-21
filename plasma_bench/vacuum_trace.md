@@ -48,3 +48,7 @@ inner wall nodes is added, as at the outer wall.
 
 `interface_resistivity` also marks the inner wall row. End-row marks start at
 row max(i0, 1).
+
+2.5D: `interface_resistivity` includes B_θ = √⟨r²⟩ g in the cell signal
+speed. No tangential B_θ trace is needed: the vacuum B_θ is known exactly,
+r B_θ = 0, or the prescribed threading value (`vacuum_flux.md`).

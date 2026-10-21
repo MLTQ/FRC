@@ -21,3 +21,14 @@ The shared quadrature helper owns the magnetic-energy unit conversion.
 pressures before the positivity check. Only the dual-energy option of
 `ConservativeVacuumMHD` uses it, for cold cells whose pressure comes from the
 advected entropy. The conserved state itself is not changed.
+
+## 2.5D state (2026-10-20)
+A six-variable conserved state adds L = ρ⟨r²⟩Ω (the cell average of r ρ v_θ)
+and g = B_θ/r (the cell average weighted by r dr), with ⟨r²⟩ = (r_lo² + r_hi²)/2.
+- `toroidal_energies` returns the cell energies L²/(2ρ⟨r²⟩) and
+  ⟨r²⟩g²/(2μ0), which are exact for Ω and g uniform over the cell.
+- `primitive` subtracts both from E and returns two more columns, Ω and g.
+- `with_toroidal` appends L and g to a four-variable state and adds their
+  energy to E.
+
+The four-variable path is unchanged.

@@ -16,3 +16,6 @@ magnetically transparent boundary contract. `ideal_emf` retains its periodic
 ends and perfectly conducting radial wall exactly.
 `uct_electric(..., parts=True)` returns (central, dissipative) separately; their
 sum is the unchanged UCT field.
+
+`uct_electric(..., radius=r)` with eight-column corner states includes
+B_θ = r g in the four-state fast speeds. The poloidal EMF itself is unchanged.
