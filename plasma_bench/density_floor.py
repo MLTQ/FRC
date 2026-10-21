@@ -28,6 +28,8 @@ def apply_floor(mesh, conserved, entropy, magnetic, cold, minimum_density, tempe
     add = np.where(need, minimum_density-rho, 0.)
     new_rho = rho+add
     momentum2 = conserved[..., 1]**2+conserved[..., 2]**2
+    if conserved.shape[-1] == 6:   # 2.5D: (rho v_theta)^2 = L^2/<r^2>; L and B_theta/r are unchanged
+        momentum2 = momentum2+conserved[..., 4]**2/(.5*(mesh.rf[:-1]**2+mesh.rf[1:]**2)[:, None])
     kinetic_old, kinetic_new = .5*momentum2/rho, .5*momentum2/new_rho
     thermal_add = add/ion_mass*2*QE*temperature_ev/(gamma-1)
     result = conserved.copy()

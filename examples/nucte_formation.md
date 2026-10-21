@@ -115,3 +115,26 @@ the annulus.
 `inner_separatrix_mid_m`, `trapped_flux_wb` and `inner_wall_bz_min_t`. Closed
 flux is found by `nucte_compare.annular_closed_region`: the ψ pocket around the
 O-point that touches no wall.
+
+**`toroidal`, `hall`, `hall_cutoff_fraction` (2026-10-20).**
+- `toroidal=True` runs the 2.5D solver: v_θ and B_θ start at zero, and the
+  tube and its ends are insulating.
+- `hall=True` (which implies `toroidal`) adds the declared Hall term
+  E += J×B/(n e). It is cut off below `hall_cutoff_fraction` (default 0.1)
+  of the fill density with weight 1/(1+(ρ_c/ρ)⁴), so the 1%-of-fill gap floor
+  does not set the whistler step. The ion mass is the gas's.
+- History rows add `max_btheta_t`, `max_vtheta_m_s`, `max_jz_a_m2`,
+  `max_jr_a_m2`, the toroidal energies, angular momentum, `hall_work_j`,
+  `hall_limited_steps` and `hall_cutoff_cell_steps`.
+- `toroidal.npz` saves Ω = v_θ/r and g = B_θ/r per cell at every saved state.
+  `snapshots.npz` adds `btheta_tNNNN` and `velocity.npz` adds `vtheta_tNNNN`:
+  cell B_θ and v_θ at √⟨r²⟩, raveled (nr, nz) like ρ. Readers that take keys
+  starting with `t` (`nucte_compare.load`) are unaffected.
+- Without these switches, results are bit-identical to before (checked on the
+  NUCTE default and frc12_uniform_h2 to 2 µs).
+
+**Bank sizing depends on `end_s`.** The main voltage is set by simulating the
+bank to `end_s` and scaling to `peak_t`. A run shorter than the field rise
+(about 3.1 µs for frc12) therefore gets a different, faster bank. Use
+`end_s` ≥ 3.1 µs, or the preset's value, when comparing with a long run.
+

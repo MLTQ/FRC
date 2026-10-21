@@ -43,3 +43,7 @@ Magnetic units and quadrature reside in the shared energy helper.
 for dual-energy cold cells, whose pressure comes from the advected entropy.
 Density positivity and finiteness are still required everywhere. With
 `exempt=None` the check is unchanged.
+
+2.5D: `invalid_cells` subtracts the v_θ and B_θ cell energies
+(`mhd_state.toroidal_energies`) before testing the internal energy. Local
+fallback replaces the angular-momentum and B_θ/r fluxes with the others.

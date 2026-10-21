@@ -22,15 +22,21 @@ def ideal_emf(mesh, ghost, br_faces, bz_faces, gamma, reconstruction=None):
     return electric
 
 
-def uct_electric(corners, fields, gamma, parts=False):
+def uct_electric(corners, fields, gamma, parts=False, radius=None):
     """Four-state LLF UCT electric field before imposing a boundary contract.
 
     parts=True returns (central, dissipative) separately; their sum is the UCT field.
+    2.5D corner states (eight columns) include B_theta = radius*g in the fast speeds.
     """
     sw, se, nw, ne = corners
     bz_left, bz_right, br_down, br_up = fields
-    ar = np.maximum.reduce([np.abs(q[..., 1])+fast_speed(q, 0, gamma) for q in corners])
-    az = np.maximum.reduce([np.abs(q[..., 2])+fast_speed(q, 1, gamma) for q in corners])
+    if sw.shape[-1] == 8:
+        from .toroidal_flux import fast_speed as toroidal_speed
+        speed = lambda q, axis: toroidal_speed(q, radius, axis, gamma)
+    else:
+        speed = lambda q, axis: fast_speed(q, axis, gamma)
+    ar = np.maximum.reduce([np.abs(q[..., 1])+speed(q, 0) for q in corners])
+    az = np.maximum.reduce([np.abs(q[..., 2])+speed(q, 1) for q in corners])
     electric = .25*((sw[..., 1]+nw[..., 1])*bz_left+(se[..., 1]+ne[..., 1])*bz_right
                      -(sw[..., 2]+se[..., 2])*br_down-(nw[..., 2]+ne[..., 2])*br_up)
     dissipative = -.5*ar*(bz_right-bz_left)+.5*az*(br_up-br_down)

@@ -52,15 +52,22 @@ class Reconstruction:
     """
     def __init__(self, mesh, q, *, positivity=True, local_bounds=False):
         self.mesh = mesh
+        # 2.5D: q has two more even, axis-regular columns, Omega = v_theta/r and g = B_theta/r.
+        self.toroidal = q.shape[-1] == 8
+        components = q.shape[-1]
         self.values = q.copy()
         self.values[..., 3] += (q[..., 4]**2+q[..., 5]**2)/(2*MU0)
-        self.scale = np.ones((mesh.nr, 1, 6))
+        if self.toroidal:   # cell toroidal magnetic pressure <r^2> g^2/(2 mu0) joins the total pressure
+            self.values[..., 3] += .5*(mesh.rf[:-1]**2+mesh.rf[1:]**2)[:, None]*q[..., 7]**2/(2*MU0)
+        self.scale = np.ones((mesh.nr, 1, components))
         self.scale[:, 0, [1, 4]] = mesh.radial_centroid[:, None]
         self.values /= self.scale
         lo, hi = mesh.rf[:-1], mesh.rf[1:]
-        self.coordinates = np.broadcast_to(((lo*lo+hi*hi)/4)[:, None, None], (mesh.nr, 1, 6)).copy()
+        self.coordinates = np.broadcast_to(((lo*lo+hi*hi)/4)[:, None, None], (mesh.nr, 1, components)).copy()
         self.coordinates[:, 0, [1, 4]] = (.3*(hi**5-lo**5)/(hi**3-lo**3))[:, None]
         self.radial = radial_slopes(self.values, self.coordinates)
+        if self.toroidal:
+            self._wall_slopes()
         self.axial = axial_increments(self.values)
         xcenter = self.coordinates[..., 0]
         self.pressure = q[..., 3].copy()
@@ -82,19 +89,41 @@ class Reconstruction:
             self.pressure_radial *= thermal_scale
             self.pressure_axial *= thermal_scale
         self.pressure_weight = np.ones_like(self.pressure)
+        # Each trace carries the radius at which its toroidal magnetic pressure (R g)^2/(2 mu0) is evaluated:
+        # the face radius radially, sqrt(<r^2>) on axial faces (as in toroidal_flux).
+        self.axial_radius = np.sqrt(.5*(lo*lo+hi*hi))[:, None]
         radial = {(upper, offset): (self._raw_radial(mesh.rf[1:] if upper else mesh.rf[:-1], offset),
-                                     self._auxiliary_pressure(mesh.rf[1:] if upper else mesh.rf[:-1], offset))
+                                     self._auxiliary_pressure(mesh.rf[1:] if upper else mesh.rf[:-1], offset),
+                                     (mesh.rf[1:] if upper else mesh.rf[:-1])[:, None])
                   for upper in (False, True) for offset in (-.5, 0., .5)}
-        axial = {offset: ((self.values+offset*self.axial)*self.scale, self.pressure+offset*self.pressure_axial)
+        axial = {offset: ((self.values+offset*self.axial)*self.scale, self.pressure+offset*self.pressure_axial,
+                          self.axial_radius)
                  for offset in (-.5, .5)}
         if positivity:
-            for raw, auxiliary in (*radial.values(), *axial.values()):
+            for raw, auxiliary, radius in (*radial.values(), *axial.values()):
                 proposed = raw[..., 3]-(raw[..., 4]**2+raw[..., 5]**2)/(2*MU0)
+                if self.toroidal:
+                    proposed = proposed-(radius*raw[..., 7])**2/(2*MU0)
                 self.pressure_weight = np.minimum(self.pressure_weight, positive_blend(auxiliary, proposed, self.pressure,
                                                                                          pressure_bound))
         self.statistics = limiter_statistics(density_scale, thermal_scale, self.pressure_weight)
         self._radial_states = {key: self.primitive(*value) for key, value in radial.items()}
         self._axial_states = {key: self.primitive(*value) for key, value in axial.items()}
+
+    def _wall_slopes(self):
+        """Omega at a gas wall: MC slope against the mirrored (even: slip) ghost, which is identically zero,
+        so the wall cell's Omega is piecewise constant (first order there).
+
+        The default one-sided extrapolation allows twice the interior difference. Nothing restores a
+        wall-cell extremum of the angular velocity, and with the large fast speed of the tenuous gap the
+        Rusanov dissipation at the inner face then pumps angular momentum into the wall cell (measured in
+        the first Hall formation run: v_theta 2e6 m/s in the 1%-of-fill gap, while the neighbouring cells
+        turned the other way). The ghost-bounded slope keeps the inner-face trace between the two cell
+        means. g keeps the one-sided slope: bounding it too made the torsional Alfven wave gain 3% of its
+        energy per period at 16 cells. The axis (regular, x = r^2/2 >= 0) is unchanged."""
+        self.radial[-1, :, 6] = 0.
+        if self.mesh.annular:
+            self.radial[0, :, 6] = 0.
 
     def _linear_minimum(self, center, radial, axial):
         x = self.coordinates[..., 0]
@@ -105,9 +134,11 @@ class Reconstruction:
     def _auxiliary_pressure(self, radius, offset=0):
         return self.pressure+self.pressure_radial*(.5*radius[:, None]**2-self.coordinates[..., 0])+offset*self.pressure_axial
 
-    def primitive(self, values, auxiliary):
+    def primitive(self, values, auxiliary, radius=None):
         out = values.copy()
         out[..., 3] -= (out[..., 4]**2+out[..., 5]**2)/(2*MU0)
+        if self.toroidal:
+            out[..., 3] -= (radius*out[..., 7])**2/(2*MU0)
         limited = auxiliary+self.pressure_weight*(out[..., 3]-auxiliary)
         out[..., 3] = np.where(self.pressure_weight < 1, limited, out[..., 3])
         if not np.all(np.isfinite(out)) or np.any(out[..., 0] <= 0) or np.any(out[..., 3] <= 0):
@@ -143,16 +174,30 @@ class Reconstruction:
         # Integrate pt dr / integral(r dr), NOT pt/r at an assumed point.
         original = (self.values[..., 3]-self.radial[..., 3]*self.mesh.dr**2/12)/self.mesh.r[:, None]
         if np.all(self.pressure_weight == 1):
-            return original
+            return original+self._toroidal_source() if self.toroidal else original
         auxiliary = (self.pressure-self.pressure_radial*self.mesh.dr**2/12)/self.mesh.r[:, None]
         # Br is cubic and Bz quadratic in r: four-point Gauss integrates B² dr
         # exactly. Use the same blended pressure as the face/corner states.
         magnetic = np.zeros_like(self.pressure)
         for node, weight in zip(_GAUSS_NODES, _GAUSS_WEIGHTS):
-            raw = self._raw_radial(self.mesh.r+.5*self.mesh.dr*node)
+            radius = self.mesh.r+.5*self.mesh.dr*node
+            raw = self._raw_radial(radius)
             magnetic += weight*(raw[..., 4]**2+raw[..., 5]**2)/(2*MU0)
+            if self.toroidal:
+                magnetic += weight*(radius[:, None]*raw[..., 7])**2/(2*MU0)
         auxiliary += .5*self.mesh.dr*magnetic/self.mesh.radial_measure[:, None]
-        return self.pressure_weight*original+(1-self.pressure_weight)*auxiliary
+        blended = self.pressure_weight*original+(1-self.pressure_weight)*auxiliary
+        return blended+self._toroidal_source() if self.toroidal else blended
+
+    def _toroidal_source(self):
+        """Centrifugal and hoop terms, integral of (rho v_theta^2 - B_theta^2/mu0) dr / integral(r dr), by
+        four-point Gauss on the reconstructed rho, Omega and g (v_theta = r Omega, B_theta = r g)."""
+        total = np.zeros_like(self.pressure)
+        for node, weight in zip(_GAUSS_NODES, _GAUSS_WEIGHTS):
+            radius = (self.mesh.r+.5*self.mesh.dr*node)[:, None]
+            raw = self._raw_radial(radius[:, 0])
+            total += weight*radius**2*(raw[..., 0]*raw[..., 6]**2-raw[..., 7]**2/MU0)
+        return .5*self.mesh.dr*total/self.mesh.radial_measure[:, None]
 
 
 def staggered_corner_fields(mesh, br_faces, bz_faces):

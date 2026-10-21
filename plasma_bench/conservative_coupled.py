@@ -3,8 +3,10 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.constants import mu_0 as MU0
 from .coupling_mesh import CouplingMesh
-from .mhd_state import MHDState, primitive
+from .mhd_state import MHDState, primitive, toroidal_energies
 from .mhd_flux import fast_speed
+from .toroidal_flux import fast_speed as toroidal_fast_speed
+from . import toroidal_ohm
 from .vacuum_flux import flux_components
 from .flux_limiting import admissible_update
 from .vacuum_trace import tangential_field, interface_resistivity
@@ -58,6 +60,14 @@ class ConservativeParameters:
     minimum_density: float | None = None  # DECLARED gap closure [kg/m^3]; added mass/energy are counted
     floor_temperature_ev: float = 1.     # temperature of particles added by the closure
     floor_ion_mass: float = 2.01410*1.66053906660e-27  # kg per ion for the closure's thermal energy
+    toroidal: bool = False              # 2.5D: also evolve r rho v_theta and B_theta/r; insulating gas boundaries
+                                        # (B_theta = 0 there unless `toroidal_boundary` threads a current)
+    hall: bool = False                  # DECLARED Hall term E += J x B/(n e) (needs toroidal and time_order=3)
+    hall_ion_mass: float | None = None  # kg per ion for n = rho/m_i in the Hall term (None: spitzer_ion_mass)
+    hall_cutoff_density: float | None = None  # DECLARED Hall cutoff [kg/m^3]: weight 1/(1+(rho_c/rho)^4)
+    hall_whistler_fraction: float = .5  # whistler step: this fraction of sqrt(3)/omega_max (RK3 imaginary axis)
+    toroidal_boundary: object | None = None  # callable t -> r B_theta [T m] of the vacuum beyond every gas boundary
+                                        # (mu0 I/(2 pi) for a current I threading an annular chamber); None: zero
 
     def __post_init__(self):
         if not np.isfinite(self.gamma) or self.gamma <= 1:
@@ -115,11 +125,25 @@ class ConservativeParameters:
         if self.dual_energy_shock_threshold is not None and not (np.isfinite(self.dual_energy_shock_threshold)
                                                                  and self.dual_energy_shock_threshold > 0):
             raise ValueError("Dual-energy shock threshold must be positive or None")
+        if not isinstance(self.toroidal, bool) or not isinstance(self.hall, bool):
+            raise ValueError("Toroidal and Hall switches must be boolean")
+        if self.hall and not self.toroidal:
+            raise ValueError("The Hall term generates B_theta and J_r, J_z: it needs toroidal=True")
+        if self.hall and self.time_order != 3:
+            raise ValueError("The Hall term needs time_order=3: RK2 amplifies undamped whistlers")
+        if self.hall_ion_mass is not None and not (np.isfinite(self.hall_ion_mass) and self.hall_ion_mass > 0):
+            raise ValueError("Hall ion mass must be positive or None")
+        if self.hall_cutoff_density is not None and not (np.isfinite(self.hall_cutoff_density) and self.hall_cutoff_density > 0):
+            raise ValueError("Hall cutoff density must be positive or None")
+        if not (np.isfinite(self.hall_whistler_fraction) and 0 < self.hall_whistler_fraction <= 1):
+            raise ValueError("Use 0 < Hall whistler fraction <= 1")
+        if self.toroidal_boundary is not None and not (callable(self.toroidal_boundary) and self.toroidal):
+            raise ValueError("A boundary r B_theta must be a callable of time and needs toroidal=True")
 
 
 @dataclass
 class ConservativeState:
-    conserved: np.ndarray  # rho, rho vr, rho vz, total fluid-cell MHD energy
+    conserved: np.ndarray  # rho, rho vr, rho vz, total fluid-cell MHD energy [, L = r rho v_theta, g = B_theta/r]
     induced_psi: np.ndarray  # full induced magnetic field grid, including vacuum
     entropy: np.ndarray | None = None  # rho*p/rho^gamma; only with dual energy
 
@@ -163,6 +187,14 @@ class ConservativeVacuumMHD:
         self.open_line_energy = 0.
         self.open_line_cell_steps = 0
         self.floor_cell_steps = 0
+        self.hall_work = 0.             # time integral of the discrete sum J.E_Hall (zero to roundoff by construction)
+        self.toroidal_boundary_work = 0.  # B_theta Poynting energy delivered through the gas boundaries (linked current)
+        self.hall_limited_steps = self.hall_cutoff_cell_steps = 0
+        self._hall_last = (False, 0)
+        if initial.conserved.shape[-1] != (6 if p.toroidal else 4):
+            raise ValueError("Toroidal runs need six conserved variables (with L and B_theta/r), others four")
+        if p.toroidal_boundary is not None and not mesh.annular:
+            raise ValueError("Only an annular chamber can be threaded by a current: the axis has r B_theta = 0")
         q0 = self._primitive(self.state, 0.)
         if p.dual_energy and self.state.entropy is None:
             self.state.entropy = entropy_density(q0[..., 0], q0[..., 3], p.gamma)
@@ -177,6 +209,11 @@ class ConservativeVacuumMHD:
         if not self.mapping.open_boundary and (np.any(initial.induced_psi[-1]) or np.any(initial.induced_psi[:, [0, -1]])):
             raise ValueError("Fixed outer induced flux must vanish")
         self.initial = self._integrals(self.state, 0.)
+
+    def _linked(self, time):
+        """r B_theta of the vacuum beyond the gas boundaries at `time` (0 without a threading current)."""
+        p = self.parameters
+        return 0. if p.toroidal_boundary is None else float(p.toroidal_boundary(time))
 
     def total_flux(self, state=None, time=None):
         state = self.state if state is None else state
@@ -207,23 +244,96 @@ class ConservativeVacuumMHD:
         energy = float(np.sum(state.conserved[..., 3]*vol))
         u = m.interior(state.induced_psi)
         induced_energy = float(np.pi/MU0*(u@(m.k@u)))
-        return {"mass_kg": float(np.sum(q[..., 0]*vol)), "fluid_total_energy_j": energy,
-                "gas_energy_j": energy-magnetic_cell, "fluid_magnetic_energy_j": magnetic_cell,
-                "induced_field_energy_j": induced_energy, "response_energy_j": energy-magnetic_cell+induced_energy,
-                "internal_energy_j": float(np.sum(q[..., 3]*vol/(self.parameters.gamma-1))),
-                "minimum_density_kg_m3": float(q[..., 0].min()), "minimum_pressure_pa": float(q[..., 3].min()),
-                "maximum_speed_m_s": float(np.hypot(q[..., 1], q[..., 2]).max())}
+        result = {"mass_kg": float(np.sum(q[..., 0]*vol)), "fluid_total_energy_j": energy,
+                  "gas_energy_j": energy-magnetic_cell, "fluid_magnetic_energy_j": magnetic_cell,
+                  "induced_field_energy_j": induced_energy, "response_energy_j": energy-magnetic_cell+induced_energy,
+                  "internal_energy_j": float(np.sum(q[..., 3]*vol/(self.parameters.gamma-1))),
+                  "minimum_density_kg_m3": float(q[..., 0].min()), "minimum_pressure_pa": float(q[..., 3].min()),
+                  "maximum_speed_m_s": float(np.hypot(q[..., 1], q[..., 2]).max())}
+        if self.parameters.toroidal:   # gas_energy_j includes the B_theta energy: no B_theta exists outside the gas
+            kinetic_t, magnetic_t = toroidal_energies(self.mesh, state.conserved)
+            _, jz, jr = toroidal_ohm.currents(self.mesh, q[..., 7], self._linked(time))
+            r = np.sqrt(toroidal_ohm.geometry(self.mesh).r2)
+            result.update(angular_momentum_kg_m2_s=float(np.sum(state.conserved[..., 4]*vol)),
+                          toroidal_flux_wb=float(np.sum(q[..., 7]*vol)/(2*np.pi)),
+                          toroidal_kinetic_energy_j=float(np.sum(kinetic_t*vol)),
+                          toroidal_magnetic_energy_j=float(np.sum(magnetic_t*vol)),
+                          maximum_toroidal_field_t=float(np.abs(r*q[..., 7]).max()),
+                          maximum_toroidal_speed_m_s=float(np.abs(r*q[..., 6]).max()),
+                          maximum_axial_current_a_m2=float(np.abs(jz).max()),
+                          maximum_radial_current_a_m2=float(np.abs(jr).max()))
+        return result
 
     def timestep_limit(self):
         q = self._primitive(self.state, self.time)
         mesh, p = self.mesh, self.parameters
-        waves = np.max((abs(q[..., 1])+fast_speed(q, 0, p.gamma))/mesh.dr+
-                       (abs(q[..., 2])+fast_speed(q, 1, p.gamma))/mesh.dz)
+        if p.toroidal:
+            r = np.sqrt(toroidal_ohm.geometry(mesh).r2)
+            waves = np.max((abs(q[..., 1])+toroidal_fast_speed(q, r, 0, p.gamma))/mesh.dr+
+                           (abs(q[..., 2])+toroidal_fast_speed(q, r, 1, p.gamma))/mesh.dz)
+        else:
+            waves = np.max((abs(q[..., 1])+fast_speed(q, 0, p.gamma))/mesh.dr+
+                           (abs(q[..., 2])+fast_speed(q, 1, p.gamma))/mesh.dz)
         eta = interface_resistivity(self.mapping, q, p.gamma, p.interface_speed_cap) if p.interface_diffusion else np.zeros(1)
-        physical = float(np.max(self._node_resistivity(q, self._node_current(self.state)[1])))
+        physical = float(np.max(self._node_resistivity(q, self._current_magnitude(self.state, q, time=self.time))))
         diffusion = 2*(physical+float(eta.max()))/MU0*(1/mesh.dr**2+1/mesh.dz**2)
-        limit = float(p.cfl/(waves+diffusion))
+        hall = 0.
+        if p.hall:
+            # Whistler: omega = c|B|/mu0 k k_par <= 4 D (1/dr^2+1/dz^2) on the grid, D = max c|B|/mu0 over cells;
+            # undamped, so RK3 needs omega dt <= sqrt(3). The rate enters the CFL sum like the other terms.
+            coefficient, weight = self._hall_coefficient(q)
+            b = np.sqrt(q[..., 4]**2+q[..., 5]**2+(r*q[..., 7])**2)
+            omega = 4*float(np.max(coefficient*b))/MU0*(1/mesh.dr**2+1/mesh.dz**2)
+            hall = p.cfl*omega/(p.hall_whistler_fraction*np.sqrt(3))
+            self._hall_last = (bool(hall > waves+diffusion), int(np.sum(weight < .5)))
+        limit = float(p.cfl/(waves+diffusion+hall))
         return limit if p.max_timestep is None else min(limit, p.max_timestep)
+
+    def _hall_coefficient(self, q):
+        p = self.parameters
+        return toroidal_ohm.hall_coefficient(q[..., 0], p.hall_ion_mass or p.spitzer_ion_mass, p.hall_cutoff_density)
+
+    def _current_magnitude(self, state, q, current=None, time=None):
+        """Node current for the Chodura drift: |J_theta|, or |J| including J_r, J_z in 2.5D."""
+        if current is None:
+            current = self._node_current(state)[1]
+        if not self.parameters.toroidal or self.parameters.chodura_coefficient == 0:
+            return current
+        m, mesh = self.mapping, self.mesh
+        _, jz, jr = toroidal_ohm.currents(mesh, q[..., 7], self._linked(self.time if time is None else time))
+        zn, rn = toroidal_ohm.node_currents(jz, jr)
+        data = np.zeros(m.field.shape)
+        data[m.r_offset:m.r_offset+mesh.nr+1, m.z_offset:m.z_offset+mesh.nz+1] = zn**2+rn**2
+        return np.sqrt(current**2+m.grid_vector(data))
+
+    def _fluid_node_resistivity(self, node_eta):
+        """Physical eta on the fluid node grid (nr+1, nz+1); the axis row (not a mapping unknown) copies row 1."""
+        mesh, m = self.mesh, self.mapping
+        if np.ndim(node_eta) == 0:
+            return np.full((mesh.nr+1, mesh.nz+1), float(node_eta))
+        grid = np.array(m.fluid_flux(m.full(node_eta)))
+        if not mesh.annular:
+            grid[0] = grid[1]
+        return grid
+
+    def _toroidal_electric(self, state, q, current, node_eta, total, time):
+        """Resistive and Hall E_z/E_r for B_theta/r, the Hall E_theta at fluid nodes, and their powers."""
+        mesh, m, p = self.mesh, self.mapping, self.parameters
+        _, jz, jr = toroidal_ohm.currents(mesh, q[..., 7], self._linked(time))
+        ez, er, heat = toroidal_ohm.ohmic(mesh, self._fluid_node_resistivity(node_eta), jz, jr)
+        etheta, hall_power = np.zeros((mesh.nr+1, mesh.nz+1)), 0.
+        if p.hall:
+            jtheta = np.array(m.fluid_flux(m.full(current)))
+            if not mesh.annular:
+                jtheta[0] = 0.   # J_theta vanishes on the axis
+            brf, bzf = mesh.face_fields(total)
+            etheta, hz, hr = toroidal_ohm.hall_fields(mesh, q[..., 7], jz, jr, jtheta, brf, bzf,
+                                                     self._hall_coefficient(q)[0])
+            if not mesh.annular:
+                etheta[0] = 0.
+            ez, er = ez+hz, er+hr
+            hall_power = toroidal_ohm.work(mesh, jtheta, etheta, jz, hz, jr, hr)
+        return (ez, er, ez[0]), etheta, heat, hall_power, (jz, jr)
 
     def _node_resistivity(self, q, current=None):
         """Physical resistivity at mapping nodes.
@@ -247,7 +357,7 @@ class ConservativeVacuumMHD:
         if p.chodura_coefficient == 0:
             return base
         if current is None:
-            current = self._node_current(self.state)[1]
+            current = self._current_magnitude(self.state, q)
         n = to_nodes(q[..., 0]/p.spitzer_ion_mass)
         cs = to_nodes(np.sqrt(p.gamma*q[..., 3]/q[..., 0]))
         safe = np.where(n > 0, n, 1.)
@@ -262,22 +372,35 @@ class ConservativeVacuumMHD:
         return ku, np.divide(ku, MU0*m.node_area, out=np.zeros(m.node_count), where=m.active)
 
     def _entropy_rate(self, state, time):
-        """Advected rho*A with physical Ohmic heating only (numerical interface heat excluded)."""
+        """Advected rho*A with physical Ohmic heating only (numerical interface heat excluded).
+        2.5D adds the paired eta (J_z^2 + J_r^2) face heat; the Hall field does no work."""
         m, p = self.mapping, self.parameters
         q = self._primitive(state, time)
         current = self._node_current(state)[1]
-        joule = m.fluid_flux(m.full(self._node_resistivity(q, current)*current**2))
+        node_eta = self._node_resistivity(q, self._current_magnitude(state, q, current, time))
+        joule = m.fluid_flux(m.full(node_eta*current**2))
         heating = .25*(joule[:-1, :-1]+joule[1:, :-1]+joule[:-1, 1:]+joule[1:, 1:])
+        if p.toroidal:
+            geo = toroidal_ohm.geometry(self.mesh)
+            _, jz, jr = toroidal_ohm.currents(self.mesh, q[..., 7], self._linked(time))
+            ez, er, _ = toroidal_ohm.ohmic(self.mesh, self._fluid_node_resistivity(node_eta), jz, jr)
+            heating = heating+toroidal_ohm.face_heat_to_cells(self.mesh, ez*jz*geo.radial, er*jr*geo.axial)
         return entropy_rate(self.mesh, q, state.entropy, heating, p.gamma, p.open_ends)
 
     def _fluxes(self, state, time, spatial_order=None):
         m, p = self.mapping, self.parameters
         q = self._primitive(state, time)
         ku, current = self._node_current(state)
-        node_eta = self._node_resistivity(q, current)
+        node_eta = self._node_resistivity(q, self._current_magnitude(state, q, current, time))
         electric = m.fluid_flux(m.full(node_eta*current))
         full_total = self.total_flux(state, time)
         total = m.fluid_flux(full_total)
+        toroidal_electric, toroidal_heat, hall_power = None, 0., 0.
+        if p.toroidal:
+            toroidal_electric, etheta, toroidal_heat, hall_power, _ = self._toroidal_electric(state, q, current,
+                                                                                          node_eta, total, time)
+            if p.hall:
+                electric = electric+etheta
         numerical_eta = interface_resistivity(m, q, p.gamma, p.interface_speed_cap) if p.interface_diffusion else np.zeros(m.node_count)
         numerical_electric = m.fluid_flux(m.full(numerical_eta*current))
         boundary = variational_trace(m, full_total, ku) if p.boundary_poynting == "variational" else None
@@ -289,11 +412,13 @@ class ConservativeVacuumMHD:
             traces = tangential_field(m, full_total)
         fluxes = flux_components(self.mesh, q, total, p.gamma, electric, traces,
                                   numerical_electric, p.spatial_order if spatial_order is None else spatial_order,
-                                  p.local_trace_bounds, p.open_ends, p.magnetic_energy_flux)
+                                  p.local_trace_bounds, p.open_ends, p.magnetic_energy_flux, toroidal_electric,
+                                  self._linked(time) if p.toroidal else 0.)
         fluxes.boundary_poynting = boundary
         source_derivative = m.grid_vector(self.sources.at(time).dpsi_dt)
         source_power = -float((2*np.pi/MU0)*ku[m.active]@source_derivative[m.active])
-        ohmic_power = float(2*np.pi*np.sum(node_eta*current**2*m.node_radius*m.node_area))
+        ohmic_power = float(2*np.pi*np.sum(node_eta*current**2*m.node_radius*m.node_area))+toroidal_heat
+        fluxes.hall_power = hall_power
         numerical_power = float(2*np.pi*np.sum(numerical_eta*current**2*m.node_radius*m.node_area))
         fluxes.ct_power = 0.
         if fluxes.dissipative_electric is not None:
@@ -312,9 +437,11 @@ class ConservativeVacuumMHD:
                                         energy_quadrature=p.energy_quadrature, exempt=exempt)
         entropy = self._entropy_rate(state, time) if p.dual_energy else None
         outflow_mass = -float(np.sum(rhs[0][..., 0]*self.mesh.volumes))  # interior fluxes telescope
+        # A linked vacuum B_theta adds the boundary Poynting inflow as a 4th rhs entry (actually selected fluxes).
+        linked_inflow = rhs[3] if len(rhs) > 3 else 0.
         # Current, physical/interface eta and analytic source power are independent
         # of reconstruction order at this state; only outward flux is selected.
-        return (*rhs, *powers, outflow_mass, entropy, high.ct_power), report
+        return (*rhs[:3], *powers, outflow_mass, entropy, high.ct_power, high.hall_power, linked_inflow), report
 
     def _new_state(self, conserved, fluid_total_flux, time, entropy=None, final=False):
         m, mesh, p = self.mapping, self.mesh, self.parameters
@@ -358,11 +485,18 @@ class ConservativeVacuumMHD:
             cold = self._cold(state.conserved, flux, state.entropy)
         else:
             cold = np.zeros(state.conserved.shape[:2], dtype=bool)
-        floor = apply_floor(self.mesh, state.conserved, state.entropy, selected_energy(self.mesh, flux, p.energy_quadrature),
+        floor = apply_floor(self.mesh, state.conserved, state.entropy, self._cell_magnetic(state, flux),
                             cold, p.minimum_density, p.floor_temperature_ev, p.floor_ion_mass, p.gamma)
         result = ConservativeState(floor.conserved, state.induced_psi, floor.entropy)
         self._primitive(result, time)
         return result, floor
+
+    def _cell_magnetic(self, state, flux):
+        """Cell magnetic energy density: the selected poloidal quadrature plus, in 2.5D, B_theta^2/(2 mu0)."""
+        magnetic = selected_energy(self.mesh, flux, self.parameters.energy_quadrature)
+        if self.parameters.toroidal:
+            magnetic = magnetic+toroidal_energies(self.mesh, state.conserved)[1]
+        return magnetic
 
     def _open_line_loss(self, state, time, dt):
         """Declared flux-limited parallel conduction loss on open field lines (psi >= 0), Lie split."""
@@ -373,7 +507,7 @@ class ConservativeVacuumMHD:
         else:
             cold = np.zeros(state.conserved.shape[:2], dtype=bool)
         psi_cells = .25*(flux[:-1, :-1]+flux[1:, :-1]+flux[:-1, 1:]+flux[1:, 1:])
-        loss = open_line_loss(self.mesh, state.conserved, state.entropy, selected_energy(self.mesh, flux, p.energy_quadrature),
+        loss = open_line_loss(self.mesh, state.conserved, state.entropy, self._cell_magnetic(state, flux),
                               cold, psi_cells, dt, p.spitzer_ion_mass, p.gamma, p.open_line_flux_limit,
                               p.open_line_wall_temperature_ev)
         result = ConservativeState(loss.conserved, state.induced_psi, loss.entropy)
@@ -437,6 +571,12 @@ class ConservativeVacuumMHD:
         self.ohmic_heat += dt*sum(w*rates[4] for w, rates in weighted)
         self.numerical_interface_heat += dt*sum(w*rates[5] for w, rates in weighted)
         self.ct_dissipation_heat += dt*sum(w*rates[8] for w, rates in weighted)
+        if self.parameters.toroidal_boundary is not None:
+            self.toroidal_boundary_work += dt*sum(w*rates[10] for w, rates in weighted)
+        if self.parameters.hall:
+            self.hall_work += dt*sum(w*rates[9] for w, rates in weighted)
+            self.hall_limited_steps += int(self._hall_last[0])
+            self.hall_cutoff_cell_steps += self._hall_last[1]
         self.outflow_mass += dt*sum(w*rates[6] for w, rates in weighted)
         for report in reports:
             self.limited_euler_stages += int(report.minimum_weight < 1)
@@ -468,6 +608,8 @@ class ConservativeVacuumMHD:
         # Reset-mode dual-energy corrections (zero in pressure mode) are a declared, counted source.
         response_residual = (result["response_energy_j"]-self.initial["response_energy_j"]-self.source_work-self.floor_energy
                              +self.open_line_energy-self.dual_energy_change)
+        if self.parameters.toroidal_boundary is not None:   # work of the threading current, counted separately
+            response_residual -= self.toroidal_boundary_work
         fluid_residual = (result["fluid_total_energy_j"]-self.initial["fluid_total_energy_j"]+self.outward_energy-self.floor_energy
                           +self.open_line_energy-self.dual_energy_change)
         ku = self.mapping.k@self.mapping.interior(self.state.induced_psi)
@@ -492,6 +634,9 @@ class ConservativeVacuumMHD:
                       response_energy_balance_relative=response_residual/max(abs(self.initial["response_energy_j"]), abs(self.source_work), 1e-30),
                       mass_relative_change=(result["mass_kg"]-self.initial["mass_kg"]-self.floor_mass+self.outflow_mass)/self.initial["mass_kg"],
                       outflow_mass_kg=self.outflow_mass, open_line_loss_j=self.open_line_energy,
+                      hall_work_j=self.hall_work, hall_limited_steps=self.hall_limited_steps,
+                      toroidal_boundary_work_j=self.toroidal_boundary_work,
+                      hall_cutoff_cell_steps=self.hall_cutoff_cell_steps,
                       open_line_cell_steps=self.open_line_cell_steps,
                       floor_mass_kg=self.floor_mass, floor_energy_j=self.floor_energy, floor_cell_steps=self.floor_cell_steps,
                       vacuum_relative_residual=float(np.linalg.norm(ku[self.mapping.vacuum])/max(np.linalg.norm(ku), 1e-30)),

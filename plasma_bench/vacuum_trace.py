@@ -55,7 +55,11 @@ def interface_resistivity(mapping, q, gamma, speed_cap=None):
     cells a -> v_A grows without bound and so would this numerical dissipation.
     """
     mesh, grid = mapping.fluid, mapping.field
-    speed = np.hypot(q[..., 1], q[..., 2])+np.sqrt(gamma*q[..., 3]/q[..., 0]+(q[..., 4]**2+q[..., 5]**2)/(MU0*q[..., 0]))
+    if q.shape[-1] == 8:   # 2.5D: include B_theta = sqrt(<r^2>) g in the signal speed
+        b2 = q[..., 4]**2+q[..., 5]**2+.5*(mesh.rf[:-1]**2+mesh.rf[1:]**2)[:, None]*q[..., 7]**2
+        speed = np.hypot(q[..., 1], q[..., 2])+np.sqrt(gamma*q[..., 3]/q[..., 0]+b2/(MU0*q[..., 0]))
+    else:
+        speed = np.hypot(q[..., 1], q[..., 2])+np.sqrt(gamma*q[..., 3]/q[..., 0]+(q[..., 4]**2+q[..., 5]**2)/(MU0*q[..., 0]))
     if speed_cap is not None:
         speed = np.minimum(speed, speed_cap)
     mask = np.zeros(grid.shape)

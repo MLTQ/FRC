@@ -87,3 +87,37 @@ transparent: the Br reflection that axis regularity needs is undone on the inner
 faces and corners. The tangential Bz there is the inner-vacuum trace, the fourth
 entry of `boundary_field`. The CT electric field on the inner wall row is not
 set to zero: E_θ = 0 holds only on the axis.
+
+## 2.5D (v_θ, B_θ), 2026-10-20
+Eight-column q adds angular momentum and B_θ/r.
+
+**Boundaries.** All gas boundaries are insulating with the exact vacuum beyond
+them. Normally no current links that vacuum, so B_θ = 0 on every boundary
+face.
+- g is reflected odd in the end ghosts (also in `open_ends` mode), at the wall
+  and at an inner wall; Ω is even (slip).
+- `toroidal_boundary` = K (an annulus threaded by a current) reflects g odd
+  about its boundary value: K/r² on the walls and K/⟨r²⟩ on the ends. The
+  boundary B_θ Poynting flux is then nonzero; it is returned in
+  `FluxUpdate.toroidal_boundary` so that it survives the variational
+  boundary-flux substitution.
+- The Rusanov flux then pulls the boundary trace of B_θ toward zero and
+  carries the boundary E_z = v_θ B_r (or E_r = −v_θ B_z).
+
+**Faraday form.** `toroidal_electric = (E_z, E_r, E_z_axis)` adds the
+non-ideal (resistive, Hall) fields to the B_θ/r flux: r F_r = −E_z on radial
+faces and F_z = E_r/r_c on axial faces. This is Faraday's law on each r–z
+cell, so ∫B_θ dr dz changes only through the boundary circulation of E.
+
+**Poynting flux.** S_r = −E_z B_θ/μ0 and S_z = E_r B_θ/μ0 use
+`toroidal_ohm.face_toroidal_field`, which is zero on all boundaries. Which E
+enters depends on the mode:
+- `face`: the non-ideal E only (Rusanov carries the ideal B_θ transport);
+- `dissipative`: plus the Rusanov dissipative part;
+- `ct`: the full E that the B_θ/r flux represents (E_z = −r F_r,
+  E_r = r_c F_z).
+
+Without a threading current no B_θ energy crosses a boundary.
+
+**First-order baseline.** The radial source adds
+(ρΩ² − g²/(2μ0)) × radial centroid.

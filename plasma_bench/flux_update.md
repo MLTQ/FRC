@@ -26,3 +26,16 @@ corners. Both orders must refer to the same initial magnetic boundary load.
 An annular mesh adds the inner-wall Poynting flux from
 `BoundaryPoynting.energy_fluxes` on radial face 0. Its outward energy rate
 includes −2π r_in dz Σ F_r(0), the energy leaving toward the axis.
+
+`toroidal_axis` (2.5D, axis meshes only) is E_z on the axis. It enters the
+B_θ/r update of the axis cells as −E_z(0)/∫r dr: the r = 0 term of
+r F_r = −E_z, which r F_r cannot carry. The ideal and Hall parts vanish on the
+axis; resistive η J_z(0) does not. `local_fallback` replaces it where an axis
+cell is troubled.
+
+`toroidal_boundary` (2.5D with a threading current only) holds the B_θ
+Poynting flux on the wall, bottom, top and inner faces. `rhs` adds it to the
+substituted variational poloidal boundary flux, so it reaches the outward
+energy. It then also returns a fourth entry, the B_θ power into the gas. The
+default return stays three entries. `local_fallback` replaces these faces like
+the others.

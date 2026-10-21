@@ -37,3 +37,6 @@ independent ODE integration of dU/dt = −(U − U_w) f v_te/(1.5 L):
 - the end-adjacent cell is off by 11%, because the cooling gradient drives
   flow and compression there;
 - the energy residual is 2e-10 J.
+
+2.5D: the v_θ energy joins the kinetic energy. The caller's `magnetic`
+includes the B_θ energy.

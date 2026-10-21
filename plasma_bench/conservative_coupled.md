@@ -246,3 +246,126 @@ coupling grid, which still starts at the axis.
   reference's own discretization error is 8e-8.
 - **Axis case unchanged:** `inner_radius = 0` reproduces the axis runs bit for
   bit (a NUCTE formation snapshot checked against the previous commit).
+
+## 2.5D: rotation, toroidal field and the Hall term (2026-10-20)
+`toroidal=True` adds two conserved cell variables: L = ρ⟨r²⟩Ω (the average of
+r ρ v_θ) and g = B_θ/r (weighted by r dr). Both start from the state the caller
+gives (`mhd_state.with_toroidal`). Default off: the poloidal-only path is
+bit-identical to the previous code. This was checked on the NUCTE default and on
+frc12_uniform_h2 to 2 µs: all 20 snapshots, velocities and history rows equal,
+and the 2 µs frc12 states equal `outputs/fine_uniform_h2`. With `toroidal=True`
+and no seed or Hall term, v_θ = B_θ = 0 stay exactly zero and the poloidal
+state is unchanged bit for bit.
+
+**Equations.** Single-fluid MHD in r–z with all three components:
+- angular momentum ∂(rρv_θ)/∂t + ∇·[r(ρ v_θ v − B_θ B/μ0)] = 0;
+- Faraday's law for B_θ on each r–z cell (`toroidal_ohm.md`), with
+  E = −v×B + ηJ (+ J×B/(ne) with Hall);
+- the radial momentum source gains ρv_θ²/r − B_θ²/(μ0 r), and the total
+  pressure and energy include B_θ²/(2μ0) and ρv_θ²/2.
+
+The Rusanov fluxes use `toroidal_flux.physical_flux`, which is regular on the
+axis, and the fast speeds include B_θ (UCT, time step, interface resistivity).
+
+**Boundaries.** The glass wall, the ends and an inner tube are insulating, and
+the vacuum outside is exact. v_θ slips.
+- **Default.** No current links the vacuum, so B_θ = 0 on every gas boundary
+  and no B_θ energy crosses one.
+- **`toroidal_boundary=rbt`** (annular chambers only) is a callable
+  t → r B_θ [T m] of the vacuum beyond every gas boundary, μ0 I(t)/(2π) for a
+  current I threading the vessel (a rod on the axis inside the inner tube,
+  frc-ibl.9.1).
+  - The boundary value enters the reflections, the currents and the boundary
+    Poynting flux.
+  - The B_θ energy that this flux delivers is counted separately as
+    `toroidal_boundary_work_j`, and as a source in the response residual.
+  - Verified in `examples/toroidal_verification.md`, case `rod`. B_θ diffuses
+    into a resistive annulus from both walls. The midplane rB_θ matches an
+    independent 1D solution to 4.6e-3, 1.2e-3 and 3.2e-4 of its final value at
+    12, 24 and 48 cells. The boundary work equals ΔW_θ + Ohmic heat to
+    1.4e-5, 1.2e-6 and 1.3e-7.
+
+**Resistivity.** η J_z and η J_r use the same node η (Spitzer, Chodura, gap).
+The Chodura drift uses |J| including J_r and J_z. The paired heat
+Σ η J² V enters `ohmic_heat` and the dual-energy entropy source.
+
+**Hall term (`hall=True`, DECLARED).** E_H = J×B/(n e), with n = ρ/
+`hall_ion_mass` (default `spitzer_ion_mass`). It is built skew-adjoint, so the
+discrete Hall field does no work. `hall_work_j` is the time integral of
+Σ J·E_H, reported (measured ≤ 1e-16 J). The electron-pressure term ∇p_e/(n e),
+which would add Biermann-battery B_θ, is omitted; so are electron inertia and
+two-temperature effects.
+
+Requirements and limits:
+- **RK3 only.** The term needs `time_order=3`: whistlers are undamped, and
+  only RK3's stability region contains part of the imaginary axis.
+- **Time step.** The CFL sum adds cfl ω/(f √3), with
+  ω = 4 max(c|B|)/μ0 (1/dr² + 1/dz²), c = w/(n e) and f =
+  `hall_whistler_fraction` (default 0.5). In the whistler test, f = 1.5 is
+  stable and f = 2 grows, so the ω bound is about 1.7× conservative and the
+  default keeps about 3.5× margin. `hall_limited_steps` counts the steps where
+  this term dominates.
+- **Density cutoff (DECLARED).** `hall_cutoff_density` ρ_c applies the weight
+  w = 1/(1+(ρ_c/ρ)⁴), so c ≤ 0.57/(n_c e). Near-vacuum floor cells (1% of fill)
+  have d_i 10× the fill value. Without the cutoff they would cut the whistler
+  step about 100×, and their whistler physics is not meaningful.
+  `hall_cutoff_cell_steps` sums the cells with w < 0.5 over steps, reported
+  separately like the gap resistivity. The formation driver sets ρ_c to 0.1 of
+  the fill density.
+
+**Verification.** `examples/toroidal_verification.md` compares against exact
+solutions, using the formation settings (staggered energy, variational boundary
+Poynting, RK3, ct, local trace bounds):
+
+| Case | Measure | 8 | 16 | 32 | 64 |
+|---|---|---|---|---|---|
+| Torsional Alfvén standing wave, 1 period | B_θ L1/amplitude | 3.0e-3 | 8.3e-4 | 2.0e-4 | 5.1e-5 |
+| | frequency error | 3.6e-3 | 1.6e-3 | 4.5e-4 | 1.0e-4 |
+| | toroidal energy change | −14% | +1.0% | +0.38% | +0.062% |
+| Isothermal rigid rotor, 3 sound crossings | density L1 | 7.3e-4 | 1.1e-4 | 1.6e-5 | 2.2e-6 |
+| | r ρ v_θ L1 | 2.3e-4 | 3.0e-5 | 3.9e-6 | 6e-7 |
+| Alfvénic toroidal state (v = B/√μ0ρ), Mach ~1, 2 crossings | B_θ/r L1 | 1.7e-2 | 2.6e-3 | 5.3e-4 | 1.0e-4 |
+| | pressure L1 | 1.1e-2 | 1.7e-3 | 3.1e-4 | 6.2e-5 |
+
+The toroidal energy of the torsional wave rises by the listed amount in the
+first period, then decays (at 16 cells: −1.7% by 6 periods). The offset
+converges and is the same in the `face` and `ct` modes.
+
+Whistler (EMHD packet, immobile ions, exact Hankel–Fourier propagator; cells per
+wavelength λ/dz ≈ 7, 14, 29):
+
+| Whistler measure | 36×94 | 72×187 | 144×374 |
+|---|---|---|---|
+| frequency error (fitted scale on D) | −6.8% | −1.75% | −0.44% |
+| B_θ relative L2 (energy norm), 1 period | 48% | 12.5% | 3.2% |
+| same after the frequency fit | 15% | 3.7% | 0.99% |
+| induced poloidal flux relative L2, T/4 | 4.7% | 1.3% | 0.34% |
+| share of the B_θ error within w_r/4 of the axis | 4.3% | 1.6% | 2.0% |
+
+The frequency error matches the −(k dz)²/12 dispersion of the centred
+operators: −6.3% at λ/7.
+
+Fluid energy residuals are at roundoff in every case. In the whistler case the
+response-energy residual (1e-13 J) is below 1e-4 of the 7.5e-10 J exchanged
+between B_θ and the poloidal field.
+
+**First formation run with Hall** (frc12_uniform_h2, cutoff 0.1 of the
+fill): see `docs/NUCTE_BENCHMARK.md` gap 5.
+- **Hall limits the step rarely.** 349 of 181,930 steps. The extra cost comes
+  from the additive whistler term: 1.68× the steps and 1.31× per step.
+- **Cutoff.** On average 1,561 of 3,456 cells sat below the cutoff weight 0.5,
+  mostly the un-pre-ionized ends.
+- **Hall work.** −3e-17 J.
+- **Energy.** The response residual is 9.6e-5, against 8.9e-5 in 2D.
+
+**Angular momentum.** Without a threading current, B_θ = 0 on every
+boundary, so no magnetic torque crosses one, and the slip boundaries exert
+none. Total angular momentum is
+therefore conserved to roundoff. In a z-symmetric formation the Hall term makes
+B_θ odd in z and v_θ even in z, changing sign with r: it redistributes rotation
+but cannot spin the plasma up as a whole. Net ion spin-up (end shorting,
+particle loss) is not modelled.
+
+**Known limitation.** Near the axis the skew Hall pairing has an O(h²/r) error,
+50% of J_r at the first node row (`toroidal_ohm.md`). Field norms converge; the
+B_θ/r norm is dominated by the axis cells.

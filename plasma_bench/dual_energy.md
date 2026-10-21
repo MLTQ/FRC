@@ -115,3 +115,9 @@ E − K − M, which is the quantity that drifts.
 
 `select(..., criterion)` and `cold_cells(..., entropy, criterion)` take the new
 arguments. The default stays `"total"`, which is bit-identical to before.
+
+2.5D: `cold_cells` adds the v_θ energy to the kinetic energy and the B_θ
+energy to the magnetic energy, so reset-mode totals include them. The
+solver's entropy heating adds the paired η(J_z² + J_r²) face heat
+(`toroidal_ohm.face_heat_to_cells`). The Hall field does no work and adds
+none.

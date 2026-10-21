@@ -49,3 +49,29 @@ see trace speeds.
 unbounded at 16 cells, and 0.487% vs 0.474% at 32. The standing-shock
 pressure error changes by 0.15%. The default (`local_bounds=False`) is
 unchanged.
+
+## 2.5D reconstruction (2026-10-20)
+With eight-column q, Ω = v_θ/r and g = B_θ/r are reconstructed as even,
+axis-regular a + b x variables, like ρ.
+- **Total pressure** adds the cell toroidal magnetic pressure ⟨r²⟩g²/(2μ0).
+- **Thermal pressure** at each trace subtracts (R g)²/(2μ0), with R the face
+  radius on radial faces and √⟨r²⟩ on axial faces (the `toroidal_flux`
+  convention). This applies to the positivity blend, the primitive check and
+  the Gauss magnetic integral.
+- **Radial source** adds ∫(ρ v_θ² − B_θ²/μ0) dr / ∫r dr, by four-point Gauss on
+  the reconstructed ρ, Ω and g.
+
+The scheme exactly preserves the uniform-current pinch (p + B_θ²/2μ0 linear in
+x, B_θ = r g₀) when the slopes are not limited. Six-column inputs take the
+unchanged arithmetic path.
+
+**Ω at a gas wall is piecewise constant.** This is the MC limit against the
+mirrored, even slip ghost, which is zero. The one-sided wall extrapolation used
+for the other variables allows twice the interior difference. Nothing restores
+a wall-cell extremum of Ω, so in the tenuous gap (fast speed ~2×10⁶ m/s) the
+Rusanov dissipation at the inner face pumped angular momentum into the wall
+cell. In the first Hall formation run the wall cell reached v_θ = 2×10⁶ m/s
+while its neighbours turned the other way.
+
+g keeps the one-sided slope: bounding it as well made the torsional Alfvén
+wave gain 3% of its energy per period at 16 cells. The axis is unchanged.
