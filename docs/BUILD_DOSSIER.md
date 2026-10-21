@@ -123,7 +123,7 @@ timing, but its plasma radiates strongly and is not an FRC prediction.
 | 3.05 µs | Crowbars close at capacitor voltage zero (field held, 300 µs L/R) |
 | 2–6 µs | Closed FRC forms (end reconnection, axial contraction) |
 | 3–8 µs | Column shortens to under 1 m, then bounces axially once or twice |
-| 4 µs (annular only) | Flux-core bank fires (§7) |
+| 4 µs (annular only) | Flux-core bank fires (§7); a double-swing core instead fires with the bias at −103 to −108 µs |
 | 15 µs (optional) | Re-boost bank (§7) |
 | tens of µs | n=2 rotation onset expected unless the quadrupole is on |
 | 50–150 µs | Realistic FRC lifetime range (literature scaling, with n=2 suppressed) |
@@ -165,7 +165,9 @@ Literature-based (Tuszewski 1986; Ohi 1983); not simulated in 2D.
 | Coil | Geometry | Bank (as simulated) | Peak current | What it does |
 |---|---|---|---|---|
 | Re-boost (main coil) | the main coil itself | 8 × 6 µF at 6 kV (0.9 kJ), fired at 15 µs | 38 kA per module | Compresses the FRC (smaller, denser, hotter); adds no trapped flux. A smaller step (8 × 6 µF at 3 kV, 216 J, 15 µs, no crowbar of its own) holds the external field of the 2 kV flux-core case within 2% of the control, but leaves the FRC unchanged. **Not needed for lifetime.** Needs one-way main crowbars. |
-| **Flux core, recommended** (annular tank) | 40 turns, r = 2.5 cm, 0.8 m long, inside the inner tube; 4.8 µH plus ~1 µH lead; M = 71 nH to the main coil | **300 µF at 1.0 kV (150 J)**, fired at **4 µs**, main-field polarity, crowbar at its voltage zero | **5.9 kA** circuit peak, ~65 µs after firing (≈ 4 kA in the coil at 40 µs) | Holds the trapped flux flat at 1.33–1.41 mWb from 10 to 40 µs (control 1.24 → 0.71). The FRC still shortens to E ≈ 1.2 by 40 µs, a tilt risk. 0.7–1.0 kV brackets flat flux. The start switch must stay on through a brief current reversal at turn-on: a switch that opens at the first current zero lost the 0.7 kV core at 4.6 µs, and the 1 kV core came within 23 A of opening. |
+| **Flux core, 1 kV** (annular tank) | 40 turns, r = 2.5 cm, 0.8 m long, inside the inner tube; 4.8 µH plus ~1 µH lead; M = 71 nH to the main coil | **300 µF at 1.0 kV (150 J)**, fired at **4 µs**, main-field polarity, crowbar at its voltage zero | **5.9 kA** circuit peak, ~65 µs after firing (≈ 4 kA in the coil at 40 µs; 5.8 kA at 80 µs) | Holds the trapped flux flat at 1.33–1.41 mWb from 10 to 40 µs (control 1.24 → 0.71). The FRC still shortens to E ≈ 1.2 by 40 µs, a tilt risk. **Run to 100 µs, the held FRC cools (157 → 59 eV) and collapses at 65 µs, before the undriven inner-tube FRC (72 µs)**: the best flux holder, not the best lifetime. 0.7–1.0 kV brackets flat flux. The start switch must stay on through a brief current reversal at turn-on: a switch that opens at the first current zero lost the 0.7 kV core at 4.6 µs, and the 1 kV core came within 23 A of opening. |
+| **Double-swing core, longest-lived annular FRC in 2D** (annular tank) | the same 40-turn winding | **450 µF at −1.0 kV (225 J)**, bias polarity, fired **with the bias (−103 to −108 µs)**, start switch that conducts both ways, left on; no crowbar during the shot (a main-polarity diode crowbar would conduct only after the positive peak, ~140 µs) | −7.5 kA through formation, through zero at ~60 µs, +4.6 kA at 96 µs; capacitor swings to about +1.26 kV, so rate it for full reversal | Closed flux to **96 µs** against 72 µs for the plain inner tube, E ≥ 2 until 49 µs (31 µs), Te+Ti 160–200 eV to 60 µs. Costs 37% of the trapped flux at formation (0.85 against 1.36 mWb at 5 µs), so φ is held near 0.8 mWb. The volt-seconds were not used up by the end. A 3D test of tilt is still needed. EXPERIMENT_PLAYGROUND.md, Timed core program. |
+| Staged core / main-field hold | the core winding; the main coil | core: 723 / 880 / 1021 / 550 µF at 1.05 kV (1.75 kJ) at 4 / 36.3 / 59.8 / 77.2 µs, diode-isolated. Hold: four boosts of 8 × 6 µF at 3.5 kV (1.18 kJ) at 20 / 36.3 / 59.8 / 77.2 µs | core 14.6 kA at 100 µs; boosts 24–31 kA per module, capacitors reversed to −1.7 to −2.5 kV | **Not recommended.** The staged core holds φ at 1.36–1.43 mWb to 48 µs but collapses at 64 µs with a third of its volt-seconds unused. Holding the external field shortens the FRC further (collapse at 61 µs). No main-coil timing held E ≥ 2. |
 | Flux core, 2 kV | as above | 300 µF at 2 kV (0.6 kJ), fired at 4 µs | 11.4 kA circuit peak | Overdrives: φ rises to 2.8 × the control by 40 µs, and the FRC turns short and fat (E 1.0). Holding the external field with a re-boost does not change that: the shortening comes from energy loss at constant flux, not from field sag. |
 | Slow mirror (bias time) | 4-turn pairs at z = ±0.635 m, r = 17 cm, in series; ≈ 15.5 µH | 200 µF at 3 kV (0.9 kJ), 0.5 µH lead, fired at −100 µs with the bias, crowbarred at its peak | 11.7 kA, falling to 4.9 kA through the main rise | **Not recommended.** The parallel main straps spread its flux over the bore, cancelling the bias unless the bias bank rises to −4.4 kV (19 kJ instead of 5.3 kJ). At peak, B on axis at the coil end rises only from 0.72 to 0.88 of the centre field. The FRC bounces less but has no more flux by 30 µs. |
 | Toroidal field (annular tank) | axial rod inside the inner tube, coaxial return cage outside the main coil; ≈ 1.3 µH | estimate: about 3 mF at about 0.4–0.5 kV (≈ 0.3 kJ) for a ~100 µs rise | 20 kA → B_θ ≈ 0.05 T at r = 8 cm; 40 kA → 0.1 T | Twists the field lines (magnetic shear); too much makes it a spherical torus. *Pending:* toroidal-field session. |
@@ -182,7 +184,7 @@ Literature-based (Tuszewski 1986; Ohi 1983); not simulated in 2D.
 
 Optional banks add:
 - re-boost 0.9 kJ;
-- flux core 0.15 kJ (1 kV, recommended; 0.6 kJ at 2 kV);
+- flux core 0.15 kJ (1 kV; 0.6 kJ at 2 kV), or the double-swing core 0.23 kJ;
 - toroidal rod ≈ 0.3 kJ;
 - quadrupole: small; slow ms supply.
 
@@ -229,4 +231,7 @@ the Hall session will give its size.
    - 0.3 T is shorter-lived (§2).
    - The slow mirror and the re-boost give no gain.
    - The 1 kV flux core holds the flux flat, but the FRC shortens to E ≈ 1.2.
+   - Run to 100 µs (Timed core program), every flux-holding core program
+     collapses at 61–65 µs, before the plain inner tube (72 µs). The
+     double-swing core lasts to 96 µs. Energy, not flux, sets the 2D life.
    - Plain option A at 0.2 T stays the baseline: 1.11 mWb and E 2.6 at 40 µs.

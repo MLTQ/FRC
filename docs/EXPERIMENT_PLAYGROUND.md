@@ -38,6 +38,9 @@ turns filling `length` at `radius`, centred at `z_center`. `pair=True` adds a
 series mirror image at −z_center.
 - Uses: staggered coils, end plugs or mirror coils, compression coils, or a
   solenoid inside the inner tube.
+- `extra_banks` puts further banks on the same winding (staged banks), each
+  with its own start switch and crowbar. `Bank.crowbar_time` closes a
+  crowbar at a set time (needed by a bank that rings through zero).
 - All coils are mutually coupled through the equal-flux inductance matrix.
   A crowbarred main coil keeps its flux linkage, so it answers an aux coil's
   flux by changing its own current. The plugs below lower the main current by
@@ -70,6 +73,9 @@ plasma then loads every connected section through its flux linkage.
 | `frc12_flux_core_1kv` | the flux core on a 1 kV charge: holds the trapped flux flat (Lifetime levers) | 300 µF at 1 kV (150 J), 5.9 kA peak |
 | `frc12_core_reboost` | 2 kV flux core plus a main-coil re-boost holding the external field near the control | core as `frc12_flux_core`; 8 × 6 µF at 3 kV (216 J) at 15 µs, no crowbar |
 | `frc12_mirror_bias` | option A plus a slow mirror pair (z = ±0.635 m, r 0.17 m, 4 turns each) fired with the bias; bias and peak rebalanced | mirror 200 µF at 3 kV (0.9 kJ); bias −4.4 kV (19 kJ); main 12.2 kV (3.6 kJ) |
+| `frc12_core_double_swing` | inner tube plus the flux core pre-biased negative with the bias and rung through zero after formation (Timed core program) | 450 µF at −1.0 kV (225 J) at −108 µs, two-way switch |
+| `frc12_core_staged` | inner tube plus four staged banks on the flux core holding a 21–24 V core loop voltage to 100 µs | 723 / 880 / 1021 / 550 µF at 1.05 kV (1.75 kJ) at 4 / 36.3 / 59.8 / 77.2 µs |
+| `frc12_core_staged_shape` | the staged core plus four main-coil boosts holding the external field | boosts 8 × 6 µF at 3.5 kV (294 J each) at 20 / 36.3 / 59.8 / 77.2 µs |
 
 ## Why a flux core in the main-field direction adds closed flux
 With an inner tube, the separatrix level ψ_s is set at the tube side of the
@@ -267,6 +273,9 @@ What the 2D model says about holding the FRC longer.
     40 µs. The cost is the inner tube (about 40% of the formation flux, and a
     separatrix on the glass from ~20 µs) and an FRC that shortens to E ≈ 1.2
     by 40 µs.
+  - **To 100 µs** (Timed core program): the held FRC cools and collapses at
+    65 µs, before the undriven inner-tube FRC (72 µs). Holding flux is not
+    holding the FRC.
 - **Not worth building for lifetime:** the slow mirror (no flux gain; 0.9 kJ
   plus 14 kJ of extra bias) and the main-coil re-boost (no change in shape).
 
@@ -280,6 +289,162 @@ The 0.7 kV held run used the `frc12_flux_core` preset with the core bank at
 `/formation_display_lifetime/index.html` and
 `/formation_display_lifetime_open/index.html` on the `formation-display`
 server.
+
+## Timed core program (frc-ibl.9.2, 2026-10-21)
+**Question.** Can a timed sequence of core pulses and main-coil boosts (the
+"engine timing" idea) make the annular FRC live much longer than the single
+1 kV core?
+
+**Setup.**
+- Option A with the 3" inner tube, 24×144 cells, coupled banks, all runs to
+  100 µs with states every 0.1 µs (`outputs/timing_*`).
+- The same 40-turn core winding is used throughout (r 2.5 cm, 0.8 m,
+  4.77 µH + 1 µH lead).
+- "Lifetime" here is the last time a formed, closed FRC exists.
+- **Driver additions:** `AuxCoil.extra_banks` (several banks on one winding)
+  and `Bank.crowbar_time`.
+
+**What the drive has to supply.**
+- **Loss voltage:** d(2πψ_O)/dt at the O-point is about 20–30 V from 10 to 40 µs.
+  That holds in the control and in the 1 kV and 2 kV core runs alike, so the
+  drive does not change it.
+- **Volt-second budget:** holding φ to 100 µs needs about 2 mWb of core flux
+  at the tube (1.21e-7 Wb per core ampere), i.e. a 17 kA core swing.
+  - A single-polarity ramp to 17 kA stores ½LI² ≈ 0.8 kJ in the winding. The
+    staged banks below need 1.75 kJ to keep the voltage flat.
+  - A double swing from −I to +I gives the same flux for a quarter of that
+    energy and half the peak field. The cost is a sinusoidal loop voltage.
+- **Circuit constraint:** a one-way crowbar on a negative pre-bias bank
+  conducts in the direction a later positive bank drives, so it shorts that
+  bank. The double swing must therefore ring through zero on a two-way switch,
+  with no crowbar until its positive peak.
+
+**Programs simulated.**
+- **1 kV core** (`frc12_flux_core_1kv`): single 300 µF bank, the reference.
+- **Staged core** (`frc12_core_staged`): four banks on the winding, all at
+  1.05 kV, diode-isolated, fired at 4, 36.3, 59.8 and 77.2 µs. Capacitances
+  were chosen in the vacuum circuit so the core loop voltage stays at 21–24 V
+  from 10 to 100 µs. The 1 kV bank, by contrast, falls from 22 to 14 V by
+  40 µs.
+- **Staged core + main hold** (`frc12_core_staged_shape`, the shape program):
+  four main-coil boosts timed with the stages. They keep the midplane wall
+  field at 0.232 T at 40 µs and 0.150 T at 70–80 µs, against 0.206 and
+  0.095–0.115 T for the staged core alone.
+- **Double swing** (`frc12_core_double_swing`): one 450 µF bank charged to
+  −1.0 kV and fired with the bias at −108 µs on a two-way switch.
+  - It pre-biases the core to −7.5 kA (bias direction) at formation.
+  - It then rings through zero at about 60 µs.
+
+| Program | φ at 10 / 20 / 40 / 60 / 80 µs (mWb) | E = l_s/2r_s at 20 / 40 / 60 / 80 µs | l_s × r_s at 40 / 60 µs (cm) | Te+Ti at 40 / 60 µs (eV); n (m⁻³) | Closed FRC lasts to | Core flux delivered from 4 µs: at FRC end / by 100 µs (mWb) |
+|---|---|---|---|---|---|---|
+| Inner-tube control (`frc12_inner_tube`) | 1.24 / 1.01 / 0.71 / 0.27 / — | 2.3 / 1.7 / 1.0† / — | 34 × 9.7 / 15 × 7.8 | 160 / 145; 4.7e20 → 3.5e20 | 72 µs | — |
+| 1 kV core | 1.34 / 1.41 / 1.33 / 0.95 / — | 2.3 / 1.2† / 0.7† / — | 27 × 11.1 / 14 × 10.0 | 157 / 79; 5.4e20 → 7.3e20 | 65 µs | 1.12 / 1.20 (spent: current peak 5.8 kA at 80 µs) |
+| Staged core | 1.34 / 1.43 / 1.41 / 1.15 / — | 2.3 / 1.2† / 0.6† / — | 27 × 11.2 / 12 × 10.6 | 154 / 66; 5.6e20 → 8.9e20 | 64 µs | 1.44 / 2.26 (stages still at 0.7–0.97 kV) |
+| Staged core + main hold | 1.34 / 1.43 / 1.36 / 0.88 / — | 2.3 / 1.1† / 0.5† / — | 24 × 10.6 / 9 × 9.1 | 176 / 78; 6.6e20 → 1.2e21 | 61 µs | 1.29 / — |
+| Double swing | 0.78 / 0.81 / 0.85 / 0.76 / 0.58 | 3.1 / 2.2 / 1.7† / 1.0† | 44 × 10.2 / 34 × 10.1 | 174 / 159; 5.0e20 → 4.0e20 | 96 µs | 1.70 / 1.77 (still rising: positive peak ~140 µs) |
+
+† E < 2: tilt-prone in 3D, which this model cannot show. Core flux is the
+vacuum-equivalent flux at the tube, 2πψ_core per ampere times the circuit's
+vacuum current. Te+Ti and n are volume averages inside the separatrix.
+
+**Bank list (as simulated).**
+| Program | Bank | C | Charge | Energy | Fire | Peak current, coupled run | Switching |
+|---|---|---|---|---|---|---|---|
+| 1 kV core | core | 300 µF | 1.0 kV | 150 J | 4 µs | 5.8 kA (80 µs) | one-way start; crowbar at voltage zero |
+| Staged core | stage 1 / 2 / 3 / 4 | 723 / 880 / 1021 / 550 µF | 1.05 kV each | 399 / 485 / 563 / 303 J (1.75 kJ) | 4 / 36.3 / 59.8 / 77.2 µs | 4.3 / 5.3 / 5.8 / 3.8 kA per stage; winding 14.6 kA at 100 µs | diode-isolated starts; crowbar on stage 4 only; 1 µH lead each |
+| Main hold | 4 boosts, 8 × 6 µF each | 48 µF | 3.5 kV | 294 J each (1.18 kJ) | 20 / 36.3 / 59.8 / 77.2 µs | 24–31 kA per module (each boost carries the whole coil current) | one-way starts and crowbars, 3.75 nH; capacitors end reversed at −1.7 to −2.5 kV |
+| Double swing | core | 450 µF | −1.0 kV | 225 J | −108 µs | −7.5 kA (0.9 µs) | two-way start; two-way crowbar at 140 µs (after the run) |
+
+All runs share the option A main bank (8 × 6 µF at 11.6 kV, 3.2 kJ) and bias
+bank (2000 µF at −2.3 kV, 5.3 kJ).
+
+**What it shows.**
+- **Holding the flux shortens the life.** The staged core holds φ at
+  1.36–1.43 mWb from 20 to 48 µs, as designed.
+  - Pressure balance fixes the energy density, and the held flux fixes r_s
+    (11.2 cm). The ~40 J/µs of open-line conduction therefore comes out of the
+    length: 27 cm at 40 µs, 12 cm at 60 µs.
+  - The particles stay inside the shrinking separatrix: n rises from 5.6e20
+    to 8.9e20 while Te+Ti falls from 154 to 66 eV.
+  - Spitzer resistivity rises with the cooling, and the O-point loss voltage
+    climbs from 25 to 75 V. That outruns the 23 V drive, and the closed flux
+    collapses at 64 µs, with a third of the volt-seconds unused.
+  - The 1 kV core does the same (65 µs). Both die before the undriven control
+    (72 µs), whose flux, particles and length decay together at a steady
+    145–160 eV.
+- **The volt-seconds never ran out first.** In every driven run the FRC ended
+  while the bank still had flux to give:
+  - the 1 kV core peaked at 80 µs, 15 µs after its FRC ended;
+  - the staged stages still held 0.7–0.97 kV at 100 µs;
+  - the double swing was still ramping at 100 µs, 44 µs short of its positive
+    peak.
+- **Main-coil boosts give no shape lever.** Holding the external field
+  compresses the FRC, and in this flux-conserving geometry that shortens it.
+  E is 1.1 against 1.2 at 40 µs, and the plasma collapses earlier (61 µs).
+  - Roughly, E ∝ W/(φ^{3/2} B_e^{1/2}) at fixed energy W. More held flux or
+    more field gives a shorter FRC; only more energy makes it longer.
+  - No axisymmetric pulse train from the main coil held E ≥ 2. Every
+    single-polarity program is below E = 2 from 25–26 µs.
+- **Double swing: least flux, longest life.**
+  - **Formation penalty:** the pre-biased winding costs 37% of the trapped
+    flux at formation (0.85 against 1.36 mWb at 5 µs).
+  - **Diagnostic:** `outputs/timing_closed_core_diag` closed the same winding
+    through a 1 V bank, with no pre-bias, to 6 µs (φ 1.01 against
+    1.32 mWb). A core circuit that is closed through the main rise acts as a
+    shorted secondary, with about −3 kA induced, and accounts for most of the
+    penalty. The −7 kA pre-bias accounts for the rest. Core banks that
+    should not cost formation flux must fire after the main crowbar (≥ 3 µs),
+    as the 4 µs presets do.
+  - **Hold:** its core drive of 13–21 V roughly matches the loss of a 0.8 mWb
+    FRC. φ stays at 0.76–0.90 mWb from 10 to 60 µs, Te+Ti stays at
+    160–200 eV, and E stays ≥ 2 until 49 µs (31 µs for the control).
+  - **End:** closed flux lasts to 96 µs, 1.33 × the control. It ends the same
+    way, by cooling (137 → 86 eV) and a loss voltage that climbs to ~65 V.
+  - **Open question:** the gain may come from the lower held flux rather than
+    from the swing itself. A single-polarity drive matched to a 0.8 mWb FRC
+    was not run.
+- **Resolution:** below l_s ≈ 15 cm the FRC spans fewer than 10 axial cells,
+  so the collapse times are estimates. The ordering between runs is already
+  set at 40–50 µs, where every FRC is still 15–44 cm long (10–29 cells).
+
+**Answer.**
+- In 2D the FRC's life is set by its energy, not its flux. Axisymmetric
+  pulses can hold or add flux for as long as the volt-seconds last.
+- Doing so concentrates a draining plasma into a short, dense, cold torus that
+  collapses resistively, earlier than an undriven FRC.
+- The best timing tried gives a third more life (96 against 72 µs), not a
+  dramatic extension.
+- 2D cannot show tilt or n = 2. Every program here except the double swing
+  spends most of its life at E < 2.
+- Experiments that have sustained FRCs on ms scales did so with
+  rotating-magnetic-field current drive (3D), and in the larger machines
+  with neutral-beam injection, not with axisymmetric coil pulses. Neither is
+  modelled here, and nothing in these runs substitutes for them.
+
+**Best timing recipe simulated (annular tank, double swing).**
+- **Core:** the same 40-turn, r 2.5 cm, 0.8 m winding inside the 3" tube,
+  with a 1 µH lead.
+- **Core bank:** 450 µF charged to −1.0 kV (225 J, bias polarity), fired with
+  the bias at −103 to −108 µs.
+- **Switch:** one that conducts both ways (for example an ignitron pair, or
+  an SCR with an antiparallel diode), left on.
+- **Crowbar:** none during the shot. If one is wanted, a main-polarity diode
+  crowbar conducts only after the positive peak (~140 µs).
+- **Currents:** −7.4 kA at main fire and −7.5 kA through formation. It
+  crosses zero at ~60 µs and is +4.6 kA at 96 µs. The capacitor peaks at
+  +1.26 kV around 60 µs in the vacuum circuit, so rate it for full reversal.
+- **Expected (2D):** φ 0.8 mWb held to 60 µs, E ≥ 2 until 49 µs, closed flux to
+  96 µs, against 1.24 → 0.71 mWb, E ≥ 2 until 31 µs and 72 µs for the plain inner
+  tube.
+- **Not recommended for lifetime:** the staged single-polarity core (1.75 kJ,
+  holds 1.4 mWb, dies at 64 µs) and the main-field hold (1.18 kJ, dies at
+  61 µs).
+
+```bash
+.venv/bin/python -m examples.formation_display outputs/formation_display_timing "outputs/timing_inner_tube::Inner tube (control)" "outputs/timing_core1kv::Core 1 kV" "outputs/timing_staged::Staged core (4 banks)" "outputs/timing_staged_shape::Staged core + main hold" "outputs/timing_double_swing::Double-swing core"
+```
+
+Open `/formation_display_timing/index.html` on the `formation-display` server.
 
 ## Particle orbits (frc-ibl.12, 2026-10-20)
 Test-particle tracking is the first 3D tool. It integrates full ion and
