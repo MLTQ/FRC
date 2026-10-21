@@ -3,6 +3,7 @@ let frame=DATA.initial_frame??DATA.frames.length-1,requestedFrame=frame,componen
 let volumeRenderer=null;
 if(DATA.detailed){try{volumeRenderer=createVolumeRenderer(ids('volume'));}catch(error){ids('render-warning').textContent=error.message;}}
 let frameCache=new Map(),pendingFrames=new Map();
+const TRAIL_US=2;let particleData=null,particleKey=null;   // optional particle trails (end of file)
 function decodeVolume(v){const bytes=Uint8Array.from(atob(v.b64),c=>c.charCodeAt(0)),raw=new Float32Array(bytes.buffer),n=v.shape[0]*v.shape[1],k=v.channels||4;if(raw.length!==n*k)throw new Error('Incomplete current volume.');if(k===4)return raw;const out=new Float32Array(4*n),slots=v.slots||[1,3];for(let i=0;i<n;i++)for(let c=0;c<k;c++)out[4*i+slots[c]]=raw[k*i+c];return out;}
 async function loadFrame(index){const cache=frameCache,pending=pendingFrames;   // a run switch replaces the maps; stale loads stay in the old ones
  const entry=DATA.frames[index];if(entry.lines){if(entry.volume&&entry.volume.b64&&!entry.volume_data)entry.volume_data=decodeVolume(entry.volume);return entry;}
@@ -34,7 +35,7 @@ function draw(){const f=frameCache.get(frame)||DATA.frames[frame];if(!f.lines)re
   (DATA.chamber||[]).forEach(p=>line(ctx,p,c,DATA.detailed?'#36414a':'#7c8a94',.6*ratio));
   if(DATA.coil_groups)DATA.coil_groups.forEach(g=>g.paths.forEach(p=>line(ctx,p,c,g.color,1.8*ratio)));
   else (DATA.coils||[]).forEach(p=>line(ctx,p,c,'#db9160',1.8*ratio));}
-  if(index===0){const strokes=new Map(),copies=DATA.detailed?Number(ids('density').value):1;for(let copy=0;copy<copies;copy++){const angle=copy*Math.PI/(2*copies),ca=Math.cos(angle),sa=Math.sin(angle);f.lines.forEach(path=>{const projected=path.points.map(p=>project(copy?[p[0],p[1]*ca-p[2]*sa,p[1]*sa+p[2]*ca]:p,c));for(let i=1;i<projected.length;i++){const level=Math.round(255*Math.max(0,Math.min(1,bmax>0?path.field[i]/bmax:0)));if(!strokes.has(level))strokes.set(level,new Path2D());const stroke=strokes.get(level);stroke.moveTo(projected[i-1][0],projected[i-1][1]);stroke.lineTo(projected[i][0],projected[i][1]);}});}ctx.lineWidth=(DATA.detailed?.65:1.2)*ratio;ctx.globalAlpha=DATA.detailed?.65:1;for(const [level,stroke] of strokes){ctx.strokeStyle=color(level/255);ctx.stroke(stroke);}ctx.globalAlpha=1;}
+  if(index===0){const strokes=new Map(),copies=DATA.detailed?Number(ids('density').value):1;for(let copy=0;copy<copies;copy++){const angle=copy*Math.PI/(2*copies),ca=Math.cos(angle),sa=Math.sin(angle);f.lines.forEach(path=>{const projected=path.points.map(p=>project(copy?[p[0],p[1]*ca-p[2]*sa,p[1]*sa+p[2]*ca]:p,c));for(let i=1;i<projected.length;i++){const level=Math.round(255*Math.max(0,Math.min(1,bmax>0?path.field[i]/bmax:0)));if(!strokes.has(level))strokes.set(level,new Path2D());const stroke=strokes.get(level);stroke.moveTo(projected[i-1][0],projected[i-1][1]);stroke.lineTo(projected[i][0],projected[i][1]);}});}ctx.lineWidth=(DATA.detailed?.65:1.2)*ratio;ctx.globalAlpha=DATA.detailed?.65:1;for(const [level,stroke] of strokes){ctx.strokeStyle=color(level/255);ctx.stroke(stroke);}ctx.globalAlpha=1;if(particleData&&ids('particles')&&ids('particles').checked)drawParticles(ctx,c,ratio,f.time_us);}
   else if(volumeRenderer&&f.volume_data){const vc=ids('volume');if(vc.width!==w||vc.height!==h){vc.width=w;vc.height=h;}volumeRenderer.draw(f,{yaw,pitch,zoom,maximum:jmax,component,opacity:Number(ids('opacity').value),threshold:Number(ids('threshold').value)});}
   else{const points=f.current.map(p=>({p:project(p.slice(0,3),c),j:p[3+component]})).sort((a,b)=>b.p[2]-a.p[2]);ctx.globalAlpha=.52;for(const p of points){const scaled=jmax>0?p.j/jmax:0,t=component?.5+.5*scaled:scaled;ctx.fillStyle=color(t,component!==0);ctx.beginPath();ctx.arc(p.p[0],p.p[1],1.9*ratio,0,2*Math.PI);ctx.fill();}ctx.globalAlpha=1;}
   if(!ids('separatrix')||ids('separatrix').checked)(f.separatrix||[]).forEach(p=>line(ctx,p,c,DATA.separatrix_color||'#f2c65c',(index?1.1:1.6)*ratio));
@@ -66,10 +67,33 @@ async function switchRun(name){
  if(request!==requestId)return;
  const runs=DATA.runs;for(const k of Object.keys(DATA))delete DATA[k];Object.assign(DATA,next,{runs,run:name});frameCache=new Map();pendingFrames=new Map();
  let best=0;DATA.frames.forEach((f,i)=>{if(Math.abs(f.time_us-t)<Math.abs(DATA.frames[best].time_us-t))best=i;});   // keep the simulated time; camera untouched
- ids('time').max=DATA.frames.length-1;frame=requestedFrame=best;showRunText();if(ids('run'))ids('run').value=name;
+ ids('time').max=DATA.frames.length-1;frame=requestedFrame=best;showRunText();particleData=null;particleKey=null;setupParticles();if(ids('run'))ids('run').value=name;
  try{history.replaceState(null,'','?run='+encodeURIComponent(name));}catch(e){}
  await showFrame(best);if(wasPlaying&&request+1===requestId){playing=true;ids('play').textContent='Pause';advance();}
 }
 if(DATA.runs&&ids('run')){const sel=ids('run');DATA.runs.forEach(r=>{const o=document.createElement('option');o.value=r.name;o.textContent=r.label;sel.append(o);});
  sel.value=DATA.run;sel.addEventListener('change',e=>switchRun(e.target.value));showRunText();
  const wanted=new URLSearchParams(location.search).get('run');if(wanted&&wanted!==DATA.run)switchRun(wanted);}
+// Optional particle trails (examples/particle_tracking.py via formation_display): DATA.particles is the url of
+// actual integrated orbits, sampled every sample_us from t0_us; each frame shows the last TRAIL_US of each orbit.
+function particleSet(){const d=particleData;return d?d.sets[Math.min(+(ids('particle-set')?.value||0),d.sets.length-1)]:null;}
+function particleLegend(text){const el=ids('particle-legend');if(!el)return;el.replaceChildren();if(text!==undefined){el.textContent=text;return;}const d=particleData;if(!d||!ids('particles').checked)return;
+ const head=document.createElement('span');head.textContent=d.species+' orbits ('+particleSet().label+'), last '+TRAIL_US+' µs of each, from '+d.t0_us+' µs: ';el.append(head);
+ [...new Set(particleSet().trails.map(t=>t.class))].forEach(k=>{const s=document.createElement('span');s.style.color=d.colors[k]||'#fff';s.textContent='● '+k+'  ';el.append(s);});
+ const x=document.createElement('span');x.style.color='#ff5a4f';x.textContent='× lost at wall or end';el.append(x);}
+async function loadParticles(){const url=DATA.particles;if(!url||particleKey===url)return;particleKey=url;particleLegend('Loading particle orbits…');
+ try{const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw new Error('('+r.status+')');const d=await r.json();if(particleKey!==url)return;particleData=d;
+  const sel=ids('particle-set');if(sel){sel.replaceChildren();d.sets.forEach((s,i)=>{const o=document.createElement('option');o.value=i;o.textContent=s.label;sel.append(o);});sel.hidden=d.sets.length<2;}
+  particleLegend();draw();}
+ catch(error){if(particleKey===url){particleKey=null;particleLegend('Particle orbits could not be loaded '+error.message);}}}
+function drawParticles(ctx,c,ratio,t){const d=particleData,set=particleSet(),span=Math.round(TRAIL_US/d.sample_us);
+ for(const tr of set.trails){const n=tr.points.length,lost=tr.lost_us!=null&&t>=tr.lost_us;let end=lost?n-1:Math.min(tr.lost_us!=null?n-2:n-1,Math.floor((t-d.t0_us)/d.sample_us+1e-6));
+  if(end<1)continue;const start=Math.max(0,end-span),pts=tr.points.slice(start,end+1).map(p=>project(p,c));
+  ctx.strokeStyle=d.colors[tr.class]||'#fff';ctx.globalAlpha=lost?.45:.95;ctx.lineWidth=1.3*ratio;ctx.beginPath();pts.forEach((s,i)=>i?ctx.lineTo(s[0],s[1]):ctx.moveTo(s[0],s[1]));ctx.stroke();
+  const h=pts[pts.length-1];ctx.globalAlpha=1;if(lost){ctx.strokeStyle='#ff5a4f';ctx.lineWidth=1.6*ratio;const a=4*ratio;ctx.beginPath();ctx.moveTo(h[0]-a,h[1]-a);ctx.lineTo(h[0]+a,h[1]+a);ctx.moveTo(h[0]+a,h[1]-a);ctx.lineTo(h[0]-a,h[1]+a);ctx.stroke();}
+  else{ctx.fillStyle=d.colors[tr.class]||'#fff';ctx.beginPath();ctx.arc(h[0],h[1],2.2*ratio,0,2*Math.PI);ctx.fill();}}
+ ctx.globalAlpha=1;}
+function setupParticles(){const box=ids('particles');if(!box)return;box.disabled=!DATA.particles;if(ids('particle-set'))ids('particle-set').hidden=true;
+ if(!DATA.particles){particleLegend(box.checked?'No tracked orbits for this run.':'');return;}if(box.checked)loadParticles();else particleLegend('');}
+if(ids('particles')){ids('particles').addEventListener('input',()=>{if(ids('particles').checked&&!particleData)setupParticles();particleLegend();draw();});
+ if(ids('particle-set'))ids('particle-set').addEventListener('input',()=>{particleLegend();draw();});setupParticles();}

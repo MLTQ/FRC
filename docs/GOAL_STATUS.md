@@ -96,7 +96,19 @@ Lab envelope:
 6. **Build dossier:** [BUILD_DOSSIER.md](BUILD_DOSSIER.md) gathers every coil's
    voltage, current, energy and timing, plus the pre-ionization, bias,
    quadrupole and shot sequence.
-7. **Remaining gaps:**
+7. **3D test-particle orbits (frc-ibl.12)**, in EXPERIMENT_PLAYGROUND.md
+   ("Particle orbits") and `examples/particle_tracking.md`.
+   - **Method:** relativistic Boris full orbits in the saved fields plus a 3D
+     quadrupole and RMF antenna, verified analytically; p_θ converges at
+     second order.
+   - **Kinetic ions:** they are kinetic (≈60% cross the null within 2 µs).
+   - **Option A:** keeps 95% of its ions from 10 to 30 µs.
+   - **Quadrupole at 7% B_e:** loses an extra 24–49% to the wall in m=2
+     sectors at |z| ≈ 0.5–1.1 m. This is a vacuum-superposition upper bound.
+   - **3" inner tube:** absorbs 13–23% of ions promptly.
+   - **RMF (1 MHz, 5 mT):** entrains electrons near the null at 0.93 ω, but
+     at 0.2 T an RMF needs f ≳ 4 MHz to exceed ω_ci.
+8. **Remaining gaps:**
    - pre-ionization ionization fraction (frc-ibl.4); temperature is now known
      not to matter;
    - N2 commissioning expectations (frc-ibl.7);
