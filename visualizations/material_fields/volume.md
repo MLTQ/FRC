@@ -4,7 +4,7 @@
 The shared viewer supplies one saved frame, current component, physical scale,
 and the same orthographic camera used for the field lines. No dependencies.
 
-The float32 RGBA texture contains Jr,Jtheta,Jz in A/m² and support. Manual
+The axisymmetric float32 RGBA texture contains Jr,Jtheta,Jz in A/m² and support. Manual
 bilinear interpolation works without optional floating-texture filtering.
 All four corners must have support, conservatively omitting boundary cells.
 The ray marcher samples J(z,sqrt(x²+y²)) inside the physical texture bounds.
@@ -20,6 +20,13 @@ GPU errors throw to the viewer, which shows a message and falls back to the
 original current samples. Texture upload happens only when the saved frame
 changes. Canvas backing dimensions are capped by the shared viewer for useful
 interactive performance. The original Canvas2D view remains available.
+
+Cartesian 3D runs use RGBA16F, with components divided by
+`frame.volume3d.value_scale` (A/m² per texture unit). The renderer divides the
+physical color maximum by the same scale. This prevents half-float overflow
+while keeping legends and thresholds in physical units. Missing scale defaults
+to one for older files. Texture ordering is z fastest, then y, then x; bounds
+use viewer coordinates (z,x,y). Trilinear samples require eight supported nodes.
 
 # Detailed scientific viewer shell (volume.html)
 
@@ -41,3 +48,6 @@ libraries, fonts, accounts or external graphics are required.
 
 Default illustrative opacity is 5; it can be reduced to inspect weak interior
 current or raised to emphasize the exterior layers. No lighting is simulated.
+
+Optional model-badge, temperature-label, model-notice and render-method IDs
+allow a mixed viewer to identify the selected 2D or Cartesian 3D model accurately.

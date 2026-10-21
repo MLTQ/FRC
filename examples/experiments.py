@@ -44,6 +44,44 @@ CORE_REBOOST = Bank(capacitance=48e-6, voltage=3e3, stray=3.75e-9, fire_time=15e
 SLOW_MIRROR = AuxCoil(name="mirror", z_center=.635, length=.05, radius=.17, turns=4, pair=True,
                       bank=Bank(capacitance=200e-6, voltage=3e3, stray=.5e-6, fire_time=-100e-6, crowbar_decay_s=300e-6))
 
+# Timed core program (docs/EXPERIMENT_PLAYGROUND.md, "Timed core program"). Same 40-turn core winding throughout.
+# Double swing: one core bank charged negative and fired with the bias (-108 us) through a switch that conducts both
+# ways, no crowbar until the positive peak (beyond 100 us). Its current rings to about -11 kA at formation (pre-bias,
+# in the bias direction) and swings through zero near 60 us, so the positive flux ramp after formation (2.2 mWb by
+# 100 us in vacuum) is about twice the peak core flux. 450 uF at -1.0 kV (225 J).
+DOUBLE_SWING = replace(FLUX_CORE, bank=Bank(capacitance=450e-6, voltage=-1e3, stray=1e-6, fire_time=-108e-6,
+                                            crowbar_decay_s=300e-6, unidirectional=False, crowbar_one_way=False,
+                                            crowbar_time=140e-6))
+# Staged core: four banks on the core winding, all at 1.05 kV, diode-isolated (each start switch opens at its current
+# zero), fired at 4, 36.3, 59.8 and 77.2 us; crowbar on the last stage only. The capacitances hold the vacuum core loop
+# voltage at 21-24 V from 10 to 100 us (2.1 mWb), where the single 1 kV bank falls from 22 to 14 V by 40 us and is spent
+# at 66 us. 3.17 mF in all (1.75 kJ).
+STAGED_CORE = replace(FLUX_CORE, bank=Bank(capacitance=723e-6, voltage=1.05e3, stray=1e-6, fire_time=4e-6, crowbar=False),
+                      extra_banks=(Bank(capacitance=880e-6, voltage=1.05e3, stray=1e-6, fire_time=36.3e-6, crowbar=False),
+                                   Bank(capacitance=1021e-6, voltage=1.05e3, stray=1e-6, fire_time=59.8e-6, crowbar=False),
+                                   Bank(capacitance=550e-6, voltage=1.05e3, stray=1e-6, fire_time=77.2e-6,
+                                        crowbar_decay_s=300e-6)))
+# Shape program for the staged core: four main-coil boosts, 8 x 6 uF at 3.5 kV each (294 J), fired at 20 us and with
+# core stages 2-4, each with its own one-way crowbar. In vacuum they hold the main current at 195-207 kA from 20 to
+# 100 us (without them it sags to 133 kA).
+MAIN_HOLD = tuple(Bank(capacitance=48e-6, voltage=3.5e3, stray=3.75e-9, fire_time=t, modules=8, crowbar_inductance=1e-9,
+                       crowbar_decay_s=300e-6) for t in (20e-6, 36.3e-6, 59.8e-6, 77.2e-6))
+
+# Toroidal field (docs/EXPERIMENT_PLAYGROUND.md, "Toroidal field"): an axial current on a 1 cm rod inside the inner
+# tube, returning through a 20 cm coaxial cage outside the main coil, so B_theta = mu0 I/(2 pi r) between them and
+# nothing outside. Line L = mu0 l/(2 pi) ln(b/a) = 1.32 uH over 2.2 m; bank 20 uF with 0.1 uH stray (quarter period
+# 8.4 us), one-way crowbar at the current peak, 200 us L/R (6.6 mOhm in the crowbar loop). The charge sets the peak:
+# 2.66 / 5.33 / 10.65 kV give 10 / 20 / 40 kA (71 J / 0.28 kJ / 1.13 kJ), B_theta(8 cm) = 0.025 / 0.05 / 0.1 T.
+# "before": fired at -20 us, peaking at -11.6 us and crowbarred ahead of pre-ionization (fired -50 to -10 us), so the
+# gas is ionized with the field in place (0.94 of the peak at t = 0). "after": fired at 6 us, once the FRC has
+# formed, peaking at 14.4 us.
+def rod_bank(peak_ka, fire_time):
+    return Bank(capacitance=20e-6, voltage={10: 2.663e3, 20: 5.326e3, 40: 10.65e3}[peak_ka], stray=.1e-6,
+                fire_time=fire_time, crowbar_decay_s=200e-6)
+
+
+ROD_FIRE = {"before": -20e-6, "after": 6e-6}
+
 PRESETS = {
     "nucte_case1": NUCTE_CASE1,
     "nucte_case6": NUCTE_CASE6,
@@ -82,4 +120,15 @@ PRESETS = {
     # flux (+0.043 T at the centre at t = 0), so the bias is raised to -0.0946 T on the main coil alone (-0.05 T in
     # total; bias bank -4.4 kV, 19 kJ) and peak_t lowered to 0.169 (0.2 T total peak).
     "frc12_mirror_bias": {**FRC12, **UNIFORM, **H2_FILL, "bias_t": -.0946, "peak_t": .169, "aux_coils": (SLOW_MIRROR,)},
+    # Timed core program: double-swing core (pre-biased negative with the bias, swung through zero after formation).
+    "frc12_core_double_swing": {**FRC12, **UNIFORM, **H2_FILL, **INNER_TUBE, "aux_coils": (DOUBLE_SWING,)},
+    # Timed core program: four staged core banks holding the core loop voltage near the measured ~21-25 V loss.
+    "frc12_core_staged": {**FRC12, **UNIFORM, **H2_FILL, **INNER_TUBE, "aux_coils": (STAGED_CORE,)},
+    # Staged core plus main-coil boosts that hold the external field (shape program).
+    "frc12_core_staged_shape": {**FRC12, **UNIFORM, **H2_FILL, **INNER_TUBE, "aux_coils": (STAGED_CORE,),
+                                "extra_main_banks": MAIN_HOLD},
+    # Toroidal field from the rod (2.5D, implies toroidal): frc12_inner_tube plus the rod bank, 10/20/40 kA peak,
+    # fired before (-20 us) or after (6 us) formation. Without Hall, so outputs/fine_inner_tube is the exact control.
+    **{f"frc12_rod{ka}_{when}": {**FRC12, **UNIFORM, **H2_FILL, **INNER_TUBE, "rod_bank": rod_bank(ka, fire)}
+       for ka in (10, 20, 40) for when, fire in ROD_FIRE.items()},
 }

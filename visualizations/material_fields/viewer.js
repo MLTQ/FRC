@@ -50,6 +50,7 @@ function draw(){const f=frameCache.get(frame)||DATA.frames[frame];if(!f.lines)re
  if(ids('drive'))ids('drive').textContent=f.drive_center_t===undefined?'':(DATA.drive_label||'Prescribed vacuum-centre field')+': '+(f.drive_center_t*1e3).toFixed(3)+' mT';
  if(ids('drive-groups')){const el=ids('drive-groups');el.replaceChildren();(f.drive_groups||[]).forEach((g,i)=>{const span=document.createElement('span');span.style.color=DATA.coil_groups[i].color;span.textContent=(i?' · ':'')+g.name+': '+(g.center_t*1e3).toFixed(3)+' mT';el.append(span);});}
  if(ids('frame-summary'))ids('frame-summary').textContent=f.summary||'';
+ if(ids('ion-legend'))ids('ion-legend').textContent=f.ions?.length&&ids('ions')?.checked?'Ion dot colors: speed, 0–'+((DATA.ion_speed_max||1)/1000).toPrecision(3)+' km/s; faster ions saturate. Each frame is a new sample.':'';
  if(ids('motion'))ids('motion').textContent=f.midplane_radius_m===undefined?'':(DATA.motion_label||'Plasma radius — middle')+': '+(f.midplane_radius_m*1000).toFixed(2)+' mm · maximum: '+(f.maximum_radius_m*1000).toFixed(2)+' mm';}
 let scrubTimer=null;ids('time').max=DATA.frames.length-1;ids('time').value=frame;ids('time').addEventListener('input',e=>{stopPlayback();requestId++;requestedFrame=+e.target.value;clearTimeout(scrubTimer);scrubTimer=setTimeout(()=>showFrame(requestedFrame),65);});ids('component').addEventListener('change',e=>{component=+e.target.value;draw();});ids('scale').onclick=()=>{shared=!shared;draw();};ids('reset').onclick=()=>{yaw=DATA.initial_yaw??-.65;pitch=DATA.initial_pitch??.35;zoom=DATA.initial_zoom||1;if(ids('geometry'))ids('geometry').checked=false;draw();};
 for(const id of ['opacity','threshold','density','geometry','separatrix','ions'])if(ids(id))ids(id).addEventListener('input',draw);
@@ -58,7 +59,15 @@ if(ids('previous'))ids('previous').onclick=()=>stepFrame(-1);if(ids('next'))ids(
 ids('play').onclick=()=>{if(playing){stopPlayback();requestId++;requestedFrame=frame;draw();}else{clearTimeout(scrubTimer);playing=true;ids('play').textContent='Pause';advance();}};
 canvases.forEach(c=>{let drag=null;c.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY];c.setPointerCapture(e.pointerId);});c.addEventListener('pointermove',e=>{if(!drag)return;yaw+=(e.clientX-drag[0])*.008;pitch=Math.max(-1.45,Math.min(1.45,pitch+(e.clientY-drag[1])*.008));drag=[e.clientX,e.clientY];draw();});c.addEventListener('pointerup',()=>drag=null);c.addEventListener('pointercancel',()=>drag=null);c.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.4,Math.min(DATA.detailed?10:3,zoom*Math.exp(-e.deltaY*.001)));draw();},{passive:false});});
 ids('scope').textContent=DATA.scope;window.addEventListener('resize',draw);showFrame(frame);
-function showRunText(){if(ids('run-title'))ids('run-title').textContent=DATA.title||'';if(ids('run-description'))ids('run-description').textContent=DATA.description||'';if(DATA.title)document.title=DATA.title+' · FRC formation';ids('scope').textContent=DATA.scope||'';}
+function showRunText(){if(ids('run-title'))ids('run-title').textContent=DATA.title||'';if(ids('run-description'))ids('run-description').textContent=DATA.description||'';if(DATA.title)document.title=DATA.title+' · FRC formation';ids('scope').textContent=DATA.scope||'';
+ if(ids('model-badge'))ids('model-badge').textContent=DATA.model_label||'Axisymmetric · 3D rendering';
+ if(ids('temperature-label'))ids('temperature-label').textContent=DATA.temperature_label||'Te / Ti inside separatrix (Te = Ti)';
+ if(ids('model-notice'))ids('model-notice').textContent=DATA.model_notice||'Saved axisymmetric formation states. Three-dimensional stability and confinement are not established.';
+ if(ids('render-method'))ids('render-method').textContent=DATA.rendering_note||'The volume is revolved from the saved axisymmetric current. Colors show A/m²; opacity is illustrative, not emitted light. Field lines are interpolated paths, not particle trajectories. All directions share one length scale.';
+ if(ids('density')){ids('density').hidden=!!DATA.no_copies;const label=document.querySelector('label[for="density"]');if(label)label.hidden=!!DATA.no_copies;}
+ if(ids('ions'))ids('ions').disabled=!DATA.no_copies;
+ for(const [i,label] of [[1,'Radial Jr'],[3,'Axial Jz']]){const option=ids('component').querySelector('option[value="'+i+'"]');if(option){option.disabled=!(DATA.jmax[i]>0);option.textContent=label+(option.disabled?' (zero in this run)':'');}}
+ if(ids('component').selectedOptions[0]?.disabled){component=0;ids('component').value=0;}}
 async function switchRun(name){
  const entry=(DATA.runs||[]).find(r=>r.name===name);if(!entry||name===DATA.run)return;
  const wasPlaying=playing;stopPlayback();clearTimeout(scrubTimer);const request=++requestId,t=DATA.frames[frame]?DATA.frames[frame].time_us:0;

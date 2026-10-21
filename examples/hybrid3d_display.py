@@ -22,9 +22,9 @@ import contourpy
 from scipy.constants import mu_0 as MU0, e as QE
 from plasma_bench.hybrid3d import faces_to_nodes, curl_faces, edges_to_nodes
 from plasma_bench.hybrid3d_device import Device, device_box, cell_types, GAS
-from examples.nucte_compare import closed_region
 from examples.formation_display import case_from_setup, ring, viewer_page, GROUP_COLORS
-from examples.nucte_formation import coil_sections
+from examples.nucte_formation import coil_sections, ION_MASS
+from examples.hybrid3d_geometry import poloidal_average, density_modes
 
 
 def trace(bn, lo, d, seeds, step=.005, length=3., r_max=.165, z_max=1.13):
@@ -106,57 +106,56 @@ def run_display_3d(run, out, label=None):
         jn = edges_to_nodes(*[q/MU0 for q in curl_faces(*b, d)])
         cphi, sphi = np.cos(PHI)[:, :, None], np.sin(PHI)[:, :, None]
         jr = jn[0]*cphi+jn[1]*sphi; jt = -jn[0]*sphi+jn[1]*cphi; jz = jn[2]
-        vol = np.stack((jr*support, jt*support, jz*support, support), axis=-1).astype(np.float16)
-        name = f"{run.name}/vol_{k:04d}.f16"
-        vol.tofile(Path(out)/name)
         jmag = np.sqrt(jr**2+jt**2+jz**2)*support
         jmax = [float(jmag.max()), float(np.abs(jr*support).max()), float(np.abs(jt*support).max()), float(np.abs(jz*support).max())]
+        value_scale = jmax[0] or 1.
+        vol = np.stack((jr*support/value_scale, jt*support/value_scale,
+                        jz*support/value_scale, support), axis=-1).astype('<f2')
+        if not np.isfinite(vol).all():
+            raise ValueError(f"{path}: nonfinite current volume")
+        name = f"{run.name}/vol_{k:04d}.f16"
+        vol.tofile(Path(out)/name)
         bmag = np.linalg.norm(bn, axis=0)
         gb = float(bmag[support > 0].max())
         lines = []
         for line, mag in trace(bn, lo, d, seeds, r_max=dev.coil_radius, z_max=dev.tube_half_length+dev.end_gap):
             pts = (np.column_stack((line[:, 2], line[:, 0], line[:, 1]))/extent).round(4).tolist()
             lines.append(dict(points=pts, field=[float(f"{m:.3g}") for m in mag]))
-        # n = 0 separatrix from the azimuthally averaged Bz on face columns
-        edges_r = np.arange(0, dev.coil_radius+d[0], d[0])
-        xh = [lo[a]+d[a]*(np.arange(box.shape[a])+.5) for a in range(2)]
-        Xf, Yf = np.meshgrid(*xh, indexing="ij")
-        idx = np.digitize(np.hypot(Xf, Yf), edges_r)-1
-        prof = np.array([b[2][idx == q].mean(axis=0) if (idx == q).any() else np.zeros(box.shape[2]) for q in range(len(edges_r)-1)])
-        rc = .5*(edges_r[:-1]+edges_r[1:])
-        psi = np.concatenate((np.zeros((1, box.shape[2])), np.cumsum(prof*rc[:, None]*d[0], axis=0)))
-        zf = xs[2]
-        gz = np.abs(zf) < dev.tube_half_length
-        wall_row = int(np.searchsorted(edges_r, dev.wall_radius))
-        region = closed_region(edges_r[:wall_row+1], zf[gz], psi[:wall_row+1, gz])
+        rn, zn, psi, region = poloidal_average(box, dev, b[2])
+        modes = density_modes(box, dev, s['n'])
         sep = []
         if region is not None:
-            gen = contourpy.contour_generator(x=np.broadcast_to(zf[gz], psi[:wall_row+1, gz].shape),
-                                              y=np.broadcast_to(edges_r[:wall_row+1, None], psi[:wall_row+1, gz].shape), z=psi[:wall_row+1, gz])
-            o = float(psi[:wall_row+1, gz].min())
+            gen = contourpy.contour_generator(x=np.broadcast_to(zn, psi.shape),
+                                              y=np.broadcast_to(rn[:, None], psi.shape), z=psi)
+            o = float(psi.min())
             for pth in gen.lines(-1e-6*abs(o)):
                 if len(pth) > 3:
                     for a in np.arange(4)*np.pi/2:
                         sep.append((np.column_stack((pth[:, 0], pth[:, 1]*np.cos(a), pth[:, 1]*np.sin(a)))/extent).round(4).tolist())
-        ions = []
+        ions, ti = [], None
         if "ion_x" in s.files:
             ix, iv = s["ion_x"].astype(float), s["ion_v"].astype(float)
             sp = np.linalg.norm(iv, axis=1)
             vmax = max(vmax, float(np.percentile(sp, 99)) if len(sp) else 0.)
             ions = np.column_stack((ix[:, 2]/extent, ix[:, 0]/extent, ix[:, 1]/extent, sp)).round(4).tolist()
-            ti = float(np.mean(np.sum((iv-iv.mean(axis=0))**2, axis=1))*info.get("ion_mass", 1.67262e-27)/(3*QE)) if len(iv) else None
+            ti = float(np.mean(np.sum((iv-iv.mean(axis=0))**2, axis=1))*info.get("ion_mass", ION_MASS[c.gas])/(3*QE)) if len(iv) else None
         t = float(s["time_s"])
-        h = min(history, key=lambda q: abs(q["time_s"]-t)) if history else {}
-        summary = (f"3D hybrid · n=0: " + (f"trapped flux {1e3*h['trapped_flux_wb']:.2f} mWb, r_s {100*h['separatrix_mid_m']:.1f} cm, length {100*h['length_m']:.0f} cm"
-                                            if h.get("trapped_flux_wb") and h.get("separatrix_mid_m") and h.get("length_m") else "no closed flux")
-                   + (f" · midplane density modes n=1 {100*h['n1']:.1f}%, n=2 {100*h['n2']:.1f}%" if "n1" in h else "")
-                   + (f" · ions lost {100*h['lost']['count']/max(h['particles']+h['lost']['count'], 1e-30):.1f}%" if h.get("lost") else ""))
-        frame = dict(step=int(h.get("steps", k)), time_us=(t0+t)*1e6, lines=lines, current=[], outline=[], separatrix=sep, ions=ions,
+        h = next((q for q in history if abs(q["time_s"]-t) < 1e-12), {})
+        exact = region or {}
+        summary = ("3D hybrid · n=0: " + (f"trapped flux {1e3*exact['trapped_flux_wb']:.2f} mWb, r_s {100*exact['separatrix_mid_m']:.1f} cm, length {100*exact['length_m']:.0f} cm"
+                    if exact.get('closed') else "no closed flux")
+                   + f" · midplane density modes n=1 {100*modes['n1']:.1f}%, n=2 {100*modes['n2']:.1f}%"
+                   + (f" · loaded ions lost {100*h['lost']['count']/max(h['particles']+h['lost']['count'], 1e-30):.1f}%" if h.get("lost") else ""))
+        ijk = np.argwhere(support > 0)[::max(1, int(np.count_nonzero(support))//3000)]
+        cloud = [[xs[2][z]/extent, xs[0][x]/extent, xs[1][y]/extent,
+                  float(jmag[x,y,z]), float(jr[x,y,z]), float(jt[x,y,z]), float(jz[x,y,z])]
+                 for x,y,z in ijk]
+        frame = dict(step=int(round(t/info['dt_s'])), time_us=(t0+t)*1e6, lines=lines, current=cloud, outline=[], separatrix=sep, ions=ions,
                      bmax=gb, jmax=jmax, temperature=[info.get("te_ev"), ti] if ions else [info.get("te_ev"), None], summary=summary,
-                     volume3d=dict(url=name, shape=list(box.shape),
+                     volume3d=dict(url=name, shape=list(box.shape), value_scale=value_scale,
                                    bounds=[xs[2][0]/extent, xs[0][0]/extent, xs[1][0]/extent, xs[2][-1]/extent, xs[0][-1]/extent, xs[1][-1]/extent]))
-        if h.get("separatrix_mid_m"):
-            frame.update(midplane_radius_m=h["separatrix_mid_m"], maximum_radius_m=h["separatrix_mid_m"])
+        if exact.get("separatrix_mid_m"):
+            frame.update(midplane_radius_m=exact["separatrix_mid_m"], maximum_radius_m=float(np.nanmax(np.asarray(exact['profile'], float))))
         heavy = ("lines", "current", "outline", "separatrix", "ions")
         fname = f"{run.name}/frame_{k:04d}.json"
         (Path(out)/fname).write_text(json.dumps({q: frame[q] for q in heavy}, separators=(",", ":")))
@@ -176,7 +175,9 @@ def run_display_3d(run, out, label=None):
                    f"{info['particles']:,} macro-ions, isothermal electrons at {info['te_ev']:.0f} eV")
     scope = (description+f". Declared density floor in Ohm's law {info['floor_m3']:.2g} m⁻³ ({100*info['floor_fraction']:.0f}% of peak). "
              "Field lines are traced in 3D (not rotated copies); current is the full 3D J = curl B/μ0 in cylindrical components; "
-             "ions are a random sample of the macro-ions. The gold separatrix is the n = 0 (azimuthal average). "
+             "ions are independent random samples, not persistent particle trails. Losses count the entire loaded gas, including ions outside the initial separatrix. "
+             "The ion velocity-spread equivalent includes bulk-flow variation and is unweighted. "
+             "The gold separatrix is the n = 0 (azimuthal average). "
              "M3 of docs/HYBRID_3D.md: the 3D model is newly verified (waves, vacuum gap, compressional eigenmode); results are preliminary.")
     data = dict(frames=frames, detailed=True, no_copies=True, bmax=peak_b, jmax=peak_j.tolist(), ion_speed_max=vmax or 1.,
                 initial_frame=0, playback_fps=10, initial_yaw=-.35, initial_pitch=.28, initial_zoom=3.,
@@ -184,6 +185,10 @@ def run_display_3d(run, out, label=None):
                 status_note=f"{title} · saved 3D hybrid states", scope=scope, temperature_digits=3,
                 drive_label="Coil", motion_label="Separatrix radius (n=0) — midplane", title=title,
                 description=description+". Gold: n = 0 separatrix. Dots (Ions checkbox): sampled macro-ions.")
+    data.update(solver_dt_s=info['dt_s'], solver_steps=frames[-1]['step'],
+                model_label="3D hybrid · kinetic ions", temperature_label="Te / sampled ion velocity spread",
+                model_notice="Preliminary 3D continuation of a formed FRC. Stability and confinement have not been established.",
+                rendering_note="Current is sampled from the saved 3D field, without rotational copies. Colors show A/m²; opacity is illustrative, not emitted light. Ion dots are independent samples, not trajectories.")
     (Path(out)/run.name/"manifest.json").write_text(json.dumps(data, separators=(",", ":")))
     return dict(run=run.name, label=title, description=description, manifest=f"{run.name}/manifest.json", frames=len(frames),
                 inner_radius_m=0., rows=[], flux_efold_s=None, fit_span_s=0., hybrid3d=True)
@@ -192,7 +197,8 @@ def run_display_3d(run, out, label=None):
 def main(out, runs):
     out = Path(out)
     existing = json.loads((out/"runs.json").read_text()) if (out/"runs.json").exists() else []
-    existing = [s for s in existing if not s.get("hybrid3d")]
+    replaced = {Path(spec.partition('::')[0]).name for spec in runs}
+    existing = [s for s in existing if s['run'] not in replaced]
     added = []
     for spec in runs:
         run, _, label = spec.partition("::")
@@ -205,7 +211,9 @@ def main(out, runs):
         html = html.replace('<label><input type="checkbox" id="separatrix" checked> Separatrix</label>',
                             '<label><input type="checkbox" id="separatrix" checked> Separatrix</label>'
                             '<label><input type="checkbox" id="ions" checked> Ions (3D runs)</label>')
-        (out/"viewer.html").write_text(html)
+    if 'id="ion-legend"' not in html:
+        html = html.replace('<p id="frame-summary"></p>', '<p id="frame-summary"></p><p id="ion-legend" class="quiet"></p>')
+    (out/"viewer.html").write_text(html)
     return added
 
 

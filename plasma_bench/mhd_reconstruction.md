@@ -75,3 +75,14 @@ while its neighbours turned the other way.
 
 g keeps the one-sided slope: bounding it as well made the torsional Alfvén
 wave gain 3% of its energy per period at 16 cells. The axis is unchanged.
+
+## Linked rod field
+`linked=K` reconstructs perturbations about the analytic current-free Bθ=K/r
+on an annulus. Cell g and total pressure subtract K/⟨r²⟩ and K²/(2μ0⟨r²⟩),
+respecting the state energy convention. Face/corner/source traces restore
+K/R² and K²/(2μ0R²). The vacuum pressure and hoop integrals use the exact
+(1/r_lo−1/r_hi)/∫r dr, so their radial force cancels the face traction.
+No conserved averages are changed. `order=1` holds perturbations constant and
+is used for the linked-current admissibility baseline too. K=0 retains the
+historical arithmetic path. This preserves the vacuum screw-pinch fixture,
+not arbitrary equilibria or dynamic rod-driven formation.

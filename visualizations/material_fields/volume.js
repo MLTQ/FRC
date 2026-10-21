@@ -97,7 +97,7 @@ function createVolumeRenderer(canvas) {
    const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);
    gl.uniform3f(uniforms.rightAxis,cy,sy,0);gl.uniform3f(uniforms.upAxis,sp*sy,-sp*cy,cp);gl.uniform3f(uniforms.forwardAxis,-cp*sy,cp*cy,sp);
    gl.uniform1f(uniforms.pixelsPerUnit,zoom*Math.min(canvas.width,canvas.height)*.37);
-   gl.uniform1f(uniforms.maximum,maximum);gl.uniform1i(uniforms.component,component);
+   gl.uniform1f(uniforms.maximum,maximum/(three?(frame.volume3d.value_scale||1):1));gl.uniform1i(uniforms.component,component);
    gl.uniform1f(uniforms.opacity,opacity);gl.uniform1f(uniforms.threshold,threshold);gl.drawArrays(gl.TRIANGLES,0,3);
  }};
 }

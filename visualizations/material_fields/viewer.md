@@ -140,3 +140,14 @@ With `DATA.particles` (a url) and a `#particles` checkbox, both added by
 
 The field lines remain those of the saved axisymmetric field. A coil field
 superposed in the tracking (the quadrupole) is not drawn.
+
+## Cartesian hybrid runs
+`hybrid3d_display` supplies `no_copies`, fetched `volume3d` half-float textures,
+and per-frame `ions` samples. The texture's `value_scale` restores A/m² during
+rendering; legends always retain the physical extrema. Field-line copies are
+hidden for these genuinely 3D fields. Ion dots are independent samples and
+are never joined into trails. Model badge, temperature label and source notes
+follow the selected manifest. Current components with nonzero run extrema are
+enabled; unavailable components reset to magnitude on a run switch.
+An optional ion-legend names the dot speed scale and saturation, separately
+from the field-line |B| legend, and identifies each frame as a new sample.

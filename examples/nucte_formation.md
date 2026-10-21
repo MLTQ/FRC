@@ -100,6 +100,16 @@ capacitance, voltage, stray inductance, fire time, module count and crowbar
 its own `Bank`: `turns` series turns filling `length` at `radius`, centred at
 `z_center`. `pair=True` adds the mirror image at −z_center in series. A
 negative bank voltage gives a field opposing the main field.
+- `extra_banks`: further `Bank`s on the same winding (staged banks). Each has
+  its own start switch and crowbar, in parallel with `bank` on the coil
+  terminals. Their modules are named `aux{k}:{name}/{j}`.
+- `Bank.crowbar_time`: close the crowbar at this absolute time instead of at
+  the capacitor's first voltage zero. A double-swing bank (charged negative,
+  `unidirectional=False`) needs it, since its first voltage zero is at the
+  negative current peak. The one-way crowbar's direction follows the sign of
+  the charge, so such a bank uses `crowbar_one_way=False`.
+- A one-way crowbar on a negative bank conducts in the direction a later
+  positive bank on the same winding drives, so it would short that bank.
 
 **Mutual coupling.** All coils are mutually coupled. A crowbarred main coil
 keeps its flux linkage, so it answers an aux coil's flux by changing its own

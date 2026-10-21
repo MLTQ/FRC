@@ -48,6 +48,8 @@ def case_from_setup(setup):
     case = dict(setup["case"])
     for key, kind in (("aux_coils", AuxCoil), ("extra_main_banks", Bank)):
         case[key] = tuple(_from_dict(kind, d) for d in case.get(key, ()))
+    if case.get("rod_bank"):
+        case["rod_bank"] = Bank(**case["rod_bank"])
     known = set(Nucte.__dataclass_fields__)
     return replace(Nucte(), **{k: v for k, v in case.items() if k in known})
 
@@ -118,25 +120,32 @@ def azimuthal_current(grid, psi):
     return j
 
 
-def toroidal_frames(run, fluid):
+def toroidal_frames(run, fluid, linked=None):
     """2.5D run: {snapshot index: (B_theta at the gas nodes, J_r and J_z at the gas nodes)}; {} for a 2D run.
-    B_theta = r g with g = B_theta/r averaged to the nodes, zero on the insulating gas boundary."""
+    B_theta = r g with g = B_theta/r averaged to the nodes; on the insulating gas boundary it is the vacuum value
+    K/r, where K = linked[index] is the r B_theta of a threading rod current (zero without one)."""
     path = Path(run)/"toroidal.npz"
     if not path.exists():
         return {}
     data, out, n = np.load(path), {}, fluid.nr*fluid.nz
     for key in data.files:
+        k = (linked or {}).get(int(key[1:]), 0.)
         g = data[key][n:].reshape(fluid.nr, fluid.nz)
-        _, jz, jr = currents(fluid, g)
+        _, jz, jr = currents(fluid, g, k)
         zn, rn = node_currents(jz, jr)
         pad = np.pad(g, 1, mode="edge")
         gn = .25*(pad[:-1, :-1]+pad[1:, :-1]+pad[:-1, 1:]+pad[1:, 1:])
         bt = fluid.rf[:, None]*gn
-        bt[-1] = 0.; bt[:, [0, -1]] = 0.
+        bt[-1] = k/fluid.rf[-1]; bt[:, [0, -1]] = k/fluid.rf[:, None]
         if fluid.annular:
-            bt[0] = 0.
+            bt[0] = k/fluid.rf[0]
         out[int(key[1:])] = (bt, rn, zn)
     return out
+
+
+def rod_linkage(history):
+    """r B_theta of the rod's vacuum field per saved state, mu0 I/(2 pi) [T m] ({} without a rod)."""
+    return {k: MU0*h["rod_circuit"]["rod_current_a"]/(2*np.pi) for k, h in enumerate(history) if h.get("rod_circuit")}
 
 
 def run_display(run, out, label=None, description=""):
@@ -158,7 +167,8 @@ def run_display(run, out, label=None, description=""):
     fluid_rows, fluid_cols = slice(i0, i0+c.nr+1), slice(z0, z0+c.nz+1)
     display_r = grid.r <= c.wall_radius+1.01*fluid.dr                   # keep line colours off the coil filaments
     names = ["Main coil"]*c.sections+[a.name for a in c.aux_coils]
-    toroidal = toroidal_frames(run, fluid)
+    linked = rod_linkage(history)
+    toroidal = toroidal_frames(run, fluid, linked)
     data_frames, peak_b, peak_j, worst = [], 0., np.zeros(4), 0.
     (Path(out)/run.name).mkdir(parents=True, exist_ok=True)
     for (k, psi_gas, rho, p), row in zip(frames, rows):
@@ -171,8 +181,9 @@ def run_display(run, out, label=None, description=""):
         worst = max(worst, float(abs(psi[fluid_rows, fluid_cols]-psi_gas).max()/max(abs(psi_gas).max(), 1e-30)))
         br, bz = fields(grid, psi)
         bmag = np.hypot(br, bz)
-        if k in toroidal:   # |B| includes B_theta inside the gas (none exists outside it)
-            bt_grid = np.zeros(grid.shape)
+        if k in toroidal:   # |B| includes B_theta: the gas's, and the rod's vacuum K/r outside it (none without a rod)
+            rr_eff = np.maximum(rr, c.rod_radius)
+            bt_grid = linked.get(k, 0.)*np.minimum(rr, c.rod_radius)/(rr_eff*c.rod_radius)
             bt_grid[fluid_rows, fluid_cols] = toroidal[k][0]
             bmag = np.sqrt(bmag**2+bt_grid**2)
         b_at = RegularGridInterpolator((grid.r, grid.z), bmag, bounds_error=False, fill_value=0.)
@@ -229,6 +240,9 @@ def run_display(run, out, label=None, description=""):
                                      +[float(f"{x:.3g}") for x in (value, jr[i, jj], j[i, jj], jz[i, jj])])
         branch = vac+img
         groups = [dict(name=f"{names[s]} {branch[s]/1e3:.1f} kA", center_t=float(branch[s]*wall_bz[s])) for s in range(len(branch))]
+        if k in linked:   # the rod: its current and vacuum B_theta at the wall (not part of the Bz sum below)
+            rod_t = float(linked[k]/c.wall_radius)
+            groups.append(dict(name=f"Rod {linked[k]*2*np.pi/MU0/1e3:.1f} kA, B_θ", center_t=rod_t))
         t = float(h["time_s"])
         closed = bool(region.get("closed")) if region else False
         summary = ("No closed flux." if not region else
@@ -240,7 +254,7 @@ def run_display(run, out, label=None, description=""):
         frame = dict(step=int(h.get("steps", k)), time_us=t*1e6, lines=lines, current=cloud, outline=[], separatrix=sep_paths,
                      bmax=gas_b, jmax=[float(x) for x in jmaxes],
                      temperature=[region["total_temperature_ev"]/2]*2 if region.get("total_temperature_ev") else [None, None],
-                     drive_center_t=float(sum(g["center_t"] for g in groups)), drive_groups=groups, summary=summary,
+                     drive_center_t=float(sum(g["center_t"] for g in groups[:len(branch)])), drive_groups=groups, summary=summary,
                      volume=dict(shape=[texture.shape[1], texture.shape[0]], bounds=[0., c.wall_radius/extent, zf[0]/extent, zf[-1]/extent],
                                  channels=texture.shape[-1], slots=[1, 3],    # RGBA = (Jr, Jtheta, Jz, support)
                                  b64=base64.b64encode(texture.tobytes()).decode()))
@@ -262,6 +276,12 @@ def run_display(run, out, label=None, description=""):
     coil_groups = [dict(label=names[s], color=GROUP_COLORS[0] if s < c.sections else GROUP_COLORS[1+(s-c.sections) % (len(GROUP_COLORS)-1)],
                         paths=[ring(st.radius, st.z, extent, 61) for st in coil.straps if st.section == s])
                    for s in range(coil.sections)]
+    if c.rod_bank is not None:   # rod on the axis and its return cage (eight bars)
+        half = c.rod_length/2
+        bars = [[-half, c.cage_radius*np.cos(a), c.cage_radius*np.sin(a)] for a in np.arange(8)*np.pi/4]
+        coil_groups.append(dict(label="Rod and return cage", color=GROUP_COLORS[-1],
+                                paths=[(np.array([[-half, 0., 0.], [half, 0., 0.]])/extent).round(5).tolist()]
+                                + [(np.array([[-half, b[1], b[2]], [half, b[1], b[2]]])/extent).round(5).tolist() for b in bars]))
     d = decay(rows)
     title = label or run.name
     gas = f"{c.gas} at {c.fill_pa/0.133322:.1f} mTorr"
@@ -350,12 +370,17 @@ def describe(setup):
         text.append("2.5D (v_θ, B_θ), no Hall term")
     if r_in > 0:
         text.append(f"inner tube r {100*r_in:.2f} cm")
+    if c.rod_bank is not None:
+        rb = c.rod_bank
+        text.append(f"rod current (inner tube axis, coaxial return at r {100*c.cage_radius:g} cm): {rb.capacitance*1e6:g} µF at "
+                    f"{rb.voltage/1e3:g} kV fired at {rb.fire_time*1e6:g} µs")
     for b in c.extra_main_banks:
         text.append(f"re-boost bank {b.capacitance*1e6:g} µF at {b.voltage/1e3:g} kV fired at {b.fire_time*1e6:g} µs")
     for a in c.aux_coils:
         where = f"z ±{a.z_center:g} m" if a.pair else f"z {a.z_center:g} m"
-        text.append(f"{a.name}: {a.turns}-turn coil r {100*a.radius:g} cm × {100*a.length:g} cm at {where}, "
-                    f"{a.bank.capacitance*1e6:g} µF at {a.bank.voltage/1e3:g} kV fired at {a.bank.fire_time*1e6:g} µs")
+        banks = ", then ".join(f"{b.capacitance*1e6:g} µF at {b.voltage/1e3:g} kV fired at {b.fire_time*1e6:g} µs"
+                               for b in (a.bank,)+tuple(a.extra_banks))
+        text.append(f"{a.name}: {a.turns}-turn coil r {100*a.radius:g} cm × {100*a.length:g} cm at {where}, {banks}")
     return "; ".join(text)
 
 

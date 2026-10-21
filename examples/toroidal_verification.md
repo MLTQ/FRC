@@ -57,6 +57,10 @@ points per cell. Only the torsional wave's starting amplitude is projected.
      intervals (Radau, rtol 1e-11).
    - **Energy theorem.** The separately counted boundary B_θ Poynting work must
      equal the toroidal magnetic energy plus the Ohmic heat.
+   - `reference_intervals=` controls the independent radial reference (default
+     4000). Radau uses its exact sparse tridiagonal Jacobian; the equations and
+     tolerances are unchanged. Reference failures raise rather than returning
+     incomplete trajectories.
 
 ## Results (2026-10-20)
 See `plasma_bench/conservative_coupled.md` (2.5D section) for the tables.

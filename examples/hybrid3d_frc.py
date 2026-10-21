@@ -25,22 +25,28 @@ The 2D run's own trapped flux and separatrix at the same times are listed for co
 import json
 import sys
 import time
+from dataclasses import asdict
 from pathlib import Path
 import numpy as np
 from scipy.constants import mu_0 as MU0, e as QE
 from scipy.interpolate import RegularGridInterpolator
 from plasma_bench.hybrid3d import HybridParams, curl_edges
 from plasma_bench.hybrid3d_device import Device, device_box, cell_types, DeviceHybrid, GAS
-from examples.nucte_compare import load, summarize, closed_region
+from examples.nucte_compare import load, summarize
 from examples.nucte_formation import ION_MASS
 from examples.formation_display import case_from_setup, geometry
 from examples.nucte_formation import coil_sections
+from examples.hybrid3d_geometry import poloidal_average, density_modes
 
 
 def full_flux(run, frame_time_s):
     """Total psi on the 2D run's field grid at the saved state nearest frame_time_s; also the fluid state."""
     setup, rf, zf, frames, history = load(run)
     c = case_from_setup(setup)
+    if c.inner_radius > 0:
+        raise ValueError('3D initialization needs inner-wall geometry before annular source runs can be mapped')
+    if (Path(run)/'toroidal.npz').exists():
+        raise ValueError('3D initialization currently maps poloidal sources only; toroidal field/rotation cannot be discarded')
     i0, r_in, fluid, grid, mapping = geometry(c)
     times = [history[k]["time_s"] for k, *_ in frames]
     pick = int(np.argmin(np.abs(np.array(times)-frame_time_s)))
@@ -137,38 +143,8 @@ def build(state, dx, dz, ppc=8, floor=.05, seed=0, dt_factor=.1):
 
 def diagnostics(model):
     """Azimuthal averages and midplane azimuthal modes."""
-    box = model.box
-    lo, d = np.asarray(box.lo), box.d
-    xh = [lo[a]+d[a]*(np.arange(box.shape[a])+.5) for a in range(3)]
-    Xf, Yf = np.meshgrid(xh[0], xh[1], indexing="ij")
-    rf = np.hypot(Xf, Yf)
-    dr = d[0]
-    edges = np.arange(0, model.device.coil_radius+dr, dr)
-    idx = np.digitize(rf, edges)-1
-    nb = len(edges)-1
-    # azimuthally averaged Bz(r, z) on face columns, then psi(r, z) = int Bz r dr
-    bz = model.b[2]
-    prof = np.zeros((nb, box.shape[2]))
-    for q in range(nb):
-        sel = idx == q
-        if sel.any():
-            prof[q] = bz[sel].mean(axis=0)
-    rc = .5*(edges[:-1]+edges[1:])
-    psi = np.concatenate((np.zeros((1, box.shape[2])), np.cumsum(prof*rc[:, None]*dr, axis=0)))
-    rnodes = edges
-    zf = lo[2]+d[2]*np.arange(box.shape[2])                  # Bz faces sit at z nodes
-    gas_z = np.abs(zf) < model.device.tube_half_length
-    wall_row = int(np.searchsorted(rnodes, model.device.wall_radius))
-    region = closed_region(rnodes[:wall_row+1], zf[gas_z], psi[:wall_row+1, gas_z])
-    # midplane density modes
-    xs = [lo[a]+d[a]*np.arange(box.shape[a]) for a in range(3)]
-    Xn, Yn = np.meshgrid(xs[0], xs[1], indexing="ij")
-    phi = np.arctan2(Yn, Xn); rn = np.hypot(Xn, Yn)
-    kz = box.shape[2]//2
-    nmid = model.n[:, :, kz]
-    ring = (rn > .3*model.device.wall_radius) & (rn < .9*model.device.wall_radius)
-    m0 = float(np.abs(np.sum(nmid[ring])))
-    modes = {f"n{m}": float(np.abs(np.sum(nmid[ring]*np.exp(-1j*m*phi[ring])))/max(m0, 1e-300)) for m in (1, 2, 3)}
+    *_, region = poloidal_average(model.box, model.device, model.b[2])
+    modes = density_modes(model.box, model.device, model.n)
     return dict(time_s=model.time, steps=model.steps, substeps=model.substeps, particles=model.particles(),
                 lost=dict(model.lost), kinetic_j=model.kinetic_energy(), magnetic_j=model.magnetic_energy(),
                 closed=None if region is None else bool(region["closed"]),
@@ -181,29 +157,46 @@ def save_snapshot(model, out, index, rng, ions=4000):
     """Fields and an ion sample for the 3D viewer (examples/hybrid3d_display.py): B on faces and node density as
     float32, and `ions` randomly chosen macro-ions (position, velocity), a point sample with no identity."""
     pick = rng.choice(model.x.shape[0], size=min(ions, model.x.shape[0]), replace=False)
-    np.savez_compressed(Path(out)/f"snap_{index:04d}.npz", time_s=model.time,
-                        bx=model.b[0].astype(np.float32), by=model.b[1].astype(np.float32), bz=model.b[2].astype(np.float32),
-                        n=model.n.astype(np.float32), ion_x=model.x[pick].astype(np.float32), ion_v=model.v[pick].astype(np.float32))
+    path = Path(out)/f"snap_{index:04d}.npz"
+    temporary = path.with_suffix('.npz.tmp')
+    with temporary.open('wb') as stream:
+        np.savez_compressed(stream, time_s=model.time,
+                            bx=model.b[0].astype(np.float32), by=model.b[1].astype(np.float32), bz=model.b[2].astype(np.float32),
+                            n=model.n.astype(np.float32), ion_x=model.x[pick].astype(np.float32), ion_v=model.v[pick].astype(np.float32))
+    temporary.replace(path)
+
+
+def save_history(history, out):
+    temporary = Path(out)/'history.json.tmp'
+    temporary.write_text(json.dumps(history, indent=1))
+    temporary.replace(Path(out)/'history.json')
 
 
 def main(out, run, t_us=10., dx=.01, dz=.02, ppc=8, t_end_us=10., floor=.05, seed=0, every_us=.25, snap_us=.1):
     out = Path(out); out.mkdir(parents=True, exist_ok=True)
     state = full_flux(run, t_us*1e-6)
     model, info = build(state, dx, dz, ppc, floor, seed)
-    info.update(run=str(run), start_time_s=state["time_s"], dx=dx, dz=dz, ppc=ppc, floor_fraction=floor)
+    info.update(run=str(run), start_time_s=state["time_s"], dx=dx, dz=dz, ppc=ppc, floor_fraction=floor,
+                ion_mass=state['mass'], seed=seed, requested_duration_s=t_end_us*1e-6,
+                snapshot_interval_s=snap_us*1e-6, diagnostic_interval_s=every_us*1e-6,
+                hybrid_parameters=asdict(model.p), cell_spacing_m=model.box.d.tolist())
     (out/"setup.json").write_text(json.dumps(info, indent=1))
     history = [diagnostics(model)]
+    save_history(history, out)
     print(json.dumps(info), flush=True)
     start = time.time()
     next_mark = every_us*1e-6
     snap_rng = np.random.default_rng(seed+1)
     snaps, next_snap = 0, 0.
+    last_snap_time = None
     if snap_us > 0:
         save_snapshot(model, out, 0, snap_rng); snaps, next_snap = 1, snap_us*1e-6
+        last_snap_time = model.time
     while model.time < t_end_us*1e-6:
         model.step()
         if snap_us > 0 and model.time >= next_snap-1e-15:
             save_snapshot(model, out, snaps, snap_rng); snaps += 1; next_snap += snap_us*1e-6
+            last_snap_time = model.time
         if model.time >= next_mark-1e-15:
             row = diagnostics(model)
             row["wall_s"] = time.time()-start
@@ -213,8 +206,17 @@ def main(out, run, t_us=10., dx=.01, dz=.02, ppc=8, t_end_us=10., floor=.05, see
                                separatrix_mid_m=ref.get("separatrix_mid_m"), length_m=ref.get("length_m"))
             history.append(row)
             print(json.dumps({k: v for k, v in row.items() if k != "lost"}), flush=True)
-            (out/"history.json").write_text(json.dumps(history, indent=1))
+            save_history(history, out)
             next_mark += every_us*1e-6
+    if snap_us > 0 and last_snap_time != model.time:
+        save_snapshot(model, out, snaps, snap_rng)
+    if history[-1]['time_s'] != model.time:
+        row = diagnostics(model)
+        ref = min(state['rows'], key=lambda r: abs(r['time_s']-state['time_s']-model.time))
+        row['twod'] = {key: ref.get(key) for key in ('time_s', 'trapped_flux_wb', 'separatrix_mid_m', 'length_m')}
+        row['wall_s'] = time.time()-start
+        history.append(row)
+    save_history(history, out)
     return history
 
 

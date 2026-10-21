@@ -50,29 +50,41 @@ class Reconstruction:
     constant-total-pressure straight-field equilibria without a force repair.
     No cell energy, density or pressure is changed by reconstruction.
     """
-    def __init__(self, mesh, q, *, positivity=True, local_bounds=False):
+    def __init__(self, mesh, q, *, positivity=True, local_bounds=False, linked=0., order=2):
         self.mesh = mesh
         # 2.5D: q has two more even, axis-regular columns, Omega = v_theta/r and g = B_theta/r.
         self.toroidal = q.shape[-1] == 8
+        self.linked = float(linked)
+        if self.linked and not (self.toroidal and mesh.annular):
+            raise ValueError('A linked vacuum toroidal field requires an annular toroidal state')
+        self.regular_poloidal = order == 2
         components = q.shape[-1]
         self.values = q.copy()
         self.values[..., 3] += (q[..., 4]**2+q[..., 5]**2)/(2*MU0)
         if self.toroidal:   # cell toroidal magnetic pressure <r^2> g^2/(2 mu0) joins the total pressure
             self.values[..., 3] += .5*(mesh.rf[:-1]**2+mesh.rf[1:]**2)[:, None]*q[..., 7]**2/(2*MU0)
+        if self.linked:
+            r2 = .5*(mesh.rf[:-1]**2+mesh.rf[1:]**2)[:, None]
+            # Fit only the perturbation about the known current-free K/r field.
+            # These subtractions use the state's cell energy convention; traces
+            # restore the analytic field/pressure at their actual radii.
+            self.values[..., 7] -= self.linked/r2
+            self.values[..., 3] -= self.linked**2/(2*MU0*r2)
         self.scale = np.ones((mesh.nr, 1, components))
-        self.scale[:, 0, [1, 4]] = mesh.radial_centroid[:, None]
+        if self.regular_poloidal:
+            self.scale[:, 0, [1, 4]] = mesh.radial_centroid[:, None]
         self.values /= self.scale
         lo, hi = mesh.rf[:-1], mesh.rf[1:]
         self.coordinates = np.broadcast_to(((lo*lo+hi*hi)/4)[:, None, None], (mesh.nr, 1, components)).copy()
         self.coordinates[:, 0, [1, 4]] = (.3*(hi**5-lo**5)/(hi**3-lo**3))[:, None]
-        self.radial = radial_slopes(self.values, self.coordinates)
+        self.radial = radial_slopes(self.values, self.coordinates) if order == 2 else np.zeros_like(self.values)
         if self.toroidal:
             self._wall_slopes()
-        self.axial = axial_increments(self.values)
+        self.axial = axial_increments(self.values) if order == 2 else np.zeros_like(self.values)
         xcenter = self.coordinates[..., 0]
         self.pressure = q[..., 3].copy()
-        self.pressure_radial = radial_slopes(self.pressure, xcenter)
-        self.pressure_axial = axial_increments(self.pressure)
+        self.pressure_radial = radial_slopes(self.pressure, xcenter) if order == 2 else np.zeros_like(self.pressure)
+        self.pressure_axial = axial_increments(self.pressure) if order == 2 else np.zeros_like(self.pressure)
         density_scale = np.ones_like(self.pressure)
         thermal_scale = np.ones_like(self.pressure)
         # Optional local bounds: density/thermal-pressure traces stay >= the 3x3 neighbour minimum,
@@ -96,7 +108,7 @@ class Reconstruction:
                                      self._auxiliary_pressure(mesh.rf[1:] if upper else mesh.rf[:-1], offset),
                                      (mesh.rf[1:] if upper else mesh.rf[:-1])[:, None])
                   for upper in (False, True) for offset in (-.5, 0., .5)}
-        axial = {offset: ((self.values+offset*self.axial)*self.scale, self.pressure+offset*self.pressure_axial,
+        axial = {offset: (self._restore_linked((self.values+offset*self.axial)*self.scale, self.axial_radius), self.pressure+offset*self.pressure_axial,
                           self.axial_radius)
                  for offset in (-.5, .5)}
         if positivity:
@@ -148,8 +160,21 @@ class Reconstruction:
     def _raw_radial(self, radius, axial_offset=0):
         values = self.values+self.radial*(.5*radius[:, None, None]**2-self.coordinates)+axial_offset*self.axial
         factor = np.ones_like(self.scale)
-        factor[:, 0, [1, 4]] = radius[:, None]
-        return values*factor
+        if self.regular_poloidal:
+            factor[:, 0, [1, 4]] = radius[:, None]
+        return self._restore_linked(values*factor, radius[:, None])
+
+    def _restore_linked(self, values, radius):
+        if self.linked:
+            values = values.copy()
+            values[..., 7] += self.linked/radius**2
+            values[..., 3] += self.linked**2/(2*MU0*radius**2)
+        return values
+
+    def _linked_source(self):
+        """Integral of the analytic vacuum magnetic pressure against dr / int r dr."""
+        return (self.linked**2/(2*MU0)*(1/self.mesh.rf[:-1]-1/self.mesh.rf[1:])
+                /self.mesh.radial_measure)[:, None]
 
     def radial_values(self, upper, axial_offset=0):
         return self._radial_states[(upper, axial_offset)]
@@ -173,6 +198,8 @@ class Reconstruction:
     def radial_source(self):
         # Integrate pt dr / integral(r dr), NOT pt/r at an assumed point.
         original = (self.values[..., 3]-self.radial[..., 3]*self.mesh.dr**2/12)/self.mesh.r[:, None]
+        if self.linked:
+            original = original+self._linked_source()
         if np.all(self.pressure_weight == 1):
             return original+self._toroidal_source() if self.toroidal else original
         auxiliary = (self.pressure-self.pressure_radial*self.mesh.dr**2/12)/self.mesh.r[:, None]
@@ -185,7 +212,11 @@ class Reconstruction:
             magnetic += weight*(raw[..., 4]**2+raw[..., 5]**2)/(2*MU0)
             if self.toroidal:
                 magnetic += weight*(radius[:, None]*raw[..., 7])**2/(2*MU0)
+            if self.linked:
+                magnetic -= weight*self.linked**2/(2*MU0*radius[:, None]**2)
         auxiliary += .5*self.mesh.dr*magnetic/self.mesh.radial_measure[:, None]
+        if self.linked:
+            auxiliary += self._linked_source()
         blended = self.pressure_weight*original+(1-self.pressure_weight)*auxiliary
         return blended+self._toroidal_source() if self.toroidal else blended
 
@@ -197,7 +228,10 @@ class Reconstruction:
             radius = (self.mesh.r+.5*self.mesh.dr*node)[:, None]
             raw = self._raw_radial(radius[:, 0])
             total += weight*radius**2*(raw[..., 0]*raw[..., 6]**2-raw[..., 7]**2/MU0)
-        return .5*self.mesh.dr*total/self.mesh.radial_measure[:, None]
+            if self.linked:
+                total += weight*self.linked**2/(MU0*radius**2)
+        source = .5*self.mesh.dr*total/self.mesh.radial_measure[:, None]
+        return source-2*self._linked_source() if self.linked else source
 
 
 def staggered_corner_fields(mesh, br_faces, bz_faces):

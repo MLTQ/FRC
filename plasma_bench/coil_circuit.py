@@ -66,6 +66,14 @@ def filament_inductance(radii, z, widths):
     return .5*(m+m.T)
 
 
+def coax_inductance(length, inner, outer):
+    """Inductance of a coaxial line [H]: L = mu0 l/(2 pi) ln(b/a) for a conductor of radius a returning through a
+    coaxial cage of radius b (thin-walled; field mu0 I/(2 pi r) between them, none outside the cage)."""
+    if not (length > 0 and 0 < inner < outer):
+        raise ValueError("Coaxial line needs length > 0 and 0 < inner < outer radius")
+    return MU0*length/(2*np.pi)*np.log(outer/inner)
+
+
 def nagaoka_inductance(radius, length, turns=1):
     """Exact inductance of a thin cylindrical current sheet with UNIFORM current (Nagaoka coefficient):
     L = mu0 pi a^2 N^2/l * (4/(3 pi k'))[(k'^2/k^2)(K-E) + E - k], k = 2a/sqrt(4a^2+l^2). Independent check."""
@@ -496,6 +504,17 @@ class CircuitStepper:
         branch = np.bincount(self.sec, weights=y[:self.n_m]*active-y[2*self.n_m:3*self.n_m]*self.shorted,
                              minlength=self.n_s)
         return branch-image
+
+    def branch(self, image_rate=None):
+        """Section branch currents sum(I_m) - sum(I_c) = I_vac + I_img [A] at self.t, and their rates [A/s] with the
+        image changing at `image_rate` (the current a directly driven load, e.g. a rod's boundary, carries)."""
+        image_rate = np.zeros(self.n_s) if image_rate is None else image_rate
+        dy = self._rhs(self.t, self.y, image_rate)
+        active = self.fired & ~self.opened
+        n_m = self.n_m
+        current = np.bincount(self.sec, weights=self.y[:n_m]*active-self.y[2*n_m:3*n_m]*self.shorted, minlength=self.n_s)
+        rate = np.bincount(self.sec, weights=dy[:n_m]*active-dy[2*n_m:3*n_m]*self.shorted, minlength=self.n_s)
+        return current, rate
 
     def connected(self):
         """Sections with a closed path for net current: a conducting module or a closed crowbar."""

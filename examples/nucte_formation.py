@@ -16,7 +16,8 @@ from plasma_bench.waveforms import Callback
 from plasma_bench.electromagnetics import VacuumField, loop_field
 from plasma_bench.mhd_state import from_primitive, with_toroidal
 from plasma_bench.conservative_coupled import ConservativeVacuumMHD, ConservativeParameters, ConservativeState
-from plasma_bench.coil_circuit import Strap, section_coil, Module, Crowbar, simulate, CircuitStepper
+from plasma_bench.coil_circuit import (Strap, section_coil, Module, Crowbar, simulate, CircuitStepper, LinearWaveform,
+                                       coax_inductance)
 from scipy.constants import mu_0 as MU0
 
 D_MASS = 2.01410*AMU
@@ -38,13 +39,16 @@ class Bank:
     crowbar_decay_s: float = 1e-4    # L/R of coil + crowbar loop
     crowbar_one_way: bool = True     # crowbar conducts only the freewheeling current (ignitron/diode)
     unidirectional: bool = True      # start switches open at their first current zero
+    crowbar_time: float | None = None  # absolute crowbar close time [s]; None: at the capacitor's first voltage zero
 
 
 @dataclass(frozen=True)
 class AuxCoil:
     """An extra coil with its own bank: staggered/sustaining coils, end plugs, compression coils or a
     solenoid inside an inner tube (radius < inner_radius). `turns` series turns of equal width fill
-    `length` at `radius`; `pair` adds the mirror image at -z_center wired in series (symmetric)."""
+    `length` at `radius`; `pair` adds the mirror image at -z_center wired in series (symmetric).
+    `extra_banks` are further Banks on the same winding (staged banks), each with its own start switch
+    and crowbar, in parallel with `bank` on the coil terminals."""
     name: str = "aux"
     z_center: float = 0.
     length: float = .1
@@ -52,6 +56,7 @@ class AuxCoil:
     turns: int = 1
     pair: bool = False
     bank: Bank = Bank()
+    extra_banks: tuple = ()
 ION_MASS = {"D2": D_MASS, "H2": 1.00784*AMU}   # dissociated, fully ionized (Z = 1)
 
 
@@ -132,6 +137,12 @@ class Nucte:
     bias_resistance: float = 8e-3
     extra_main_banks: tuple = ()      # circuit: further Banks on the main coil (e.g. a later re-boost)
     aux_coils: tuple = ()             # circuit: AuxCoils, each its own section and bank
+    rod_bank: Bank | None = None      # inner tube: Bank driving an axial current on a rod inside the inner tube that
+                                      # returns through a coaxial cage outside the main coil; makes r B_theta = mu0 I/(2 pi) in
+                                      # the vacuum beyond every gas boundary (implies toroidal). Positive charge: B_theta > 0
+    rod_length: float = 2.2           # rod-to-cage line: length l, rod radius a and cage radius b give the circuit section
+    rod_radius: float = .01           # L = mu0 l/(2 pi) ln(b/a) (1.32 uH for 2.2 m, 1 cm, 20 cm), with no mutual
+    cage_radius: float = .20          # inductance to the theta coils (its field is azimuthal)
 
 
 def strap_layout(c):
@@ -206,7 +217,7 @@ def bank_modules(bank, section, inductance, name):
     crowbar = None
     if bank.crowbar:
         r_cb = (inductance+bank.crowbar_inductance)/bank.crowbar_decay_s
-        crowbar = Crowbar(bank.crowbar_inductance*n, r_cb*n, unidirectional=bank.crowbar_one_way)
+        crowbar = Crowbar(bank.crowbar_inductance*n, r_cb*n, time=bank.crowbar_time, unidirectional=bank.crowbar_one_way)
     return [Module(bank.capacitance/n, bank.voltage, bank.stray*n, bank.resistance*n, section=section,
                    fire_time=bank.fire_time, crowbar=crowbar, unidirectional=bank.unidirectional, name=f"{name}.{j}")
             for j in range(n)]
@@ -251,8 +262,9 @@ def circuit_drive(c, coil):
         peak = float(centre(res)[res.time >= 0].max())
         v_main *= (c.peak_t-np.interp(0., res.time, centre(res)))/(peak-np.interp(0., res.time, centre(res)))
     extra = [m for k, bank in enumerate(c.extra_main_banks) for m in bank_modules(bank, 0, l_coil, f"extra{k}")]
-    extra += [m for k, aux in enumerate(c.aux_coils)
-              for m in bank_modules(aux.bank, n_s+k, float(coil.inductance[n_s+k, n_s+k]), f"aux{k}:{aux.name}")]
+    extra += [m for k, aux in enumerate(c.aux_coils) for j, bank in enumerate((aux.bank,)+tuple(aux.extra_banks))
+              for m in bank_modules(bank, n_s+k, float(coil.inductance[n_s+k, n_s+k]),
+                                    f"aux{k}:{aux.name}" if j == 0 else f"aux{k}:{aux.name}/{j}")]
     res = simulate(coil.inductance, banks(v_main, v_bias, lead)+extra, c.end_s, samples=times(lead))
     mods = res.modules
     main = [k for k, m in enumerate(mods) if m.name.startswith("main")]
@@ -311,6 +323,11 @@ def build(c):
                       for k, (strap, i) in enumerate(zip(fil, current)) for r, z in strap)
         drive = None
     sources = VacuumField(grid, coils)
+    rod = None
+    if c.rod_bank is not None:
+        if r_in <= 0:
+            raise ValueError("rod_bank needs an inner tube (inner_radius > 0): only an annulus can be threaded")
+        rod = RodCircuit(c, fluid)
     n_d = 2*c.fill_pa/(KB*c.gas_k)
     mass = ION_MASS[c.gas]
     rho, p = n_d*mass, 2*n_d*c.pi_temperature_ev*QE
@@ -337,24 +354,36 @@ def build(c):
                                     floor_temperature_ev=c.pi_temperature_ev, floor_ion_mass=mass,
                                     gap_resistivity=c.gap_resistivity,
                                     gap_density=c.gap_density_fraction*n_d*mass if c.gap_resistivity > 0 else None,
-                                    toroidal=c.toroidal or c.hall, hall=c.hall, hall_ion_mass=mass,
-                                    hall_cutoff_density=c.hall_cutoff_fraction*n_d*mass if c.hall and c.hall_cutoff_fraction > 0 else None)
+                                    toroidal=c.toroidal or c.hall or rod is not None, hall=c.hall, hall_ion_mass=mass,
+                                    hall_cutoff_density=c.hall_cutoff_fraction*n_d*mass if c.hall and c.hall_cutoff_fraction > 0 else None,
+                                    toroidal_boundary=rod.boundary if rod else None)
     # Initial plasma is current-free in the bias: induced flux zero, total flux = source flux.
     probe = ConservativeState(np.zeros((c.nr, c.nz, 4)), np.zeros((grid.nr, grid.nz)))
     total = sources.at(0.).psi[i0:i0+c.nr+1, c.end_cells:c.end_cells+c.nz+1]
     state = from_primitive(fluid, total, rho, p, energy_quadrature=c.energy_quadrature)
-    conserved = with_toroidal(fluid, state.conserved) if params.toroidal else state.conserved   # v_theta = B_theta = 0
+    # v_theta = 0; B_theta = 0, or the rod's current-free vacuum field
+    conserved = with_toroidal(fluid, state.conserved, 0., rod.initial_g() if rod else 0.) if params.toroidal else state.conserved
     model = ConservativeVacuumMHD(fluid, sources, ConservativeState(conserved, probe.induced_psi), params)
     model.coil_half_length = (c.centre_straps/2+c.end_straps)*c.strap_width
     model.ion_mass = mass
     model.coupler = None
+    model.rod = rod
     if stepper is not None:
         model.coupler = coupler(model, coil, stepper, sources)
+    if rod is not None:
+        main_update = model.coupler
+
+        def both(mm):
+            if main_update is not None:
+                main_update(mm)
+            rod.update(mm)
+        both.stepper = getattr(main_update, "stepper", None)
+        model.coupler = both
     return model, dict(fill_ions_m3=n_d, density_kg_m3=n_d*mass, pressure_pa=2*n_d*c.pi_temperature_ev*QE,
                        inner_radius_m=r_in,
                        strap_currents_a_per_t=current.tolist(),
                        centre_strap_share=float(current[:c.centre_straps].sum()/current.sum()) if c.drive == "ideal" else None,
-                       circuit=drive)
+                       circuit=drive, rod=rod.summary(c, fluid) if rod else None)
 
 
 def separatrix(model):
@@ -427,6 +456,89 @@ def coupler(model, coil, stepper, sources):
     return update
 
 
+class RodCircuit:
+    """Axial current I(t) on a rod inside the inner tube, returning through a coaxial cage outside the main coil.
+
+    The line is one coil_circuit section of inductance L = mu0 l/(2 pi) ln(b/a) on its own bank, stepped by its own
+    CircuitStepper: it has no mutual inductance with the theta coils, whose field is poloidal. The gas sees
+    r B_theta = K = mu0 I/(2 pi) in the vacuum beyond every boundary (ConservativeParameters.toroidal_boundary).
+    Its poloidal currents load the line through the toroidal-flux linkage
+        Phi_p = sum_cells g int(r dr dz) - K A,   A = sum_cells int(r dr dz)/<r^2>,
+    the flux beyond that of the discrete vacuum field g = K/<r^2> (zero discrete current, linking exactly K A).
+    As in `coupler`, it enters as the image current -Phi_p/L, so V = d(L I + Phi_p)/dt. The boundary current is a
+    LinearWaveform of the branch current I = I_vac + I_img, held continuous at step boundaries (it catches up with
+    the circuit over one further step, like CircuitStepper.refresh)."""
+    def __init__(self, c, mesh):
+        if c.rod_radius >= mesh.inner_radius or c.cage_radius <= max(c.coil_radius, c.end_radius):
+            raise ValueError("The rod must fit inside the inner tube and the cage must enclose the main coil")
+        self.inductance = coax_inductance(c.rod_length, c.rod_radius, c.cage_radius)
+        bank = c.rod_bank
+        self.modules = bank_modules(bank, 0, self.inductance, "rod")
+        self.stepper = CircuitStepper([[self.inductance]], self.modules, start=min(0., bank.fire_time))
+        r2 = .5*(mesh.rf[:-1]**2+mesh.rf[1:]**2)[:, None]
+        self.cell = .5*np.diff(mesh.rf**2)[:, None]*np.diff(mesh.zf)[None, :]   # int r dr dz per cell
+        self.vacuum_area = float((self.cell/r2).sum())
+        self.r2 = r2
+        self.wave = LinearWaveform(start=self.stepper.t)
+        self.stepper.run_to(0., 20e-9)   # rod current established in the un-ionized gas before pre-ionization
+        current, rate = self.stepper.branch()
+        self.wave.current, self.wave.rate, self.wave.start = float(current[0]), float(rate[0]), self.stepper.t
+        self.linkage_wb = 0.
+
+    def boundary(self, t):
+        """r B_theta [T m] of the vacuum beyond the gas at time t (the solver's toroidal_boundary)."""
+        return MU0/(2*np.pi)*float(self.wave.value(t))
+
+    def initial_g(self):
+        """Cell B_theta/r of the discrete vacuum field at t = 0 (the gas is ionized with the rod field in place)."""
+        return self.boundary(0.)/self.r2
+
+    def linkage(self, model):
+        return float((model.state.conserved[..., 5]*self.cell).sum())-self.boundary(model.time)*self.vacuum_area
+
+    def update(self, model):
+        """on_step: advance the line to the accepted solver time with the plasma linkage as its load."""
+        phi = self.linkage(model)
+        st = self.stepper
+        image = st.image.copy()
+        if st.connected()[0]:
+            image[0] -= (phi-self.linkage_wb)/self.inductance
+        self.linkage_wb = phi
+        if model.time <= st.t:
+            return
+        span = model.time-st.t
+        image_rate = (image-st.image)/span
+        st.advance(model.time, image)
+        current, rate = st.branch(image_rate)
+        held = float(self.wave.value(model.time))
+        self.wave.current, self.wave.rate, self.wave.start = held, float(rate[0]+(current[0]-held)/span), model.time
+
+    def snapshot(self, model):
+        out = self.stepper.snapshot()
+        out.update(rod_current_a=float(self.wave.value(model.time)), branch_current_a=float(self.stepper.branch()[0][0]),
+                   plasma_linkage_wb=self.linkage_wb)
+        return out
+
+    def summary(self, c, mesh):
+        """Vacuum design numbers of the rod bank (coil_circuit.simulate, independent of the stepper) for setup.json."""
+        res = simulate([[self.inductance]], self.modules, max(c.end_s, c.rod_bank.fire_time+1e-6), samples=20001)
+        i = res.section_current[:, 0]
+        k = int(np.argmax(abs(i)))
+        at = lambda t: float(np.interp(t, res.time, i))
+        b = c.rod_bank
+        return dict(line_inductance_h=self.inductance, gas_vacuum_inductance_h=MU0/(2*np.pi)*self.vacuum_area,
+                    exact_gas_inductance_h=MU0/(2*np.pi)*2*mesh.half_length*np.log(mesh.radius/mesh.inner_radius),
+                    voltage_v=b.voltage, capacitance_f=b.capacitance, energy_j=.5*b.capacitance*b.voltage**2,
+                    stray_h=b.stray, fire_time_s=b.fire_time, quarter_period_s=float(np.pi/2*np.sqrt((self.inductance+b.stray)*b.capacitance)),
+                    vacuum_peak_current_a=float(i[k]), vacuum_peak_time_s=float(res.time[k]),
+                    vacuum_current_at_0_a=at(0.), vacuum_current_at_end_a=at(c.end_s),
+                    vacuum_btheta_8cm_at_peak_t=MU0*float(i[k])/(2*np.pi*.08),
+                    crowbar_resistance_ohm=(self.inductance+b.crowbar_inductance)/b.crowbar_decay_s if b.crowbar else None,
+                    crowbar_time_s=res.crowbar_times[0] if b.modules == 1 else list(res.crowbar_times),
+                    capacitor_reversal_v=float(res.capacitor_voltage.min() if b.voltage > 0 else res.capacitor_voltage.max()),
+                    energy_residual_relative=float(np.abs(res.energy_residual([[self.inductance]])).max()/(.5*b.capacitance*b.voltage**2)))
+
+
 def image_current(model, coil_half_length):
     """Current the fixed induced-flux boundary (the coil as a flux conserver) carries over the coil length:
     (1/mu0) integral of the induced Bz just inside r_b. A circuit with stray inductance supplies less."""
@@ -447,7 +559,7 @@ def toroidal_observables(model, q):
     if q.shape[-1] != 8:
         return {}
     from plasma_bench.toroidal_ohm import currents
-    _, jz, jr = currents(model.mesh, q[..., 7])
+    _, jz, jr = currents(model.mesh, q[..., 7], model._linked(model.time))   # boundary: the rod's vacuum r B_theta
     r = np.sqrt(.5*(model.mesh.rf[:-1]**2+model.mesh.rf[1:]**2))[:, None]
     return dict(max_btheta_t=float(np.abs(r*q[..., 7]).max()), max_vtheta_m_s=float(np.abs(r*q[..., 6]).max()),
                 max_jz_a_m2=float(np.abs(jz).max()), max_jr_a_m2=float(np.abs(jr).max()))
@@ -456,6 +568,8 @@ def toroidal_observables(model, q):
 def observe(model):
     row = (observe_annular if model.mesh.annular else observe_axis)(model)
     row.update(toroidal_observables(model, model._primitive(model.state, model.time)))
+    if getattr(model, "rod", None) is not None:
+        row["rod_circuit"] = model.rod.snapshot(model)
     return row
 
 
@@ -475,7 +589,7 @@ def observe_axis(model):
                 max_density_m3=float(q[..., 0].max()/model.ion_mass), min_density_m3=float(q[..., 0].min()/model.ion_mass),
                 max_pressure_pa=float(q[..., 3].max()), max_speed_m_s=float(np.hypot(q[..., 1], q[..., 2]).max()),
                 image_current_a=image_current(model, model.coil_half_length),
-                circuit=model.coupler.stepper.snapshot() if model.coupler else None)
+                circuit=model.coupler.stepper.snapshot() if getattr(model.coupler, "stepper", None) else None)
 
 
 def observe_annular(model):
@@ -499,7 +613,7 @@ def observe_annular(model):
                 max_density_m3=float(q[..., 0].max()/model.ion_mass), min_density_m3=float(q[..., 0].min()/model.ion_mass),
                 max_pressure_pa=float(q[..., 3].max()), max_speed_m_s=float(np.hypot(q[..., 1], q[..., 2]).max()),
                 image_current_a=image_current(model, model.coil_half_length),
-                circuit=model.coupler.stepper.snapshot() if model.coupler else None)
+                circuit=model.coupler.stepper.snapshot() if getattr(model.coupler, "stepper", None) else None)
 
 
 def main(out=Path("outputs/nucte_formation"), **overrides):
@@ -565,11 +679,15 @@ def _from_dict(kind, data):
     if kind is AuxCoil:
         data = dict(data)
         data["bank"] = Bank(**data.get("bank", {}))
+        data["extra_banks"] = tuple(Bank(**b) for b in data.get("extra_banks", ()))
     return kind(**data)
 
 
 def parse(field, text):
-    """CLI value for a Nucte field. Tuple fields (aux_coils, extra_main_banks) take JSON text or a JSON file."""
+    """CLI value for a Nucte field. Tuple fields (aux_coils, extra_main_banks) take JSON text or a JSON file;
+    rod_bank takes a JSON object of Bank fields or "None"."""
+    if field == "rod_bank":
+        return None if text == "None" else Bank(**json.loads(text if text.lstrip().startswith("{") else Path(text).read_text()))
     if field in ("aux_coils", "extra_main_banks"):
         data = json.loads(text if text.lstrip().startswith("[") else Path(text).read_text())
         return tuple(_from_dict(AuxCoil if field == "aux_coils" else Bank, d) for d in data)

@@ -65,7 +65,9 @@ def flux_components(mesh, q, psi, gamma, resistive_electric, boundary_field, int
     extended = np.concatenate((lo, q, hi), axis=1)
     ghost_mesh = MHDMesh(mesh.radius, mesh.half_length+2*mesh.dz, mesh.nr, mesh.nz+4, mesh.inner_radius)
     annular = mesh.inner_radius > 0
-    reconstruction = Reconstruction(ghost_mesh, extended, local_bounds=local_bounds) if spatial_order == 2 else None
+    reconstruction = (Reconstruction(ghost_mesh, extended, local_bounds=local_bounds,
+                                     linked=toroidal_boundary if linked else 0., order=spatial_order)
+                      if spatial_order == 2 or linked else None)
     if reconstruction is not None:
         left, right, down, up = reconstruction.faces()
         corners = list(reconstruction.corners())
@@ -123,7 +125,7 @@ def flux_components(mesh, q, psi, gamma, resistive_electric, boundary_field, int
     corners = [value[:, 2:-2] for value in corners]
     br_extended = np.pad(brf, ((0, 0), (2, 2)), mode="symmetric")
     bz_extended = np.pad(bzf, ((0, 0), (2, 2)), mode="reflect")
-    if reconstruction is not None:
+    if spatial_order == 2:
         fields = staggered_corner_fields(ghost_mesh, br_extended, bz_extended)
     else:
         bz_pad = np.pad(bz_extended, ((1, 1), (0, 0)), mode="edge")

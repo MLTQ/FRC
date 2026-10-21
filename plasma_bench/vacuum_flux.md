@@ -121,3 +121,11 @@ Without a threading current no B_θ energy crosses a boundary.
 
 **First-order baseline.** The radial source adds
 (ρΩ² − g²/(2μ0)) × radial centroid.
+
+With a nonzero linked K, both orders use the analytic-vacuum decomposition in
+`Reconstruction`: reconstruct only the departure from K/r and restore that
+field at each trace. Exact vacuum pressure/hoop integrals cancel its traction.
+The first-order path keeps perturbations constant; staggered poloidal fields
+and CT retain their original first-order baseline. The no-linked-current path
+is unchanged. This removes artificial boundary diffusion/force for a static
+rod vacuum field without replacing the exterior by plasma.

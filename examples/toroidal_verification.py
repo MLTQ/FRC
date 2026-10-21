@@ -297,6 +297,7 @@ def rod_boundary(t):
 
 
 def rod_reference(times, count=4000):
+    from scipy.sparse import diags
     r = np.linspace(ROD_IN, ROD_W, count+1)
     h, half = r[1]-r[0], .5*(r[:-1]+r[1:])
     d = ROD_ETA/MU0
@@ -305,11 +306,19 @@ def rod_reference(times, count=4000):
         full = np.concatenate(([rod_boundary(t)], a, [rod_boundary(t)]))
         flux = np.diff(full)/(h*half)
         return d*r[1:-1]*np.diff(flux)/h
-    sol = solve_ivp(rhs, (0., max(times)), np.zeros(count-1), method="Radau", t_eval=times, rtol=1e-11, atol=1e-16)
+    # This independent reference is linear and tridiagonal; a dense numerical
+    # Jacobian is unnecessary and dominates refined reference runs.
+    scale = d*r[1:-1]/h**2
+    jac = diags((scale[1:]/half[1:-1], -scale*(1/half[:-1]+1/half[1:]),
+                 scale[:-1]/half[1:-1]), (-1, 0, 1), format='csc')
+    sol = solve_ivp(rhs, (0., max(times)), np.zeros(count-1), method="Radau", jac=jac,
+                    t_eval=times, rtol=1e-11, atol=1e-16)
+    if not sol.success:
+        raise RuntimeError(sol.message)
     return r, [np.concatenate(([rod_boundary(t)], sol.y[:, k], [rod_boundary(t)])) for k, t in enumerate(times)]
 
 
-def rod(nr, end_us=3.):
+def rod(nr, end_us=3., reference_intervals=4000):
     dr = (ROD_W-ROD_IN)/nr
     nz = int(round(2*ROD_HALF/(4*dr)))
     fluid = MHDMesh(ROD_W, ROD_HALF, nr, nz, ROD_IN)
@@ -323,7 +332,8 @@ def rod(nr, end_us=3.):
     model = ConservativeVacuumMHD(fluid, sources, ConservativeState(conserved, np.zeros(grid.shape)),
                                   parameters(resistivity=ROD_ETA, toroidal_boundary=rod_boundary))
     times = [1e-6*k for k in range(1, int(end_us)+1)]
-    r, refs = rod_reference(times)
+    reference_intervals = int(reference_intervals)
+    r, refs = rod_reference(times, reference_intervals)
     r2 = .5*(fluid.rf[:-1]**2+fluid.rf[1:]**2)
     rows, start = [], time.time()
     for t, a in zip(times, refs):
@@ -343,7 +353,7 @@ def rod(nr, end_us=3.):
                          fluid_energy_residual_j=d["fluid_energy_balance_residual_j"],
                          response_energy_residual_j=d["response_energy_balance_residual_j"],
                          maximum_speed_m_s=d["maximum_speed_m_s"], steps=d["steps"]))
-    return dict(case="rod", nr=nr, nz=nz, wall_s=time.time()-start, reference_intervals=4000, at=rows)
+    return dict(case="rod", nr=nr, nz=nz, wall_s=time.time()-start, reference_intervals=reference_intervals, at=rows)
 
 
 CASES = dict(torsional=torsional, rotor=rotor, alfvenic=alfvenic, whistler=whistler, rod=rod)
