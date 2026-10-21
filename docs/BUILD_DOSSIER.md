@@ -151,6 +151,11 @@ Literature-based (Tuszewski 1986; Ohi 1983); not simulated in 2D.
     180° apart in each half of the tube. The pattern is rotated 90° between
     the two halves.
   - These are vacuum-field upper bounds.
+  - Strength/order scan (same ions, extra loss by 30 µs): a quadrupole at
+    3/5/7/9% of B_e at the wall costs 7/15/24/31 points. An 8-bar octupole
+    at r = 0.20 m and 7% (4.8 kA per bar; 2.9% of B_e at the separatrix)
+    costs 4.8 points, in m=4 wall sectors. Its n=2 threshold is unknown
+    (frc-ibl.11.4).
 - **Plan:**
   1. First shots without it, to measure the n=2 onset (end-on camera).
   2. Then add it.

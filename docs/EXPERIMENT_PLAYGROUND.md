@@ -292,6 +292,7 @@ full numbers are in examples/particle_tracking.md.
 .venv/bin/python -m examples.particle_tracking verify outputs/particle_tracking/verify
 .venv/bin/python -m examples.particle_tracking ions outputs/fine_uniform_h2 outputs/particle_tracking/ions_fine_uniform_h2
 .venv/bin/python -m examples.particle_tracking rmf outputs/fine_uniform_h2 outputs/particle_tracking/rmf_even
+.venv/bin/python -m examples.particle_tracking multipoles outputs/fine_uniform_h2 outputs/particle_tracking/multipoles_fine_uniform_h2
 ```
 
 **Fields.**
@@ -366,9 +367,39 @@ full numbers are in examples/particle_tracking.md.
   matter.
 - **Likely an upper bound:** the vacuum superposition ignores the plasma's
   screening of the quadrupole.
-- **What follows for the build:** use the weakest quadrupole that holds off
-  n=2 (start at the wall definition, not the separatrix one). An octupole,
-  whose field falls faster inside, is worth considering (BUILD_DOSSIER §6).
+- **What follows for the build:** use the weakest multipole that holds off
+  n=2. The scan below suggests trying an octupole first.
+
+**Multipole strength and order (frc-ibl.8.1).**
+- **Setup:** the same 4000 ions in option A, 10 → 30 µs.
+  - Bars at r = 0.20 m, in series through end arcs.
+  - The level is the mean |B| on the wall circle at the midplane, as a
+    percentage of B_e = 0.245 T.
+  - Changes are paired against no multipole.
+  - Full table: examples/particle_tracking.md.
+
+| Case | Bar current | Mean \|B\| at the separatrix | Confined at 20 / 30 µs | Change at 30 µs | Lost to wall / ends | Wall-loss sector amplitude, z>0 / z<0 |
+|---|---|---|---|---|---|---|
+| None | – | – | 96.3 / 95.0% | – | 1.2 / 3.8% | – |
+| Quadrupole 3% | 2.3 kA | 2.2% | 95.3 / 87.9% | −7.0 ± 0.5 | 6.8 / 5.2% | m=2: 0.89 / 0.89 |
+| Quadrupole 5% | 3.9 kA | 3.6% | 93.2 / 79.5% | −15.4 ± 0.6 | 15.5 / 4.9% | m=2: 0.91 / 0.91 |
+| Quadrupole 7% | 5.5 kA | 5.1% | 90.9 / 71.4% | −23.6 ± 0.7 | 25.4 / 3.3% | m=2: 0.92 / 0.92 |
+| Quadrupole 9% | 7.0 kA | 6.5% | 88.4 / 64.0% | −30.9 ± 0.8 | 33.1 / 2.9% | m=2: 0.93 / 0.93 |
+| Octupole 7% (8 bars) | 4.8 kA | 2.9% | 95.9 / 90.2% | −4.8 ± 0.4 | 4.4 / 5.4% | m=4: 0.83 / 0.84 |
+
+- **The quadrupole cost is nearly linear in strength:** about 3 points per
+  % of B_e, with no free level. Losses are still accelerating at 30 µs
+  (q7: 2 points/µs), so a longer-lived FRC pays more.
+- **The octupole at the same wall field costs 4.8 points,** less than the 3%
+  quadrupole.
+  - Its field falls as r³ inside, to 2.9% of B_e at the separatrix.
+  - Even at equal separatrix field it costs less than half as much as the
+    quadrupole.
+  - Its losses fall in four sectors per half, rotated 45° between the
+    halves; the quadrupole's sectors rotate 90°.
+- **Limits:** these are vacuum-superposition upper bounds (no screening).
+  Whether 7% of an octupole, or any of these quadrupole levels, holds off
+  n=2 needs the 3D hybrid code (frc-ibl.11.4).
 
 **The inner tube absorbs ions.**
 - The inner separatrix lies within one gyroradius of the 3" tube, so 13–23%

@@ -3,6 +3,7 @@
     python -m examples.particle_tracking verify OUT
     python -m examples.particle_tracking ions RUN OUT [start_us=10] [end_us=30] [count=4000] [seed=1]
     python -m examples.particle_tracking rmf RUN OUT [frequency=1e6] [amplitude=5e-3] [parity=even] [count=300]
+    python -m examples.particle_tracking multipoles RUN OUT [cases=none,q3,q5,q7,q9,o7] [count=4000] [seed=1]
 
 verify: analytic checks of the pusher and fields (gyration, ExB and grad-B drifts, mirror loss cone, coil
 fields) and energy / p_theta conservation with convergence order in the saved FRC fields of a run
@@ -12,6 +13,9 @@ and with the straight quadrupole at 7% of B_e (set at the wall and at the separa
 confinement against time, end/wall loss maps, s-bar. Writes OUT/summary.json, figures, and
 RUN/particles.json (decimated orbits for examples/formation_display.py).
 rmf: electrons in the same fields plus an RMF antenna, with a no-RMF control: azimuthal entrainment.
+multipoles: the same ions with static multipoles of different order and strength (q7 = 4-bar quadrupole at 7%
+of B_e, o7 = 8-bar octupole at 7%, mean |B| on the wall circle): confined fraction, wall/end split and the
+m = 2 / m = 4 loss-sector amplitude, paired against the no-multipole case. Cases run in parallel processes.
 
 Fields (companion particle_tracking.md): the saved gas-node flux, extended into the vacuum exactly as in
 examples/formation_display.py (harmonic extension of the induced flux plus the section coil flux of the
@@ -29,7 +33,7 @@ from scipy.constants import e as QE, mu_0 as MU0, m_e as ME
 from scipy.special import ellipe, ellipk
 from plasma_bench.particle_tracking import (SPECIES, SURFACES, FluxField, Superposition, UniformField, GradientField,
                                             Walls, Population, track, canonical_angular_momentum, maxwellian,
-                                            momentum_from_velocity, quadrupole, rmf_antenna, gamma_of)
+                                            momentum_from_velocity, quadrupole, multipole, rmf_antenna, gamma_of)
 from examples.formation_display import case_from_setup, geometry, fields as grid_fields
 from examples.nucte_formation import coil_sections, ION_MASS
 from examples.nucte_compare import load, closed_region, annular_closed_region, plasma_inside
@@ -134,12 +138,13 @@ class Run:
         return Population(species, X, momentum_from_velocity(V)), region
 
 
-def quadrupole_per_ampere(radius):
-    """Mean |B| [T/A] of the dossier quadrupole around the midplane circle of `radius` (the 7% B_e level is
-    set on this mean; the field varies x2 around the azimuth at the wall)."""
-    th = np.linspace(0, 2*np.pi, 37)[:-1]
+def multipole_per_ampere(radius, order=2, reduce=np.mean):
+    """Mean (or `reduce`) |B| [T/A] of the 2*order-bar multipole (order 2: the dossier quadrupole) around the
+    midplane circle of `radius`. The 7% B_e level is set on this mean; the quadrupole field varies x2 around
+    the azimuth at the wall."""
+    th = np.linspace(0, 2*np.pi, 18*order+1)[:-1]
     X = np.column_stack((radius*np.cos(th), radius*np.sin(th), 0*th))
-    return float(np.linalg.norm(quadrupole(1.).fields(X, 0.)[0], axis=1).mean())
+    return float(reduce(np.linalg.norm(multipole(1., order).fields(X, 0.)[0], axis=1)))
 
 
 def time_step(fields, walls, t_list, species, omega_dt, snapshot_s):
@@ -331,7 +336,7 @@ def conservation_check(run, rng, count=200):
     scale = QE*abs(region["trapped_flux_wb"])/(2*np.pi)          # e psi_O: p_theta scale
     frozen = FluxField(run.grid.r, run.grid.z, [t0], run.psi_full[0])
     b_e = run.external_field(t0)
-    quad = quadrupole(QUAD_FRACTION*b_e/quadrupole_per_ampere(run.case.wall_radius*(1-1e-9)))
+    quad = quadrupole(QUAD_FRACTION*b_e/multipole_per_ampere(run.case.wall_radius*(1-1e-9)))
     cases = dict(static_quadrupole=(Superposition(frozen, quad), "energy"), static_axisymmetric=(frozen, "p_theta"),
                  time_dependent=(run.field, "p_theta"))
     results = {}
@@ -521,19 +526,19 @@ def loss_summary(pop):
     return out
 
 
-def m2_amplitude(pop):
-    """|<exp(2 i phi)>| of the loss azimuths, separately for wall losses at z > 0 and z < 0 and for each end:
-    the m = 2 imprint of a quadrupole (its field-line divergence is rotated 90 deg between the two halves).
-    noise = 1/sqrt(count) for uniformly spread azimuths."""
+def sector_amplitude(pop, m=2):
+    """|<exp(i m phi)>| of the loss azimuths, separately for wall losses at z > 0 and z < 0 and for each end:
+    the m = 2 imprint of a quadrupole, m = 4 of an octupole (the field-line divergence reverses sign between the
+    two halves, i.e. the pattern is rotated by 180/m deg). noise = 1/sqrt(count) for uniformly spread azimuths."""
     out = {}
     z = pop.lost_position[:, 2]
-    for label, m in (("wall z>0", (pop.lost_surface == 1) & (z > 0)), ("wall z<0", (pop.lost_surface == 1) & (z < 0)),
-                     ("end +z", pop.lost_surface == 3), ("end -z", pop.lost_surface == 4)):
-        if m.sum() >= 10:
-            phi = np.arctan2(pop.lost_position[m, 1], pop.lost_position[m, 0])
-            mean = np.exp(2j*phi).mean()
-            out[label] = dict(count=int(m.sum()), m2=float(abs(mean)), phase_deg=float(np.degrees(np.angle(mean))/2),
-                              noise=float(1/np.sqrt(m.sum())))
+    for label, sel in (("wall z>0", (pop.lost_surface == 1) & (z > 0)), ("wall z<0", (pop.lost_surface == 1) & (z < 0)),
+                       ("end +z", pop.lost_surface == 3), ("end -z", pop.lost_surface == 4)):
+        if sel.sum() >= 10:
+            phi = np.arctan2(pop.lost_position[sel, 1], pop.lost_position[sel, 0])
+            mean = np.exp(1j*m*phi).mean()
+            out[label] = dict(count=int(sel.sum()), amplitude=float(abs(mean)), phase_deg=float(np.degrees(np.angle(mean))/m),
+                              noise=float(1/np.sqrt(sel.sum())))
     return out
 
 
@@ -545,8 +550,8 @@ def ions(run_path, out, start_us=10., end_us=30., count=4000, seed=1, window_us=
     rng = np.random.default_rng(seed)
     pop0, region = run.load(count, run.ion, t0, rng)
     b_e = run.external_field(t0)
-    quad_currents = {"wall": QUAD_FRACTION*b_e/quadrupole_per_ampere(run.case.wall_radius*(1-1e-9)),
-                     "separatrix": QUAD_FRACTION*b_e/quadrupole_per_ampere(region["separatrix_mid_m"])}
+    quad_currents = {"wall": QUAD_FRACTION*b_e/multipole_per_ampere(run.case.wall_radius*(1-1e-9)),
+                     "separatrix": QUAD_FRACTION*b_e/multipole_per_ampere(region["separatrix_mid_m"])}
     cases = {"none": run.field}
     for where, current in quad_currents.items():
         cases[f"quadrupole 7% B_e at the {where}"] = Superposition(run.field, quadrupole(current))
@@ -572,7 +577,7 @@ def ions(run_path, out, start_us=10., end_us=30., count=4000, seed=1, window_us=
         summary["cases"][name] = dict(dt_ns=dt*1e9, steps=steps, b_max_t=bmax, wall_s=wall_s, class_fractions=frac,
                                       confined_at_end=float(alive.mean()),
                                       confined_by_class={n: float(alive[classes == c].mean()) for c, n in enumerate(CLASSES) if (classes == c).any()},
-                                      losses=loss_summary(pop), loss_m2=m2_amplitude(pop),
+                                      losses=loss_summary(pop), loss_m2=sector_amplitude(pop),
                                       confinement=confinement_curve(pop, t0, t1, classes),
                                       mu_ratio_quantiles=np.quantile(rec.mu_max/np.maximum(rec.mu_min, 1e-300), [.1, .25, .5, .75, .9]).tolist(),
                                       class_fractions_mu_threshold_1p2=_fractions(rec.classify(pop, 1.2)),
@@ -672,6 +677,126 @@ def write_trails(run, results, t0, out, per_class=5):
     text = json.dumps(data, separators=(",", ":"))
     (run.path/"particles.json").write_text(text)
     (out/"particles.json").write_text(text)
+
+
+# ---------------------------------------------------------------- multipole strength/order scan
+
+ORDERS = {"q": 2, "o": 4}        # case codes: q7 = 4-bar quadrupole at 7% B_e, o7 = 8-bar octupole at 7% B_e
+
+
+def _multipole_case(field, walls, species, x0, u0, order, current, t0, t1, omega_dt):
+    """One scan case (worker process): the FRC field alone (order 0) or plus a static 2*order-bar multipole."""
+    fields = field if order == 0 else Superposition(field, multipole(current, order))
+    dt, bmax = time_step(fields, walls, [t0, t1], species, omega_dt, 1e-7)
+    pop = Population(species, x0, u0)
+    steps = int(round((t1-t0)/dt))
+    start = time.time()
+    track(pop, fields, t0, dt, steps, walls=walls)
+    return dict(dt=dt, b_max=bmax, steps=steps, wall_s=time.time()-start, lost_time=pop.lost_time,
+                lost_position=pop.lost_position, lost_surface=pop.lost_surface, lost_energy_ev=pop.lost_energy_ev)
+
+
+def multipoles(run_path, out, start_us=10., end_us=30., count=4000, seed=1, cases="none,q3,q5,q7,q9,o7", omega_dt=0.1,
+               workers=0):
+    """Ion-loss cost of n=2 stabilization against multipole strength and order. The same ions (seed) are tracked
+    in the FRC field alone and with each static multipole, whose bar current sets the mean |B| around the wall
+    circle at the midplane to the given percentage of B_e. Vacuum superposition: no screening by the plasma."""
+    from concurrent.futures import ProcessPoolExecutor
+    out = Path(out); out.mkdir(parents=True, exist_ok=True)
+    t0, t1 = start_us*1e-6, end_us*1e-6
+    run = Run(run_path, t0, t1)
+    t1 = min(t1, run.times[-1])
+    pop0, region = run.load(count, run.ion, t0, np.random.default_rng(seed))
+    b_e = run.external_field(t0)
+    wall, rs = run.case.wall_radius*(1-1e-9), region["separatrix_mid_m"]
+    spec = {}
+    for name in [c.strip() for c in str(cases).split(",") if c.strip()]:
+        if name == "none":
+            spec[name] = dict(order=0, percent_b_e=0., bar_current_a=0.)
+            continue
+        order, percent = ORDERS[name[0]], float(name[1:])
+        current = percent/100*b_e/multipole_per_ampere(wall, order)
+        spec[name] = dict(order=order, bars=2*order, percent_b_e=percent, bar_current_a=current,
+                          wall_max_over_b_e=current*multipole_per_ampere(wall, order, np.max)/b_e,
+                          separatrix_mean_over_b_e=current*multipole_per_ampere(rs, order)/b_e)
+    print(json.dumps(dict(run=str(run_path), b_e_t=b_e, separatrix_mid_m=rs, cases=spec), default=float), flush=True)
+    with ProcessPoolExecutor(max_workers=workers or len(spec)) as pool:
+        jobs = {name: pool.submit(_multipole_case, run.field, run.walls, run.ion, pop0.initial["x"], pop0.initial["u"],
+                                  c["order"], c["bar_current_a"], t0, t1, omega_dt) for name, c in spec.items()}
+        results = {name: job.result() for name, job in jobs.items()}
+    summary = dict(run=str(run_path), species=run.ion, count=count, start_us=start_us, end_us=t1*1e6, seed=seed,
+                   b_e_t=b_e, wall_radius_m=run.case.wall_radius, separatrix_mid_m=rs, bar_radius_m=0.20,
+                   model="vacuum superposition of static Biot-Savart multipoles on the saved axisymmetric fields; "
+                         "no plasma screening, no collisions, test particles", cases={})
+    pops = {}
+    for name, res in results.items():
+        pop = pops[name] = Population(run.ion, pop0.initial["x"], pop0.initial["u"])
+        for key in ("lost_time", "lost_position", "lost_surface", "lost_energy_ev"):
+            setattr(pop, key, res[key])
+        np.savez_compressed(out/f"ions_{name}.npz", x0=pop.initial["x"], u0=pop.initial["u"], lost_time=pop.lost_time,
+                            lost_position=pop.lost_position, lost_surface=pop.lost_surface, lost_energy_ev=pop.lost_energy_ev)
+        lost = np.where(np.isfinite(pop.lost_time), pop.lost_time, np.inf)
+        wall_hit = pop.lost_surface == 1
+        summary["cases"][name] = dict(
+            spec[name], dt_ns=res["dt"]*1e9, steps=res["steps"], b_max_t=res["b_max"], wall_s=res["wall_s"],
+            confined={f"{t:g}": float((lost > t*1e-6).mean()) for t in [*np.arange(start_us, t1*1e6-1e-9, 5.), t1*1e6]},
+            lost_to_wall=float(wall_hit.mean()), lost_to_ends=float(np.isin(pop.lost_surface, (3, 4)).mean()),
+            lost_to_inner_tube=float((pop.lost_surface == 2).mean()), losses=loss_summary(pop),
+            wall_loss_abs_z_quantiles_m=(np.quantile(abs(pop.lost_position[wall_hit, 2]), [.1, .5, .9]).tolist()
+                                         if wall_hit.any() else None),
+            sector_m2=sector_amplitude(pop, 2), sector_m4=sector_amplitude(pop, 4),
+            confinement=confinement_curve(pop, t0, t1))
+    if "none" in pops:
+        a = ~np.isfinite(pops["none"].lost_time)
+        for name, pop in pops.items():
+            b = ~np.isfinite(pop.lost_time)
+            gone, gained = (a & ~b).mean(), (~a & b).mean()
+            summary["cases"][name]["paired"] = dict(
+                confined_without_lost_with=float(gone), lost_without_confined_with=float(gained),
+                change_in_confined_fraction=float(b.mean()-a.mean()),
+                change_standard_error=float(np.sqrt(max(gone+gained-(gained-gone)**2, 0.)/count)))
+    (out/"summary.json").write_text(json.dumps(summary, indent=1, default=float))
+    print(f"{'case':6} {'I_bar kA':>8} {'sep/B_e':>7} {'conf20':>7} {'conf_end':>8} {'d_end':>13} {'wall':>6} {'ends':>6} "
+          f"{'m2 z>0/z<0':>11} {'m4 z>0/z<0':>11}")
+    for name, c in summary["cases"].items():
+        amp = lambda key: "/".join(f"{c[key][h]['amplitude']:.2f}" if h in c[key] else " -- " for h in ("wall z>0", "wall z<0"))
+        d = c.get("paired", {})
+        print(f"{name:6} {c['bar_current_a']/1e3:8.2f} {c.get('separatrix_mean_over_b_e', 0):7.3f} {c['confined'].get('20', np.nan):7.3f} "
+              f"{c['confined'][f'{t1*1e6:g}']:8.3f} {d.get('change_in_confined_fraction', 0):+7.3f}±{d.get('change_standard_error', 0):.3f} "
+              f"{c['lost_to_wall']:6.3f} {c['lost_to_ends']:6.3f} {amp('sector_m2'):>11} {amp('sector_m4'):>11}", flush=True)
+    multipole_figure(out, summary, pops, run)
+    return summary
+
+
+def multipole_figure(out, summary, pops, run):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+    colors = {"none": "#222222", "q3": "#9ec5f0", "q5": "#5b9be0", "q7": "#2a6cc0", "q9": "#123f80", "o7": "#d55181"}
+    for name, c in summary["cases"].items():
+        curve = c["confinement"]
+        axes[0].plot(curve["time_us"], curve["all"], color=colors.get(name), lw=1.6, label=name)
+    axes[0].set_xlabel("time (µs)"); axes[0].set_ylabel("confined fraction"); axes[0].grid(alpha=.3); axes[0].legend(fontsize=8)
+    axes[0].set_title("Same ions with each multipole (q = 4-bar, o = 8-bar; % of B_e at the wall)", fontsize=9)
+    end = f"{summary['end_us']:g}"
+    for order, marker in ((2, "o"), (4, "s")):
+        pts = sorted((c["percent_b_e"], c["confined"][end]) for c in summary["cases"].values() if c["order"] in (0, order))
+        axes[1].plot(*zip(*pts), marker=marker, label={2: "quadrupole", 4: "octupole"}[order])
+    axes[1].set_xlabel("mean |B| at the wall (% of B_e)"); axes[1].set_ylabel(f"confined at {end} µs"); axes[1].grid(alpha=.3)
+    axes[1].legend(fontsize=8)
+    bins = np.linspace(-180, 180, 73)
+    for name, pop in pops.items():
+        if name == "none":
+            continue
+        for half, style in ((1, "-"), (-1, "--")):
+            sel = (pop.lost_surface == 1) & (half*pop.lost_position[:, 2] > 0)
+            phi = np.degrees(np.arctan2(pop.lost_position[sel, 1], pop.lost_position[sel, 0]))
+            h, _ = np.histogram(phi, bins)
+            axes[2].step(bins[:-1], h, where="post", ls=style, color=colors.get(name), lw=1, label=f"{name} {'z>0' if half > 0 else 'z<0'}")
+    axes[2].set_xlabel("azimuth of wall loss (deg)"); axes[2].set_ylabel("ions per 5°"); axes[2].legend(fontsize=6, ncol=2)
+    axes[2].set_title("Wall-loss sectors (vacuum superposition: upper bound)", fontsize=9)
+    fig.tight_layout(); fig.savefig(out/"multipoles.png", dpi=130); plt.close(fig)
 
 
 # ---------------------------------------------------------------- RMF electrons
@@ -776,5 +901,7 @@ if __name__ == "__main__":
         ions(*positional, **options)
     elif command == "rmf":
         rmf(*positional, **options)
+    elif command == "multipoles":
+        multipoles(*positional, **options)
     else:
         raise SystemExit(__doc__)

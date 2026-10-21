@@ -8,11 +8,13 @@
 .venv/bin/python -m examples.particle_tracking verify outputs/particle_tracking/verify
 .venv/bin/python -m examples.particle_tracking ions outputs/fine_uniform_h2 outputs/particle_tracking/ions_fine_uniform_h2
 .venv/bin/python -m examples.particle_tracking rmf outputs/fine_uniform_h2 outputs/particle_tracking/rmf_even
+.venv/bin/python -m examples.particle_tracking multipoles outputs/fine_uniform_h2 outputs/particle_tracking/multipoles_fine_uniform_h2
 ```
 
 Options are `key=value`:
 - `ions`: `start_us=10 end_us=30 count=4000 seed=1 window_us=2 trails=300 omega_dt=0.1`
 - `rmf`: `start_us=10 duration_us=2 count=300 frequency=1e6 amplitude=5e-3 parity=even radius=0.16 half_length=0.6 omega_dt=0.3`
+- `multipoles`: `start_us=10 end_us=30 count=4000 seed=1 cases=none,q3,q5,q7,q9,o7 omega_dt=0.1 workers=0` (q = 4-bar quadrupole, o = 8-bar octupole, number = % of B_e at the wall; one process per case unless `workers` is set)
 
 ## Fields and approximations
 **Flux (`Run`).** The run saves the total flux on the gas nodes. It is
@@ -160,6 +162,73 @@ by 24–49 percentage points (paired, same initial ions).
 - `confinement.png`, `loss_maps.png`, `orbit_classes.png`;
 - `ions_*.npz`: per-ion initial state, loss data and class;
 - `particles.json` (also written to RUN/): for the viewer.
+
+## Multipole strength and order (`multipoles`, outputs/particle_tracking/multipoles_fine_uniform_h2)
+**Question.** What does n=2 stabilization cost in ions, against multipole
+strength and order? The stability threshold itself is not computed here; it
+needs the 3D hybrid code (frc-ibl.11.4).
+
+**Setup.**
+- Option A, the same 4000 H⁺ (seed 1) as `ions`, 10 → 30 µs, dt = 4 ns in
+  every case.
+- Static multipoles (`multipole(I, order)`), bars at r = 0.20 m, 2.2 m
+  long, in series through end arcs:
+  - q = 4-bar quadrupole;
+  - o = 8-bar octupole.
+- The level is the mean |B| on the wall circle (r = 15.24 cm) at the
+  midplane, as a percentage of B_e = 0.245 T.
+- Changes are paired against the no-multipole case. The standard error is
+  the paired one, √((b + c − (b − c)²/n)/n²).
+- q7 reproduces the earlier `ions` run exactly (71.4%).
+
+| Case | Bar current | Mean \|B\| at the separatrix / max on the wall (% B_e) | Confined at 20 / 30 µs | Change at 30 µs (points) | Lost to wall / ends | Wall-loss \|z\|, 10–50–90% | Wall-loss amplitude z>0 / z<0 (noise) | Sector centres z>0 / z<0 |
+|---|---|---|---|---|---|---|---|---|
+| none | – | – | 96.3 / 95.0% | – | 1.2 / 3.8% | 0.82–0.95–1.04 m | – (48 ions) | – |
+| q3 | 2.34 kA | 2.2 / 4.2 | 95.3 / 87.9% | −7.0 ± 0.5 | 6.8 / 5.2% | 0.74–0.85–1.02 m | m=2 0.89 / 0.89 (0.09) | 24° / −66° |
+| q5 | 3.90 kA | 3.6 / 7.0 | 93.2 / 79.5% | −15.4 ± 0.6 | 15.5 / 4.9% | 0.66–0.75–0.97 m | m=2 0.91 / 0.91 (0.06) | 21° / −71° |
+| q7 | 5.46 kA | 5.1 / 9.8 | 90.9 / 71.4% | −23.6 ± 0.7 | 25.4 / 3.3% | 0.61–0.69–0.94 m | m=2 0.92 / 0.92 (0.04) | 16° / −74° |
+| q9 | 7.03 kA | 6.5 / 12.6 | 88.4 / 64.0% | −30.9 ± 0.8 | 33.1 / 2.9% | 0.52–0.65–0.90 m | m=2 0.93 / 0.93 (0.04) | 14° / −76° |
+| o7 | 4.83 kA | 2.9 / 7.8 | 95.9 / 90.2% | −4.8 ± 0.4 | 4.4 / 5.4% | 0.71–0.83–1.03 m | m=4 0.83 / 0.84 (0.11); m=2 0.04 / 0.03 | 16° / −31° (mod 90°) |
+
+Sector centres are the phase of ⟨e^{imφ}⟩/m, so they repeat every 180°
+(quadrupole) or 90° (octupole). Quadrupole bars sit at 45° + k·90°, octupole
+bars at 22.5° + k·45°.
+
+**Readings.**
+- **Quadrupole cost grows almost linearly with strength.** It is about
+  2.3 points per % of B_e at 3%, and 3.4 points per % from 5 to 9%.
+  - No strength is free: 3% still loses 7 extra points by 30 µs.
+  - Losses are still accelerating at 30 µs. Over 25–30 µs, q7 loses
+    2.0 points/µs, q3 0.84, o7 0.55, and none 0.07. A 50–150 µs FRC would
+    pay more than these 20 µs numbers.
+- **The octupole is much cheaper.**
+  - At the same 7% wall mean it costs 4.8 points, less than the 3%
+    quadrupole.
+  - Its interior field falls as r³, so at the separatrix it is 2.9% of B_e.
+    Its field is also more even around the wall: max/mean is 1.11, against
+    1.40 for the quadrupole.
+  - At equal separatrix field it still costs less than half as much. The
+    quadrupole curve gives ≈ 11 points at 2.9% at the separatrix (≈ 4% at the
+    wall).
+- **Loss pattern.** Both orders leave the same field-line-divergence imprint:
+  2·order sectors per half, rotated 180°/order between z > 0 and z < 0
+  (measured: 90° for the quadrupole, 47° for the octupole).
+  - The quadrupole's m=4 amplitude (0.64–0.74) is only the harmonic of its
+    narrow m=2 sectors.
+  - As the quadrupole strengthens, losses move inward along the wall (median
+    |z| from 0.85 to 0.65 m). Ions that would have left through the ends
+    reach the wall first, so end losses fall from 5.2% to 2.9%.
+- **Limitations.**
+  - The multipole is a vacuum superposition: there is no screening by the
+    plasma or the coil. The losses are therefore upper bounds.
+  - Test particles move in fixed 2D fields: no collisions, no E_r and no
+    rotation.
+  - Whether any of these levels holds off n=2 is not shown. In particular,
+    whether an octupole does at 2.9% at the separatrix needs frc-ibl.11.4.
+
+**Outputs** (not committed): `summary.json` (per case: spec, confined
+fraction every 5 µs, loss split, wall-loss |z| quantiles, m=2 and m=4
+amplitudes, paired change), `ions_<case>.npz`, `multipoles.png`.
 
 ## RMF electrons (`rmf`, outputs/particle_tracking/rmf_even)
 **Setup.**

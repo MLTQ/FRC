@@ -105,6 +105,9 @@ Lab envelope:
    - **Option A:** keeps 95% of its ions from 10 to 30 µs.
    - **Quadrupole at 7% B_e:** loses an extra 24–49% to the wall in m=2
      sectors at |z| ≈ 0.5–1.1 m. This is a vacuum-superposition upper bound.
+   - **Multipole scan (option A):** the quadrupole costs 7/15/24/31 points
+     at 3/5/7/9% of B_e. An 8-bar octupole at 7% costs 4.8 points; its n=2
+     threshold needs frc-ibl.11.4.
    - **3" inner tube:** absorbs 13–23% of ions promptly.
    - **RMF (1 MHz, 5 mT):** entrains electrons near the null at 0.93 ω, but
      at 0.2 T an RMF needs f ≳ 4 MHz to exceed ω_ci.

@@ -185,22 +185,36 @@ def rotate_z(paths, angle):
     return [np.asarray(p)@m.T for p in paths]
 
 
-def quadrupole_paths(radius=0.20, half_length=1.1, phase=np.pi/4, arc_segments=6):
-    """Four axial bars at `radius` (azimuths phase + k pi/2) in series with alternating current directions,
-    joined by arcs at the bar radius at z = +/-half_length: one closed loop (BUILD_DOSSIER.md section 6)."""
+def multipole_paths(order, radius=0.20, half_length=1.1, phase=None, arc_segments=6):
+    """2*order axial bars at `radius` (azimuths phase + k pi/order, default phase pi/(2 order)) in series with
+    alternating current directions, joined by pi/order arcs at the bar radius on alternate ends
+    z = +/-half_length: one closed loop whose interior field is the cos(order*phi) multipole
+    (order 2 = quadrupole, 4 = octupole)."""
+    phase = np.pi/(2*order) if phase is None else phase
     pts = []
-    for k in range(4):
-        phi = phase+k*np.pi/2
+    for k in range(2*order):
+        phi = phase+k*np.pi/order
         z0, z1 = (-half_length, half_length) if k % 2 == 0 else (half_length, -half_length)
         bar = np.array([[radius*np.cos(phi), radius*np.sin(phi), z0], [radius*np.cos(phi), radius*np.sin(phi), z1]])
         pts.append(bar if k == 0 else bar[1:])
-        pts.append(arc(radius, phi, phi+np.pi/2, z1, arc_segments)[1:])
+        pts.append(arc(radius, phi, phi+np.pi/order, z1, arc_segments)[1:])
     return [np.vstack(pts)]
+
+
+def quadrupole_paths(radius=0.20, half_length=1.1, phase=np.pi/4, arc_segments=6):
+    """Four axial bars at `radius` (azimuths phase + k pi/2) in series with alternating current directions,
+    joined by arcs at the bar radius at z = +/-half_length: one closed loop (BUILD_DOSSIER.md section 6)."""
+    return multipole_paths(2, radius, half_length, phase, arc_segments)
 
 
 def quadrupole(current, **geometry):
     """Static quadrupole: Filaments with a constant bar current [A]."""
     return Filaments(quadrupole_paths(**geometry), lambda t: (current, 0.), "quadrupole")
+
+
+def multipole(current, order, **geometry):
+    """Static 2*order-bar multipole (`multipole_paths`): Filaments with a constant bar current [A]."""
+    return Filaments(multipole_paths(order, **geometry), lambda t: (current, 0.), f"{2*order}-bar multipole")
 
 
 def saddle_pair(radius, z_lo, z_hi, opening=2*np.pi/3, arc_segments=6):

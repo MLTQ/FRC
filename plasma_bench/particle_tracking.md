@@ -45,6 +45,15 @@ carrying I(t), where `current(t)` returns (I, dI/dt).
   - The bars are in series, joined by 90° arcs (six segments each) at
     r = 0.20 m on alternate ends. The current path is therefore one closed
     loop that never enters the tube.
+- `multipole(I, order)` / `multipole_paths(order)`: the same construction
+  with 2·order bars at azimuths π/(2·order) + k·π/order, joined by π/order
+  arcs on alternate ends. Order 2 is the quadrupole (`quadrupole_paths` calls
+  it, with identical points); order 4 is the 8-bar octupole.
+  - At the midplane the transverse field matches 2·order infinite
+    alternating wires to 3.6e-4 (quadrupole) and 2.7e-7 (octupole) at
+    r ≤ 15.24 cm.
+  - The end arcs together carry one net azimuthal turn. This adds a uniform
+    B_z of 1.7e-8 T/A at the midplane, 0.03% of B_e at the 7% currents.
 - `rmf_antenna(f, B_ω, parity)`: two orthogonal saddle pairs driven with
   I₀ cos ωt (field along x) and I₀ sin ωt (along y), giving a transverse
   field that rotates in +θ.
