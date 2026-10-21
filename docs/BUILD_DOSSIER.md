@@ -21,7 +21,7 @@ Lines marked *pending* wait on simulations now running.
 | Coil inductance (equal flux) | 77 nH | 93 nH |
 | Field per kA (centre) | 0.90 mT/kA | — |
 | Gas, fill | H2, 3.4 mTorr (0.45 Pa) | D2, 3.5 mTorr (H2 also works) |
-| Field sequence | bias −0.05 T → main peak 0.2 T (0.3 T upgrade) | same |
+| Field sequence | bias −0.05 T → main peak 0.2 T (0.3 T is hotter but shorter-lived in 2D, §2) | same |
 | Expected FRC (2D model) | 11 cm × 0.8–1.1 m, Te+Ti ≈ 150 eV (0.2 T), ≈ 230 eV (0.3 T), 2.0 mWb | 11.5 cm × 0.6–0.7 m, 220 eV (0.2 T), 330 eV (0.3 T), 2.2–2.5 mWb |
 
 **Annular variant** (second tank, for flux-core and toroidal-field
@@ -40,8 +40,16 @@ Eight modules in parallel on the common collector, fired together:
 | B, 0.2 T | 15.2 kV | 5.6 kJ | 43 kA | 20 kA/µs | 266 kA | 3.33 µs | −3.5 kV |
 | B, 0.3 T | 21.3 kV | 10.9 kJ | 60 kA | 29 kA/µs | 399 kA | 3.33 µs | −4.8 kV |
 
+**0.3 T does not buy lifetime in 2D.**
+- Run to 40 µs, option A at 0.3 T matches 0.2 T up to 20 µs (1.76 mWb).
+- It then collapses: 0.24 mWb at 40 µs, against 1.11 mWb at 0.2 T.
+- The hotter plasma loses 2.2 × the energy along open field lines
+  (EXPERIMENT_PLAYGROUND.md, Lifetime levers).
+- The earlier "130 µs e-fold" was fitted over 8–20 µs only.
+- Use 0.3 T for hotter formation studies, not for lifetime.
+
 **Ratings implied by the table:**
-- Capacitors: at least 20 kV for option A with the upgrade. Plan for 25 kV if
+- Capacitors: at least 20 kV for option A with the 0.3 T charge. Plan for 25 kV if
   option B at 0.3 T is on the roadmap. Rate for about 30% voltage reversal.
 - Start switches: unidirectional (ignitron, or a spark gap with a series diode
   stack). Without them the capacitors keep ringing through the crowbar and pull the
@@ -142,10 +150,12 @@ Literature-based (Tuszewski 1986; Ohi 1983); not simulated in 2D.
 ## 7. Optional coils and banks (playground results)
 | Coil | Geometry | Bank (as simulated) | Peak current | What it does |
 |---|---|---|---|---|
-| Re-boost (main coil) | the main coil itself | 8 × 6 µF at 6 kV (0.9 kJ), fired at 15 µs | 38 kA per module | Compresses the FRC (smaller, denser, hotter); adds no trapped flux. Use it to hold the external field up, not to add flux. Needs one-way crowbars. |
-| Flux core (annular tank) | 40 turns, r = 2.5 cm, 0.8 m long, inside the inner tube; about 4.8 µH | 300 µF at 2 kV (0.6 kJ), fired at 4 µs, main-field polarity, crowbarred | 14.6 kA (~65 µs quarter period) | Raises trapped flux to 2.8 × the inner-tube control by 40 µs, but overdrives: the FRC turns short and fat. *Pending:* tuned 0.7–1.0 kV versions and a core plus re-boost (lifetime-scan session). |
+| Re-boost (main coil) | the main coil itself | 8 × 6 µF at 6 kV (0.9 kJ), fired at 15 µs | 38 kA per module | Compresses the FRC (smaller, denser, hotter); adds no trapped flux. A smaller step (8 × 6 µF at 3 kV, 216 J, 15 µs, no crowbar of its own) holds the external field of the 2 kV flux-core case within 2% of the control, but leaves the FRC unchanged. **Not needed for lifetime.** Needs one-way main crowbars. |
+| **Flux core, recommended** (annular tank) | 40 turns, r = 2.5 cm, 0.8 m long, inside the inner tube; 4.8 µH plus ~1 µH lead; M = 71 nH to the main coil | **300 µF at 1.0 kV (150 J)**, fired at **4 µs**, main-field polarity, crowbar at its voltage zero | **5.9 kA** circuit peak, ~65 µs after firing (≈ 4 kA in the coil at 40 µs) | Holds the trapped flux flat at 1.33–1.41 mWb from 10 to 40 µs (control 1.24 → 0.71). The FRC still shortens to E ≈ 1.2 by 40 µs, a tilt risk. 0.7–1.0 kV brackets flat flux. The start switch must stay on through a brief current reversal at turn-on: a switch that opens at the first current zero lost the 0.7 kV core at 4.6 µs, and the 1 kV core came within 23 A of opening. |
+| Flux core, 2 kV | as above | 300 µF at 2 kV (0.6 kJ), fired at 4 µs | 11.4 kA circuit peak | Overdrives: φ rises to 2.8 × the control by 40 µs, and the FRC turns short and fat (E 1.0). Holding the external field with a re-boost does not change that: the shortening comes from energy loss at constant flux, not from field sag. |
+| Slow mirror (bias time) | 4-turn pairs at z = ±0.635 m, r = 17 cm, in series; ≈ 15.5 µH | 200 µF at 3 kV (0.9 kJ), 0.5 µH lead, fired at −100 µs with the bias, crowbarred at its peak | 11.7 kA, falling to 4.9 kA through the main rise | **Not recommended.** The parallel main straps spread its flux over the bore, cancelling the bias unless the bias bank rises to −4.4 kV (19 kJ instead of 5.3 kJ). At peak, B on axis at the coil end rises only from 0.72 to 0.88 of the centre field. The FRC bounces less but has no more flux by 30 µs. |
 | Toroidal field (annular tank) | axial rod inside the inner tube, coaxial return cage outside the main coil; ≈ 1.3 µH | estimate: about 3 mF at about 0.4–0.5 kV (≈ 0.3 kJ) for a ~100 µs rise | 20 kA → B_θ ≈ 0.05 T at r = 8 cm; 40 kA → 0.1 T | Twists the field lines (magnetic shear); too much makes it a spherical torus. *Pending:* toroidal-field session. |
-| End plugs | 1-turn pairs at z = ±0.635 m, r = 17 cm | 20 µF at 15 kV (2.25 kJ), fired at 3 µs | 69 kA | **Not recommended.** Fired after the crowbar they only add field beyond the coil ends (0.14 → 0.25 T at z = 0.6 m), and the flux-conserving main coil drops its current from 150 to 86 kA. Trapped flux is unchanged. A mirror has to come from the coil shape (option B), or from slow coils energized with the bias (*pending*, lifetime scan). |
+| End plugs | 1-turn pairs at z = ±0.635 m, r = 17 cm | 20 µF at 15 kV (2.25 kJ), fired at 3 µs | 69 kA | **Not recommended.** Fired after the crowbar they only add field beyond the coil ends (0.14 → 0.25 T at z = 0.6 m), and the flux-conserving main coil drops its current from 150 to 86 kA. Trapped flux is unchanged. A mirror has to come from the coil shape (option B); slow coils energized with the bias do not form one either (row above). |
 | Core punch | 10 turns, r = 2.5 cm, 0.3 m, inside the inner tube | 1.6 µF at 19 kV (0.29 kJ), 2 µs rise, fired at 8 µs | 24.7 kA (1 T inside) | Pushes the FRC's inner edge from 4.5 to 6.8 cm, then splits the FRC. A disruption experiment, not a lifetime tool. |
 
 ## 8. Energy per shot (option A, 0.2 T)
@@ -158,7 +168,7 @@ Literature-based (Tuszewski 1986; Ohi 1983); not simulated in 2D.
 
 Optional banks add:
 - re-boost 0.9 kJ;
-- flux core 0.15–0.6 kJ;
+- flux core 0.15 kJ (1 kV, recommended; 0.6 kJ at 2 kV);
 - toroidal rod ≈ 0.3 kJ;
 - quadrupole: small; slow ms supply.
 
@@ -195,11 +205,14 @@ the Hall session will give its size.
 2. **Pre-ionization physics** (frc-ibl.4): the ionization fraction and trapped
    flux against PI settings are empirical. Plan to scan them.
 3. **Running now:**
-   - the lifetime levers: tuned flux core, 0.3 T to 40 µs, slow bias-time
-     mirrors;
    - Hall physics and the toroidal field;
    - the central-rod toroidal-field experiment.
 
    They will update §7 and §9.
 4. **Lifetime** is not predicted by the 2D model. The n=2 mode and anomalous
-   transport set it; the quadrupole is the main lever (§6).
+   transport set it; the quadrupole is the main lever (§6). The 2D lever scan
+   (EXPERIMENT_PLAYGROUND.md, Lifetime levers) found:
+   - 0.3 T is shorter-lived (§2).
+   - The slow mirror and the re-boost give no gain.
+   - The 1 kV flux core holds the flux flat, but the FRC shortens to E ≈ 1.2.
+   - Plain option A at 0.2 T stays the baseline: 1.11 mWb and E 2.6 at 40 µs.

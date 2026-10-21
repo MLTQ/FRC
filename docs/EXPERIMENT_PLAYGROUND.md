@@ -67,6 +67,9 @@ plasma then loads every connected section through its flux linkage.
 | `frc12_inner_tube` | option A with a 3" OD insulating inner tube (control) | — |
 | `frc12_flux_core` | inner tube plus a 40-turn, r = 2.5 cm, 0.8 m solenoid inside it, fired at 4 µs in the main-field direction | 300 µF at 2 kV (0.6 kJ), quarter period ~65 µs, 14.6 kA, 1.75 mWb |
 | `frc12_core_punch` | inner tube plus a 10-turn, 0.3 m coil, fast, fired at 8 µs | 1.6 µF at 19 kV (0.29 kJ), 2 µs rise, 24.7 kA, 1 T, 1.9 mWb |
+| `frc12_flux_core_1kv` | the flux core on a 1 kV charge: holds the trapped flux flat (Lifetime levers) | 300 µF at 1 kV (150 J), 5.9 kA peak |
+| `frc12_core_reboost` | 2 kV flux core plus a main-coil re-boost holding the external field near the control | core as `frc12_flux_core`; 8 × 6 µF at 3 kV (216 J) at 15 µs, no crowbar |
+| `frc12_mirror_bias` | option A plus a slow mirror pair (z = ±0.635 m, r 0.17 m, 4 turns each) fired with the bias; bias and peak rebalanced | mirror 200 µF at 3 kV (0.9 kJ); bias −4.4 kV (19 kJ); main 12.2 kV (3.6 kJ) |
 
 ## Why a flux core in the main-field direction adds closed flux
 With an inner tube, the separatrix level ψ_s is set at the tube side of the
@@ -144,9 +147,8 @@ between coils is included throughout.
     Elongation near 1 is tilt-unstable in 3D, which this 2D model cannot show.
   - The main coil current also falls through mutual coupling, so the external
     field weakens.
-  - A smaller core bank (~1 kV), or a main-coil re-boost to hold the external
-    field, should give flux sustainment without the shape change. This has not
-    been run.
+  - A 1 kV core holds the flux flat, and a re-boost restores the external
+    field, but neither keeps the FRC long (Lifetime levers below).
 - **Core punch.** A 1 T, 2 µs pulse from a short (0.3 m) core coil at 8 µs.
   - It pushes the inner separatrix out from 4.5 to 6.8 cm by 14 µs.
   - Its fringing field then splits the closed flux off the midplane by 16 µs,
@@ -166,6 +168,119 @@ This builds an overview page and one 3D viewer with a run selector. Serve `outpu
 (the `formation-display` launch entry) and open
 `http://localhost:8791/formation_display/index.html`.
 
+## Lifetime levers (2026-10-20)
+What the 2D model says about holding the FRC longer.
+- **Setup:** every run uses option A at 24×144 with coupled banks and saved
+  states every 0.1 µs, and runs to 40 µs, so the whole flux decay is seen.
+- **Baseline:** `outputs/life_uniform_h2_p020` extends `fine_uniform_h2` and
+  matches it bit for bit up to 30 µs.
+- **Not modelled:** the n = 2 rotational mode and the tilt mode. The
+  quadrupole (~7% of B_e) is the main experimental lever against n = 2, but it
+  needs 3D and is out of scope here.
+- **Elongation:** E = l_s/(2 r_s). Values below about 2 (marked †) are
+  tilt-prone in 3D, which this model cannot show.
+
+| Experiment (preset) | Banks beyond option A (main 8 × 6 µF at 11.6 kV, 3.2 kJ; bias 2000 µF at −2.3 kV, 5.3 kJ) | φ at 10 / 20 / 30 / 40 µs (mWb) | l_s × r_s at 20 / 40 µs (cm) | E at 20 / 30 / 40 µs | Flux e-fold, fit 8–30 / 8–40 µs |
+|---|---|---|---|---|---|
+| Option A, 0.2 T (`frc12_uniform_h2`) | — | 2.02 / 1.75 / 1.45 / 1.11 | 83 × 10.9 / 52 × 9.9 | 3.8 / 3.2 / 2.6 | 68 / 54 µs |
+| Option A, 0.3 T (`peak_t=0.3`) | main at 16.2 kV (6.3 kJ) | 1.93 / 1.76 / 1.25 / 0.24 | 53 × 9.5 / 17 × 3.0 | 2.8 / 1.9† / remnant | 56 / 21 µs |
+| Slow mirror before the main bank (`frc12_mirror_bias`) | mirror pair 200 µF at 3 kV (0.9 kJ, 11.7 kA); bias −4.4 kV (19 kJ); main 12.2 kV (3.6 kJ) | 2.07 / 1.86 / 1.48 / 1.04 | 76 × 10.8 / 40 × 9.3 | 3.5 / 2.8 / 2.1 | 63 / 47 µs |
+| 3" inner tube, control (`frc12_inner_tube`) | — | 1.24 / 1.01 / 0.90 / 0.71 | 49 × 10.6 / 34 × 9.7 | 2.3 / 2.1 / 1.7† | 68 / 61 µs |
+| + flux core at 0.7 kV, switch held closed | core 300 µF at 0.7 kV (74 J) | 1.31 / 1.32 / 1.26 / 1.17 | 52 × 11.0 / 31 × 10.8 | 2.4 / 1.8† / 1.4† | 1.2 / 0.49 ms |
+| + flux core at 1 kV (`frc12_flux_core_1kv`) | core 300 µF at 1 kV (150 J) | 1.34 / 1.41 / 1.39 / 1.33 | 52 × 11.1 / 27 × 11.1 | 2.3 / 1.8† / 1.2† | flat |
+| + flux core at 2 kV (`frc12_flux_core`) | core 300 µF at 2 kV (0.6 kJ) | 1.42 / 1.69 / 1.80 / 1.98 | 52 × 11.4 / 24 × 11.9 | 2.3 / 1.5† / 1.0† | grows |
+| + 2 kV core and re-boost (`frc12_core_reboost`) | core as above; re-boost 8 × 6 µF at 3 kV (216 J) at 15 µs | 1.42 / 1.68 / 1.79 / 1.97 | 49 × 11.3 / 23 × 11.9 | 2.2 / 1.4† / 1.0† | grows |
+
+**What each lever shows**
+- **0.3 T shortens the life.** Up to 20 µs it matches 0.2 T (1.76 mWb). The
+  plasma is hotter (200–270 eV against 130–180 eV) and denser, so flux-limited
+  conduction along open field lines removes 2.2× the energy: 4.5 against
+  2.0 kJ by 30 µs.
+  - The FRC then contracts, from 53 cm × 9.5 cm at 20 µs to 24 cm × 6.7 cm at
+    34 µs, and its flux collapses.
+  - The 130 µs e-fold in DESIGN_SCAN.md was fitted over 8–20 µs only.
+  - The late collapse is under-resolved (r_s below ~11 cells), but the split
+    from 0.2 T is already clear at 25–30 µs.
+- **A slow mirror fired with the bias does not form a mirror.**
+  - The 24 parallel main straps link equal flux. They carry counter-currents
+    (up to −1.07 A per mirror ampere in the end straps) that spread the
+    mirror's flux over the whole bore.
+  - At the centre the pair gives 3.9e-6 T/A, against 5.1e-7 for bare loops. At
+    11 kA it would cancel the −0.05 T bias to −0.007 T. The preset therefore
+    raises the bias bank to −4.4 kV (19 kJ, against 5.3 kJ).
+  - The main rise then pushes flux into the mirror coils and cuts their current
+    from 11.7 to 4.9 kA. On axis at peak, B(0.6 m)/B(0) rises only from 0.72
+    to 0.88, never above 1.
+  - In the run the FRC forms shorter and hotter and bounces less: l_s swings
+    over 58–101 cm, against 64–122 cm. φ is 6% higher at 20 µs, equal by
+    30 µs, and lower at 40 µs.
+  - The model's straps are perfect conductors. Real strap resistance (loop L/R
+    of tens of µs) would partly relax the counter-currents during a 100 µs
+    ramp.
+- **A flux core of about 1 kV holds the trapped flux.**
+  - The core supplies an initial loop voltage of about 1.23e-7 Wb/A × V/5.77 µH:
+    15, 21 and 43 V at 0.7, 1 and 2 kV.
+  - The control's resistive loss is about 1.24 mWb/61 µs ≈ 20 V. Thus 0.7 kV
+    decays slowly, 1 kV holds φ at 1.33–1.41 mWb from 10 to 40 µs, and 2 kV
+    grows it, as the reasoning above predicts.
+  - **Switch:** at ≤ 1 kV the plasma's back-EMF on the core almost cancels its
+    early current. At 0.7 kV with the default one-way start switch, the switch
+    opened at 4.6 µs and the run matched the control (1.25 / 1.03 / 0.91 /
+    0.72 mWb, `outputs/life_core_0p7kv`). Held closed, its current dipped to
+    −0.12 kA and recovered. At 1 kV it came within 23 A of opening.
+- **The re-boost restores the field but not the shape.**
+  - It was sized by replaying the coupled circuit with the recorded plasma
+    image currents.
+  - It keeps the main current within +2.0 / −2.8 kA of the control over
+    15–40 µs. The core alone is −6.1 kA by 40 µs.
+  - The FRC is unchanged to within 1% in φ and one cell in length, so the
+    weaker external field is not what shortens it.
+  - A re-boost with its own crowbar mainly adds a crowbar in parallel, halving
+    the crowbar resistance, so this one has none.
+- **Why every inner-tube FRC gets short and fat.**
+  - By 40 µs, open-line conduction has removed 2.6–2.9 kJ in every inner-tube
+    run, with or without a core, against ~1.0 kJ of Ohmic heating.
+  - Radial pressure balance fixes the pressure at ≈ B_e²/2μ0, so the plasma
+    energy scales as B_e² r_s² l_s.
+  - Holding the flux holds r_s (11 cm against 9.7 cm), so the length must carry
+    the energy loss: 27 cm at 1 kV, against 34 cm for the control.
+  - Flux sustainment alone does not sustain the FRC. That needs energy (and
+    particle) confinement or input, which this model does not supply.
+
+**Recommendation.**
+- **Lifetime baseline:** plain option A at 0.2 T, with no inner tube:
+  main 8 × 6 µF at 11.6 kV (3.2 kJ), bias 2000 µF at −2.3 kV (5.3 kJ).
+  - It has the most flux up to 30 µs and still 1.11 mWb at 40 µs.
+  - It keeps E ≥ 2.6 throughout.
+  - Do not raise it to 0.3 T for lifetime.
+- **Best flux sustainment simulated:** option A with the 3" inner tube and the
+  1 kV flux core (`frc12_flux_core_1kv`).
+  - **Core:** 40 turns at r 2.5 cm, 0.8 m long, inside the tube, in the
+    main-field polarity. Self-inductance 4.8 µH, plus a ~1 µH lead.
+  - **Core bank:** 300 µF at 1.0 kV (150 J), fired at 4 µs. Quarter period
+    ~65 µs; 5.9 kA peak in the circuit model; crowbar at its voltage zero.
+  - **Switch:** one that stays on through a brief current reversal at turn-on,
+    for example solid-state with an antiparallel diode. A switch that opens at
+    the first current zero is marginal at 1 kV.
+  - **Tuning:** 0.7–1.0 kV brackets flat flux.
+  - **Result:** φ held at 1.33–1.41 mWb to 40 µs, 20% above the open bore at
+    40 µs. The cost is the inner tube (about 40% of the formation flux, and a
+    separatrix on the glass from ~20 µs) and an FRC that shortens to E ≈ 1.2
+    by 40 µs.
+- **Not worth building for lifetime:** the slow mirror (no flux gain; 0.9 kJ
+  plus 14 kJ of extra bias) and the main-coil re-boost (no change in shape).
+
+```bash
+.venv/bin/python -m examples.formation_display outputs/formation_display_lifetime "outputs/fine_inner_tube::Inner tube (control)" "outputs/life_core_0p7kv_hold::Core 0.7 kV" "outputs/life_core_1p0kv::Core 1.0 kV" "outputs/fine_flux_core::Core 2 kV" "outputs/life_core_reboost::Core 2 kV + re-boost"
+.venv/bin/python -m examples.formation_display outputs/formation_display_lifetime_open "outputs/life_uniform_h2_p020::Option A, 0.2 T" "outputs/life_uniform_h2_p030::Option A, 0.3 T" "outputs/life_mirror::Slow mirror + raised bias"
+```
+
+The 0.7 kV held run used the `frc12_flux_core` preset with the core bank at
+0.7 kV and `"unidirectional": false` in its `aux_coils` JSON. Open
+`/formation_display_lifetime/index.html` and
+`/formation_display_lifetime_open/index.html` on the `formation-display`
+server.
+
 ## Caveats
 - **2D axisymmetric:** all coils are coaxial loops, and an inner tube or
   solenoid is a perfect cylinder. The n = 2 rotational mode is not modelled;
@@ -176,3 +291,10 @@ This builds an overview page and one 3D viewer with a run selector. Serve `outpu
 - **The inner tube** is an ideal insulator. Wall loading, sputtering and the
   solenoid's own heating and forces are not modelled. Plasma contact with the
   tube is the main practical risk of that experiment.
+- **Late-time decay** is set mostly by the declared flux-limited open-line
+  conduction (`conduction_limit=0.1`) and by Spitzer + Chodura resistivity. It
+  has no anomalous transport or particle end loss, so the e-folds compare the
+  levers with one another, not with an experiment.
+- **Coil straps** are perfect conductors with equal linked flux. That is
+  accurate for the µs main rise, but only a limit for the ~100 µs bias-time
+  coils.

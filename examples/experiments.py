@@ -3,6 +3,7 @@
 Each preset is a dict of Nucte overrides (see examples/nucte_formation.py); explicit arguments override it.
 Geometry and banks follow docs/NUCTE_BENCHMARK.md (NUCTE-III) and docs/DESIGN_SCAN.md (12-inch device).
 """
+from dataclasses import replace
 from examples.nucte_formation import AuxCoil, Bank
 
 # NUCTE-III (Takahashi 2000). Case 1: driver defaults (two-radius coil, mirror 1.10).
@@ -29,6 +30,19 @@ FLUX_CORE = AuxCoil(name="core", z_center=0., length=.8, radius=.025, turns=40,
                     bank=Bank(capacitance=300e-6, voltage=2e3, stray=1e-6, fire_time=4e-6, crowbar_decay_s=300e-6))
 CORE_PUNCH = AuxCoil(name="punch", z_center=0., length=.3, radius=.025, turns=10,
                      bank=Bank(capacitance=1.6e-6, voltage=19e3, stray=.2e-6, fire_time=8e-6, crowbar_decay_s=100e-6))
+
+# Lifetime levers (docs/EXPERIMENT_PLAYGROUND.md, "Lifetime levers").
+# Tuned flux core: the same solenoid on a 1 kV charge (150 J).
+FLUX_CORE_1KV = replace(FLUX_CORE, bank=replace(FLUX_CORE.bank, voltage=1e3))
+# Main-coil re-boost step for the 2 kV core: 8 x 6 uF at 3 kV (216 J) at 15 us, no crowbar of its own (start switches
+# open at the current zero; the main crowbars carry on). A crowbarred re-boost mostly halves the crowbar resistance.
+# Sized by replaying the coupled circuit with the recorded plasma image currents: the main current then stays within
+# +2.9/-2.0 kA of the inner-tube control over 15-40 us (core alone: -6 kA by 40 us).
+CORE_REBOOST = Bank(capacitance=48e-6, voltage=3e3, stray=3.75e-9, fire_time=15e-6, modules=8, crowbar=False)
+# Slow mirror pair just beyond the main coil (z = +-0.635 m, r 0.17 m, 4 turns each in series) on 200 uF at 3 kV
+# (0.9 kJ, ~90 us quarter period), fired with the bias lead, crowbarred at its current peak.
+SLOW_MIRROR = AuxCoil(name="mirror", z_center=.635, length=.05, radius=.17, turns=4, pair=True,
+                      bank=Bank(capacitance=200e-6, voltage=3e3, stray=.5e-6, fire_time=-100e-6, crowbar_decay_s=300e-6))
 
 PRESETS = {
     "nucte_case1": NUCTE_CASE1,
@@ -59,4 +73,13 @@ PRESETS = {
     # Playground: a fast "punch" from the inner tube: a short 10-turn coil on a 1.6 uF / 19 kV bank (2 us quarter
     # period), fired at 8 us. Same polarity as the main field; voltage < 0 reverses it (removes closed flux).
     "frc12_core_punch": {**FRC12, **UNIFORM, **H2_FILL, **INNER_TUBE, "aux_coils": (CORE_PUNCH,)},
+    # Lifetime levers. Flux core at 1 kV: about the loop voltage that holds the trapped flux.
+    "frc12_flux_core_1kv": {**FRC12, **UNIFORM, **H2_FILL, **INNER_TUBE, "aux_coils": (FLUX_CORE_1KV,)},
+    # 2 kV flux core plus a main-coil re-boost that holds the external field near the inner-tube control.
+    "frc12_core_reboost": {**FRC12, **UNIFORM, **H2_FILL, **INNER_TUBE, "aux_coils": (FLUX_CORE,),
+                           "extra_main_banks": (CORE_REBOOST,)},
+    # Option A with the slow mirror pair energized before the main bank. The parallel main straps spread the mirror's
+    # flux (+0.043 T at the centre at t = 0), so the bias is raised to -0.0946 T on the main coil alone (-0.05 T in
+    # total; bias bank -4.4 kV, 19 kJ) and peak_t lowered to 0.169 (0.2 T total peak).
+    "frc12_mirror_bias": {**FRC12, **UNIFORM, **H2_FILL, "bias_t": -.0946, "peak_t": .169, "aux_coils": (SLOW_MIRROR,)},
 }

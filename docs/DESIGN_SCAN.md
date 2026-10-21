@@ -51,7 +51,7 @@ and clear of the tube ends for 3 µs. Bias is −0.05 T in every run.
 | Run | Gas | Peak | Coil r0 → end (R_M) | Charge, bank | Closed from | At 10 µs: r_s, l_s, n̄ (m⁻³), Te+Ti, φ | At 20 µs | 2D flux e-fold |
 |---|---|---|---|---|---|---|---|---|
 | d12_uniform_h2_p020 | H2 | 0.20 T | uniform (1.00) | 11.6 kV, 3.2 kJ | 2 µs | 11.4 cm, 86 cm, 6.0e20, 157 eV, 2.02 mWb | 10.9 cm, 83 cm, 5.5e20, 147 eV, 1.76 mWb | 66 µs |
-| d12_uniform_h2_p030 | H2 | 0.30 T | uniform (1.00) | 16.2 kV, 6.3 kJ | 6 µs | 9.7 cm, 83 cm, 8.2e20, 250 eV, 1.93 mWb | 9.5 cm, 55 cm, 8.1e20, 222 eV, 1.76 mWb | 130 µs |
+| d12_uniform_h2_p030 | H2 | 0.30 T | uniform (1.00) | 16.2 kV, 6.3 kJ | 6 µs | 9.7 cm, 83 cm, 8.2e20, 250 eV, 1.93 mWb | 9.5 cm, 55 cm, 8.1e20, 222 eV, 1.76 mWb | 130 µs (8–20 µs fit; to 40 µs it collapses after 20 µs, 21 µs over 8–40 µs: EXPERIMENT_PLAYGROUND.md, Lifetime levers) |
 | d12_uniform_p020 | D2 | 0.20 T | uniform (1.00) | 11.6 kV, 3.2 kJ | 13 µs | open: reversed to the tube ends | 10.6 cm, 141 cm, 4.7e20, 150 eV, 1.54 mWb | 56 µs |
 | d12_uniform_p030 | D2 | 0.30 T | uniform (1.00) | 16.2 kV, 6.3 kJ | not held | open | open; flux e-fold 18 µs | — |
 | d12_graded20_p020 | D2 | 0.20 T | 0.20 → 0.165 (1.27) | 15.2 kV, 5.6 kJ | 3 µs | 11.5 cm, 67 cm, 6.5e20, 224 eV, 2.46 mWb | 11.5 cm, 61 cm, 5.7e20, 223 eV, 2.22 mWb | 112 µs |

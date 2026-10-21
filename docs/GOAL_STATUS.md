@@ -83,6 +83,16 @@ Lab envelope:
      - A slow flux core inside the tube grows φ to 2.8 × the control by 40 µs,
        but makes the FRC short and fat.
      - A fast core punch splits the FRC.
+   - **Lifetime levers (2D, to 40 µs):**
+     - 0.3 T collapses after 20 µs, from extra open-line conduction loss.
+     - A slow bias-time mirror forms no real mirror and adds no flux.
+     - A main-coil re-boost restores the field but not the FRC's shape.
+     - A 1 kV flux core (300 µF, 150 J, fired at 4 µs) holds φ flat at
+       1.33–1.41 mWb, but the FRC still shortens to E ≈ 1.2, because it keeps
+       losing energy.
+     - Plain option A at 0.2 T remains the lifetime baseline: 1.11 mWb and
+       E 2.6 at 40 µs.
+     - Tilt and n = 2 are not modelled.
 6. **Build dossier:** [BUILD_DOSSIER.md](BUILD_DOSSIER.md) gathers every coil's
    voltage, current, energy and timing, plus the pre-ionization, bias,
    quadrupole and shot sequence.
@@ -97,8 +107,8 @@ Lab envelope:
 - Baseline fill about 3.5 mTorr. The design scan now favours H2 on a uniform
   coil, or D2 with a graded coil.
 - Bank charge, superseding the earlier lossless estimate: first light at 0.2 T
-  is 11.6 kV and 3.2 kJ; the upgrade to 0.3 T is 16.2 kV and 6.3 kJ, both from
-  a −0.05 T bias on 8 × 6 µF.
+  is 11.6 kV and 3.2 kJ; 0.3 T needs 16.2 kV and 6.3 kJ, both from a −0.05 T
+  bias on 8 × 6 µF. In 2D, 0.3 T is hotter but shorter-lived.
 - Classical τ_φ is 113–354 µs. LSX/FRX-C scaling suggests about 50–150 µs is
   realistic with quadrupole stabilization.
 - See FRC_DESIGN_WINDOW.md. The 6" nominal point above is kept for comparison.
