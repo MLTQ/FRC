@@ -82,12 +82,60 @@ accounting closes.
   (0.53 → 0.31 and 0.31 → 0.14). Thin nodes are still twice as noisy as the
   plasma (0.14). The divergence target is not met either.
 
-## Next bounded experiment (proposed, not run)
-A macro-ion-count convergence replay of the same 0–1 µs window, ppc 8 → 32,
-without the mask:
-- If the carrier-free current and the sinks fall as the trailing sheet edge
-  becomes resolved, they are resolution artifacts.
-- If not, the floor-density Hall/Ohm closure itself needs a physical edge model.
+## Ion-count convergence (no mask; `run ... mask=0 ppc=N`)
+The loader places ions on a side³ lattice, so `ppc` rounds to a cube: 16 and 32
+both give 27. Velocities are the only seeded quantity. The two 27-ion seed-0
+runs (`outputs/ppc_conv_v4_p27_s0_repeat`, `outputs/ppc_conv_v4_p32_s0`) are
+bit-identical.
 
-A grid refinement at a fixed number of ions per cell leaves the macro-ion count
-per edge cell unchanged, so it does not separate these two cases.
+All values at 1 µs, seed 0 (the seed-1 value in brackets):
+
+| ions per cell | 8 | 27 | 64 |
+|---|---|---|---|
+| cutoff + empty-node removal (J) | 68.0 (67.5) | 53.3 (54.8) | 45.2 |
+| Ohmic heat (J) | 95.4 (94.7) | 82.3 (83.4) | 75.9 |
+| magnetic energy (J) | 540.4 (539.0) | 548.1 (548.4) | 550.9 |
+| kinetic energy (J) | 263.2 | 261.0 | 260.6 |
+| separatrix at midplane (m); trapped flux | 0.121; 1.6 mWb | 0.121; 1.6 mWb | 0.121; 1.6 mWb |
+| macro-ions per thin node | 0.16 | 0.50 | 1.13 |
+| empty gas nodes (snapshot) | 3788 (s1) | 3322 | 2912 |
+| Joule power, empty / thin / plasma nodes (MW, snapshot) | 321 / 40 / 28 (s1) | 268 / 45 / 23 | 235 / 45 / 21 |
+| seed-to-seed B difference, plasma / thin / empty | 0.15 / 0.53 / 0.31 | 0.12 / 0.51 / 0.28 | – |
+
+Snapshot rows come from `lowdensity_loss_check`. The seed differences come
+from `seed_difference`.
+
+- **The removal falls with carriers, but slowly.**
+  - The successive drops are 14.7 J and 8.1 J. A power law through three
+    points gives about N^−0.25, half the shot-noise exponent of N^−0.5.
+  - Its asymptote (about 10 J) is poorly constrained by three points.
+  - At 64 ions per cell, 45 J (5.9% of the load work) is still removed by 1 µs.
+- **The formation state at 1 µs is already insensitive to the ion count.**
+  Separatrix and trapped flux agree to 1%, and the magnetic energy changes by 2%.
+  The sink is a slowly converging energy-accounting error, not yet a change in
+  the configuration.
+- **Most of the sink is Joule heat in genuinely emptied nodes** behind the
+  imploding sheet.
+  - Their number falls only 23% from 8 to 64 ions per cell, and they carry
+    80–85% of the snapshot Joule power.
+  - The floor closure treats them as a 1 eV Spitzer resistive medium. Its
+    magnetic diffusion time across a 20 mm cell is about 0.5 µs, comparable to
+    the implosion, which is about the worst case for dissipation.
+- **The seed divergence below the cutoff is not shot noise.** Thin-node
+  divergence barely changes (0.53 → 0.51) while carriers per node triple. It is
+  dynamical sensitivity of the trailing edge, which fits the CPU/GPU roundoff
+  amplification Codex measured.
+
+## Where this leaves frc-ibl.11.9
+The sink comes from the sheet current left in emptied gas, which the floor
+closure turns into a resistive conductor.
+- More carriers shrink it slowly.
+- Deleting it at emptying (the mask) costs more than dissipating it.
+- Making the emptied region more conducting would violate the exact-vacuum rule.
+
+A physical edge model is needed: one in which the sheet current stays with the
+departing carriers, for example a kinetic or two-fluid electron edge, or a
+moving-boundary vacuum interface that conserves the interface flux. Until then:
+- report the removal as an accounting uncertainty that converges with ions per
+  cell (about 6–9% of load work at 1 µs for 64–8 ions per cell);
+- treat the formation geometry at 1 µs as converged in ion count.

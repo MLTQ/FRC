@@ -75,5 +75,8 @@ divergence below the cutoff drops to the above-cutoff level.
 sinks by 74%. Deleting the current of emptying cells costs more, 94 J by 1 µs,
 so total removal rises from 68 to 112 J and retained magnetic energy falls by
 41 J. The sink is the energy of current left behind by the departing ions. The
-next test is ion-count convergence (ppc 8 → 32), not a different removal rule.
+ion-count convergence replay (8 / 27 / 64 ions per cell) cuts the removal only
+from 68 to 53 to 45 J, about N^−0.25. The formation state at 1 µs is unchanged.
+Seed divergence in thin nodes is dynamical, not shot noise. See
+`vacuum_mask_replay.md`.
 
