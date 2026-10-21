@@ -1,6 +1,7 @@
 """Start the 3D hybrid model (plasma_bench/hybrid3d_device.py) from a formed FRC of the 2D formation solver, and run it.
 
-`python -m examples.hybrid3d_frc OUT RUN t_us=10 dx=0.01 dz=0.02 ppc=8 t_end_us=10 floor=0.05 [seed=0]`
+`python -m examples.hybrid3d_frc OUT RUN t_us=10 dx=0.01 dz=0.02 ppc=8 t_end_us=10 floor=0.05 [seed=0 snap_us=0.1]`
+(snap_us: interval of OUT/snap_NNNN.npz field + ion-sample snapshots for examples/hybrid3d_display.py; 0 disables)
 
 Loading (M3 of docs/HYBRID_3D.md):
 - **Field.** The 2D run's total poloidal flux at the chosen saved state is rebuilt on its full field grid (gas plus
@@ -176,7 +177,16 @@ def diagnostics(model):
                 length_m=None if region is None else region["length_m"], **modes)
 
 
-def main(out, run, t_us=10., dx=.01, dz=.02, ppc=8, t_end_us=10., floor=.05, seed=0, every_us=.25):
+def save_snapshot(model, out, index, rng, ions=4000):
+    """Fields and an ion sample for the 3D viewer (examples/hybrid3d_display.py): B on faces and node density as
+    float32, and `ions` randomly chosen macro-ions (position, velocity), a point sample with no identity."""
+    pick = rng.choice(model.x.shape[0], size=min(ions, model.x.shape[0]), replace=False)
+    np.savez_compressed(Path(out)/f"snap_{index:04d}.npz", time_s=model.time,
+                        bx=model.b[0].astype(np.float32), by=model.b[1].astype(np.float32), bz=model.b[2].astype(np.float32),
+                        n=model.n.astype(np.float32), ion_x=model.x[pick].astype(np.float32), ion_v=model.v[pick].astype(np.float32))
+
+
+def main(out, run, t_us=10., dx=.01, dz=.02, ppc=8, t_end_us=10., floor=.05, seed=0, every_us=.25, snap_us=.1):
     out = Path(out); out.mkdir(parents=True, exist_ok=True)
     state = full_flux(run, t_us*1e-6)
     model, info = build(state, dx, dz, ppc, floor, seed)
@@ -186,8 +196,14 @@ def main(out, run, t_us=10., dx=.01, dz=.02, ppc=8, t_end_us=10., floor=.05, see
     print(json.dumps(info), flush=True)
     start = time.time()
     next_mark = every_us*1e-6
+    snap_rng = np.random.default_rng(seed+1)
+    snaps, next_snap = 0, 0.
+    if snap_us > 0:
+        save_snapshot(model, out, 0, snap_rng); snaps, next_snap = 1, snap_us*1e-6
     while model.time < t_end_us*1e-6:
         model.step()
+        if snap_us > 0 and model.time >= next_snap-1e-15:
+            save_snapshot(model, out, snaps, snap_rng); snaps += 1; next_snap += snap_us*1e-6
         if model.time >= next_mark-1e-15:
             row = diagnostics(model)
             row["wall_s"] = time.time()-start
