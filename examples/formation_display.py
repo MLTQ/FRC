@@ -16,6 +16,8 @@ Read-only: every frame is a saved 1 µs snapshot; nothing is evolved or interpol
   J_r = J_z = 0: the model has no toroidal field.
 - **The separatrix** (gold) and FRC quantities come from examples.nucte_compare (closed_region, or
   annular_closed_region for an inner tube).
+- **Particles** (optional): RUN/particles.json from examples/particle_tracking.py, actual integrated ion
+  orbits in the same saved fields, drawn as trails in the field canvas behind a "Particles" checkbox.
 """
 import base64
 import json
@@ -70,6 +72,22 @@ def decimate(path, limit=60):
         return path
     keep = np.unique(np.r_[np.arange(0, len(path), int(np.ceil(len(path)/limit))), len(path)-1])
     return path[keep]
+
+
+def particle_trails(run, out, extent):
+    """Copy RUN/particles.json (examples/particle_tracking.py: actual integrated orbits, metres) to
+    OUT/<run>/particles.json in viewer coordinates [z, x, y]/extent; return its relative url or None."""
+    source = Path(run)/"particles.json"
+    if not source.exists():
+        return None
+    data = json.loads(source.read_text())
+    for trail_set in data["sets"]:
+        for trail in trail_set["trails"]:
+            p = np.asarray(trail["points"], float)
+            trail["points"] = (np.column_stack((p[:, 2], p[:, 0], p[:, 1]))/extent).round(4).tolist()
+    name = f"{Path(run).name}/particles.json"
+    (Path(out)/name).write_text(json.dumps(data, separators=(",", ":")))
+    return name
 
 
 def fields(grid, psi):
@@ -227,8 +245,12 @@ def run_display(run, out, label=None, description=""):
                 status_note=f"{title} · saved formation states", scope=scope, temperature_digits=3,
                 drive_label="Vacuum Bz of the coil currents at the tube wall, midplane", motion_label="Separatrix radius — midplane",
                 solver_steps=int(history[-1].get("steps", 0)))
+    particles = particle_trails(run, out, extent)
+    if particles:
+        data["particles"] = particles
     (Path(out)/run.name/"manifest.json").write_text(json.dumps(data, separators=(",", ":")))
     return dict(run=run.name, label=title, description=description, manifest=f"{run.name}/manifest.json", frames=len(data_frames), flux_reproduction=worst,
+                particles=bool(particles),
                 inner_radius_m=r_in, gas=gas, banks=scope,
                 rows=[dict({k: r.get(k) for k in ("time_s", "closed", "separatrix_mid_m", "length_m", "trapped_flux_wb", "density_m3",
                                                   "total_temperature_ev")}, formed=formed(r, 2*c.half_length)) for r in rows],
@@ -256,6 +278,11 @@ def viewer_page(out, summaries):
             ('<option value="3">Axial Jz</option>', '<option value="3" disabled>Axial Jz (zero: no toroidal field in this model)</option>'),
             ("Exploratory pre-ionized plasma model. More rendering detail does not add simulation resolution or establish FRC formation, stability or confinement.",
              "Assumed complete pre-ionization; 2D axisymmetric MHD. Rendering detail adds no simulation resolution; the n = 2 mode and lifetime are not modelled.")]
+    if any(s.get("particles") for s in summaries):
+        reps += [('<label><input type="checkbox" id="separatrix" checked> Separatrix</label>',
+                  '<label><input type="checkbox" id="separatrix" checked> Separatrix</label><label><input type="checkbox" id="particles"> Particles</label>'
+                  '<select id="particle-set" aria-label="Particle orbit set" hidden></select>'),
+                 ('<p id="frame-summary"></p>', '<p id="frame-summary"></p><p id="particle-legend"></p>')]
     for a, b in reps:
         if a not in html:
             raise ValueError(f"volume.html no longer contains {a!r}")

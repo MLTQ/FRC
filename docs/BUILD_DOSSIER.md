@@ -142,6 +142,15 @@ Literature-based (Tuszewski 1986; Ohi 1983); not simulated in 2D.
 - **Timing:** establish it slowly, over ms, before the main bank. A steady m=2
   field induces no current in the single-turn sheet coil, which then holds it
   through the µs compression. A µs-pulsed quadrupole would be screened.
+- **Particle cost (test-particle orbits, EXPERIMENT_PLAYGROUND.md "Particle
+  orbits"):**
+  - Extra ion loss at 0.2 T over 10–30 µs, against 5% without the
+    quadrupole: about 24 points at 7% B_e set at the wall (5.5 kA), and
+    33 points set at the separatrix (7.5 kA).
+  - The lost ions strike the tube wall at |z| ≈ 0.5–1.1 m, in two sectors
+    180° apart in each half of the tube. The pattern is rotated 90° between
+    the two halves.
+  - These are vacuum-field upper bounds.
 - **Plan:**
   1. First shots without it, to measure the n=2 onset (end-on camera).
   2. Then add it.

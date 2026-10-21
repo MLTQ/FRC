@@ -58,6 +58,14 @@ toroidal field.
 (`closed_region` or `annular_closed_region`). A run counts as formed while it
 meets the design-scan criterion: closed, and shorter than 80% of the tube.
 
+**Particles (optional).** If RUN/particles.json exists (written by
+`examples/particle_tracking.py ions`), it is copied to `OUT/<run>/particles.json`
+in viewer coordinates, and the manifest gets `particles`. The viewer page then
+has a "Particles" checkbox and an orbit-set selector, and the field canvas
+shows the last 2 µs of each tracked ion orbit. These are actual integrated
+orbits in the same saved fields, plus the quadrupole for the quadrupole sets.
+See visualizations/material_fields/viewer.md, "Particle trails".
+
 **Coil groups** are the main coil and each AuxCoil, each in its own colour.
 Their per-frame labels give the actual coil current (vacuum + image) and its
 vacuum Bz at the midplane tube wall.

@@ -281,6 +281,129 @@ The 0.7 kV held run used the `frc12_flux_core` preset with the core bank at
 `/formation_display_lifetime_open/index.html` on the `formation-display`
 server.
 
+## Particle orbits (frc-ibl.12, 2026-10-20)
+Test-particle tracking is the first 3D tool. It integrates full ion and
+electron orbits (relativistic Boris) in the saved fields of a formation run,
+with 3D coil fields added on top. The code is in
+`plasma_bench/particle_tracking.py` and `examples/particle_tracking.py`; the
+full numbers are in examples/particle_tracking.md.
+
+```bash
+.venv/bin/python -m examples.particle_tracking verify outputs/particle_tracking/verify
+.venv/bin/python -m examples.particle_tracking ions outputs/fine_uniform_h2 outputs/particle_tracking/ions_fine_uniform_h2
+.venv/bin/python -m examples.particle_tracking rmf outputs/fine_uniform_h2 outputs/particle_tracking/rmf_even
+```
+
+**Fields.**
+- **Saved flux:** the gas-node flux, extended into the vacuum exactly as the
+  viewer does it, splined as ψ = r² g and linear in time between the 0.1 µs
+  saved states.
+- **B and E:** B = ∇ψ×θ̂/r, and E_θ = −(∂ψ/∂t)/r.
+  - −v×B is not added: in this model it is purely azimuthal and is already
+    contained in E_θ.
+  - E_r = E_z = 0, so there is no self-consistent radial electric field or
+    rotation.
+- **Coils, as vacuum Biot–Savart superposed on the saved field:**
+  - the straight quadrupole: four bars at r = 0.20 m, 2.2 m long, in series
+    through arcs at the ends;
+  - an even- or odd-parity saddle RMF antenna.
+- **Not modelled:** screening of the coil fields by the plasma or the coil,
+  collisions, and back-reaction on the fields.
+- **Walls absorb particles:** r = 15.24 cm, the inner tube at 3.81 cm, and
+  |z| = 1.1 m.
+
+**Verification.** All checks are against independent analytic results:
+- **Gyration:** the frequency error equals the Boris angle to 1e-15, a
+  second-order error. The radius is exact to 2e-13, including at
+  500 keV (γ = 1.98).
+- **Drifts:** E×B to 7e-9; ∇B to 5.5e-5, which is the (ρ/L)² term.
+- **Mirror loss cone:** exact two-loop flux through the production spline,
+  mirror ratio R = 3.02. 17.75% of the ions are lost against 18.2% expected
+  for an isotropic launch, and none of 2000 particles disagrees with the
+  adiabatic sin²α < B₀/B_max prediction.
+- **Quadrupole:** within 3.5e-4 of the infinite-wire formula. It reproduces
+  the dossier's ~8 kA, here 7.8 kA, for 7% of 0.35 T at the wall.
+- **RMF antenna:** obeys Faraday's law to 9e-7.
+- **In the saved FRC:**
+  - energy is conserved to 1.5e-14 with the 3D quadrupole on;
+  - p_θ = γ m r v_θ + qψ converges at **order 1.98–2.00**, in both frozen
+    and time-dependent fields;
+  - E_θ correlates 0.97 with the run's own −(v×B)_θ.
+
+**Ion results.** 4000 thermal H⁺ ions are loaded inside the separatrix at
+10 µs (local Maxwellian at T = p/2n) and tracked to 30 µs:
+
+| | Option A | Inner tube | Inner tube + 2 kV flux core |
+|---|---|---|---|
+| s̄ = r_s/(4ρ_i) at B_e / with the local \|B\| | 5.4 / 2.1 | 4.5 / 1.1 | 4.7 / 1.3 |
+| Orbit classes over 2 µs: betatron / mixed (null-crossing) / drift / cyclotron / lost | 13 / 46 / 41 / 0.3 / 0% | 19 / 40 / 26 / 0 / 15% | 20 / 42 / 28 / 0.1 / 10% |
+| Confined at 30 µs, no quadrupole | **95%** | 77% | 87% |
+| Quadrupole 7% B_e at the wall (≈ 5.3–5.5 kA per bar) | 71% | 38% | 51% |
+| Quadrupole 7% B_e at the separatrix (≈ 7.5–7.8 kA) | 62% | 27% | 38% |
+
+**What it means for the build.**
+
+**FRC ions here are kinetic.**
+- 58–62% of the ions cross the field null within 2 µs, and fewer than
+  0.3% keep their magnetic moment.
+- The textbook s̄ (ρ_i at B_e) is 4.5–5.4 for the simulated FRCs. It is
+  higher than the design-window estimate because the simulated separatrix is
+  larger and colder. Measured with the local field, which vanishes at the
+  null, only 1–2 gyroradii fit between the null and the separatrix.
+
+**Without a quadrupole, p_θ conservation confines most ions.**
+- Betatron ions are never lost.
+- Losses come from drift and mixed orbits near the separatrix: 5% in option A
+  over 20 µs, mostly out the ends after ~18 µs.
+
+**The quadrupole costs particles.**
+- With the n=2 quadrupole at 7% of B_e, an extra 24–49% of the ions are lost
+  in 20 µs.
+- They reach the outer wall at |z| ≈ 0.5–1.1 m, beyond the FRC ends, in two
+  sectors 180° apart in each half. The pattern is rotated 90° between
+  z > 0 and z < 0, with an m=2 amplitude of 0.92–0.95.
+- Those sectors are where wall heating, sputtering and any limiter or probe
+  matter.
+- **Likely an upper bound:** the vacuum superposition ignores the plasma's
+  screening of the quadrupole.
+- **What follows for the build:** use the weakest quadrupole that holds off
+  n=2 (start at the wall definition, not the separatrix one). An octupole,
+  whose field falls faster inside, is worth considering (BUILD_DOSSIER §6).
+
+**The inner tube absorbs ions.**
+- The inner separatrix lies within one gyroradius of the 3" tube, so 13–23%
+  of the ions strike it within ~1 µs.
+- With the quadrupole, the annular runs lose half to three quarters of their
+  ions by 30 µs.
+
+**RMF electrons.**
+- **Setup:** 300 thermal electrons in option A's fields at 10 µs, plus an
+  even-parity saddle antenna: r = 0.16 m, |z| ≤ 0.6 m, 1 MHz, 5 mT,
+  1.1 kA. A no-RMF control uses the same electrons.
+- **Entrainment at the null:** near the null (r = 7.6–9.5 cm) the electrons
+  co-rotate at a median **0.93 ω** in the current-carrying direction, against
+  0.09 ω without the RMF.
+- **Deeper in:** where B_z ≫ B_ω, co-rotation is partial, 0.1–0.23 ω.
+  Test electrons there lack the self-consistent E_r of a co-rotating plasma.
+  They are instead heated by the unscreened antenna E_z: median 101 → 429 eV
+  in 2 µs.
+- **Frequency choice:** f_ci at B_e = 0.245 T is 3.7 MHz, so a 1 MHz RMF
+  satisfies ω > ω_ci only near the null (47% of the electrons). A 0.2 T
+  device needs f ≳ 4 MHz, which is PFRC-like. TCS's 85–240 kHz suits only
+  ~0.01–0.02 T.
+- **Next step:** penetration and sustained current drive need the hybrid
+  model (frc-ibl.11.5).
+
+**Viewer.** `formation_display.py` picks up RUN/particles.json, which
+`ions` writes with up to five orbits per class and five lost ions for each
+quadrupole setting. Tick **Particles** in the viewer to draw the last 2 µs of
+each orbit in the field canvas, and choose the quadrupole set from the menu
+beside it:
+
+```bash
+.venv/bin/python -m examples.formation_display outputs/formation_display_particles "outputs/fine_uniform_h2::Option A (baseline)" "outputs/fine_inner_tube::Inner tube (control)" "outputs/fine_flux_core::Inner tube + flux core"
+```
+
 ## Caveats
 - **2D axisymmetric:** all coils are coaxial loops, and an inner tube or
   solenoid is a perfect cylinder. The n = 2 rotational mode is not modelled;

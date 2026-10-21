@@ -111,3 +111,32 @@ the viewer switches runs in place:
 `#run-title`, `#run-description`, the document title and the scope note follow
 `DATA.title`, `DATA.description` and `DATA.scope`. The URL becomes `?run=NAME`,
 and loading with that parameter opens that run.
+
+## Particle trails
+With `DATA.particles` (a url) and a `#particles` checkbox, both added by
+`examples/formation_display.py` when a run has `particles.json` from
+`examples/particle_tracking.py`, the field canvas draws test-particle orbits.
+
+**Data.**
+- `{species, t0_us, sample_us, colors, sets: [{label, trails}]}`, where each
+  trail is `{class, lost_us, surface, points}`.
+- Points are viewer coordinates sampled every `sample_us` from `t0_us`. A lost
+  trail ends with its exact loss point.
+
+**Drawing.**
+- For the current saved time t, each trail shows its last 2 µs (`TRAIL_US`),
+  in its class colour, ending in a dot.
+- A lost trail freezes at its loss point with a red ×, faded.
+- Nothing is drawn before `t0_us`.
+- Every vertex is an integrated orbit position. Nothing is interpolated or
+  synthesized.
+
+**Loading.**
+- The file loads on first use and is replaced on a run switch.
+- A run without orbits disables the checkbox.
+- `#particle-set` selects the set (for example with and without the
+  quadrupole) and is hidden when there is only one.
+- `#particle-legend` names the classes, using textContent only.
+
+The field lines remain those of the saved axisymmetric field. A coil field
+superposed in the tracking (the quadrupole) is not drawn.
