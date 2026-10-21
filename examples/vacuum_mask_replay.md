@@ -1,0 +1,93 @@
+# vacuum_mask_replay.py
+
+Bounded experiment for bead frc-ibl.11.9. It asks whether the 3D hybrid's
+low-density heat sinks (`examples/lowdensity_loss_check.md`) are set by a
+numerical resistive medium rather than by physics. The method is to replay the
+v4 baseline startup with carrier-free cells treated as exact vacuum
+(`plasma_bench/hybrid3d_vacuum_mask.md`).
+
+## Runs
+All runs use the v4 baseline configuration (`outputs/fine_uniform_h2` from
+t = 0):
+- 20 × 20 × 40 mm cells;
+- 8 ions per cell;
+- 5% density floor;
+- coupled 3D banks;
+- conservative energy electrons with Spitzer η;
+- dt = 1 ns, to 1 µs.
+
+They go through `examples.hybrid3d_frc.main` unchanged. Only the model class
+(and extra history fields) is swapped.
+
+| run | seed | mask |
+|---|---|---|
+| `outputs/hybrid3d_full_v4_uniform_h2` (existing, cut to 1 µs) | 0 | no |
+| `outputs/vacuum_mask_v4_base_seed1` | 1 | no |
+| `outputs/vacuum_mask_v4_seed0` | 0 | yes, min_ions = 1 |
+| `outputs/vacuum_mask_v4_seed1` | 1 | yes, min_ions = 1 |
+
+`compare` writes `outputs/vacuum_mask_v4_seed0/vacuum_mask_compare.json`.
+
+## Check
+While no cell has emptied, the masked seed-0 run is bit-identical to the
+baseline: node density at 0.1 µs differs by exactly 0.
+
+## Result at 1 µs (load work 771–774 J in all four runs)
+| | baseline s0 | baseline s1 | mask s0 | mask s1 |
+|---|---|---|---|---|
+| magnetic energy (J) | 540.4 | 539.0 | 499.6 | 498.0 |
+| response magnetic (J) | 384.0 | 382.3 | 338.6 | 336.9 |
+| Ohmic heat (J) | 95.4 | 94.7 | 48.1 | 47.9 |
+| cutoff-removed heat (J) | 47.8 | 47.1 | 6.0 | 6.0 |
+| empty-node energy removed (J) | 20.2 | 20.4 | 11.5 | 11.6 |
+| mask-change projection loss (J) | – | – | 94.5 | 93.6 |
+| **all numerical sinks (J)** | **68.0** | **67.5** | **112.0** | **111.2** |
+| load-energy residual (J) | −0.03 | 0.00 | −94.6 | −93.7 |
+| masked gas cells (of 9900) | – | – | 3793 | 3790 |
+| separatrix at midplane (m) | 0.121 | 0.120 | 0.114 | 0.113 |
+
+Trapped flux is 1.6 mWb in all four runs and none is closed yet. The residual
+of the masked runs equals the projection counter to within 0.05 J, so their
+accounting closes.
+
+**Seed-to-seed B_response difference** (relative RMS, at matched times):
+
+| t (µs) | baseline plasma / thin / empty | mask plasma / thin / empty |
+|---|---|---|
+| 0.5 | 0.27 / 0.32 / 0.42 | 0.25 / 0.29 / 0.24 |
+| 0.8 | 0.22 / 0.47 / 0.41 | 0.20 / 0.33 / 0.17 |
+| 1.0 | 0.15 / 0.53 / 0.31 | 0.14 / 0.31 / 0.14 |
+
+## Reading
+- **The mask does not succeed by the stated criterion.**
+  - The Joule-channel sinks fall from 68 J to 17.5 J (8.8% → 2.3% of load work).
+  - But deleting the current in cells as they empty costs 94 J. The total
+    numerical removal rises to 112 J (14.5%), and the retained magnetic energy
+    falls by 41 J instead of rising.
+- **Why.** By 1 µs the radial implosion has emptied the outer 38% of the gas
+  cells. The trailing part of the current sheet sits in cells that are losing
+  their last macro-ions. The baseline dissipates part of that carrier-free
+  current resistively. The mask deletes all of it at once, as the
+  minimum-energy projection does.
+- **What this means for the diagnosis.**
+  - It confirms that the low-density sink is energy held in current with no
+    resolved carriers.
+  - It shows that the sink is set upstream, by the field decoupling from the
+    departing ions at the floor density. How that current is removed does not
+    set it.
+  - Physically, the sheet current would move inward with its carriers (J × B
+    work on the plasma). It would not be left behind to be dissipated or
+    deleted.
+- **Noise.** The mask halves the seed sensitivity in thin and empty nodes
+  (0.53 → 0.31 and 0.31 → 0.14). Thin nodes are still twice as noisy as the
+  plasma (0.14). The divergence target is not met either.
+
+## Next bounded experiment (proposed, not run)
+A macro-ion-count convergence replay of the same 0–1 µs window, ppc 8 → 32,
+without the mask:
+- If the carrier-free current and the sinks fall as the trailing sheet edge
+  becomes resolved, they are resolution artifacts.
+- If not, the floor-density Hall/Ohm closure itself needs a physical edge model.
+
+A grid refinement at a fixed number of ions per cell leaves the macro-ion count
+per edge cell unchanged, so it does not separate these two cases.

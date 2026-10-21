@@ -53,7 +53,7 @@ Physically:
   Te^−1.5, and the heat would leave along open lines at ≲ 1/10 of the removed
   rate.
 
-## Proposed bounded experiment (needs a shared-solver change; coordinate first)
+## Bounded experiment (run: see `vacuum_mask_replay.md`; it did not succeed, see the end)
 A **dynamic vacuum mask** startup replay over 0–1 µs:
 - Nodes with fewer than about one resolved macro-ion (or n < floor) are treated
   as exact vacuum for the field in each ion step: J = 0 on their edges.
@@ -70,3 +70,10 @@ Compare against the v4 baseline over the same window:
 **Success** means the removed heat falls to a few percent of the load work, the
 retained magnetic energy rises by about the same amount, and the run-to-run
 divergence below the cutoff drops to the above-cutoff level.
+
+**Outcome.** Run as a `DeviceHybrid` subclass, the mask cuts the Joule-channel
+sinks by 74%. Deleting the current of emptying cells costs more, 94 J by 1 µs,
+so total removal rises from 68 to 112 J and retained magnetic energy falls by
+41 J. The sink is the energy of current left behind by the departing ions. The
+next test is ion-count convergence (ppc 8 → 32), not a different removal rule.
+
