@@ -205,8 +205,9 @@ What the 2D model says about holding the FRC longer.
   - The FRC then contracts, from 53 cm × 9.5 cm at 20 µs to 24 cm × 6.7 cm at
     34 µs, and its flux collapses.
   - The 130 µs e-fold in DESIGN_SCAN.md was fitted over 8–20 µs only.
-  - The late collapse is under-resolved (r_s below ~11 cells), but the split
-    from 0.2 T is already clear at 25–30 µs.
+  - The late collapse is under-resolved (r_s below ~11 cells). At 36×216 the
+    contraction comes about 7 µs later, and φ is still 1.53 mWb at 40 µs
+    (Resolution check below).
 - **A slow mirror fired with the bias does not form a mirror.**
   - The 24 parallel main straps link equal flux. They carry counter-currents
     (up to −1.07 A per mirror ampere in the end straps) that spread the
@@ -256,9 +257,11 @@ What the 2D model says about holding the FRC longer.
 **Recommendation.**
 - **Lifetime baseline:** plain option A at 0.2 T, with no inner tube:
   main 8 × 6 µF at 11.6 kV (3.2 kJ), bias 2000 µF at −2.3 kV (5.3 kJ).
-  - It has the most flux up to 30 µs and still 1.11 mWb at 40 µs.
+  - At 24×144 it has the most flux up to 30 µs and still 1.11 mWb at 40 µs
+    (1.50 at 36×216).
   - It keeps E ≥ 2.6 throughout.
-  - Do not raise it to 0.3 T for lifetime.
+  - Do not raise it to 0.3 T for lifetime. On both grids the 0.3 T FRC is
+    shorter (E ≈ 2 from 30 µs) and contracting by 40 µs.
 - **Best flux sustainment simulated:** option A with the 3" inner tube and the
   1 kV flux core (`frc12_flux_core_1kv`).
   - **Core:** 40 turns at r 2.5 cm, 0.8 m long, inside the tube, in the
@@ -267,12 +270,13 @@ What the 2D model says about holding the FRC longer.
     ~65 µs; 5.9 kA peak in the circuit model; crowbar at its voltage zero.
   - **Switch:** one that stays on through a brief current reversal at turn-on,
     for example solid-state with an antiparallel diode. A switch that opens at
-    the first current zero is marginal at 1 kV.
+    the first current zero is marginal at 1 kV. At 36×216 it opens at turn-on,
+    and the core never fires.
   - **Tuning:** 0.7–1.0 kV brackets flat flux.
   - **Result:** φ held at 1.33–1.41 mWb to 40 µs, 20% above the open bore at
     40 µs. The cost is the inner tube (about 40% of the formation flux, and a
     separatrix on the glass from ~20 µs) and an FRC that shortens to E ≈ 1.2
-    by 40 µs.
+    by 40 µs (1.7 at 36×216).
   - **To 100 µs** (Timed core program): the held FRC cools and collapses at
     65 µs, before the undriven inner-tube FRC (72 µs). Holding flux is not
     holding the FRC.
@@ -289,6 +293,56 @@ The 0.7 kV held run used the `frc12_flux_core` preset with the core bank at
 `/formation_display_lifetime/index.html` and
 `/formation_display_lifetime_open/index.html` on the `formation-display`
 server.
+
+**Resolution check (36×216, 2026-10-21).** The decisive runs were repeated at
+36×216 (dr 4.2 mm) to 40 µs, with states every 1 µs (`outputs/life_*_r36`).
+- **Grid setup:** the preset's 2 boundary cells become 3
+  (`exterior_cells=3 end_cells=3`). This keeps the induced-flux boundary at
+  r = 0.165 m and 12.7 mm beyond the tube ends. With 2 cells, all three runs
+  stopped on a nonphysical state within 0.13 µs. The inner tube snaps to
+  0.0381 m on both grids.
+- **Core switch:** with the preset's one-way start switch, the 1 kV core never
+  fired at 36×216: the switch opened at turn-on and the core bank stayed at
+  1.0 kV. That run (otherwise `frc12_inner_tube`) serves as the 36×216
+  control.
+  - The core row below holds the switch closed (`"unidirectional": false`,
+    `outputs/life_core_1p0kv_hold_r36`). Its current went negative
+    (−0.16 kA at 6 µs) and recovered.
+  - At 24×144 the current never crossed zero, so held and one-way runs are the
+    same there.
+
+| Run, grid | φ at 10 / 20 / 30 / 40 µs (mWb) | l_s × r_s at 40 µs (cm) | E at 20 / 30 / 40 µs | Flux e-fold, 8–30 / 8–40 µs |
+|---|---|---|---|---|
+| Option A 0.2 T, 24×144 | 2.02 / 1.75 / 1.45 / 1.11 | 52 × 9.9 | 3.8 / 3.2 / 2.6 | 68 / 54 µs |
+| Option A 0.2 T, 36×216 | 2.16 / 1.93 / 1.73 / 1.50 | 60 × 10.7 | 4.2 / 3.3 / 2.8 | 94 / 85 µs |
+| Option A 0.3 T, 24×144 | 1.93 / 1.76 / 1.25 / 0.24 | 17 × 3.0 | 2.8 / 1.9† / remnant | 56 / 21 µs |
+| Option A 0.3 T, 36×216 | 2.14 / 2.07 / 1.90 / 1.53 | 29 × 6.8 | 2.8 / 2.0 / 2.1 | 194 / 106 µs |
+| Inner tube, control, 24×144 | 1.24 / 1.01 / 0.90 / 0.71 | 34 × 9.7 | 2.3 / 2.1 / 1.7† | 68 / 61 µs |
+| Inner tube, control, 36×216 | 1.24 / 1.12 / 0.98 / 0.81 | 44 × 10.1 | 2.5 / 2.4 / 2.2 | 70 / 67 µs |
+| + 1 kV core, 24×144 | 1.34 / 1.41 / 1.39 / 1.33 | 27 × 11.1 | 2.3 / 1.8† / 1.2† | flat |
+| + 1 kV core held, 36×216 | 1.33 / 1.42 / 1.42 / 1.38 | 38 × 11.3 | 2.5 / 2.2 / 1.7† | flat |
+
+- **1 kV core: still flat, less short.**
+  - φ stays at 1.33–1.43 mWb from 10 to 40 µs, 1.7× the control at 40 µs.
+  - The FRC still shortens, to E ≈ 1.7 (38 cm × 11.3 cm) rather than 1.2,
+    against 2.2 for the control.
+  - A switch that stays on through the turn-on reversal is required, not just
+    a safety margin.
+- **0.3 T: no collapse by 40 µs.**
+  - It keeps more flux than 0.2 T up to 38 µs, and about the same at 40 µs
+    (1.53 against 1.50 mWb).
+  - The contraction still comes, about 7 µs later than at 24×144. r_s falls
+    from 9.6 to 6.8 cm over 30–40 µs (16 cells at 40 µs), and by the end φ
+    falls 0.04–0.06 mWb/µs.
+  - By 30 µs, open-line conduction removes 1.7× as much energy as at 0.2 T
+    (3.2 against 1.9 kJ), not 2.2×.
+  - The FRC is shorter from 10 µs on, and E is 2.0–2.1 from 30 µs, against
+    ≥ 2.8 at 0.2 T. The 0.2 T recommendation therefore stands on elongation,
+    not on flux. Whether 0.3 T collapses after 40 µs is not known.
+- **Numerical decay:** the finer grid lengthens every flux e-fold (0.2 T: 54
+  to 85 µs over 8–40 µs) and cuts the declared numerical interface heat 2–3×.
+  The 24×144 e-folds are therefore pessimistic. Two grids do not show
+  convergence.
 
 ## Timed core program (frc-ibl.9.2, 2026-10-21)
 **Question.** Can a timed sequence of core pulses and main-coil boosts (the
