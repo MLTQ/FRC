@@ -149,6 +149,60 @@ All values at 1 µs, seed 0 (the seed-1 value in brackets):
   floor closure dissipates it more slowly.
 - **The edge model does not improve the startup.**
 
+## Carrier ledger and electron edge without a mask (`run ... mask=0 ledger=1 electron_edge=0|1`)
+`plasma_bench/hybrid3d_carrier_ledger.md`; all values at 1 µs.
+- **Checks.** With `electron_edge=0` the run reproduces the original baseline:
+  identical counters, n and p_e, and B within 9e-13 T. The same-seed repeat of
+  the electron-edge run is bit-identical. The ledger class sums match the solver
+  counters to about 1e-13 J.
+
+| | baseline s0 | electron edge s0 (= repeat) | electron edge s1 |
+|---|---|---|---|
+| Ohmic heat, orphaned / sparse / resolved edges (J) | 43.1 / 2.9 / 49.4 | 68.4 / 2.2 / 45.8 | 68.0 / 2.2 / 45.7 |
+| cutoff removal, thin / empty nodes (J) | 12.7 / 35.1 | 16.8 / 51.4 | 16.7 / 50.8 |
+| empty-node electron energy removed (J) | 20.2 | 6.0 | 5.9 |
+| **total numerical removal (J)** | **68.0** | **74.2** | **73.4** |
+| magnetic energy (J) | 540.4 | 518.5 | 517.5 |
+| electron energy (J) | 33.4 | 46.1 | 46.9 |
+| \|J\| A on orphaned / sparse / resolved edges (kA) | 8.4 / 3.0 / 12.5 | 5.6 / 2.4 / 11.9 | 5.8 / 2.3 / 11.9 |
+| pressure-centering residual; load residual (J) | 0.025; −0.025 | 0.039; −0.002 | 0.042; 0.022 |
+| separatrix (m); trapped flux | 0.121; 1.6 mWb | 0.120; 1.6 mWb | 0.120; 1.6 mWb |
+
+At 0.5 µs, orphaned edges carried only 0.4 J of the 27.5 J of Ohmic heat.
+About 5,700 cells lost their last ion during 0–1 µs.
+
+- **Where the left-behind current's energy goes** (floor closure):
+  - By 1 µs, 35% of the current magnitude sits on orphaned edges, where no
+    adjacent cell holds an ion. It dissipates 43 J there, 45% of all Ohmic heat.
+  - The heat is then deleted: 35 J by the cutoff on empty nodes, plus the
+    empty-node energy removal.
+  - So the startup sink is mainly Ohmic dissipation of carrier-free current,
+    which forms as the implosion empties the outer gas after 0.5 µs.
+  - Resolved-thin current (the sparse class) contributes only 2–3 J.
+- **The electron edge alone does not justify itself.**
+  - It blocks the leak: empty-node removal falls from 20 to 6 J and the electrons
+    keep 13 J more.
+  - But Ohmic heat on orphaned edges rises from 43 to 68 J. Total removal rises
+    from 68 to 74 J, and magnetic energy falls by 22 J.
+  - Inferred mechanism: `ThermalElectrons.temperature` divides by
+    max(n, 1 m⁻³). Electron energy that leaked into an empty node within a step
+    gave it an enormous Te and almost zero Spitzer η until `finish_step`
+    removed it. Blocking the leak exposes the 1 eV η cap on the orphaned
+    current.
+  - **The baseline's lower orphaned dissipation is therefore an artifact of the
+    leak.** η at a node with no carriers is undefined, and the closure either
+    zeroes it by accident or caps it at 1 eV.
+- **Answer to the coordinated question.**
+  - Electron-edge transport cannot be justified on its own. It is correct for
+    the electrons, but it makes the field dissipation of the carrier-free current
+    worse.
+  - When carriers leave a cell, their current stays in the field. No ion is left
+    to receive J × B work, so the current can only dissipate, at an η the
+    closure does not define, or be deleted (the mask).
+  - Any physical edge model has to stop carrier-free current forming, by keeping
+    the field coupled to departing ions. Choosing how to remove it afterwards
+    cannot fix this.
+
 ## Where this leaves frc-ibl.11.9
 The sink comes from the sheet current left in emptied gas, which the floor
 closure turns into a resistive conductor.

@@ -29,8 +29,9 @@ assumptions and flux-conserving end conditions are in the module docstring.
 | mask | 0.593 | 3.21 | 54.1 | 30.9 | 27.0 / 0.1 / 3.8 | 17.3 | 37.7 | +0.02 |
 | edge, field only | 0.595 | 3.21 | 51.5 | 28.4 | 25.0 / 0.1 / 3.3 | 17.4 | 37.5 | +0.03 |
 | edge + electron edge | 0.590 | 3.21 | 51.7 | 19.5 | 16.2 / 0.0 / 3.2 | 21.3 | 37.5 | −0.62 |
+| floor + electron edge (`model=ledger`) | 0.584 | 3.07 | 194.8 | 143.7 | 33.9 / 109.7 / – | 29.4 | 42.9 | +0.08 |
 
-Wall time: 14, 18, 39 and 41 minutes respectively. With the interface floor
+Wall time: 14, 18, 39, 41 and 15 minutes respectively. With the interface floor
 capped at 2, the edge model needs about twice the field substeps.
 
 ## Reading
@@ -57,3 +58,14 @@ capped at 2, the edge model needs about twice the field substeps.
 - **The plasma-side interface floor makes no measurable difference** (28.4
   against 30.9 J). It is limited by CIC noise: 1,600–1,700 plasma nodes still
   sit below the floor.
+- **Carrier ledger, floor field with electron edge.**
+  - 110.6 J of its 112.5 J of Ohmic heat is on orphaned edges, where no
+    adjacent cell holds an ion: the resistive empty annulus. Sparse and
+    resolved edges carry 0.1 and 1.8 J.
+  - Blocking the electron-energy leak cuts empty-node removal from 105 to 34 J
+    and doubles the retained electron energy. The core field compresses closest
+    to the analytic value of any model (3.07).
+  - But the exposed 1 eV η cap raises orphaned dissipation and cutoff removal.
+    The field-side resistor is untouched: 144 J is still deleted.
+  - See `vacuum_mask_replay.md` for the same mechanism in the startup.
+

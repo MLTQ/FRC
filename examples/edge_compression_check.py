@@ -1,6 +1,6 @@
 """Adiabatic theta-pinch compression of a magnetized column: an analytic plasma-vacuum edge check (frc-ibl.11.9).
 
-    python -m examples.edge_compression_check OUT model=floor|mask|edge [ppc=8 seed=0 t_ramp_us=4 t_end_us=5 min_ions=1 max_scale=2 electron_edge=1]
+    python -m examples.edge_compression_check OUT model=floor|mask|edge|ledger [ppc=8 seed=0 t_ramp_us=4 t_end_us=5 min_ions=1 max_scale=2 electron_edge=1]
 
 A uniform hydrogen column (radius a0, density n0, Ti = Te, internal field B_in0) sits in the 12" device inside an
 exact-vacuum annulus, in pressure balance with the external field B_out0. A uniform solenoid field B_s(t) then
@@ -18,7 +18,9 @@ removals, against the measured source work. Models:
 - floor: DeviceHybrid; the empty gas annulus is the 1 eV, floor-density Ohm's-law medium;
 - mask:  VacuumMaskHybrid (cells with no macro-ion are exact vacuum);
 - edge:  PlasmaEdgeHybrid (mask plus an interface floor taken on the plasma side; with electron_edge=1 also the
-         EdgeEnergyElectrons closure edge).
+         EdgeEnergyElectrons closure edge);
+- ledger: CarrierLedgerHybrid (the floor field closure with a carrier-class heat ledger; electron_edge=1 adds
+          the electron-edge transport without any field mask).
 """
 import json
 import sys
@@ -31,6 +33,7 @@ from plasma_bench.hybrid3d import HybridParams, curl_edges, curl_faces
 from plasma_bench.hybrid3d_device import Device, device_box, cell_types, DeviceHybrid, GAS, CONDUCTOR
 from plasma_bench.hybrid3d_vacuum_mask import VacuumMaskHybrid
 from plasma_bench.hybrid3d_edge import PlasmaEdgeHybrid
+from plasma_bench.hybrid3d_carrier_ledger import CarrierLedgerHybrid
 
 MASS = m_p+9.1093837e-31
 CASE = dict(a0=.12, n0=5e19, ti_ev=20., te_ev=20., b_out0=.05, b_s1=.15, floor=.05, dx=.02, dz=.04, dt_ns=2.)
@@ -108,8 +111,9 @@ def run(out, model='edge', ppc=8, seed=0, t_ramp_us=4., t_end_us=5., min_ions=1,
     bf[2] = bf[2]+(bin0-b0)*inside
     params = HybridParams(ion_mass=MASS, te_ev=case['te_ev'], gamma_e=5/3, n_floor=case['floor']*case['n0'])
     thermal = dict(closure='energy', gamma=5/3, resistivity='spitzer', coulomb_log=10., transport_cfl=.8)
-    cls = dict(floor=DeviceHybrid, mask=VacuumMaskHybrid, edge=PlasmaEdgeHybrid)[model]
-    extra = {} if model == 'floor' else dict(min_ions=int(min_ions))
+    cls = dict(floor=DeviceHybrid, mask=VacuumMaskHybrid, edge=PlasmaEdgeHybrid, ledger=CarrierLedgerHybrid)[model]
+    extra = (dict(electron_edge=bool(electron_edge)) if model == 'ledger' else {} if model == 'floor'
+             else dict(min_ions=int(min_ions)))
     if model == 'edge':
         extra.update(max_scale=max_scale, electron_edge=bool(electron_edge))
     m = cls(box, dev, params, bf, pos, vel, w, case['dt_ns']*1e-9, n_ref=case['n0'], source=source, thermal=thermal, **extra)
@@ -150,6 +154,8 @@ def run(out, model='edge', ppc=8, seed=0, t_ramp_us=4., t_end_us=5., min_ions=1,
                    wall_s=time.time()-start)
         if hasattr(m, 'mask_diagnostics'):
             row.update(m.mask_diagnostics())
+        if hasattr(m, 'ledger_diagnostics'):
+            row.update(m.ledger_diagnostics())
         rows.append(row)
         print(json.dumps({k: (round(v, 4) if isinstance(v, float) else v) for k, v in row.items()}), flush=True)
     while m.time < t_end_us*1e-6-1e-15:
