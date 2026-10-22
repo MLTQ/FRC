@@ -126,6 +126,29 @@ from `seed_difference`.
   dynamical sensitivity of the trailing edge, which fits the CPU/GPU roundoff
   amplification Codex measured.
 
+## Edge-model replay (`run ... mask=2 [min_ions=N]`; `plasma_bench/hybrid3d_edge.md`)
+All values at 1 µs, seed 0 (the seed-1 value in brackets):
+
+| | floor (base) | mask | edge, 1 ion | edge, 2 ions | edge, 4 ions |
+|---|---|---|---|---|---|
+| total numerical removal (J) | 68.0 (67.5) | 112.0 (111.3) | 103.8 (101.9) | 121.2 | 132.7 |
+| mask-change projection (J) | – | 94.5 | 93.5 (91.6) | 107.8 | 116.5 |
+| empty-node electron energy (J) | 20.2 | 11.5 | 4.7 (4.5) | 8.9 | 13.5 |
+| cutoff-removed heat (J) | 47.8 | 6.0 | 5.7 | 4.5 | 2.7 |
+| electron energy (J) | 33.4 | 39.9 | 42.3 (43.1) | 44.1 | 43.7 |
+| magnetic energy (J) | 540.4 | 499.6 | 492.6 (491.9) | 487.7 | 486.2 |
+| pressure-centering residual (J) | 0.03 | 0.04 | −5.0 (−5.2) | −5.2 | −4.2 |
+| separatrix at midplane (m) | 0.121 | 0.114 | 0.113 | 0.113 | 0.113 |
+| wall time (s) | 153 | 136 | 194 | 260 | 268 |
+
+- **The electron edge works here too.** It cuts the edge electron-energy removal
+  from 11.5 to 4.6 J.
+- **The current deleted at emptying still dominates, and it grows with the
+  vacuum threshold.** Here the sparse plasma (1–4 macro-ions per cell) carries
+  the formation current. Declaring it vacuum deletes that current, while the
+  floor closure dissipates it more slowly.
+- **The edge model does not improve the startup.**
+
 ## Where this leaves frc-ibl.11.9
 The sink comes from the sheet current left in emptied gas, which the floor
 closure turns into a resistive conductor.
@@ -133,9 +156,9 @@ closure turns into a resistive conductor.
 - Deleting it at emptying (the mask) costs more than dissipating it.
 - Making the emptied region more conducting would violate the exact-vacuum rule.
 
-A physical edge model is needed: one in which the sheet current stays with the
-departing carriers, for example a kinetic or two-fluid electron edge, or a
-moving-boundary vacuum interface that conserves the interface flux. Until then:
+The sharp-edge model (above) confirms this from the other side. Removing the
+floor medium deletes the current instead. Resolving the current-carrying sparse
+plasma is the remaining route. Until then:
 - report the removal as an accounting uncertainty that converges with ions per
   cell (about 6–9% of load work at 1 µs for 64–8 ions per cell);
 - treat the formation geometry at 1 µs as converged in ion count.

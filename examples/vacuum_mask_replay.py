@@ -6,7 +6,7 @@
 `run` repeats the v4 baseline shot (outputs/fine_uniform_h2 from t = 0; 20 x 20 x 40 mm cells, 8 ions/cell, 5% floor,
 coupled banks, energy electrons, 1 ns) through examples.hybrid3d_frc.main unchanged, with the model class replaced
 by VacuumMaskHybrid when mask=1 (mask=0 is the plain baseline, for a second seed). Mask counters are added to
-every history row. `ppc` changes only the macro-ions per cell (the ion-count convergence replay, mask=0).
+every history row; mask=2 uses PlasmaEdgeHybrid (mask plus the plasma-side interface floor). `ppc` changes only the macro-ions per cell (the ion-count convergence replay, mask=0).
 
 `compare` tabulates the counters of the four runs (two seeds, without and with the mask) and, at shared snapshot
 times, the seed-to-seed difference of B_response and n on plasma (mean n >= floor) and thin (0 < mean n < floor)
@@ -21,6 +21,7 @@ import examples.hybrid3d_frc as frc
 from plasma_bench.hybrid3d import faces_to_nodes
 from plasma_bench.hybrid3d_device import Device, device_box, cell_types, GAS
 from plasma_bench.hybrid3d_vacuum_mask import VacuumMaskHybrid
+from plasma_bench.hybrid3d_edge import PlasmaEdgeHybrid
 
 SOURCE = 'outputs/fine_uniform_h2'
 BASELINE = dict(t_us=0., dx=.02, dz=.04, ppc=8, floor=.05, every_us=.25, snap_us=.1, drive=2, thermal=1, dt_ns=1.)
@@ -28,7 +29,7 @@ BASELINE = dict(t_us=0., dx=.02, dz=.04, ppc=8, floor=.05, every_us=.25, snap_us
 
 def run(out, seed=0, mask=1, min_ions=1, t_end_us=1., ppc=8):
     if mask:
-        frc.DeviceHybrid = functools.partial(VacuumMaskHybrid, min_ions=int(min_ions))
+        frc.DeviceHybrid = functools.partial(PlasmaEdgeHybrid if int(mask) == 2 else VacuumMaskHybrid, min_ions=int(min_ions))
         plain = frc.diagnostics
 
         def diagnostics(model):
@@ -39,7 +40,7 @@ def run(out, seed=0, mask=1, min_ions=1, t_end_us=1., ppc=8):
     history = frc.main(out, SOURCE, t_end_us=float(t_end_us), seed=int(seed), **dict(BASELINE, ppc=int(ppc)))
     setup = Path(out)/'setup.json'
     info = json.loads(setup.read_text())
-    info['vacuum_mask'] = dict(enabled=bool(mask), min_ions=int(min_ions),
+    info['vacuum_mask'] = dict(enabled=bool(mask), model='edge' if int(mask) == 2 else 'mask' if mask else 'floor', min_ions=int(min_ions),
                                rule='gas cells with < min_ions macro-ions at both ends of an ion step are field vacuum')
     setup.write_text(json.dumps(info, indent=1))
     return history
