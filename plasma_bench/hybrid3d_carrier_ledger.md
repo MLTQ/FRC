@@ -45,8 +45,10 @@ Results are in `examples/vacuum_mask_replay.md` (startup) and
   - Startup: total removal 68 → 74 J.
   - Compression: 182 → 144 J.
 - **It does not justify itself without a field-side change.**
-- **Next physical question:** does a lower floor (less field slip behind
-  departing ions) stop orphaned current forming? Proposed: a 5% / 2% / 1% floor
-  replay over 0–1 µs with this ledger. It costs about 1/floor in field substeps.
-  Not run.
+- **Floor convergence** (5% / 2% / 1%, 0–1 µs, results in
+  `examples/vacuum_mask_replay.md`):
+  - Orphaned Ohmic heat falls 43 → 21 → 12 J, and total removal 68 → 48 → 40 J.
+  - The 1 µs separatrix converges at 2% (0.112 m, against 0.121 m at 5%).
+  - Empty-node removal (20 → 28 J) and wall enthalpy outflow (39 → 74 J) rise
+    as the floor drops.
 

@@ -203,6 +203,51 @@ About 5,700 cells lost their last ion during 0–1 µs.
     the field coupled to departing ions. Choosing how to remove it afterwards
     cannot fix this.
 
+## Floor convergence with the carrier ledger (`run ... mask=0 ledger=1 electron_edge=0 floor=F`)
+Base closure; all values at 1 µs, seed 0 (the seed-1 value in brackets).
+
+| Ohm's-law floor (fraction of peak n) | 5% | 2% | 1% |
+|---|---|---|---|
+| **numerical removal, cutoff + empty-node (J)** | **68.0** | **48.4** | **39.5 (40.5)** |
+| cutoff removal (J) | 47.8 | 22.1 | 11.8 (12.0) |
+| empty-node electron energy (J) | 20.2 | 26.3 | 27.6 (28.6) |
+| Ohmic, orphaned / sparse / resolved edges (J) | 43.1 / 2.9 / 49.4 | 21.0 / 3.5 / 52.4 | 12.2 / 4.2 / 57.0 |
+| \|J\| A, orphaned / sparse / resolved (kA) | 8.4 / 3.0 / 12.5 | 7.6 / 3.5 / 13.4 | 6.6 / 3.3 / 12.9 |
+| wall electron enthalpy outflow (J) | 38.7 | 55.5 | 73.6 (73.2) |
+| magnetic / response magnetic energy (J) | 540.4 / 384.0 | 518.4 / 356.9 | 509.0 / 346.4 |
+| ion kinetic / electron energy (J) | 263.2 / 33.4 | 272.7 / 35.7 | 271.2 / 34.6 |
+| load work (J); load residual (J) | 776.0; −0.03 | 758.1; −0.10 | 754.1; −0.19 |
+| **separatrix at midplane (m)** | **0.121** | **0.112** | **0.112 (0.111)** |
+| trapped flux (mWb) | 1.6 | 1.6 | 1.5 (1.6) |
+| field substeps; wall time (s) | 3508; 145 | 7510; 228 | 14186; 363 |
+
+The ledger class sums match the solver counters to 5e-13 J. At 1%, seeds 0
+and 1 agree within 2.5%.
+
+- **The floor sets the dissipation of carrier-free current.**
+  - Orphaned-edge Ohmic heat falls from 43 to 21 to 12 J as the floor goes from
+    5% to 2% to 1%, while the orphaned current magnitude falls only 21%.
+  - A lower floor makes the empty medium Hall-dominated (faster electron
+    response), so its current dissipates less. This is the mechanism the
+    previous replays pointed to.
+- **Total numerical removal falls as about floor^0.65:** 68 → 48 → 40 J. A
+  three-point extrapolation to floor → 0 gives about 24 J (3% of load work),
+  poorly constrained.
+  - What remains is mostly electron energy deleted on emptied nodes, which
+    rises from 20 to 28 J as the floor drops.
+  - The wall enthalpy outflow also rises (39 → 74 J), because the floored Hall
+    velocity in thin edge nodes is larger. It is a declared boundary channel,
+    but it is not converged either.
+- **The formation state is not converged at 5%, unlike in ion count.** The
+  separatrix at 1 µs moves from 0.121 to 0.112 m (−8%) going to 2%, then agrees
+  at 1%. Trapped flux stays at 1.6 mWb.
+- **Design consequence.** The 5% production floor biases the early separatrix
+  radius by about 8%. A 2% floor converges it at 1 µs for about 2× the field
+  substeps (1.6× wall time). Whether that holds beyond 1 µs is untested.
+- **Next bounded step (not run):** 1% floor plus the electron-edge block. At a
+  low floor the orphaned dissipation that the block exposes is 3.5× smaller, so
+  the block may now pay off against the 28 J of empty-node removal.
+
 ## Where this leaves frc-ibl.11.9
 The sink comes from the sheet current left in emptied gas, which the floor
 closure turns into a resistive conductor.
