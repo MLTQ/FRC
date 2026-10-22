@@ -48,7 +48,18 @@ Results are in `examples/vacuum_mask_replay.md` (startup) and
 - **Floor convergence** (5% / 2% / 1%, 0–1 µs, results in
   `examples/vacuum_mask_replay.md`):
   - Orphaned Ohmic heat falls 43 → 21 → 12 J, and total removal 68 → 48 → 40 J.
+    Part of that drop is the leak artifact (η ≈ 0 on nodes the leak reaches).
+    With the leak blocked, the drop is 68 → 44 J.
   - The 1 µs separatrix converges at 2% (0.112 m, against 0.121 m at 5%).
   - Empty-node removal (20 → 28 J) and wall enthalpy outflow (39 → 74 J) rise
     as the floor drops.
+- **1% floor with the electron edge:** orphaned Ohmic heat 12 → 44 J and
+  total removal 40 → 44 J, so the block does not pay off. Geometry is
+  unchanged.
+- **Conclusions:**
+  - Lowering the floor converges the 1 µs geometry, at 2% or below.
+  - The energy budget is set by the undefined η of carrier-free current: a
+    40–74 J spread of numerical removal across variants.
+  - Defining the resistivity or current at carrier-free nodes is a closure
+    decision (Codex's lane). It is not settled by these tests.
 

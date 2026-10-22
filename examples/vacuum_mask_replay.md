@@ -224,15 +224,15 @@ Base closure; all values at 1 µs, seed 0 (the seed-1 value in brackets).
 The ledger class sums match the solver counters to 5e-13 J. At 1%, seeds 0
 and 1 agree within 2.5%.
 
-- **The floor sets the dissipation of carrier-free current.**
-  - Orphaned-edge Ohmic heat falls from 43 to 21 to 12 J as the floor goes from
-    5% to 2% to 1%, while the orphaned current magnitude falls only 21%.
-  - A lower floor makes the empty medium Hall-dominated (faster electron
-    response), so its current dissipates less. This is the mechanism the
-    previous replays pointed to.
-- **Total numerical removal falls as about floor^0.65:** 68 → 48 → 40 J. A
-  three-point extrapolation to floor → 0 gives about 24 J (3% of load work),
-  poorly constrained.
+- **Orphaned-edge dissipation falls with the floor, but by less than the base
+  closure shows.**
+  - With the base closure, orphaned-edge Ohmic heat falls 43 → 21 → 12 J (5%,
+    2%, 1%), while the orphaned current magnitude falls only 21%.
+  - Part of that drop is an artifact. A lower floor raises the floored Hall
+    velocity, so more electron energy leaks into empty nodes within a step, and
+    those nodes then have Te = p/(max(n, 1 m⁻³) e) huge and η ≈ 0.
+  - With the leak blocked (next section), the drop is 68 → 44 J.
+- **Total numerical removal falls as about floor^0.65:** 68 → 48 → 40 J.
   - What remains is mostly electron energy deleted on emptied nodes, which
     rises from 20 to 28 J as the floor drops.
   - The wall enthalpy outflow also rises (39 → 74 J), because the floored Hall
@@ -244,9 +244,38 @@ and 1 agree within 2.5%.
 - **Design consequence.** The 5% production floor biases the early separatrix
   radius by about 8%. A 2% floor converges it at 1 µs for about 2× the field
   substeps (1.6× wall time). Whether that holds beyond 1 µs is untested.
-- **Next bounded step (not run):** 1% floor plus the electron-edge block. At a
-  low floor the orphaned dissipation that the block exposes is 3.5× smaller, so
-  the block may now pay off against the 28 J of empty-node removal.
+
+## 1% floor with the electron edge (`run ... ledger=1 electron_edge=1 floor=0.01`)
+All values at 1 µs, seeds 0 and 1.
+
+| | 1% floor (s0 / s1) | 1% floor + electron edge (s0 / s1) | 5% floor + electron edge (s0) |
+|---|---|---|---|
+| numerical removal, cutoff + empty-node (J) | 39.5 / 40.5 | 44.1 / 44.3 | 74.2 |
+| cutoff removal; empty-node removal (J) | 11.8 / 12.0; 27.6 / 28.6 | 38.5 / 38.6; 5.6 / 5.6 | 68.2; 6.0 |
+| Ohmic, orphaned / sparse / resolved edges (J) | 12.2 / 4.2 / 57.0 | 44.4 / 2.5 / 47.1 | 68.4 / 2.2 / 45.8 |
+| \|J\| A on orphaned edges (kA) | 6.6 / 6.7 | 3.4 / 3.3 | 5.6 |
+| wall enthalpy outflow (J) | 73.6 / 73.2 | 82.0 / 82.1 | 44.3 |
+| magnetic energy; electron energy (J) | 509.0 / 507.6; 34.6 / 34.8 | 483.6 / 482.4; 51.8 / 53.0 | 518.5; 46.1 |
+| separatrix (m); trapped flux | 0.112 / 0.111; 1.6 mWb | 0.112 / 0.112; 1.6 mWb | 0.120; 1.6 mWb |
+| pressure-centering residual; load residual (J) | 0.021; −0.19 | 0.050; −0.11 | 0.039; −0.002 |
+
+Seeds agree within 0.5%. Ledger checks are at or below 3e-13 J.
+
+- **The prediction failed.** Blocking the leak at 1% again trades 22 J of
+  empty-node removal for more orphaned dissipation (12 → 44 J). Total removal
+  rises by 4 J and magnetic energy falls by 25 J, while the electrons keep
+  17 J more.
+- **What the block does show.** With leak-free η (the 1 eV cap on carrier-free
+  current), lowering the floor from 5% to 1% cuts orphaned current from 5.6 to
+  3.4 kA and its dissipation from 68 to 44 J. That is the floor's own effect.
+  The base closure's 43 → 12 J also includes the leak artifact.
+- **What is robust.** Formation geometry at 1 µs does not depend on the electron
+  edge: 0.112 m at 1% and 0.120–0.121 m at 5%, with or without it. The floor
+  does matter for geometry.
+- **What is not robust.** The 1 µs energy budget spans 40–74 J of numerical
+  removal (5–10% of load work) and ±25 J of magnetic energy across floor and
+  closure variants. That spread comes from the resistivity assigned to
+  carrier-free current, which the closure does not define.
 
 ## Where this leaves frc-ibl.11.9
 The sink comes from the sheet current left in emptied gas, which the floor
