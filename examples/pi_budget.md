@@ -73,7 +73,10 @@ of at most 0.09 T. Both numbers are the published maxima.
   plasma density at main fire stays well below the fill, more PI energy is the
   lever.
 
-Not established here: the deposited fraction η, the real E_c, whether ringing
-through zero traps any PI flux of the wrong sign, and how a partially ionized
-fill changes formation. A formation run with neutrals (frc-ibl.4 step 3) needs
-neutral physics the 2D solver does not have.
+Not established here: the deposited fraction η, the real E_c, and whether
+ringing through zero traps any PI flux of the wrong sign.
+
+How a partially ionized fill changes formation is estimated in
+`partial_pi_formation.md`, with a static neutral reservoir: at α = 3–30%, a
+closed FRC still forms, with 4–17% less trapped flux by 12 µs. So the larger PI
+bank is worth having but not required for first formation.

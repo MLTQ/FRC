@@ -89,9 +89,12 @@ modelled.
 - It rings at about 150 kHz on the main coil, in parallel with the bias branch.
 - **Commission at 3.5 kV:** 60 J, 31 kA peak, B_PI ≈ 0.028 T, about 20 V/cm at
   the wall.
-- **Build for about 0.7 kJ at 12 kV:** about 107 kA, B_PI ≈ 0.096 T. That
-  matches NUCTE-III's stored PI energy per atom (227 eV/atom against our 19 at
-  3.5 kV; `examples/pi_budget.md`).
+- **Worth building for about 0.7 kJ at 12 kV** (about 107 kA, B_PI ≈ 0.096 T),
+  though not required for first formation. That matches NUCTE-III's stored PI
+  energy per atom (227 eV/atom against our 19 at 3.5 kV; `examples/pi_budget.md`).
+  In the formation model a fill pre-ionized to only 3–30% still forms a closed
+  FRC, but with 4–17% less trapped flux by 12 µs and a shorter FRC
+  (`examples/partial_pi_formation.md`; no charge exchange modelled).
 - Use capacitors and switches rated for ringing voltage reversal.
 
 **Timing:** fire with the bias near its peak, tens of µs before main. Treat the
@@ -119,7 +122,8 @@ They are insensitive to the temperature (1–5 eV changes the FRC by ≤ 10%).
 **Not modelled:**
 - the delivered fraction of PI energy and the real cost per ion pair
   (frc-ibl.4 gives bounds only);
-- formation from a partially ionized fill;
+- charge exchange and neutral flow during formation from a partially ionized
+  fill (a static-neutral estimate is in `examples/partial_pi_formation.md`);
 - whether ringing through zero traps any PI flux of the wrong sign;
 - the PI voltage and timing, which experiments report change the trapped flux.
 
