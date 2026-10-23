@@ -85,27 +85,42 @@ works if the single-turn coil's eddy time is short (a slotted sheet); not
 modelled.
 
 ## 4. Pre-ionization (ringing theta PI)
-**Bank:** about 10 µF at 3.5 kV, with about 40 nH stray.
+**Bank:** about 10 µF (9.8 µF) with about 40 nH stray, rated up to about 12 kV.
 - It rings at about 150 kHz on the main coil, in parallel with the bias branch.
-- 60 J, 31 kA peak.
-- It gives B_PI ≈ 0.028 T and about 20 V/cm at the wall.
+- **Commission at 3.5 kV:** 60 J, 31 kA peak, B_PI ≈ 0.028 T, about 20 V/cm at
+  the wall.
+- **Build for about 0.7 kJ at 12 kV:** about 107 kA, B_PI ≈ 0.096 T. That
+  matches NUCTE-III's stored PI energy per atom (227 eV/atom against our 19 at
+  3.5 kV; `examples/pi_budget.md`).
+- Use capacitors and switches rated for ringing voltage reversal.
 
 **Timing:** fire with the bias near its peak, tens of µs before main. Treat the
 delay (about 10–50 µs) as a scan parameter.
 
 **Constraints:**
-- Keep |B_PI| below |B_bias| (0.05 T) so the PI ringing never reverses the
-  field. That caps the PI at about 20–30 V/cm at 150 kHz with this bias. A
-  stronger PI needs a stronger bias or a higher frequency (100 kHz needs
-  22 µF).
-- A plasma at Te ≥ 0.6 eV already holds the bias flux through the rise, so
-  conductivity is not the limit.
+- **Energy.** 60 J cannot fully ionize the fill. Even the thermochemical minimum
+  (18.8 eV per ion pair) needs 59 J delivered with no losses, so expect partial
+  ionization of order 10–30%.
+- **The bias rule.** Keeping |B_PI| below |B_bias| (0.05 T) caps the PI at
+  about 60 J. NUCTE-III rang its PI (about 0.126 T) above its bias (at most
+  0.09 T); both are published maxima.
+  - Running above the bias means the field rings through zero during the PI, so
+    fire the main bank after the PI rings down.
+  - The alternative, a −0.1 T bias, needs about 20 kJ of bias bank.
+- **Freezing the bias flux needs little ionization:** about 1% at Te ≥ 1.5–2 eV.
+  Keep the PI-to-main delay short so Te stays above about 1.5 eV at main fire.
+- **The implosion has to ionize what the PI leaves.** That costs only 2–12% of
+  the main bank, but the H2 fill ionizes in time only if the sheath electrons
+  reach about 20 eV (e-folding 0.5 snowplow times; 1.4 at 10 eV).
 
 **What the model assumes:** the formation runs assume full ionization at 2 eV.
 They are insensitive to the temperature (1–5 eV changes the FRC by ≤ 10%).
 
 **Not modelled:**
-- the ionization fraction (frc-ibl.4);
+- the delivered fraction of PI energy and the real cost per ion pair
+  (frc-ibl.4 gives bounds only);
+- formation from a partially ionized fill;
+- whether ringing through zero traps any PI flux of the wrong sign;
 - the PI voltage and timing, which experiments report change the trapped flux.
 
 Expect to tune these on the bench. N2 is useful for commissioning bias, PI and
@@ -179,7 +194,7 @@ Literature-based (Tuszewski 1986; Ohi 1983); not simulated in 2D.
 |---|---|
 | Main | 3.2 kJ |
 | Bias, baseline | 5.3 kJ (3.2 kJ with the alternative) |
-| PI | 0.06 kJ |
+| PI | 0.06 kJ commissioning, up to about 0.7 kJ |
 | **Total stored** | **≈ 8.6 kJ** (≈ 6.5 kJ with the alternative bias) |
 
 Optional banks add:
