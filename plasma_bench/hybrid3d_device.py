@@ -22,7 +22,9 @@ from scipy.constants import mu_0 as MU0, e as QE
 from scipy.sparse import coo_matrix
 from scipy.sparse.csgraph import connected_components
 from scipy.sparse.linalg import splu
-from .hybrid3d import Box, deposit, boris, HybridParams, divergence_faces
+from .hybrid3d import Box, deposit, boris, HybridParams, divergence_faces, curl_faces, gradient_nodes
+from .hybrid3d_electrons import ThermalElectrons
+from .hybrid3d_energy_electrons import EnergyElectrons
 
 GAS, GAP, CONDUCTOR = 0, 1, 2
 
@@ -33,6 +35,7 @@ class Device:
     tube_half_length: float = 1.1
     coil_radius: float = .165         # single-turn coil (perfect conductor)
     end_gap: float = .02              # vacuum beyond each tube end before the conducting end plane [m]
+    inner_radius: float = 0.          # insulating coaxial tube: vacuum inside, absorbing surface
 
 
 def device_box(device, dx, dz, periodic_length=None):
@@ -51,7 +54,7 @@ def device_box(device, dx, dz, periodic_length=None):
 
 def periodic(device):
     """The same cross-section with an infinitely long tube (use with device_box(..., periodic_length=L))."""
-    return Device(device.wall_radius, np.inf, device.coil_radius, 0.)
+    return Device(device.wall_radius, np.inf, device.coil_radius, 0., device.inner_radius)
 
 
 def cell_types(box, device):
@@ -59,7 +62,7 @@ def cell_types(box, device):
     X, Y, Z = np.meshgrid(*xs, indexing="ij")
     r = np.hypot(X, Y)
     t = np.full(box.shape, GAP, np.int8)
-    t[(r < device.wall_radius) & (np.abs(Z) < device.tube_half_length)] = GAS
+    t[(r >= device.inner_radius) & (r < device.wall_radius) & (np.abs(Z) < device.tube_half_length)] = GAS
     # the end planes sit at least one cell beyond the tube ends, so the gap closes over the ends (simply connected)
     t[(r >= device.coil_radius) | (np.abs(Z) > device.tube_half_length+max(device.end_gap, 1.01*box.d[2]))] = CONDUCTOR
     return t
@@ -132,11 +135,42 @@ class GapProjector:
         self.pins = np.array(pins, np.int64)
         self.components = ncomp
         self.lu = splu(A.tocsc())
+        self.harmonics = []
+
+    def meridional_harmonic(self, box, inner_radius):
+        """Discrete curl-free circulation around an annular plasma (a solid torus).
+
+        A unit potential jump across the inner-vacuum disk cuts its one handle.
+        Projecting that closed one-form to zero divergence gives the harmonic
+        field with zero boundary-normal B. Its amplitude must survive the
+        scalar-potential solve and evolve by boundary Faraday, not be erased.
+        """
+        if not self.n:
+            return
+        cut = [np.zeros(box.shape) for _ in range(3)]
+        x = box.lo[0]+box.d[0]*(np.arange(box.shape[0])+.5)
+        y = box.lo[1]+box.d[1]*(np.arange(box.shape[1])+.5)
+        disk = np.hypot(x[:, None], y[None, :]) < inner_radius
+        k = int(round(-box.lo[2]/box.d[2]))
+        cut[2][:, :, k] = disk/box.d[2]
+        div = divergence_faces(*cut, self.d)
+        rhs = -div[self.idx >= 0]
+        rhs[self.pins] = 0.
+        chi = self.lu.solve(rhs)
+        h = [np.zeros(box.shape) for _ in range(3)]
+        for a, f, lo, hi in self.gapfaces:
+            h[a].ravel()[f] = cut[a].ravel()[f]-(chi[hi]-chi[lo])/self.d[a]
+        norm = sum(np.sum(v*v) for v in h)
+        if norm < 1e-20:
+            raise ValueError('Annular inner vacuum disk is unresolved; reduce dx')
+        self.harmonics.append((h, norm))
 
     def __call__(self, b):
         """Overwrite the gap faces of b (list of three face arrays) with the vacuum field."""
         if self.n == 0:
             return b
+        amplitudes = [(sum(np.sum(b[a]*h[a]) for a in range(3))/norm, h)
+                      for h, norm in self.harmonics]
         rhs = np.zeros(self.n)
         for a, f, c, s in self.known:
             np.add.at(rhs, c, -s*b[a].ravel()[f])
@@ -144,6 +178,9 @@ class GapProjector:
         chi = self.lu.solve(rhs)
         for a, f, lo, hi in self.gapfaces:
             b[a].ravel()[f] = -(chi[hi]-chi[lo])/self.d[a]
+        for amplitude, h in amplitudes:
+            for a in range(3):
+                b[a] += amplitude*h[a]
         return b
 
 
@@ -162,7 +199,7 @@ def curl_faces_nb(bx, by, bz, dx, dy, dz, jx, jy, jz):
 
 
 @njit(parallel=True, cache=True)
-def ohm_nodes_nb(bx, by, bz, jx, jy, jz, n, fx, fy, fz, pe, floor, q, dx, dy, dz, en, bn, jn):
+def ohm_nodes_nb(bx, by, bz, jx, jy, jz, n, fx, fy, fz, pe, node_inv, floor, q, dx, dy, dz, en, bn, jn):
     """Node E (ideal + Hall + pressure), node B and node J."""
     nx, ny, nz = bx.shape
     for i in prange(nx):
@@ -175,6 +212,7 @@ def ohm_nodes_nb(bx, by, bz, jx, jy, jz, n, fx, fy, fz, pe, floor, q, dx, dy, dz
                 bny = .25*(by[i, j, k]+by[im, j, k]+by[i, j, km]+by[im, j, km])
                 bnz = .25*(bz[i, j, k]+bz[im, j, k]+bz[i, jm, k]+bz[im, jm, k])
                 jnx = .5*(jx[i, j, k]+jx[im, j, k]); jny = .5*(jy[i, j, k]+jy[i, jm, k]); jnz = .5*(jz[i, j, k]+jz[i, j, km])
+                jnx *= node_inv[i, j, k]; jny *= node_inv[i, j, k]; jnz *= node_inv[i, j, k]
                 ne = max(n[i, j, k], floor)
                 inv = 1./(ne*q)
                 ux = fx[i, j, k]/ne; uy = fy[i, j, k]/ne; uz = fz[i, j, k]/ne
@@ -244,7 +282,7 @@ def inside_gas(x, lo, d, shape, types, alive):
 
 class DeviceHybrid:
     """Kinetic ions + electron fluid in the device. Particles: x at t, v at t - dt/2, weights w."""
-    def __init__(self, box, device, params, b_faces, x, v, w, dt, n_ref=None):
+    def __init__(self, box, device, params, b_faces, x, v, w, dt, n_ref=None, source=None, thermal=None):
         self.box, self.device, self.p, self.dt = box, device, params, float(dt)
         self.d = box.d
         self.lo = np.asarray(box.lo, float); self.len = np.asarray(box.hi, float)-self.lo
@@ -261,29 +299,71 @@ class DeviceHybrid:
         faraday_faces = [m.copy() for m in self.face_active]
         if self.periodic_z:
             faraday_faces[2] |= self.face_gap[2]
+        if device.inner_radius > 0:
+            for a in range(3):
+                faraday_faces[a] |= self.face_gap[a]
         self.f8 = [m.astype(np.uint8) for m in faraday_faces]
         self._gap_project = GapProjector(self.types, self.d)
-        self.b = self.project([np.array(c, float) for c in b_faces])
+        if device.inner_radius > 0:
+            if self.periodic_z:
+                raise ValueError('Annular geometry currently requires finite ends')
+            self._gap_project.meridional_harmonic(box, device.inner_radius)
+        self.source = source
+        if source is not None and self.periodic_z:
+            raise ValueError('Driven source fields require finite device ends')
+        initial_source = source(0.) if source is not None else [np.zeros_like(c) for c in b_faces]
+        self._fixed_response = [np.asarray(c)-initial_source[a] for a, c in enumerate(b_faces)]
+        self.b = self.project([np.array(c, float) for c in b_faces], 0.)
         self.x, self.v = np.ascontiguousarray(x, float), np.ascontiguousarray(v, float)
         self.w = np.broadcast_to(np.asarray(w, float), (self.x.shape[0],)).copy()
         self.qm = params.ion_charge/params.ion_mass
         self.nthreads = get_num_threads()
+        self._metal_moments = None
         self._node_inv = self._node_fraction()
+        self.lost = dict(count=0., energy_j=0., ends=0., wall=0., inner_wall=0.)
         self._absorb()
         mom = self._moments(self.x)
         self.n = mom[0]
         self.flux_half = mom[1:]
         self.flux_prev = mom[1:].copy()
         self.n_ref = float(self.n[self.types == GAS].mean()) if n_ref is None else n_ref
+        self.electrons = None
+        if thermal is not None:
+            electron_options = dict(thermal)
+            closure = electron_options.pop('closure', 'energy')
+            backend = electron_options.pop('backend', 'cpu')
+            gpu_moments = electron_options.pop('gpu_moments', False)
+            if backend not in ('cpu', 'metal'):
+                raise ValueError('Electron backend must be cpu or metal')
+            if closure not in ('energy', 'entropy'):
+                raise ValueError('Electron closure must be energy or legacy entropy')
+            electron_type = EnergyElectrons if closure == 'energy' else ThermalElectrons
+            if backend == 'metal':
+                if closure != 'energy':
+                    raise ValueError('Metal requires the conservative energy closure')
+                from .hybrid3d_metal_energy import MetalEnergyElectrons
+                electron_type = MetalEnergyElectrons
+            self.electrons = electron_type(self, **electron_options)
+            if gpu_moments:
+                if backend != 'metal':
+                    raise ValueError('GPU moments require the explicit Metal backend')
+                self._metal_moments = self.electrons.metal
         self.time, self.steps, self.substeps = 0., 0, 0
-        self.lost = dict(count=0., energy_j=0., ends=0., wall=0.)
         shape = tuple(box.shape)
         self._j = [np.zeros(shape) for _ in range(3)]
         self._e = [np.zeros(shape) for _ in range(3)]
         self._en = np.zeros((3,)+shape); self._bn = np.zeros((3,)+shape); self._jn = np.zeros((3,)+shape)
         self._rate = [np.zeros(shape) for _ in range(3)]
 
-    def project(self, b):
+    def project(self, b, time_s=None):
+        if self.source is not None:
+            external = self.source(0. if time_s is None else time_s)
+            response = [b[a]-external[a] for a in range(3)]
+            for a in range(3):
+                fixed = ~(self.face_active[a] | self.face_gap[a])
+                response[a][fixed] = self._fixed_response[a][fixed]
+            response = self._gap_project(response)
+            return [response[a]+external[a] for a in range(3)]
         if self.periodic_z and self.face_gap[2].any():
             ring = float(b[2][self.face_gap[2]].mean())
             b = self._gap_project(b)
@@ -295,7 +375,10 @@ class DeviceHybrid:
         """Node density and flux, divided by the fraction of each node's 8 surrounding cells that are gas, so
         a uniform plasma has uniform node density up to the staircase wall (as the 2D model's wall nodes carry
         half dual areas). Nodes with no gas cell get zero."""
-        mom = deposit(np.ascontiguousarray(x), self.v if v is None else v, self.w, self.lo, self.d, self.shape, self.nthreads)
+        if self._metal_moments is not None:
+            mom = self._metal_moments.moments(x, self.v if v is None else v, self.w)
+        else:
+            mom = deposit(np.ascontiguousarray(x), self.v if v is None else v, self.w, self.lo, self.d, self.shape, self.nthreads)
         return mom*self._node_inv
 
     def _node_fraction(self):
@@ -315,11 +398,16 @@ class DeviceHybrid:
             dead = ~alive
             self.lost["count"] += float(self.w[dead].sum())
             self.lost["energy_j"] += float(.5*self.p.ion_mass*np.sum(self.w[dead]*np.sum(self.v[dead]**2, axis=1)))
-            ends = np.abs(self.x[dead, 2]) >= self.device.tube_half_length
+            centres = self.lo+(np.floor((self.x[dead]-self.lo)/self.d)+.5)*self.d
+            ends = np.abs(centres[:, 2]) >= self.device.tube_half_length
             self.lost["ends"] += float(self.w[dead][ends].sum()); self.lost["wall"] += float(self.w[dead][~ends].sum())
+            inner = (~ends) & (self.device.inner_radius > 0) & (np.hypot(centres[:, 0], centres[:, 1]) < self.device.inner_radius)
+            self.lost['inner_wall'] += float(self.w[dead][inner].sum())
             self.x, self.v, self.w = self.x[alive], self.v[alive], self.w[alive]
 
     def _pressure(self, n):
+        if self.electrons is not None:
+            return self.electrons.pressure(n)
         te = self.p.te_ev*QE
         if te == 0:
             return np.zeros_like(n)
@@ -327,41 +415,78 @@ class DeviceHybrid:
             return n*te
         return n*te*(np.maximum(n, 1e-300)/self.n_ref)**(self.p.gamma_e-1)
 
-    def electric(self, b, n, flux):
+    def electric(self, b, n, flux, time_s=None):
         """Fill edge E (masked) and node E/B/J."""
         curl_faces_nb(b[0], b[1], b[2], *self.d, *self._j)
-        ohm_nodes_nb(b[0], b[1], b[2], *self._j, n, flux[0], flux[1], flux[2], self._pressure(n), self.p.n_floor,
+        if self.source is not None:
+            t = self.time if time_s is None else time_s
+            prescribed = (self.source.edge_current(t) if hasattr(self.source, 'edge_current') else
+                          np.asarray(curl_faces(*self.source(t), self.d))/MU0)
+            for a in range(3):
+                self._j[a] -= prescribed[a]
+        # Only edges carrying plasma E belong to the plasma current. A
+        # conductor's sheet current must not enter the node Hall force when
+        # its conjugate edge E is excluded from Faraday's law. Using the same
+        # support makes the Hall contribution to J.E vanish algebraically.
+        for a in range(3):
+            self._j[a] *= self.edge_mask[a]
+        ohm_nodes_nb(b[0], b[1], b[2], *self._j, n, flux[0], flux[1], flux[2], self._pressure(n), self._node_inv, self.p.n_floor,
                      self.p.ion_charge, *self.d, self._en, self._bn, self._jn)
-        ohm_edges_nb(self._en, *self._j, self.p.eta, self.p.eta_hyper, *self.d, *self.u8, *self._e)
+        ohm_edges_nb(self._en, *self._j, 0. if self.electrons is not None else self.p.eta,
+                     self.p.eta_hyper, *self.d, *self.u8, *self._e)
+        if self.electrons is not None:
+            self._eta_edges = self.electrons.edge_eta(n, self.edge_mask)
+            for a in range(3):
+                self._e[a] += self._eta_edges[a]*self._j[a]
         return self._e
 
-    def rate(self, b, n, flux):
-        e = self.electric(b, n, flux)
+    def rate(self, b, n, flux, time_s=0.):
+        e = self.electric(b, n, flux, time_s)
+        if self.source is not None:
+            da = self.source.edge_derivative(time_s)
+            e = [np.where(self.edge_mask[a], e[a], -da[a]) for a in range(3)]
         faraday_nb(e[0], e[1], e[2], *self.d, *self.f8, *self._rate)
         return [r.copy() for r in self._rate]
 
     def field_substeps(self):
         live = self.node_gas_fraction > 0
-        b = max(float(np.sqrt(sum(np.max(np.abs(c[self.face_active[a]]))**2 for a, c in enumerate(self.b)))), 1e-300)
+        b = max(float(np.sqrt(sum((np.max(np.abs(c[self.face_active[a]])) if self.face_active[a].any() else 0.)**2
+                                  for a, c in enumerate(self.b)))), 1e-300)
         nmin = max(float(self.n[live].min()) if live.any() else 0., self.p.n_floor, 1e-300)
-        kmax = np.pi*np.sqrt(np.sum(1/self.d**2))
+        # A Yee first difference has symbol 2 sin(k_a d_a/2)/d_a,
+        # bounded by 2/d_a, rather than the continuum Nyquist pi/d_a.
+        kmax = 2*np.sqrt(np.sum(1/self.d**2))
         va = b/np.sqrt(MU0*nmin*self.p.ion_mass)
-        omega = kmax*va+kmax**2*b/(MU0*nmin*self.p.ion_charge)+(self.p.eta/MU0)*kmax**2+(self.p.eta_hyper/MU0)*kmax**4
-        if self.p.te_ev > 0:
-            omega += kmax*np.sqrt(self.p.te_ev*QE*(self.p.gamma_e or 1.)/self.p.ion_mass)
+        eta = float(self.electrons.eta(self.n).max()) if self.electrons is not None else self.p.eta
+        omega = kmax*va+kmax**2*b/(MU0*nmin*self.p.ion_charge)+(eta/MU0)*kmax**2+(self.p.eta_hyper/MU0)*kmax**4
+        if isinstance(self.electrons, EnergyElectrons):
+            omega += kmax*np.sqrt(float(self.electrons.sound_speed_squared(self.n).max()))
+        elif self.p.te_ev > 0:
+            te = float(self.electrons.temperature(self.n).max()) if self.electrons is not None else self.p.te_ev
+            omega += kmax*np.sqrt(te*QE*(self.p.gamma_e or 1.)/self.p.ion_mass)
         return max(1, int(np.ceil(self.dt*omega/(self.p.field_cfl*np.sqrt(3)))))
 
     def step(self):
         dt = self.dt
+        if self.electrons is not None:
+            self.electrons.begin_step()
         flux_now = 1.5*self.flux_half-.5*self.flux_prev
         self.electric(self.b, self.n, flux_now)
-        e_nodes = self._en+self.p.eta*self._jn if self.p.eta > 0 else self._en
+        e_nodes = self._en+self.p.eta*self._jn if self.p.eta > 0 and self.electrons is None else self._en
         x_old = self.x.copy()
+        energy_electrons = isinstance(self.electrons, EnergyElectrons)
+        if energy_electrons:
+            v_old = self.v.copy()
+            pressure_e = -gradient_nodes(self._pressure(self.n), self.d)/(self.p.ion_charge*np.maximum(self.n, self.p.n_floor))
         boris(self.x, self.v, np.ascontiguousarray(e_nodes), np.ascontiguousarray(self._bn), self.qm, dt,
               self.lo, self.d, self.shape, self.len)
+        if energy_electrons:
+            self.electrons.ion_pressure_work(x_old, v_old, self.v, pressure_e)
         mid = np.ascontiguousarray(x_old+.5*dt*self.v)
         self._absorb_with(mid)
         n_new = self._moments(self.x)[0]
+        if self.electrons is not None:
+            self.electrons.prepare_density(n_new)
         flux_half = self._moments(self._mid)[1:]
         self.flux_prev, self.flux_half = self.flux_half, flux_half
         m = self.field_substeps()
@@ -370,13 +495,37 @@ class DeviceHybrid:
         for s in range(m):
             f0 = s*h/dt
             b = self.b
-            k1 = self.rate(b, n_old+(n_new-n_old)*f0, flux_half)
-            b1 = self.project([b[a]+h*k1[a] for a in range(3)])
-            k2 = self.rate(b1, n_old+(n_new-n_old)*(f0+h/dt), flux_half)
-            b2 = self.project([.75*b[a]+.25*(b1[a]+h*k2[a]) for a in range(3)])
-            k3 = self.rate(b2, n_old+(n_new-n_old)*(f0+.5*h/dt), flux_half)
-            self.b = self.project([b[a]/3+2/3*(b2[a]+h*k3[a]) for a in range(3)])
+            n1 = n_old+(n_new-n_old)*f0
+            n2 = n_old+(n_new-n_old)*(f0+h/dt)
+            n3 = n_old+(n_new-n_old)*(f0+.5*h/dt)
+            k1 = self.rate(b, n1, flux_half, self.time+s*h)
+            q1 = self.electrons.joule_density(self._j, self._eta_edges) if self.electrons is not None else None
+            if energy_electrons:
+                w1 = self.electrons.hall_pressure_work(n1, self._jn)
+                u1 = -self._jn.copy()/(self.p.ion_charge*np.maximum(n1, self.p.n_floor))
+            b1 = self.project([b[a]+h*k1[a] for a in range(3)], self.time+(s+1)*h)
+            k2 = self.rate(b1, n2, flux_half, self.time+(s+1)*h)
+            q2 = self.electrons.joule_density(self._j, self._eta_edges) if self.electrons is not None else None
+            if energy_electrons:
+                w2 = self.electrons.hall_pressure_work(n2, self._jn)
+                u2 = -self._jn.copy()/(self.p.ion_charge*np.maximum(n2, self.p.n_floor))
+            b2 = self.project([.75*b[a]+.25*(b1[a]+h*k2[a]) for a in range(3)], self.time+(s+.5)*h)
+            k3 = self.rate(b2, n3, flux_half, self.time+(s+.5)*h)
+            q3 = self.electrons.joule_density(self._j, self._eta_edges) if self.electrons is not None else None
+            if energy_electrons:
+                w3 = self.electrons.hall_pressure_work(n3, self._jn)
+                u3 = -self._jn.copy()/(self.p.ion_charge*np.maximum(n3, self.p.n_floor))
+            self.b = self.project([b[a]/3+2/3*(b2[a]+h*k3[a]) for a in range(3)], self.time+(s+1)*h)
+            if self.electrons is not None:
+                heating = (q1+q2+4*q3)/6
+                if energy_electrons:
+                    self.electrons.advance(n2, flux_half, self._jn, h, heating,
+                                           hall_work=(w1+w2+4*w3)/6, hall_velocity=(u1+u2+4*u3)/6)
+                else:
+                    self.electrons.advance(n2, flux_half, self._jn, h, heating)
         self.n = n_new
+        if self.electrons is not None:
+            self.electrons.finish_step()
         self.time += dt; self.steps += 1; self.substeps += m
         return m
 
@@ -386,16 +535,30 @@ class DeviceHybrid:
         inside_gas(self.x, self.lo, self.d, self.shape, self.types, alive)
         if not alive.all():
             dead = ~alive
+            if self.electrons is not None:
+                self.electrons.absorb(alive)
             self.lost["count"] += float(self.w[dead].sum())
             self.lost["energy_j"] += float(.5*self.p.ion_mass*np.sum(self.w[dead]*np.sum(self.v[dead]**2, axis=1)))
-            ends = np.abs(self.x[dead, 2]) >= self.device.tube_half_length
+            centres = self.lo+(np.floor((self.x[dead]-self.lo)/self.d)+.5)*self.d
+            ends = np.abs(centres[:, 2]) >= self.device.tube_half_length
             self.lost["ends"] += float(self.w[dead][ends].sum()); self.lost["wall"] += float(self.w[dead][~ends].sum())
+            inner = (~ends) & (self.device.inner_radius > 0) & (np.hypot(centres[:, 0], centres[:, 1]) < self.device.inner_radius)
+            self.lost['inner_wall'] += float(self.w[dead][inner].sum())
             self.x, self.v, self.w, mid = self.x[alive], self.v[alive], self.w[alive], mid[alive]
         self._mid = np.ascontiguousarray(mid)
 
     # diagnostics
     def magnetic_energy(self):
-        return float(sum(np.sum(c**2) for c in self.b)/(2*MU0)*self.box.cell_volume)
+        return self._magnetic_energy(self.b)
+
+    def response_magnetic_energy(self):
+        field = self.b if self.source is None else np.asarray(self.b)-self.source(self.time)
+        return self._magnetic_energy(field)
+
+    def _magnetic_energy(self, field):
+        physical = (self.types != CONDUCTOR).astype(float)
+        return float(sum(np.sum(c**2*.5*(physical+np.roll(physical, 1, axis=a)))
+                         for a, c in enumerate(field))/(2*MU0)*self.box.cell_volume)
 
     def kinetic_energy(self):
         return float(.5*self.p.ion_mass*np.sum(self.w*np.sum(self.v**2, axis=1)))

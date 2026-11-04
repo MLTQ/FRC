@@ -1,6 +1,6 @@
 """Read-only n=0 flux and azimuthal density diagnostics for saved 3D hybrid states."""
 import numpy as np
-from examples.nucte_compare import closed_region
+from examples.nucte_compare import closed_region, annular_closed_region
 
 
 def poloidal_average(box, device, bz):
@@ -22,8 +22,10 @@ def poloidal_average(box, device, bz):
     z = lo[2]+d[2]*np.arange(box.shape[2])
     gas_z = np.abs(z) < device.tube_half_length
     wall = int(np.searchsorted(edges, device.wall_radius))
-    r, z, psi = edges[:wall+1], z[gas_z], psi[:wall+1, gas_z]
-    return r, z, psi, closed_region(r, z, psi)
+    inner = int(np.searchsorted(edges, device.inner_radius))
+    r, z, psi = edges[inner:wall+1], z[gas_z], psi[inner:wall+1, gas_z]
+    region = annular_closed_region(r, z, psi) if inner else closed_region(r, z, psi)
+    return r, z, psi, region
 
 
 def density_modes(box, device, density):
@@ -36,7 +38,7 @@ def density_modes(box, device, density):
     xs = [lo[a]+d[a]*np.arange(box.shape[a]) for a in (0, 1)]
     x, y = np.meshgrid(*xs, indexing="ij")
     r, phi = np.hypot(x, y), np.arctan2(y, x)
-    ring = (r > .3*device.wall_radius) & (r < .9*device.wall_radius)
+    ring = (r > max(.3*device.wall_radius, device.inner_radius)) & (r < .9*device.wall_radius)
     n = density[:, :, box.shape[2]//2][ring]
     m0 = max(float(abs(n.sum())), 1e-300)
     return {f"n{m}": float(abs(np.sum(n*np.exp(-1j*m*phi[ring])))/m0)

@@ -1,16 +1,22 @@
 # Virtual plasma bench
 
-An axisymmetric plasma simulator (Python, NumPy/SciPy) used to design a real
-benchtop field-reversed configuration (FRC) experiment: a field-reversed theta
-pinch in a ~15 cm × 1 m Pyrex tube with H2/D2 fill.
+A local plasma research workspace (Python, NumPy/SciPy), with axisymmetric MHD,
+3D hybrid FRC development and a new full 3D electrostatic electron/ion path.
+The benchtop FRC design goal and positive-cage research goal retain separate
+physical models and validation limits.
 
 - **Current status and plan:** [docs/GOAL_STATUS.md](docs/GOAL_STATUS.md)
 - **First-cut fields, timing and bank numbers:** [docs/FRC_DESIGN_WINDOW.md](docs/FRC_DESIGN_WINDOW.md)
 - **What exists and its limits:** [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md)
 - **Working rules:** [AGENTS.md](AGENTS.md); issues are tracked with `bd` (epic `frc-ibl`)
 
-This is research software. No result here has yet been benchmarked against a
-formation experiment, and nothing yet demonstrates FRC formation in this geometry.
+This is research software. The 2D formation path has a published-experiment
+benchmark; 3D confinement/lifetime and positive-cage performance remain unresolved.
+
+The first unified local app is [Fieldwork](docs/EXPERIMENT_LAB.md): run
+`.venv/bin/python -m examples.lab_app` and open `http://localhost:8792`.
+It provides electrostatic setup/run/replay and the existing FRC scientific viewer.
+See [IEC_3D.md](docs/IEC_3D.md) for the new model's measured errors and limits.
 
 ## Install and run
 

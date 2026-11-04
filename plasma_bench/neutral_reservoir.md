@@ -25,8 +25,26 @@ way `density_floor.apply_floor` works.
   ionization, excitation and radiation) is removed from thermal energy. It is
   capped so a step never spends more than half a cell's thermal energy.
 
+## Optional charge exchange, escape limit (`cx_cross_section`)
+- **Rate:** ions exchange with the reservoir at n_i K_cx, with
+  K_cx = σ_cx √(8 e T/(π m_i) + u²) for neutrals at rest. σ_cx is declared;
+  3·10⁻¹⁹ m² is the size of resonant H⁺–H exchange at 10–100 eV.
+- **Shared neutral loss:** ionization and exchange draw on the same reservoir,
+  consumed = n_n (1 − exp(−n_i (K_iz + K_cx) dt)), split by rate. At most half
+  a cell's ions exchange in one step.
+- **Each exchange:** a plasma ion is replaced by a cold ion at rest. The fast
+  neutral leaves the system with that ion's bulk momentum, its bulk kinetic
+  energy and 1.5 T of ion heat. Plasma mass is unchanged, and the neutral it
+  came from is gone.
+- **Why it is an upper bound:**
+  - in a dense plasma the fast neutral's mean free path is millimetres, so most
+    would be re-ionized or exchanged again inside the plasma;
+  - escape is only right at the low-density edge;
+  - for H2 targets at low energy, exchange is weaker than for H atoms.
+
 ## Bookkeeping
-- `floor_mass` gains the ionized mass and `floor_energy` loses the cost. The
+- `floor_mass` gains the ionized mass, and `floor_energy` loses the cost and the
+  exchange loss. The
   solver's mass and energy residuals already subtract those closure sources, so
   they stay closed.
 - Separate counters keep the ionized ions and mass, the total cost, and the
@@ -34,7 +52,8 @@ way `density_floor.apply_floor` works.
 
 ## Not modelled (declared)
 - Neutral motion, neutral pressure and wall interaction.
-- Charge-exchange drag and charge-exchange loss of fast neutrals.
+- Charge exchange beyond the escape-limit option: fast-neutral transport and
+  re-ionization.
 - Electron–neutral resistivity.
 - Recombination.
 - Molecular and atomic stages, and a computed E_c.
@@ -49,3 +68,11 @@ exact logistic solution of dn_e/dt = K n_e n_n at constant K. Over 3 e-folds:
 - energy changes by the cost to 1e-15;
 - a moving cell keeps its momentum exactly, and its energy changes only by the
   cost.
+
+Charge exchange alone, at constant K_cx with n_i fixed:
+- neutrals follow n_n0 exp(−n_i K t) to 1e-15;
+- momentum follows p0 exp(−(n_n0/n_i)(1 − exp(−n_i K t))) at first order
+  (observed order 1.00);
+- mass is unchanged;
+- the energy change equals the booked exchange loss to 1e-15.
+

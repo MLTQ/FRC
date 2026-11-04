@@ -1,6 +1,7 @@
 const ids=id=>document.getElementById(id), canvases=[ids('field'),ids('current')];
 let frame=DATA.initial_frame??DATA.frames.length-1,requestedFrame=frame,component=0,shared=Boolean(DATA.detailed),yaw=DATA.initial_yaw??-.65,pitch=DATA.initial_pitch??.35,zoom=DATA.initial_zoom||1,playing=false,playTimer=null,requestId=0;
 let volumeRenderer=null;
+let requestedIonCount=Number(ids('ion-count')?.value??1000);
 if(DATA.detailed){try{volumeRenderer=createVolumeRenderer(ids('volume'));}catch(error){ids('render-warning').textContent=error.message;}}
 let frameCache=new Map(),pendingFrames=new Map();
 const TRAIL_US=2;let particleData=null,particleKey=null;   // optional particle trails (end of file)
@@ -30,6 +31,10 @@ function color(t,signed=false){t=Math.max(0,Math.min(1,t));if(DATA.detailed&&!si
 function project(p,c){const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);const x=cy*p[0]+sy*p[1],y=-sy*p[0]+cy*p[1],z=cp*p[2]-sp*y,depth=sp*p[2]+cp*y;const f=zoom*Math.min(c.width,c.height)*.37/(DATA.detailed?1:1+depth*.18);return [c.width/2+x*f,c.height/2-z*f,depth];}
 function line(ctx,points,c,stroke,width=1){if(points.length<2)return;ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.beginPath();points.forEach((p,i)=>{const s=project(p,c);if(i)ctx.lineTo(s[0],s[1]);else ctx.moveTo(s[0],s[1]);});ctx.stroke();}
 function draw(){const f=frameCache.get(frame)||DATA.frames[frame];if(!f.lines)return;const bmax=shared?DATA.bmax:f.bmax,jmax=shared?DATA.jmax[component]:f.jmax[component];
+ const available=f.ions?.length||0,ionCount=Math.min(available,requestedIonCount);
+ if(ids('ion-count-control'))ids('ion-count-control').hidden=!DATA.no_copies;
+ if(ids('ion-count')){ids('ion-count').max=available;ids('ion-count').value=ionCount;ids('ion-count').disabled=!available||!ids('ions')?.checked;}
+ if(ids('ion-count-label'))ids('ion-count-label').textContent=(ids('ions')?.checked?ionCount:0).toLocaleString()+' / '+available.toLocaleString()+' saved samples';
  canvases.forEach((c,index)=>{const ratio=Math.min(window.devicePixelRatio||1,DATA.detailed?1.5:Infinity),w=Math.round(c.clientWidth*ratio),h=Math.round(c.clientHeight*ratio);if(c.width!==w||c.height!==h){c.width=w;c.height=h;}const ctx=c.getContext('2d');ctx.clearRect(0,0,w,h);if(!(DATA.detailed&&index===1&&volumeRenderer)){ctx.fillStyle=DATA.detailed?'#000':'#0e202d';ctx.fillRect(0,0,w,h);}
   if(!DATA.detailed||ids('geometry').checked){f.outline.forEach(p=>line(ctx,p,c,DATA.detailed?'#253138':'#527080',.7*ratio));
   (DATA.chamber||[]).forEach(p=>line(ctx,p,c,DATA.detailed?'#36414a':'#7c8a94',.6*ratio));
@@ -39,7 +44,7 @@ function draw(){const f=frameCache.get(frame)||DATA.frames[frame];if(!f.lines)re
   else if(volumeRenderer&&(f.volume_data||f.volume3d_data)){const vc=ids('volume');if(vc.width!==w||vc.height!==h){vc.width=w;vc.height=h;}volumeRenderer.draw(f,{yaw,pitch,zoom,maximum:jmax,component,opacity:Number(ids('opacity').value),threshold:Number(ids('threshold').value)});}
   else{const points=f.current.map(p=>({p:project(p.slice(0,3),c),j:p[3+component]})).sort((a,b)=>b.p[2]-a.p[2]);ctx.globalAlpha=.52;for(const p of points){const scaled=jmax>0?p.j/jmax:0,t=component?.5+.5*scaled:scaled;ctx.fillStyle=color(t,component!==0);ctx.beginPath();ctx.arc(p.p[0],p.p[1],1.9*ratio,0,2*Math.PI);ctx.fill();}ctx.globalAlpha=1;}
   if(!ids('separatrix')||ids('separatrix').checked)(f.separatrix||[]).forEach(p=>line(ctx,p,c,DATA.separatrix_color||'#f2c65c',(index?1.1:1.6)*ratio));
-  if(f.ions&&ids('ions')&&ids('ions').checked){const sp=DATA.ion_speed_max||1;ctx.globalAlpha=.75;for(const q of f.ions){const s=project(q,c);ctx.fillStyle=color(Math.min(1,q[3]/sp));ctx.fillRect(s[0]-ratio,s[1]-ratio,2*ratio,2*ratio);}ctx.globalAlpha=1;}
+  if(f.ions&&ids('ions')&&ids('ions').checked){const sp=DATA.ion_speed_max||1;ctx.globalAlpha=.75;for(const q of f.ions.slice(0,ionCount)){const s=project(q,c);ctx.fillStyle=color(Math.min(1,q[3]/sp));ctx.fillRect(s[0]-ratio,s[1]-ratio,2*ratio,2*ratio);}ctx.globalAlpha=1;}
   if(DATA.detailed){const length=.05,bar=length/DATA.physical_scale_m*zoom*Math.min(w,h)*.37;ctx.strokeStyle='#788b97';ctx.lineWidth=ratio;ctx.beginPath();ctx.moveTo(23*ratio,h-23*ratio);ctx.lineTo(23*ratio+bar,h-23*ratio);ctx.stroke();ctx.fillStyle='#8c9da9';ctx.font=10*ratio+'px system-ui';ctx.fillText('50 mm',23*ratio,h-31*ratio);}
  });
  const timeLabel=DATA.display_interval_ns?(f.time_us*1000).toFixed(2)+' ns':f.time_us.toFixed(3)+' µs';ids('time').value=frame;ids('time-label').textContent=timeLabel;ids('metric-time').textContent=timeLabel;ids('field-max').textContent=(bmax*(DATA.detailed?1e3:1e6)).toPrecision(3)+(DATA.detailed?' mT':' µT');
@@ -54,6 +59,7 @@ function draw(){const f=frameCache.get(frame)||DATA.frames[frame];if(!f.lines)re
  if(ids('motion'))ids('motion').textContent=f.midplane_radius_m===undefined?'':(DATA.motion_label||'Plasma radius — middle')+': '+(f.midplane_radius_m*1000).toFixed(2)+' mm · maximum: '+(f.maximum_radius_m*1000).toFixed(2)+' mm';}
 let scrubTimer=null;ids('time').max=DATA.frames.length-1;ids('time').value=frame;ids('time').addEventListener('input',e=>{stopPlayback();requestId++;requestedFrame=+e.target.value;clearTimeout(scrubTimer);scrubTimer=setTimeout(()=>showFrame(requestedFrame),65);});ids('component').addEventListener('change',e=>{component=+e.target.value;draw();});ids('scale').onclick=()=>{shared=!shared;draw();};ids('reset').onclick=()=>{yaw=DATA.initial_yaw??-.65;pitch=DATA.initial_pitch??.35;zoom=DATA.initial_zoom||1;if(ids('geometry'))ids('geometry').checked=false;draw();};
 for(const id of ['opacity','threshold','density','geometry','separatrix','ions'])if(ids(id))ids(id).addEventListener('input',draw);
+if(ids('ion-count'))ids('ion-count').addEventListener('input',e=>{requestedIonCount=Number(e.target.value);draw();});
 if(ids('apparatus'))ids('apparatus').onclick=()=>{yaw=-.65;pitch=.35;zoom=1.65;ids('geometry').checked=true;draw();};
 if(ids('previous'))ids('previous').onclick=()=>stepFrame(-1);if(ids('next'))ids('next').onclick=()=>stepFrame(1);if(ids('speed'))ids('speed').value=DATA.playback_fps||1;
 ids('play').onclick=()=>{if(playing){stopPlayback();requestId++;requestedFrame=frame;draw();}else{clearTimeout(scrubTimer);playing=true;ids('play').textContent='Pause';advance();}};
@@ -66,6 +72,7 @@ function showRunText(){if(ids('run-title'))ids('run-title').textContent=DATA.tit
  if(ids('render-method'))ids('render-method').textContent=DATA.rendering_note||'The volume is revolved from the saved axisymmetric current. Colors show A/m²; opacity is illustrative, not emitted light. Field lines are interpolated paths, not particle trajectories. All directions share one length scale.';
  if(ids('density')){ids('density').hidden=!!DATA.no_copies;const label=document.querySelector('label[for="density"]');if(label)label.hidden=!!DATA.no_copies;}
  if(ids('ions'))ids('ions').disabled=!DATA.no_copies;
+ if(ids('separatrix-label'))ids('separatrix-label').textContent=DATA.no_copies?'n=0 flux outline':'Separatrix';
  for(const [i,label] of [[1,'Radial Jr'],[3,'Axial Jz']]){const option=ids('component').querySelector('option[value="'+i+'"]');if(option){option.disabled=!(DATA.jmax[i]>0);option.textContent=label+(option.disabled?' (zero in this run)':'');}}
  if(ids('component').selectedOptions[0]?.disabled){component=0;ids('component').value=0;}}
 async function switchRun(name){

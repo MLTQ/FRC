@@ -151,3 +151,14 @@ follow the selected manifest. Current components with nonzero run extrema are
 enabled; unavailable components reset to magnitude on a run switch.
 An optional ion-legend names the dot speed scale and saturation, separately
 from the field-line |B| legend, and identifies each frame as a new sample.
+`ion-count` selects 0 through the available saved sample count (initially
+1,000). Both canvases draw the same first N entries of the independently
+randomized saved sample, so lowering the count gives a nested subset without
+changing coordinates, fields or the simulation particle count. The control
+is hidden for 2D runs and disabled when ion dots are switched off.
+The slider uses single-particle steps, including when fewer than100 remain.
+The requested count is independent of the available count, so scrubbing a
+sparse frame or switching through a 2D run preserves the request for later
+frames with more samples. The gold
+diagnostic checkbox can be labeled `n=0 flux outline` for hybrid runs, so its
+rotationally averaged diagnostic is not mistaken for the actual 3D surface.

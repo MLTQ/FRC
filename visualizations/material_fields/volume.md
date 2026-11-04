@@ -1,5 +1,13 @@
 # Axisymmetric current volume renderer
 
+The HTML template also contains the optional hybrid particle sample slider.
+It starts at 1,000 displayed dots and is hidden for axisymmetric runs.
+The template honors the HTML `hidden` attribute even on flex control groups.
+The shared viewer limits it to the saved sample size; it never changes the
+number of macro-ions advanced by the solver. Single-particle steps allow the
+last few surviving samples to be shown; the requested count survives frames
+or runs with fewer available samples.
+
 `createVolumeRenderer(canvas)` owns a WebGL2 texture/program and returns `draw`.
 The shared viewer supplies one saved frame, current component, physical scale,
 and the same orthographic camera used for the field lines. No dependencies.
